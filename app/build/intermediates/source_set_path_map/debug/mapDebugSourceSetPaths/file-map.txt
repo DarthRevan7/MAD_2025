@@ -1,0 +1,56 @@
+com.example.voyago.app-pngs-0 C:\GitHub\Unity Projects\MAD_2025\app\build\generated\res\pngs\debug
+com.example.voyago.app-resValues-1 C:\GitHub\Unity Projects\MAD_2025\app\build\generated\res\resValues\debug
+com.example.voyago.app-packageDebugResources-2 C:\GitHub\Unity Projects\MAD_2025\app\build\intermediates\incremental\debug\packageDebugResources\merged.dir
+com.example.voyago.app-packageDebugResources-3 C:\GitHub\Unity Projects\MAD_2025\app\build\intermediates\incremental\debug\packageDebugResources\stripped.dir
+com.example.voyago.app-debug-4 C:\GitHub\Unity Projects\MAD_2025\app\build\intermediates\merged_res\debug\mergeDebugResources
+com.example.voyago.app-debug-5 C:\GitHub\Unity Projects\MAD_2025\app\src\debug\res
+com.example.voyago.app-main-6 C:\GitHub\Unity Projects\MAD_2025\app\src\main\res
+com.example.voyago.app-lifecycle-runtime-release-7 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\004eb7daa98ae24714261b28f2228fff\transformed\lifecycle-runtime-release\res
+com.example.voyago.app-material-icons-core-release-8 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\00f3ed0519fce6f78cc6a824259c4c3d\transformed\material-icons-core-release\res
+com.example.voyago.app-lifecycle-viewmodel-ktx-2.8.7-9 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\070b17c9d9e2b298f9622f36b6a7781f\transformed\lifecycle-viewmodel-ktx-2.8.7\res
+com.example.voyago.app-runtime-saveable-release-10 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\0b94a26cf22ef2738ef7f59079fe12e5\transformed\runtime-saveable-release\res
+com.example.voyago.app-core-runtime-2.2.0-11 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\0bb4b1fcaf113b4795e2344c87b5502b\transformed\core-runtime-2.2.0\res
+com.example.voyago.app-ui-tooling-preview-release-12 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\102627de4d8e6eb24f2e87b65927bf51\transformed\ui-tooling-preview-release\res
+com.example.voyago.app-ui-unit-release-13 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\160b2e096376314b75fc959a7bd677bd\transformed\ui-unit-release\res
+com.example.voyago.app-profileinstaller-1.4.0-14 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\1756cd484664a8104b03e30fc2897706\transformed\profileinstaller-1.4.0\res
+com.example.voyago.app-core-ktx-1.15.0-15 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\1d1059d9dc54f30a6d1985f6bdff525e\transformed\core-ktx-1.15.0\res
+com.example.voyago.app-ui-release-16 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\2bac95b4c07a8cba6bc6120e2c7e9664\transformed\ui-release\res
+com.example.voyago.app-navigation-runtime-2.8.9-17 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\2bc26877257b13933fe082329e538ca9\transformed\navigation-runtime-2.8.9\res
+com.example.voyago.app-core-1.15.0-18 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\2dd6089018bb6443f409d1d56a5e5875\transformed\core-1.15.0\res
+com.example.voyago.app-activity-1.10.0-19 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\2e292c8ef5459407f9eaf672fc3ea736\transformed\activity-1.10.0\res
+com.example.voyago.app-lifecycle-viewmodel-release-20 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\34e78a09cfb88b9434f32d5d1f76282e\transformed\lifecycle-viewmodel-release\res
+com.example.voyago.app-material-ripple-release-21 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\3c64a764d25a961f5a3b9876a38e28ca\transformed\material-ripple-release\res
+com.example.voyago.app-ui-geometry-release-22 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\3d29a96b5b7998f4f460239c6d6610e8\transformed\ui-geometry-release\res
+com.example.voyago.app-foundation-layout-release-23 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\5275310233b42d4849720d4e48842fd2\transformed\foundation-layout-release\res
+com.example.voyago.app-navigation-common-ktx-2.8.9-24 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\55eecc200492ca22ff98d28c034cc1d2\transformed\navigation-common-ktx-2.8.9\res
+com.example.voyago.app-navigation-runtime-ktx-2.8.9-25 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\5ae3afbd58db5faabafe26474182ddd6\transformed\navigation-runtime-ktx-2.8.9\res
+com.example.voyago.app-ui-graphics-release-26 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\5b6cd3f7f08dd5588904854adb024ce4\transformed\ui-graphics-release\res
+com.example.voyago.app-lifecycle-runtime-compose-release-27 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\600041d2a745970f98291508c5f8c72b\transformed\lifecycle-runtime-compose-release\res
+com.example.voyago.app-ui-test-manifest-1.7.2-28 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\63d5e141611811c0af6d6997afaba665\transformed\ui-test-manifest-1.7.2\res
+com.example.voyago.app-savedstate-ktx-1.2.1-29 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\6537c23db6e0a9e32481c0446e8eeeee\transformed\savedstate-ktx-1.2.1\res
+com.example.voyago.app-savedstate-1.2.1-30 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\6a35bdab38ecef5b4c3fafd7b0e87c17\transformed\savedstate-1.2.1\res
+com.example.voyago.app-emoji2-1.3.0-31 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\80fec932857c54dd8588e66e09e54835\transformed\emoji2-1.3.0\res
+com.example.voyago.app-runtime-release-32 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\83ae6c31912c145530c098b02c3353c4\transformed\runtime-release\res
+com.example.voyago.app-ui-tooling-data-release-33 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\8a892ee1432aa580091de3535e9fc72b\transformed\ui-tooling-data-release\res
+com.example.voyago.app-navigation-common-2.8.9-34 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\8e1a73dd8723246e1410022435285ed5\transformed\navigation-common-2.8.9\res
+com.example.voyago.app-activity-ktx-1.10.0-35 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\9264bf77ccc4745b9e9d18ffd44290c9\transformed\activity-ktx-1.10.0\res
+com.example.voyago.app-lifecycle-viewmodel-savedstate-2.8.7-36 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\9b31dd2d1c1b9a10feabaaa8d4f72bac\transformed\lifecycle-viewmodel-savedstate-2.8.7\res
+com.example.voyago.app-animation-release-37 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\a075e7de67eee4b30313da0bb3a26324\transformed\animation-release\res
+com.example.voyago.app-lifecycle-viewmodel-compose-release-38 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\a26029cc75467d168679645c51171121\transformed\lifecycle-viewmodel-compose-release\res
+com.example.voyago.app-material3-release-39 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\a7c0baa8076c1fa2169924320e41251a\transformed\material3-release\res
+com.example.voyago.app-ui-tooling-release-40 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\a7fbfb954c6f3266131241dcedb2697d\transformed\ui-tooling-release\res
+com.example.voyago.app-ui-text-release-41 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\ab63efa01c4a2f8f8b03d57336420d8d\transformed\ui-text-release\res
+com.example.voyago.app-animation-core-release-42 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\b4cc9e6209c9670832a99ac9961fe8b9\transformed\animation-core-release\res
+com.example.voyago.app-annotation-experimental-1.4.1-43 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\c086e0024b8e9e7ace380d85ac0ab47d\transformed\annotation-experimental-1.4.1\res
+com.example.voyago.app-tracing-1.2.0-44 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\c5a61022ea54d37e530ae70b547f1300\transformed\tracing-1.2.0\res
+com.example.voyago.app-activity-compose-1.10.0-45 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\ceb936b07ad8cee4f9a9bfa5c4fda0c8\transformed\activity-compose-1.10.0\res
+com.example.voyago.app-ui-util-release-46 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\cf1cc887c36af9fab88d9dca85d25511\transformed\ui-util-release\res
+com.example.voyago.app-startup-runtime-1.1.1-47 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\d408777a46ff3f0f77db20f69fc93b64\transformed\startup-runtime-1.1.1\res
+com.example.voyago.app-navigation-compose-2.8.9-48 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\d69fbed3ed31634cd6b4bf3295c683c5\transformed\navigation-compose-2.8.9\res
+com.example.voyago.app-customview-poolingcontainer-1.0.0-49 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\dcd25a0a75e35bb95c5fdb7bb01da6b5\transformed\customview-poolingcontainer-1.0.0\res
+com.example.voyago.app-lifecycle-runtime-ktx-release-50 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\ee6b78366b3c0adfddab531f24145fb7\transformed\lifecycle-runtime-ktx-release\res
+com.example.voyago.app-lifecycle-process-2.8.7-51 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\eff41cdf64337485ee0152fecdc49df2\transformed\lifecycle-process-2.8.7\res
+com.example.voyago.app-material-release-52 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\f2cd44b0c731b552da6ed2003e6c2aab\transformed\material-release\res
+com.example.voyago.app-foundation-release-53 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\f56325a5d3e1c99ef512f330c1e1ce09\transformed\foundation-release\res
+com.example.voyago.app-graphics-path-1.0.1-54 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\f6be29a4588f896cec4ff856ce943615\transformed\graphics-path-1.0.1\res
+com.example.voyago.app-lifecycle-livedata-core-2.8.7-55 C:\Users\Tommaso\.gradle\caches\8.10.2\transforms\fc8463830765811fd63e7ff4c27af07e\transformed\lifecycle-livedata-core-2.8.7\res
