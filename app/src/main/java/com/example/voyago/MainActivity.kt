@@ -66,7 +66,7 @@ fun UserProfileScreen(isOwner: Boolean) {
 
 @Composable
 fun TravelProposalScreen() {
-    Text(text = "Travel Proposal View")
+    //Text(text = "Travel Proposal View")
     //Gotta fix exploreTripPage!!
-    //ExploreTripPage()
+    ExploreTripPage()
 }

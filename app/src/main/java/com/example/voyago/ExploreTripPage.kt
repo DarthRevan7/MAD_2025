@@ -17,9 +17,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
 
+
+
+
+
+
 @Composable
 fun ExploreTripPage() {
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+    Column(modifier = Modifier.fillMaxSize()) {
         // Placeholder rettangolare per l'immagine
         Box(
             modifier = Modifier
