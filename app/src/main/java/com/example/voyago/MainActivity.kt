@@ -61,7 +61,10 @@ fun MainScreen(navController: NavController) {
 @Composable
 fun UserProfileScreen(isOwner: Boolean) {
     //Text(text = if (isOwner) "User Profile - Owner View" else "User Profile - Other View")
-    MyProfile()
+    if(isOwner)
+        MyProfile()
+    else
+        OtherProfile()
 }
 
 @Composable
