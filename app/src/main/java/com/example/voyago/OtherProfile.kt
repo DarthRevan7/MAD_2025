@@ -14,6 +14,8 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.text.style.*
+import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.Image
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -24,17 +26,18 @@ fun OtherProfile() {
         topBar = {
             TopAppBar(
                 colors = topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    containerColor = Color(0xe6, 0xe0, 0xe9, 255),
                     titleContentColor = MaterialTheme.colorScheme.primary,
                 ),
                 title = {
-                    Text("Top app bar")
+                    val image = painterResource(R.drawable.logo)
+                    Image(painter = image)
                 }
             )
         },
         bottomBar = {
             BottomAppBar(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                containerColor = Color(0xf3, 0xed, 0xf7, 255),
                 contentColor = MaterialTheme.colorScheme.primary,
             ) {
                 Text(
@@ -51,15 +54,7 @@ fun OtherProfile() {
                 .padding(innerPadding),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Text(
-                modifier = Modifier.padding(8.dp),
-                text =
-                    """
-                    This is an example of a scaffold. It uses the Scaffold composable's parameters to create a screen with a simple top app bar, bottom app bar, and floating action button.
 
-                    It also contains some basic inner content, such as this text.
-                """.trimIndent(),
-            )
         }
     }
     
