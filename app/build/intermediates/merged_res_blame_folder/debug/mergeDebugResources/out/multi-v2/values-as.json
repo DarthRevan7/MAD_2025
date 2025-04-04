@@ -1,44 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.voyago.app-mergeDebugResources-2:/values-as/values-as.xml",
+            "outputFile": "com.example.voyago.app-mergeDebugResources-51:/values-as/values-as.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\Tommaso\\.gradle\\caches\\8.10.2\\transforms\\2dd6089018bb6443f409d1d56a5e5875\\transformed\\core-1.15.0\\res\\values-as\\values-as.xml",
-                    "from": {
-                        "startLines": "2,3,4,5,6,7,8,9",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "55,156,259,367,472,576,676,805",
-                        "endColumns": "100,102,107,104,103,99,128,100",
-                        "endOffsets": "151,254,362,467,571,671,800,901"
-                    },
-                    "to": {
-                        "startLines": "2,3,4,5,6,7,8,80",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "105,206,309,417,522,626,726,8309",
-                        "endColumns": "100,102,107,104,103,99,128,100",
-                        "endOffsets": "201,304,412,517,621,721,850,8405"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\Tommaso\\.gradle\\caches\\8.10.2\\transforms\\2bac95b4c07a8cba6bc6120e2c7e9664\\transformed\\ui-release\\res\\values-as\\values-as.xml",
-                    "from": {
-                        "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19",
-                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
-                        "startOffsets": "105,200,285,378,476,563,660,759,848,938,1021,1106,1185,1260,1335,1409,1484,1550",
-                        "endColumns": "94,84,92,97,86,96,98,88,89,82,84,78,74,74,73,74,65,117",
-                        "endOffsets": "195,280,373,471,558,655,754,843,933,1016,1101,1180,1255,1330,1404,1479,1545,1663"
-                    },
-                    "to": {
-                        "startLines": "9,10,11,12,13,14,15,72,73,74,75,76,77,78,79,81,82,83",
-                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
-                        "startOffsets": "855,950,1035,1128,1226,1313,1410,7659,7748,7838,7921,8006,8085,8160,8235,8410,8485,8551",
-                        "endColumns": "94,84,92,97,86,96,98,88,89,82,84,78,74,74,73,74,65,117",
-                        "endOffsets": "945,1030,1123,1221,1308,1405,1504,7743,7833,7916,8001,8080,8155,8230,8304,8480,8546,8664"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\Tommaso\\.gradle\\caches\\8.10.2\\transforms\\a7c0baa8076c1fa2169924320e41251a\\transformed\\material3-release\\res\\values-as\\values-as.xml",
+                    "source": "C:\\Users\\flavi\\.gradle\\caches\\8.10.2\\transforms\\a7c0baa8076c1fa2169924320e41251a\\transformed\\material3-release\\res\\values-as\\values-as.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -55,7 +21,41 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\Tommaso\\.gradle\\caches\\8.10.2\\transforms\\f56325a5d3e1c99ef512f330c1e1ce09\\transformed\\foundation-release\\res\\values-as\\values-as.xml",
+                    "source": "C:\\Users\\flavi\\.gradle\\caches\\8.10.2\\transforms\\2bac95b4c07a8cba6bc6120e2c7e9664\\transformed\\ui-release\\res\\values-as\\values-as.xml",
+                    "from": {
+                        "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "105,200,285,378,476,563,660,759,848,938,1021,1106,1185,1260,1335,1409,1484,1550",
+                        "endColumns": "94,84,92,97,86,96,98,88,89,82,84,78,74,74,73,74,65,117",
+                        "endOffsets": "195,280,373,471,558,655,754,843,933,1016,1101,1180,1255,1330,1404,1479,1545,1663"
+                    },
+                    "to": {
+                        "startLines": "9,10,11,12,13,14,15,72,73,74,75,76,77,78,79,81,82,83",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "855,950,1035,1128,1226,1313,1410,7659,7748,7838,7921,8006,8085,8160,8235,8410,8485,8551",
+                        "endColumns": "94,84,92,97,86,96,98,88,89,82,84,78,74,74,73,74,65,117",
+                        "endOffsets": "945,1030,1123,1221,1308,1405,1504,7743,7833,7916,8001,8080,8155,8230,8304,8480,8546,8664"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\flavi\\.gradle\\caches\\8.10.2\\transforms\\2dd6089018bb6443f409d1d56a5e5875\\transformed\\core-1.15.0\\res\\values-as\\values-as.xml",
+                    "from": {
+                        "startLines": "2,3,4,5,6,7,8,9",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,156,259,367,472,576,676,805",
+                        "endColumns": "100,102,107,104,103,99,128,100",
+                        "endOffsets": "151,254,362,467,571,671,800,901"
+                    },
+                    "to": {
+                        "startLines": "2,3,4,5,6,7,8,80",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "105,206,309,417,522,626,726,8309",
+                        "endColumns": "100,102,107,104,103,99,128,100",
+                        "endOffsets": "201,304,412,517,621,721,850,8405"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\flavi\\.gradle\\caches\\8.10.2\\transforms\\f56325a5d3e1c99ef512f330c1e1ce09\\transformed\\foundation-release\\res\\values-as\\values-as.xml",
                     "from": {
                         "startLines": "2,3",
                         "startColumns": "4,4",
