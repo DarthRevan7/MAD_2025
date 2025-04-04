@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.Image
+import androidx.*
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -30,8 +31,9 @@ fun OtherProfile() {
                     titleContentColor = MaterialTheme.colorScheme.primary,
                 ),
                 title = {
-                    val image = painterResource(R.drawable.logo)
-                    Image(painter = image)
+                    val painterImage = painterResource(R.drawable.logo)
+                    androidx.compose.foundation.Image(painter = painterImage, "logo"
+                    )
                 }
             )
         },

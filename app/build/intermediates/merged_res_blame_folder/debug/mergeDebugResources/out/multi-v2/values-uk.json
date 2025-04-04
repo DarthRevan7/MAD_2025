@@ -1,44 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.voyago.app-mergeDebugResources-51:/values-uk/values-uk.xml",
+            "outputFile": "com.example.voyago.app-mergeDebugResources-2:/values-uk/values-uk.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\flavi\\.gradle\\caches\\8.10.2\\transforms\\2dd6089018bb6443f409d1d56a5e5875\\transformed\\core-1.15.0\\res\\values-uk\\values-uk.xml",
-                    "from": {
-                        "startLines": "2,3,4,5,6,7,8,9",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "55,155,257,358,459,564,669,782",
-                        "endColumns": "99,101,100,100,104,104,112,100",
-                        "endOffsets": "150,252,353,454,559,664,777,878"
-                    },
-                    "to": {
-                        "startLines": "2,3,4,5,6,7,8,80",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "105,205,307,408,509,614,719,8293",
-                        "endColumns": "99,101,100,100,104,104,112,100",
-                        "endOffsets": "200,302,403,504,609,714,827,8389"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\flavi\\.gradle\\caches\\8.10.2\\transforms\\f56325a5d3e1c99ef512f330c1e1ce09\\transformed\\foundation-release\\res\\values-uk\\values-uk.xml",
-                    "from": {
-                        "startLines": "2,3",
-                        "startColumns": "4,4",
-                        "startOffsets": "55,152",
-                        "endColumns": "96,99",
-                        "endOffsets": "147,247"
-                    },
-                    "to": {
-                        "startLines": "84,85",
-                        "startColumns": "4,4",
-                        "startOffsets": "8667,8764",
-                        "endColumns": "96,99",
-                        "endOffsets": "8759,8859"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\flavi\\.gradle\\caches\\8.10.2\\transforms\\a7c0baa8076c1fa2169924320e41251a\\transformed\\material3-release\\res\\values-uk\\values-uk.xml",
+                    "source": "C:\\Users\\Tommaso\\.gradle\\caches\\8.10.2\\transforms\\a7c0baa8076c1fa2169924320e41251a\\transformed\\material3-release\\res\\values-uk\\values-uk.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -55,7 +21,41 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\flavi\\.gradle\\caches\\8.10.2\\transforms\\2bac95b4c07a8cba6bc6120e2c7e9664\\transformed\\ui-release\\res\\values-uk\\values-uk.xml",
+                    "source": "C:\\Users\\Tommaso\\.gradle\\caches\\8.10.2\\transforms\\f56325a5d3e1c99ef512f330c1e1ce09\\transformed\\foundation-release\\res\\values-uk\\values-uk.xml",
+                    "from": {
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,152",
+                        "endColumns": "96,99",
+                        "endOffsets": "147,247"
+                    },
+                    "to": {
+                        "startLines": "84,85",
+                        "startColumns": "4,4",
+                        "startOffsets": "8667,8764",
+                        "endColumns": "96,99",
+                        "endOffsets": "8759,8859"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\Tommaso\\.gradle\\caches\\8.10.2\\transforms\\2dd6089018bb6443f409d1d56a5e5875\\transformed\\core-1.15.0\\res\\values-uk\\values-uk.xml",
+                    "from": {
+                        "startLines": "2,3,4,5,6,7,8,9",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,155,257,358,459,564,669,782",
+                        "endColumns": "99,101,100,100,104,104,112,100",
+                        "endOffsets": "150,252,353,454,559,664,777,878"
+                    },
+                    "to": {
+                        "startLines": "2,3,4,5,6,7,8,80",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "105,205,307,408,509,614,719,8293",
+                        "endColumns": "99,101,100,100,104,104,112,100",
+                        "endOffsets": "200,302,403,504,609,714,827,8389"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\Tommaso\\.gradle\\caches\\8.10.2\\transforms\\2bac95b4c07a8cba6bc6120e2c7e9664\\transformed\\ui-release\\res\\values-uk\\values-uk.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
