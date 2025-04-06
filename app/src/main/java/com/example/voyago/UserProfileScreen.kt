@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -165,6 +166,7 @@ fun UserProfileScreen() {
                     .size(60.dp)
                     .align(alignment = Alignment.TopEnd)
                     .padding(16.dp)
+                    .clickable(){/*TODO*/}
                 )
 
                 ProfilePhoto(user.firstame, user.surname,
