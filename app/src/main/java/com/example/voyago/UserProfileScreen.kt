@@ -1,7 +1,6 @@
 package com.example.voyago
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -20,6 +19,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,6 +83,19 @@ fun UserProfileScreen() {
         ),
             painter = painterProfile
         ),
+    )
+
+    val painterStartChat = painterResource(R.drawable.start_chat)
+
+    //User info
+    val user = UserProfileInfo(
+        "Isabella",
+        "Martinez",
+        "IsaWanders",
+        listOf("culture", "adventure"),
+        "Kyoto, Japan",
+        "Hey there! I’m Isa, a culture junkie with a deep love for history, art, and everything that tells a story. I usually travel solo with my camera in one hand and a notebook in the other. I’m all about finding hidden gems, trying local food, and connecting with people from all walks of life. If you ever need museum tips or tea ceremony recs—I’m your girl!",
+        5.0f, 96
     )
 
     Scaffold(
@@ -128,11 +153,39 @@ fun UserProfileScreen() {
         }
     ) { innerPadding ->
         Column(
-            modifier = Modifier
-                .padding(innerPadding),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            modifier = Modifier.padding(innerPadding)
         ) {
-
+            Box(modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(245.dp)
+                    .background(Color(0xdf,0xd1,0xe0,255), shape = RectangleShape)) {
+                Image(painter = painterStartChat, "start chat", modifier = Modifier
+                    .size(45.dp)
+                    .align(alignment = Alignment.TopEnd)
+                    .padding(10.dp)
+                )
+                ProfilePhoto(user.firstame, user.surname)
+            }
         }
+    }
+}
+
+@Composable
+fun ProfilePhoto(firstname: String, surname: String) {
+    val initials = "${firstname.firstOrNull()}"+"${surname.firstOrNull()}"
+
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .size(130.dp)
+            .background(Color.Blue, shape = CircleShape)
+    ) {
+        Text(
+            text = initials,
+            color = Color.White,
+            style = MaterialTheme.typography.headlineLarge,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
