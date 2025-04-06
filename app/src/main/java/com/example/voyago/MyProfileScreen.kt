@@ -2,7 +2,6 @@ package com.example.voyago
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,7 +27,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.text.font.FontWeight
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -86,6 +87,20 @@ fun MyProfileScreen() {
         mutableIntStateOf(4)
     }
 
+    val painterLogout = painterResource(R.drawable.logout)
+    val painterEdit = painterResource(R.drawable.edit)
+
+    //User info
+    val user = UserProfileInfo(
+        "Isabella",
+        "Martinez",
+        "IsaWanders",
+        listOf("culture", "adventure"),
+        "Kyoto, Japan",
+        "Hey there! I’m Isa, a culture junkie with a deep love for history, art, and everything that tells a story. I usually travel solo with my camera in one hand and a notebook in the other. I’m all about finding hidden gems, trying local food, and connecting with people from all walks of life. If you ever need museum tips or tea ceremony recs—I’m your girl!",
+        5.0f, 96
+    )
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -141,15 +156,32 @@ fun MyProfileScreen() {
         }
     ) { innerPadding ->
         Column(
-            modifier = Modifier
-                .padding(innerPadding),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            modifier = Modifier.padding(innerPadding)
         ) {
             Box(modifier =
-                Modifier.fillMaxWidth()
+                Modifier
+                    .fillMaxWidth()
                     .height(245.dp)
                     .background(Color(0xdf,0xd1,0xe0,255), shape = RectangleShape)) {
-
+                Image(painter = painterLogout, "logout", modifier = Modifier
+                    .size(60.dp)
+                    .align(alignment = Alignment.TopEnd)
+                    .padding(16.dp)
+                )
+                Image(painter = painterEdit, "edit", modifier = Modifier
+                    .size(60.dp)
+                    .align(alignment = Alignment.BottomEnd)
+                    .padding(16.dp)
+                )
+                ProfilePhoto(user.firstame, user.surname,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+                Text(
+                    text = user.username,
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 10.dp)
+                )
             }
         }
     }

@@ -22,14 +22,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 
 
@@ -159,25 +158,37 @@ fun UserProfileScreen() {
                 Modifier
                     .fillMaxWidth()
                     .height(245.dp)
-                    .background(Color(0xdf,0xd1,0xe0,255), shape = RectangleShape)) {
+                    .background(Color(0xdf,0xd1,0xe0,255), shape = RectangleShape)
+            ) {
+
                 Image(painter = painterStartChat, "start chat", modifier = Modifier
-                    .size(45.dp)
+                    .size(60.dp)
                     .align(alignment = Alignment.TopEnd)
-                    .padding(10.dp)
+                    .padding(16.dp)
                 )
-                ProfilePhoto(user.firstame, user.surname)
+
+                ProfilePhoto(user.firstame, user.surname,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+
+               Text(
+                   text = user.username,
+                   style = MaterialTheme.typography.headlineLarge,
+                   fontWeight = FontWeight.Bold,
+                   modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 10.dp)
+               )
             }
         }
     }
 }
 
 @Composable
-fun ProfilePhoto(firstname: String, surname: String) {
+fun ProfilePhoto(firstname: String, surname: String, modifier: Modifier = Modifier) {
     val initials = "${firstname.firstOrNull()}"+"${surname.firstOrNull()}"
 
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier
+        modifier = modifier
             .size(130.dp)
             .background(Color.Blue, shape = CircleShape)
     ) {
