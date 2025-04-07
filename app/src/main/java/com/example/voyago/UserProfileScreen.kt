@@ -22,17 +22,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -161,7 +154,7 @@ fun UserProfileScreen() {
             }
 
             //Tab About, My Trips, Review
-            TabAboutTripsReview(user.userDescription, user.typeTravel, user.desiredDestination)
+            TabAboutTripsReview(user)
         }
     }
 }

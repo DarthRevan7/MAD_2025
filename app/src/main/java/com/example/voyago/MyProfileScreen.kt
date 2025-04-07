@@ -170,7 +170,7 @@ fun MyProfileScreen() {
             }
 
             //Tab About, My Trips, Review
-            TabAboutTripsReview(user.userDescription, user.typeTravel, user.desiredDestination)
+            TabAboutTripsReview(user)
         }
     }
 }

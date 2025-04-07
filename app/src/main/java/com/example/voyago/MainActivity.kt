@@ -216,7 +216,7 @@ fun RatingAndReliability(rating: Float, reliability: Int) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun TabAboutTripsReview(userDescription: String, travelType: List<String>, destinations: List<String>) {
+fun TabAboutTripsReview(user: UserProfileInfo) {
     val tabs = listOf("About", "Trips", "Reviews")
 
     var selectedTabIndex by remember {
@@ -249,7 +249,7 @@ fun TabAboutTripsReview(userDescription: String, travelType: List<String>, desti
         when(selectedTabIndex) {
             0 -> {
                 Column {
-                    Text(userDescription)
+                    Text(user.userDescription)
                     Text(text = "Preferences about the type of travel:",
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(top = 16.dp)
@@ -258,7 +258,7 @@ fun TabAboutTripsReview(userDescription: String, travelType: List<String>, desti
                     FlowRow(
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                     ) {
-                        travelType.forEach { type ->
+                        user.typeTravel.forEach { type ->
                             SuggestionChip(
                                 onClick = {},
                                 label = {Text(type)},
@@ -278,7 +278,7 @@ fun TabAboutTripsReview(userDescription: String, travelType: List<String>, desti
                     FlowRow(
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                     ) {
-                        destinations.forEach { destination ->
+                        user.desiredDestination.forEach { destination ->
                             SuggestionChip(
                                 onClick = {},
                                 label = {Text(destination)},
