@@ -17,6 +17,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -102,7 +103,8 @@ fun TravelProposalScreen() {
                             modifier = Modifier.padding(end = 10.dp)
                         )
                     }
-                }
+                },
+                modifier = Modifier.shadow(8.dp)
             )
         },
         bottomBar = {

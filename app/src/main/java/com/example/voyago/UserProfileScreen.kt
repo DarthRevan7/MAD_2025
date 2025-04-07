@@ -24,12 +24,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
 
 
@@ -85,7 +90,10 @@ fun UserProfileScreen() {
         ),
     )
 
+    //Icons
     val painterStartChat = painterResource(R.drawable.start_chat)
+    val painterStar = painterResource(R.drawable.star)
+    val painterMobile = painterResource(R.drawable.mobile)
 
     //User info
     val user = UserProfileInfo(
@@ -127,7 +135,8 @@ fun UserProfileScreen() {
                             modifier = Modifier.padding(end = 10.dp)
                         )
                     }
-                }
+                },
+                modifier = Modifier.shadow(8.dp)
             )
         },
         bottomBar = {
@@ -155,6 +164,7 @@ fun UserProfileScreen() {
         Column(
             modifier = Modifier.padding(innerPadding)
         ) {
+            //Box with Profile Photo, Username and Logout and Edit icons
             Box(modifier =
                 Modifier
                     .fillMaxWidth()
@@ -166,11 +176,11 @@ fun UserProfileScreen() {
                     .size(60.dp)
                     .align(alignment = Alignment.TopEnd)
                     .padding(16.dp)
-                    .clickable(){/*TODO*/}
+                    .clickable{/*TODO*/}
                 )
 
-                ProfilePhoto(user.firstame, user.surname,
-                    modifier = Modifier.align(Alignment.Center)
+                ProfilePhoto(user.firstname, user.surname,
+                    modifier = Modifier.align(Alignment.Center).offset(y = (-20).dp)
                 )
 
                Text(
@@ -178,7 +188,58 @@ fun UserProfileScreen() {
                    style = MaterialTheme.typography.headlineLarge,
                    fontWeight = FontWeight.Bold,
                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 10.dp)
+                       .offset(y = (-20).dp)
                )
+            }
+
+            //Row with rating and reliability
+            Row(
+                modifier = Modifier.align(Alignment.CenterHorizontally).offset(y = (-25).dp)
+            ) {
+                //Box with rating
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.size(149.dp, 44.dp)
+                        .background(Color(0xc1, 0xa5, 0xc3, 255), shape = RoundedCornerShape(10.dp))
+                        .border(2.dp, color = Color.White, shape = RoundedCornerShape(10.dp))
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                    ) {
+                        Image(painter = painterStar, "star", modifier = Modifier
+                            .size(40.dp)
+                        )
+                        Text(
+                            text = "${user.rating} approval",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+
+                //Box with reliability
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.size(149.dp, 44.dp)
+                        .background(Color(0xc1, 0xa5, 0xc3, 255), shape = RoundedCornerShape(10.dp))
+                        .border(2.dp, color = Color.White, shape = RoundedCornerShape(10.dp))
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                    ) {
+                        Image(painter = painterMobile, "mobile", modifier = Modifier
+                            .size(30.dp)
+                        )
+                        Text(
+                            text = "${user.reliability}% reliable",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
             }
         }
     }

@@ -2,7 +2,9 @@ package com.example.voyago
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,6 +33,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.shadow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -84,12 +92,16 @@ fun MyProfileScreen() {
         ),
     )
 
+    //Selected item on the bottom bar
     var selectedIndex by remember {
         mutableIntStateOf(4)
     }
 
+    //Icons
     val painterLogout = painterResource(R.drawable.logout)
     val painterEdit = painterResource(R.drawable.edit)
+    val painterStar = painterResource(R.drawable.star)
+    val painterMobile = painterResource(R.drawable.mobile)
 
     //User info
     val user = UserProfileInfo(
@@ -131,7 +143,8 @@ fun MyProfileScreen() {
                             modifier = Modifier.padding(end = 10.dp)
                         )
                     }
-                }
+                },
+                modifier = Modifier.shadow(8.dp)
             )
         },
         bottomBar = {
@@ -159,33 +172,91 @@ fun MyProfileScreen() {
         Column(
             modifier = Modifier.padding(innerPadding)
         ) {
+            //Box with Profile Photo, Username and Logout and Edit icons
             Box(modifier =
                 Modifier
                     .fillMaxWidth()
                     .height(245.dp)
                     .background(Color(0xdf,0xd1,0xe0,255), shape = RectangleShape)) {
+
                 Image(painter = painterLogout, "logout", modifier = Modifier
                     .size(60.dp)
                     .align(alignment = Alignment.TopEnd)
                     .padding(16.dp)
-                    .clickable(){/*TODO*/}
+                    .clickable{/*TODO*/}
                 )
+
                 Image(painter = painterEdit, "edit", modifier = Modifier
                     .size(60.dp)
                     .align(alignment = Alignment.BottomEnd)
                     .padding(16.dp)
-                    .clickable(){/*TODO*/}
+                    .offset(y = (-30).dp)
+                    .clickable{/*TODO*/}
                 )
-                ProfilePhoto(user.firstame, user.surname,
-                    modifier = Modifier.align(Alignment.Center)
+
+                ProfilePhoto(user.firstname, user.surname,
+                    modifier = Modifier.align(Alignment.Center).offset(y = (-20).dp)
                 )
+
                 Text(
                     text = user.username,
                     style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 10.dp)
+                        .offset(y = (-20).dp)
                 )
+            }
+
+            //Row with rating and reliability
+            Row(
+                modifier = Modifier.align(Alignment.CenterHorizontally).offset(y = (-25).dp)
+            ) {
+                //Box with rating
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.size(149.dp, 44.dp)
+                        .background(Color(0xc1, 0xa5, 0xc3, 255), shape = RoundedCornerShape(10.dp))
+                        .border(2.dp, color = Color.White, shape = RoundedCornerShape(10.dp))
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                    ) {
+                        Image(painter = painterStar, "star", modifier = Modifier
+                            .size(40.dp)
+                        )
+                        Text(
+                            text = "${user.rating} approval",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                //Box with reliability
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.size(149.dp, 44.dp)
+                        .background(Color(0xc1, 0xa5, 0xc3, 255), shape = RoundedCornerShape(10.dp))
+                        .border(2.dp, color = Color.White, shape = RoundedCornerShape(10.dp))
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                    ) {
+                        Image(painter = painterMobile, "mobile", modifier = Modifier
+                            .size(30.dp)
+                        )
+                        Text(
+                            text = "${user.reliability}% reliable",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
             }
         }
     }
 }
+
+
