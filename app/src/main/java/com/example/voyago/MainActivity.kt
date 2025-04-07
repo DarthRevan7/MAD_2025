@@ -10,6 +10,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,6 +24,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SuggestionChip
+import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
@@ -208,8 +212,9 @@ fun RatingAndReliability(rating: Float, reliability: Int) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun TabAboutTripsReview() {
+fun TabAboutTripsReview(userDescription: String, travelType: List<String>, destinations: List<String>) {
     val tabs = listOf("About", "My Trips", "Reviews")
 
     var selectedTabIndex by remember {
@@ -236,5 +241,57 @@ fun TabAboutTripsReview() {
         }
     }
 
-    
+    Box(
+        modifier = Modifier.fillMaxSize().background(Color.White).padding(16.dp)
+    ) {
+        when(selectedTabIndex) {
+            0 -> {
+                Column {
+                    Text(userDescription)
+                    Text(text = "Preferences about the type of travel:",
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(top = 10.dp)
+                    )
+
+                    FlowRow(
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    ) {
+                        travelType.forEach { type ->
+                            SuggestionChip(
+                                onClick = {},
+                                label = {Text(type)},
+                                colors = SuggestionChipDefaults.elevatedSuggestionChipColors(
+                                    labelColor = Color(0x4f, 0x37, 0x8b, 255)
+                                )
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                        }
+                    }
+
+                    Text(text = "Most desired destinations:",
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(top = 10.dp)
+                    )
+
+                    FlowRow(
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    ) {
+                        destinations.forEach { destination ->
+                            SuggestionChip(
+                                onClick = {},
+                                label = {Text(destination)},
+                                colors = SuggestionChipDefaults.elevatedSuggestionChipColors(
+                                    labelColor = Color(0x4f, 0x37, 0x8b, 255)
+                                )
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                        }
+                    }
+                }
+
+            }
+            1 -> {}
+            2 -> {}
+        }
+    }
 }
