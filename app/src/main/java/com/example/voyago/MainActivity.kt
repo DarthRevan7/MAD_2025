@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -40,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -215,7 +217,7 @@ fun RatingAndReliability(rating: Float, reliability: Int) {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TabAboutTripsReview(userDescription: String, travelType: List<String>, destinations: List<String>) {
-    val tabs = listOf("About", "My Trips", "Reviews")
+    val tabs = listOf("About", "Trips", "Reviews")
 
     var selectedTabIndex by remember {
         mutableIntStateOf(0)
@@ -250,7 +252,7 @@ fun TabAboutTripsReview(userDescription: String, travelType: List<String>, desti
                     Text(userDescription)
                     Text(text = "Preferences about the type of travel:",
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(top = 10.dp)
+                        modifier = Modifier.padding(top = 16.dp)
                     )
 
                     FlowRow(
@@ -270,7 +272,7 @@ fun TabAboutTripsReview(userDescription: String, travelType: List<String>, desti
 
                     Text(text = "Most desired destinations:",
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(top = 10.dp)
+                        modifier = Modifier.padding(top = 16.dp)
                     )
 
                     FlowRow(
@@ -288,9 +290,133 @@ fun TabAboutTripsReview(userDescription: String, travelType: List<String>, desti
                         }
                     }
                 }
-
             }
-            1 -> {}
+            1 -> {
+                Column {
+                    Text(text = "Trips:",
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(top = 16.dp, bottom = 10.dp)
+                    )
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.width(391.dp).wrapContentHeight()
+                            .background(Color(0xdf, 0xd1, 0xe0, 255), shape = RoundedCornerShape(10.dp))
+                            .padding(10.dp)
+                    ) {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(5.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.size(376.dp, 43.dp)
+                                    .background(
+                                        Color(0xf9, 0xf6, 0xf9, 255),
+                                        shape = RectangleShape
+                                    )
+                                    .padding(5.dp)
+                            ) {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier
+                                        .size(30.dp)
+                                        .background(Color.Gray, shape = CircleShape)
+                                ) {
+                                    //Image
+                                }
+                                Spacer(modifier = Modifier.width(16.dp))
+                                Text(text = "Marrakech")
+                                Spacer(modifier = Modifier.width(140.dp))
+                                Text(text = "March, 2024", modifier = Modifier.weight(1f))
+                            }
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.size(376.dp, 43.dp)
+                                    .background(
+                                        Color(0xf9, 0xf6, 0xf9, 255),
+                                        shape = RectangleShape
+                                    )
+                                    .padding(5.dp)
+                            ) {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier
+                                        .size(30.dp)
+                                        .background(Color.Gray, shape = CircleShape)
+                                ) {
+                                    //Image
+                                }
+                                Spacer(modifier = Modifier.width(16.dp))
+                                Text(text = "Patagonia")
+                                Spacer(modifier = Modifier.width(145.dp))
+                                Text(text = "May, 2023", modifier = Modifier.weight(1f))
+                            }
+                        }
+                    }
+
+
+                    Text(text = "Articles:",
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(top = 16.dp, bottom = 10.dp)
+                    )
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.width(391.dp).wrapContentHeight()
+                            .background(Color(0xdf, 0xd1, 0xe0, 255), shape = RoundedCornerShape(10.dp))
+                            .padding(10.dp)
+                    ) {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(5.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.size(376.dp, 43.dp)
+                                    .background(
+                                        Color(0xf9, 0xf6, 0xf9, 255),
+                                        shape = RectangleShape
+                                    )
+                                    .padding(5.dp)
+                            ) {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier
+                                        .size(30.dp)
+                                        .background(Color.Gray, shape = CircleShape)
+                                ) {
+                                    //Image
+                                }
+                                Spacer(modifier = Modifier.width(16.dp))
+                                Text(text = "Mystic Marrakech")
+                                Spacer(modifier = Modifier.width(90.dp))
+                                Text(text = "March, 2024", modifier = Modifier.weight(1f))
+                            }
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.size(376.dp, 43.dp)
+                                    .background(
+                                        Color(0xf9, 0xf6, 0xf9, 255),
+                                        shape = RectangleShape
+                                    )
+                                    .padding(5.dp)
+                            ) {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier
+                                        .size(30.dp)
+                                        .background(Color.Gray, shape = CircleShape)
+                                ) {
+                                    //Image
+                                }
+                                Spacer(modifier = Modifier.width(16.dp))
+                                Text(text = "Wild Patagonia")
+                                Spacer(modifier = Modifier.width(120.dp))
+                                Text(text = "May, 2023", modifier = Modifier.weight(1f))
+                            }
+                        }
+                    }
+                }
+            }
             2 -> {}
         }
     }
