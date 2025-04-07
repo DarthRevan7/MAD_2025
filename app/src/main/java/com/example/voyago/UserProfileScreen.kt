@@ -93,7 +93,7 @@ fun UserProfileScreen() {
         listOf("culture", "adventure"),
         listOf("Kyoto"),
         "Hey there! I’m Isa, a culture junkie with a deep love for history, art, and everything that tells a story. I usually travel solo with my camera in one hand and a notebook in the other. I’m all about finding hidden gems, trying local food, and connecting with people from all walks of life. If you ever need museum tips or tea ceremony recs—I’m your girl!",
-        5.0f, 96
+        5.0f, 96, null, null, null
     )
 
     Scaffold(

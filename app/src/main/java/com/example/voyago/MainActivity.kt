@@ -417,7 +417,9 @@ fun TabAboutTripsReview(userDescription: String, travelType: List<String>, desti
                     }
                 }
             }
-            2 -> {}
+            2 -> {
+
+            }
         }
     }
 }

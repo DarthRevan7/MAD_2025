@@ -1,12 +1,15 @@
 package com.example.voyago
 
 data class UserProfileInfo(
-    val firstname: String,
-    val surname: String,
-    val username: String,
-    val typeTravel: List<String>,
-    val desiredDestination: List<String>,
-    val userDescription: String,
-    val rating: Float,
-    val reliability: Int
+    var firstname: String,
+    var surname: String,
+    var username: String,
+    var typeTravel: List<String>,
+    var desiredDestination: List<String>,
+    var userDescription: String,
+    var rating: Float,
+    var reliability: Int,
+    var trips: List<Trip>?,
+    var articles: List<Article>?,
+    var reviews: List<Review>?
 )
