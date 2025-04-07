@@ -7,17 +7,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -25,11 +21,6 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TravelProposalScreen() {
-
-    //Top Bar Images
-    val painterLogo = painterResource(R.drawable.logo)
-    val painterNews = painterResource(R.drawable.news)
-    val painterNotification = painterResource(R.drawable.notifications)
 
     //Bottom Bar Images
     val painterExplore = painterResource(R.drawable.explore)
@@ -76,36 +67,7 @@ fun TravelProposalScreen() {
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                colors = topAppBarColors(
-                    containerColor = Color(0xe6, 0xe0, 0xe9, 255),
-                    titleContentColor = MaterialTheme.colorScheme.primary,
-                ),
-                title = {
-                    Image(
-                        painter = painterLogo,
-                        contentDescription = "logo",
-                        modifier = Modifier.size(120.dp)
-                    )
-                },
-                actions = {
-                    IconButton(onClick = {/*TO DO*/}) {
-                        Image(
-                            painter = painterNews,
-                            contentDescription = "news",
-                            modifier = Modifier.padding(end = 10.dp)
-                        )
-                    }
-                    IconButton(onClick = {/*TO DO*/}) {
-                        Image(
-                            painter = painterNotification,
-                            contentDescription = "notification",
-                            modifier = Modifier.padding(end = 10.dp)
-                        )
-                    }
-                },
-                modifier = Modifier.shadow(8.dp)
-            )
+            TopBar()
         },
         bottomBar = {
             NavigationBar(

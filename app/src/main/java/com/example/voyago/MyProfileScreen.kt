@@ -2,9 +2,7 @@ package com.example.voyago
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,14 +11,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -34,20 +29,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.draw.shadow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyProfileScreen() {
-
-    //Top Bar Images
-    val painterLogo = painterResource(R.drawable.logo)
-    val painterNews = painterResource(R.drawable.news)
-    val painterNotification = painterResource(R.drawable.notifications)
 
     //Bottom Bar Images
     val painterExplore = painterResource(R.drawable.explore)
@@ -100,8 +86,6 @@ fun MyProfileScreen() {
     //Icons
     val painterLogout = painterResource(R.drawable.logout)
     val painterEdit = painterResource(R.drawable.edit)
-    val painterStar = painterResource(R.drawable.star)
-    val painterMobile = painterResource(R.drawable.mobile)
 
     //User info
     val user = UserProfileInfo(
@@ -116,36 +100,7 @@ fun MyProfileScreen() {
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                colors = topAppBarColors(
-                    containerColor = Color(0xe6, 0xe0, 0xe9, 255),
-                    titleContentColor = MaterialTheme.colorScheme.primary,
-                ),
-                title = {
-                    Image(
-                        painter = painterLogo,
-                        contentDescription = "logo",
-                        modifier = Modifier.size(120.dp)
-                    )
-                },
-                actions = {
-                    IconButton(onClick = {/*TO DO*/}) {
-                        Image(
-                            painter = painterNews,
-                            contentDescription = "news",
-                            modifier = Modifier.padding(end = 10.dp)
-                        )
-                    }
-                    IconButton(onClick = {/*TO DO*/}) {
-                        Image(
-                            painter = painterNotification,
-                            contentDescription = "notification",
-                            modifier = Modifier.padding(end = 10.dp)
-                        )
-                    }
-                },
-                modifier = Modifier.shadow(8.dp)
-            )
+            TopBar()
         },
         bottomBar = {
             NavigationBar(
@@ -211,49 +166,7 @@ fun MyProfileScreen() {
             Row(
                 modifier = Modifier.align(Alignment.CenterHorizontally).offset(y = (-25).dp)
             ) {
-                //Box with rating
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.size(149.dp, 44.dp)
-                        .background(Color(0xc1, 0xa5, 0xc3, 255), shape = RoundedCornerShape(10.dp))
-                        .border(2.dp, color = Color.White, shape = RoundedCornerShape(10.dp))
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                    ) {
-                        Image(painter = painterStar, "star", modifier = Modifier
-                            .size(40.dp)
-                        )
-                        Text(
-                            text = "${user.rating} approval",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                //Box with reliability
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.size(149.dp, 44.dp)
-                        .background(Color(0xc1, 0xa5, 0xc3, 255), shape = RoundedCornerShape(10.dp))
-                        .border(2.dp, color = Color.White, shape = RoundedCornerShape(10.dp))
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                    ) {
-                        Image(painter = painterMobile, "mobile", modifier = Modifier
-                            .size(30.dp)
-                        )
-                        Text(
-                            text = "${user.reliability}% reliable",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
+                RatingAndReliability(user.rating, user.reliability)
             }
         }
     }
