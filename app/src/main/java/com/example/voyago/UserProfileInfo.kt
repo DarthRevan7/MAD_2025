@@ -5,7 +5,7 @@ data class UserProfileInfo(
     val surname: String,
     val username: String,
     val typeTravel: List<String>,
-    val desiredDestination: String,
+    val desiredDestination: List<String>,
     val userDescription: String,
     val rating: Float,
     val reliability: Int

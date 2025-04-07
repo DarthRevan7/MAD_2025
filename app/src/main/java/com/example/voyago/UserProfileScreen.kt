@@ -22,10 +22,17 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -84,7 +91,7 @@ fun UserProfileScreen() {
         "Martinez",
         "IsaWanders",
         listOf("culture", "adventure"),
-        "Kyoto, Japan",
+        listOf("Kyoto"),
         "Hey there! I’m Isa, a culture junkie with a deep love for history, art, and everything that tells a story. I usually travel solo with my camera in one hand and a notebook in the other. I’m all about finding hidden gems, trying local food, and connecting with people from all walks of life. If you ever need museum tips or tea ceremony recs—I’m your girl!",
         5.0f, 96
     )
@@ -152,6 +159,9 @@ fun UserProfileScreen() {
             ) {
                 RatingAndReliability(user.rating, user.reliability)
             }
+
+            //Tab About, My Trips, Review
+            TabAboutTripsReview()
         }
     }
 }
