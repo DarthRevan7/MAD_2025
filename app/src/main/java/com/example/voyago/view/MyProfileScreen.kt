@@ -58,6 +58,7 @@ fun MyProfileScreen(viewModel: MyProfileViewModel) {
     val painters:List<Painter> = listOf(painterExplore,painterTrips,painterHome, painterChat, painterProfile)
 
 
+    /*
     //NavBarItem
     val navItemList = listOf(
         NavItem(
@@ -93,6 +94,8 @@ fun MyProfileScreen(viewModel: MyProfileViewModel) {
             //painter = painterProfile
         ),
     )
+
+
 
     //Selected item on the bottom bar
     var selectedIndex by remember {
@@ -194,4 +197,6 @@ fun MyProfileScreen(viewModel: MyProfileViewModel) {
             TabAboutTripsReview(viewModel)
         }
     }
+
+     */
 }

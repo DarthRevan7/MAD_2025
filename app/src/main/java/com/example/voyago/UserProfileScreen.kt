@@ -45,6 +45,7 @@ fun UserProfileScreen(viewModel: MyProfileViewModel) {
     val painterChat = painterResource(R.drawable.chat)
     val painterProfile = painterResource(R.drawable.profile)
 
+    /*
     //NavBarItem
     val navItemList = listOf(
         NavItem(
@@ -80,6 +81,8 @@ fun UserProfileScreen(viewModel: MyProfileViewModel) {
             //painter = painterProfile
         ),
     )
+
+     */
 
     //Icons
     val painterStartChat = painterResource(R.drawable.start_chat)

@@ -33,6 +33,7 @@ fun TravelProposalScreen() {
 
     val painters:List<Painter> = listOf(painterExplore,painterTrips,painterHome, painterChat, painterProfile)
 
+    /*
     //NavBarItem
     val navItemList = listOf(
         NavItem(
@@ -69,6 +70,8 @@ fun TravelProposalScreen() {
         ),
     )
 
+
+
     Scaffold(
         topBar = {
             TopBar()
@@ -103,4 +106,6 @@ fun TravelProposalScreen() {
 
         }
     }
+
+     */
 }
