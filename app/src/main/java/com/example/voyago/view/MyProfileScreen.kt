@@ -30,12 +30,18 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.offset
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.voyago.*
+import com.example.voyago.viewmodel.MyProfileViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyProfileScreen() {
+fun MyProfileScreen(modifier: Modifier = Modifier, viewModel: MyProfileViewModel) {
+
+    //MVVM Code
+    val userData = viewModel.userData.observeAsState()
 
     //Bottom Bar Images
     val painterExplore = painterResource(R.drawable.explore)
@@ -120,6 +126,7 @@ fun MyProfileScreen() {
             }
         }
     ) { innerPadding ->
+        viewModel.getUserData()
         Column(
             modifier = Modifier.padding(innerPadding)
         ) {
@@ -146,7 +153,8 @@ fun MyProfileScreen() {
                 )
 
                 ProfilePhoto(
-                    user.firstname, user.surname,
+                    //user.firstname, user.surname,
+                    userData.value!!.firstname, userData.value!!.surname,
                     modifier = Modifier.align(Alignment.Center).offset(y = (-20).dp)
                 )
 

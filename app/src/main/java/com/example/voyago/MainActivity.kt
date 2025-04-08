@@ -45,17 +45,20 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.voyago.view.MyProfileScreen
+import com.example.voyago.viewmodel.MyProfileViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            val viewModel = ViewModelProvider(this)[MyProfileViewModel::class]
 
             val navController = rememberNavController()
             NavHost(navController= navController, startDestination= "main_page", builder= {
@@ -66,7 +69,7 @@ class MainActivity : ComponentActivity() {
                     UserProfileScreen()
                 }
                 composable("my_profile") {
-                    MyProfileScreen()
+                    MyProfileScreen(Modifier, viewModel)
                 }
                 composable("travel_proposal") {
                     TravelProposalScreen()
