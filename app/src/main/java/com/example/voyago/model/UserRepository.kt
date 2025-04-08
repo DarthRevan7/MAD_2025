@@ -6,14 +6,14 @@ import java.util.Calendar
 import java.util.GregorianCalendar
 
 class UserRepository {
-    suspend fun fetchUserData() : UserData
+    fun fetchUserData() : UserData
     {
-        delay(1000)
+        //delay(1000)
         return UserData(
             id = 1,
             firstname = "Alice",
-            surname = "Walker",
-            username = "alice_w",
+            surname = "Walkerina",
+            username = "alice_wer",
             dateOfBirth = GregorianCalendar(1995, Calendar.MARCH, 12),
             country = "USA",
             email = "alice@example.com",

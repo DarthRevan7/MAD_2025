@@ -154,12 +154,13 @@ fun MyProfileScreen(modifier: Modifier = Modifier, viewModel: MyProfileViewModel
 
                 ProfilePhoto(
                     //user.firstname, user.surname,
-                    userData.value!!.firstname, userData.value!!.surname,
+                    //userData.value!!.firstname, userData.value!!.surname,
+                    userData.value?.firstname.toString(), userData.value?.surname.toString(),
                     modifier = Modifier.align(Alignment.Center).offset(y = (-20).dp)
                 )
 
                 Text(
-                    text = user.username,
+                    text = userData.value?.username.toString(),
                     style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 10.dp)
@@ -175,7 +176,7 @@ fun MyProfileScreen(modifier: Modifier = Modifier, viewModel: MyProfileViewModel
             }
 
             //Tab About, My Trips, Review
-            TabAboutTripsReview(user)
+            TabAboutTripsReview(viewModel)
         }
     }
 }

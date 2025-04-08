@@ -34,6 +34,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -66,7 +67,7 @@ class MainActivity : ComponentActivity() {
                     MainPage(navController)
                 }
                 composable("user_profile") {
-                    UserProfileScreen()
+                    UserProfileScreen(viewModel)
                 }
                 composable("my_profile") {
                     MyProfileScreen(Modifier, viewModel)
@@ -106,7 +107,7 @@ fun MainPage(navController: NavController) {
 
 @Composable
 fun ProfilePhoto(firstname: String, surname: String, modifier: Modifier = Modifier) {
-    val initials = "${firstname.firstOrNull()}"+"${surname.firstOrNull()}"
+    val initials = "${firstname.first()}"+"${surname.first()}"
 
     Box(
         contentAlignment = Alignment.Center,
@@ -220,7 +221,7 @@ fun RatingAndReliability(rating: Float, reliability: Int) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun TabAboutTripsReview(user: UserProfileInfo) {
+fun TabAboutTripsReview(viewModel: MyProfileViewModel) {
     val tabs = listOf("About", "Trips", "Reviews")
 
     var selectedTabIndex by remember {
@@ -250,10 +251,12 @@ fun TabAboutTripsReview(user: UserProfileInfo) {
     Box(
         modifier = Modifier.fillMaxSize().background(Color.White).padding(16.dp)
     ) {
+        val userData = viewModel.userData.observeAsState()
+        viewModel.getUserData()
         when(selectedTabIndex) {
             0 -> {
                 Column {
-                    Text("Hi. my name is ${user.firstname} ${user.surname} and I am ${user.Age()} years old. I am from ${user.country} and would love to explore the world with you!")
+                    Text("Hi. my name is ${userData.value?.firstname.toString()} ${userData.value?.surname.toString()} and I am ${userData.value?.age()} years old. I am from ${userData.value?.country} and would love to explore the world with you!")
                     Text(text = "Preferences about the type of travel:",
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(top = 16.dp)
@@ -262,7 +265,7 @@ fun TabAboutTripsReview(user: UserProfileInfo) {
                     FlowRow(
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                     ) {
-                        user.typeTravel.forEach { type ->
+                        userData.value?.typeTravel?.forEach { type ->
                             SuggestionChip(
                                 onClick = {},
                                 label = {Text(type.toString().lowercase())},

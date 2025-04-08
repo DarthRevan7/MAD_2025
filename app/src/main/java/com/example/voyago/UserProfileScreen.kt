@@ -26,6 +26,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.voyago.viewmodel.MyProfileViewModel
 
 
 import java.util.*
@@ -33,7 +35,7 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserProfileScreen() {
+fun UserProfileScreen(viewModel: MyProfileViewModel) {
 
     //Bottom Bar Images
     val painterExplore = painterResource(R.drawable.explore)
@@ -164,7 +166,7 @@ fun UserProfileScreen() {
             }
 
             //Tab About, My Trips, Review
-            TabAboutTripsReview(user)
+            TabAboutTripsReview(viewModel)
         }
     }
 }
