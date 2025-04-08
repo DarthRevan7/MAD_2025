@@ -28,13 +28,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.voyago.Activities.ProfilePhoto
-import com.example.voyago.Activities.RatingAndReliability
-import com.example.voyago.Activities.TabAboutTripsReview
-import com.example.voyago.Activities.TopBar
+import com.example.voyago.activities.ProfilePhoto
+import com.example.voyago.activities.RatingAndReliability
+import com.example.voyago.activities.TabAboutTripsReview
+import com.example.voyago.activities.TopBar
 import com.example.voyago.NavItem
 import com.example.voyago.R
 import com.example.voyago.user
@@ -54,6 +55,9 @@ fun MyProfileScreen(viewModel: MyProfileViewModel) {
     val painterChat = painterResource(R.drawable.chat)
     val painterProfile = painterResource(R.drawable.profile)
 
+    val painters:List<Painter> = listOf(painterExplore,painterTrips,painterHome, painterChat, painterProfile)
+
+
     //NavBarItem
     val navItemList = listOf(
         NavItem(
@@ -61,32 +65,32 @@ fun MyProfileScreen(viewModel: MyProfileViewModel) {
                 painter = painterExplore,
                 contentDescription = "explore"
             ),
-            painter = painterExplore
+            //painter = painterExplore
         ),
         NavItem(
             "My Trips", Image(
                 painter = painterTrips,
                 contentDescription = "trips"
             ),
-            painter = painterTrips
+            //painter = painterTrips
         ),
         NavItem("Home", Image(
             painter = painterHome,
             contentDescription = "home"
         ),
-            painter = painterHome
+            //painter = painterHome
         ),
         NavItem("Chats", Image(
             painter = painterChat,
             contentDescription = "chats"
         ),
-            painter = painterChat
+            //painter = painterChat
         ),
         NavItem("Profile", Image(
             painter = painterProfile,
             contentDescription = "profile"
         ),
-            painter = painterProfile
+            //painter = painterProfile
         ),
     )
 
@@ -119,7 +123,8 @@ fun MyProfileScreen(viewModel: MyProfileViewModel) {
                         onClick = {},
                         icon = {
                             Icon(
-                                navItem.painter,
+                                //navItem.painter,
+                                painters[index],
                                 contentDescription = "Icon",
                                 modifier = Modifier.size(30.dp)) },
                         label = {
@@ -139,13 +144,13 @@ fun MyProfileScreen(viewModel: MyProfileViewModel) {
                 Modifier
                     .fillMaxWidth()
                     .height(245.dp)
-                    .background(Color(0xdf,0xd1,0xe0,255), shape = RectangleShape)) {
+                    .background(Color(0xdf, 0xd1, 0xe0, 255), shape = RectangleShape)) {
 
                 Image(painter = painterLogout, "logout", modifier = Modifier
                     .size(60.dp)
                     .align(alignment = Alignment.TopEnd)
                     .padding(16.dp)
-                    .clickable{/*TODO*/}
+                    .clickable {/*TODO*/ }
                 )
 
                 Image(painter = painterEdit, "edit", modifier = Modifier
@@ -153,28 +158,34 @@ fun MyProfileScreen(viewModel: MyProfileViewModel) {
                     .align(alignment = Alignment.BottomEnd)
                     .padding(16.dp)
                     .offset(y = (-30).dp)
-                    .clickable{/*TODO*/}
+                    .clickable {/*TODO*/ }
                 )
 
                 ProfilePhoto(
                     //user.firstname, user.surname,
                     //userData.value!!.firstname, userData.value!!.surname,
                     userData.value?.firstname.toString(), userData.value?.surname.toString(),
-                    modifier = Modifier.align(Alignment.Center).offset(y = (-20).dp)
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .offset(y = (-20).dp)
                 )
 
                 Text(
                     text = userData.value?.username.toString(),
                     style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 10.dp)
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 10.dp)
                         .offset(y = (-20).dp)
                 )
             }
 
             //Row with rating and reliability
             Row(
-                modifier = Modifier.align(Alignment.CenterHorizontally).offset(y = (-25).dp)
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .offset(y = (-25).dp)
             ) {
                 RatingAndReliability(user.rating, user.reliability)
             }

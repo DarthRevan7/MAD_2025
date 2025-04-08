@@ -5,10 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,11 +23,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
-import com.example.voyago.Activities.*
-import com.example.voyago.Activities.ProfilePhoto
-import com.example.voyago.Activities.RatingAndReliability
-import com.example.voyago.Activities.TabAboutTripsReview
-import com.example.voyago.Activities.TopBar
+import com.example.voyago.activities.*
+import com.example.voyago.activities.ProfilePhoto
+import com.example.voyago.activities.RatingAndReliability
+import com.example.voyago.activities.TabAboutTripsReview
+import com.example.voyago.activities.TopBar
 import com.example.voyago.viewmodel.MyProfileViewModel
 
 
@@ -55,32 +52,32 @@ fun UserProfileScreen(viewModel: MyProfileViewModel) {
                 painter = painterExplore,
                 contentDescription = "explore"
             ),
-            painter = painterExplore
+            //painter = painterExplore
         ),
         NavItem(
             "My Trips", Image(
                 painter = painterTrips,
                 contentDescription = "trips"
             ),
-            painter = painterTrips
+            //painter = painterTrips
         ),
         NavItem("Home", Image(
             painter = painterHome,
             contentDescription = "home"
         ),
-            painter = painterHome
+            //painter = painterHome
         ),
         NavItem("Chats", Image(
             painter = painterChat,
             contentDescription = "chats"
         ),
-            painter = painterChat
+            //painter = painterChat
         ),
         NavItem("Profile", Image(
             painter = painterProfile,
             contentDescription = "profile"
         ),
-            painter = painterProfile
+            //painter = painterProfile
         ),
     )
 

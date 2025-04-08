@@ -1,4 +1,4 @@
-package com.example.voyago.Activities
+package com.example.voyago.activities
 
 import android.content.Context
 import android.content.Intent
@@ -48,6 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -194,46 +195,49 @@ fun BottomBar() {
     val painterChat = painterResource(R.drawable.chat)
     val painterProfile = painterResource(R.drawable.profile)
 
+    val painters:List<Painter> = listOf(painterExplore,painterTrips,painterHome, painterChat, painterProfile)
+
+
     //NavBarItem
     val navItemList = listOf(
-        /*
+
         NavItem(
             "Explore", Image(
                 painter = painterExplore,
                 contentDescription = "explore"
             ),
-            painter = painterExplore
+            //painter = painterExplore
         ),
 
-         */
+
         NavItem(
             "My Trips", Image(
                 painter = painterTrips,
                 contentDescription = "trips"
             ),
-            painter = painterTrips
+            //painter = painterTrips
         ),
         NavItem("Home", Image(
             painter = painterHome,
             contentDescription = "home"
         ),
-            painter = painterHome
+            //painter = painterHome
         ),
-        /*
+
         NavItem("Chats", Image(
             painter = painterChat,
             contentDescription = "chats"
         ),
-            painter = painterChat
+            //painter = painterChat
         ),
 
-         */
+
 
         NavItem("Profile", Image(
             painter = painterProfile,
             contentDescription = "profile"
         ),
-            painter = painterProfile
+            //painter = painterProfile
         ),
     )
 
@@ -247,7 +251,8 @@ fun BottomBar() {
                 onClick = {},
                 icon = {
                     Icon(
-                        navItem.painter,
+                        //navItem.painter,
+                        painters[index],
                         contentDescription = "Icon",
                         modifier = Modifier.size(30.dp)) },
                 label = {

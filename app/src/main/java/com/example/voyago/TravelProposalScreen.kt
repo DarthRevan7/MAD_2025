@@ -15,9 +15,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.example.voyago.Activities.TopBar
+import com.example.voyago.activities.TopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,6 +31,8 @@ fun TravelProposalScreen() {
     val painterChat = painterResource(R.drawable.chat)
     val painterProfile = painterResource(R.drawable.profile)
 
+    val painters:List<Painter> = listOf(painterExplore,painterTrips,painterHome, painterChat, painterProfile)
+
     //NavBarItem
     val navItemList = listOf(
         NavItem(
@@ -37,32 +40,32 @@ fun TravelProposalScreen() {
                 painter = painterExplore,
                 contentDescription = "explore"
             ),
-            painter = painterExplore
+            //painter = painterExplore
         ),
         NavItem(
             "My Trips", Image(
                 painter = painterTrips,
                 contentDescription = "trips"
             ),
-            painter = painterTrips
+            //painter = painterTrips
         ),
         NavItem("Home", Image(
             painter = painterHome,
             contentDescription = "home"
         ),
-            painter = painterHome
+            //painter = painterHome
         ),
         NavItem("Chats", Image(
             painter = painterChat,
             contentDescription = "chats"
         ),
-            painter = painterChat
+            //painter = painterChat
         ),
         NavItem("Profile", Image(
             painter = painterProfile,
             contentDescription = "profile"
         ),
-            painter = painterProfile
+            //painter = painterProfile
         ),
     )
 
@@ -81,7 +84,7 @@ fun TravelProposalScreen() {
                         onClick = {},
                         icon = {
                             Icon(
-                                navItem.painter,
+                                painters[index],
                                 contentDescription = "Icon",
                                 modifier = Modifier.size(30.dp)) },
                         label = {
