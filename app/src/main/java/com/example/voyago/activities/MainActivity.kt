@@ -23,6 +23,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.ChatBubble
+import androidx.compose.material.icons.filled.Commute
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -200,8 +206,15 @@ fun BottomBar() {
 
     //NavBarItem
     val navItemList = listOf(
+        NavItem("Explore", Icons.Default.LocationOn),
+        NavItem("My Trips", Icons.Default.Commute),
+        NavItem("Home", Icons.Default.Language),
+        NavItem("Chats", Icons.Default.ChatBubble),
+        NavItem("Profile", Icons.Default.AccountCircle)
 
-        NavItem(
+
+
+        /*NavItem(
             "Explore", Image(
                 painter = painterExplore,
                 contentDescription = "explore"
@@ -238,7 +251,7 @@ fun BottomBar() {
             contentDescription = "profile"
         ),
             //painter = painterProfile
-        ),
+        ),*/
     )
 
     NavigationBar(
