@@ -1,4 +1,4 @@
-package com.example.voyago
+package com.example.voyago.view
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -30,8 +30,8 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.offset
-import java.util.Calendar
-import java.util.GregorianCalendar
+import com.example.voyago.*
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -145,7 +145,8 @@ fun MyProfileScreen() {
                     .clickable{/*TODO*/}
                 )
 
-                ProfilePhoto(user.firstname, user.surname,
+                ProfilePhoto(
+                    user.firstname, user.surname,
                     modifier = Modifier.align(Alignment.Center).offset(y = (-20).dp)
                 )
 
