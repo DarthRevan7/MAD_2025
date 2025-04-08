@@ -38,52 +38,6 @@ import java.util.*
 @Composable
 fun UserProfileScreen(viewModel: MyProfileViewModel) {
 
-    //Bottom Bar Images
-    val painterExplore = painterResource(R.drawable.explore)
-    val painterTrips = painterResource(R.drawable.trips)
-    val painterHome = painterResource(R.drawable.home)
-    val painterChat = painterResource(R.drawable.chat)
-    val painterProfile = painterResource(R.drawable.profile)
-
-    /*
-    //NavBarItem
-    val navItemList = listOf(
-        NavItem(
-            "Explore", Image(
-                painter = painterExplore,
-                contentDescription = "explore"
-            ),
-            //painter = painterExplore
-        ),
-        NavItem(
-            "My Trips", Image(
-                painter = painterTrips,
-                contentDescription = "trips"
-            ),
-            //painter = painterTrips
-        ),
-        NavItem("Home", Image(
-            painter = painterHome,
-            contentDescription = "home"
-        ),
-            //painter = painterHome
-        ),
-        NavItem("Chats", Image(
-            painter = painterChat,
-            contentDescription = "chats"
-        ),
-            //painter = painterChat
-        ),
-        NavItem("Profile", Image(
-            painter = painterProfile,
-            contentDescription = "profile"
-        ),
-            //painter = painterProfile
-        ),
-    )
-
-     */
-
     //Icons
     val painterStartChat = painterResource(R.drawable.start_chat)
 
@@ -110,29 +64,7 @@ fun UserProfileScreen(viewModel: MyProfileViewModel) {
             TopBar()
         },
         bottomBar = {
-            BottomBar()
-            /*
-            NavigationBar(
-                containerColor = Color(0xf3, 0xed, 0xf7, 255),
-                contentColor = MaterialTheme.colorScheme.primary,
-            ) {
-                navItemList.forEachIndexed { index, navItem ->
-                    NavigationBarItem(
-                        selected = false,
-                        onClick = {},
-                        icon = {
-                            Icon(
-                                navItem.painter,
-                                contentDescription = "Icon",
-                                modifier = Modifier.size(30.dp)) },
-                        label = {
-                            Text(text = navItem.label)
-                        }
-                    )
-                }
-            }
-
-             */
+            BottomBar(false)
         }
     ) { innerPadding ->
         Column(
