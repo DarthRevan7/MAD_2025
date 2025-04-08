@@ -4,21 +4,28 @@ import android.media.Image
 import java.util.Date
 
 data class Trip(
-    var photo: Image,
-    var title: String,
-    var destination: String,
-    var startDate: Date,
-    var endDate: Date,
-    var estimatedPrice: Double,
-    var groupSize: Int,
-    var participants: List<UserProfileInfo>,
-    var activities: Map<String,Activity>,       //Map<Date,Activity> to filter by day
-    var status: TripStatus,
-    var availableSpots: Int = groupSize - participants.size
+    val id: Int,
+    var photo: Image?,
+    var title: String?,
+    var destination: String?,
+    var startDate: Date?,
+    var endDate: Date?,
+    var estimatedPrice: Double?,
+    var groupSize: Int?,
+    var participants: List<Int>?,               //user id
+    var activities: Map<Date,Int>?,            //Map<Date,Activity> to filter by day
+    var status: TripStatus?,
+    var typeTravel: List<TypeTravel>?,
+    var creatorId: Int,
+    var appliedUsers: List<Int>?,
+    var published: Boolean
 )
 {
+
+
     data class Activity(
-        var date: String,           //yyyy-mm-gg
+        val id: Int,
+        var date: Date,           //yyyy-mm-gg
         var time: String,           //hh:mm
         var description: String
     )
@@ -30,3 +37,10 @@ data class Trip(
     }
 }
 
+
+public enum class TypeTravel {
+    CULTURE,
+    PARTY,
+    ADVENTURE,
+    RELAX
+}

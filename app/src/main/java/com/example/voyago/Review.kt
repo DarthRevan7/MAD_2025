@@ -1,8 +1,14 @@
 package com.example.voyago
 
+import android.media.Image
+
 data class Review(
-    var user: UserProfileInfo,
+    val reviewId: Int,
+    var reviewerId: Int,
+    var tripId: Int,
     var title: String,
-    var text: String,
-    var rating: Float
+    var comment: String,
+    var score: Float,
+    var photos: List<Image>?,
+    var userId: Int?
 )

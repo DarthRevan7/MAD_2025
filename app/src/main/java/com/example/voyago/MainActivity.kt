@@ -49,6 +49,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import java.util.Date
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -249,7 +250,7 @@ fun TabAboutTripsReview(user: UserProfileInfo) {
         when(selectedTabIndex) {
             0 -> {
                 Column {
-                    Text(user.userDescription)
+                    Text("Hi. my name is ${user.firstname} ${user.surname} and I am ${user.dateOfBirth} years old. I am from ${user.country} and would love to explore the world with you!")
                     Text(text = "Preferences about the type of travel:",
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(top = 16.dp)
@@ -261,7 +262,7 @@ fun TabAboutTripsReview(user: UserProfileInfo) {
                         user.typeTravel.forEach { type ->
                             SuggestionChip(
                                 onClick = {},
-                                label = {Text(type)},
+                                label = {Text(type.toString().lowercase())},
                                 colors = SuggestionChipDefaults.elevatedSuggestionChipColors(
                                     labelColor = Color(0x4f, 0x37, 0x8b, 255)
                                 )

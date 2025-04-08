@@ -28,6 +28,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
 
 
+import java.util.*
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserProfileScreen() {
@@ -78,15 +81,22 @@ fun UserProfileScreen() {
     //Icons
     val painterStartChat = painterResource(R.drawable.start_chat)
 
+    val calendar = Calendar.getInstance()
+    calendar.set(1992,Calendar.MARCH,12)
     //User info
     val user = UserProfileInfo(
+        0,
         "Isabella",
         "Martinez",
         "IsaWanders",
-        listOf("culture", "adventure"),
+        calendar.time,
+        "Spain",
+        "isabellamartinez@gmail.com",
+        "isa7rt5",
+        null,
+        listOf(TypeTravel.CULTURE, TypeTravel.ADVENTURE),
         listOf("Kyoto"),
-        "Hey there! I’m Isa, a culture junkie with a deep love for history, art, and everything that tells a story. I usually travel solo with my camera in one hand and a notebook in the other. I’m all about finding hidden gems, trying local food, and connecting with people from all walks of life. If you ever need museum tips or tea ceremony recs—I’m your girl!",
-        5.0f, 96, null, null, null
+        5.0f, 96, null, null, null, null, null,
     )
 
     Scaffold(

@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.offset
+import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,16 +88,26 @@ fun MyProfileScreen() {
     val painterLogout = painterResource(R.drawable.logout)
     val painterEdit = painterResource(R.drawable.edit)
 
+
+    val calendar = Calendar.getInstance()
+    calendar.set(1992,Calendar.MARCH,12)
     //User info
     val user = UserProfileInfo(
+        0,
         "Isabella",
         "Martinez",
         "IsaWanders",
-        listOf("culture", "adventure"),
+        calendar.time,
+        "Spain",
+        "isabellamartinez@gmail.com",
+        "isa7rt5",
+        null,
+        listOf(TypeTravel.CULTURE, TypeTravel.ADVENTURE),
         listOf("Kyoto"),
-        "Hey there! I’m Isa, a culture junkie with a deep love for history, art, and everything that tells a story. I usually travel solo with my camera in one hand and a notebook in the other. I’m all about finding hidden gems, trying local food, and connecting with people from all walks of life. If you ever need museum tips or tea ceremony recs—I’m your girl!",
-        5.0f, 96, null, null, null
+        5.0f, 96, null, null, null, null, null,
     )
+
+
 
     Scaffold(
         topBar = {
