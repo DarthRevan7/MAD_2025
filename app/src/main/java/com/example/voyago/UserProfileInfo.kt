@@ -1,14 +1,14 @@
 package com.example.voyago
 
 import android.media.Image
-import java.util.Date
+import java.util.*
 
 data class UserProfileInfo(
     val id: Int,
     var firstname: String,
     var surname: String,
     var username: String,
-    var dateOfBirth: Date,
+    var dateOfBirth: Calendar,
     var country: String,
     var email: String,
     var password: String,
@@ -23,3 +23,12 @@ data class UserProfileInfo(
     var privateTrips: List<Int>?,         //Trip id
     var tripsAppliedTo: List<Int>?       //Trip id
 )
+{
+    fun Age(): String
+    {
+        val calendarToday = Calendar.getInstance()
+
+        return (calendarToday.get(Calendar.YEAR) - dateOfBirth.get(Calendar.YEAR)).toString()
+
+    }
+}

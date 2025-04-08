@@ -1,6 +1,7 @@
 package com.example.voyago
 
 import android.media.Image
+import java.util.Calendar
 import java.util.Date
 
 data class Trip(
@@ -8,8 +9,8 @@ data class Trip(
     var photo: Image?,
     var title: String?,
     var destination: String?,
-    var startDate: Date?,
-    var endDate: Date?,
+    var startDate: Calendar?,
+    var endDate: Calendar?,
     var estimatedPrice: Double?,
     var groupSize: Int?,
     var participants: List<Int>?,               //user id

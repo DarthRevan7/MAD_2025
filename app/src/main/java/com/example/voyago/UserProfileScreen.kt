@@ -89,7 +89,7 @@ fun UserProfileScreen() {
         "Isabella",
         "Martinez",
         "IsaWanders",
-        calendar.time,
+        calendar,
         "Spain",
         "isabellamartinez@gmail.com",
         "isa7rt5",

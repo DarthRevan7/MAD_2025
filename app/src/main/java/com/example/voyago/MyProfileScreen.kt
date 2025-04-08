@@ -31,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.offset
 import java.util.Calendar
+import java.util.GregorianCalendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -89,22 +90,28 @@ fun MyProfileScreen() {
     val painterEdit = painterResource(R.drawable.edit)
 
 
-    val calendar = Calendar.getInstance()
-    calendar.set(1992,Calendar.MARCH,12)
+    //val calendar = Calendar.getInstance()
+    //calendar.set(1992,Calendar.MARCH,12)
     //User info
     val user = UserProfileInfo(
-        0,
-        "Isabella",
-        "Martinez",
-        "IsaWanders",
-        calendar.time,
-        "Spain",
-        "isabellamartinez@gmail.com",
-        "isa7rt5",
-        null,
-        listOf(TypeTravel.CULTURE, TypeTravel.ADVENTURE),
-        listOf("Kyoto"),
-        5.0f, 96, null, null, null, null, null,
+        id = 1,
+        firstname = "Alice",
+        surname = "Walker",
+        username = "alice_w",
+        dateOfBirth = GregorianCalendar(1995, Calendar.MARCH, 12),
+        country = "USA",
+        email = "alice@example.com",
+        password = "securePassword123",
+        profilePicture = null,
+        typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.ADVENTURE),
+        desiredDestination = listOf("Greece", "Italy", "Japan"),
+        rating = 4.7f,
+        reliability = 90,
+        publicTrips = null,
+        articles = null,
+        reviews = null,
+        privateTrips = null,
+        tripsAppliedTo = null
     )
 
 

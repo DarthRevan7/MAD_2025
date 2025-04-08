@@ -250,7 +250,7 @@ fun TabAboutTripsReview(user: UserProfileInfo) {
         when(selectedTabIndex) {
             0 -> {
                 Column {
-                    Text("Hi. my name is ${user.firstname} ${user.surname} and I am ${user.dateOfBirth} years old. I am from ${user.country} and would love to explore the world with you!")
+                    Text("Hi. my name is ${user.firstname} ${user.surname} and I am ${user.Age()} years old. I am from ${user.country} and would love to explore the world with you!")
                     Text(text = "Preferences about the type of travel:",
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(top = 16.dp)
