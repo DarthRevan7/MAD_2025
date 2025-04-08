@@ -5,8 +5,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -18,27 +20,29 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.offset
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.voyago.*
+import androidx.compose.ui.unit.dp
+import com.example.voyago.Activities.ProfilePhoto
+import com.example.voyago.Activities.RatingAndReliability
+import com.example.voyago.Activities.TabAboutTripsReview
+import com.example.voyago.Activities.TopBar
+import com.example.voyago.NavItem
+import com.example.voyago.R
+import com.example.voyago.user
 import com.example.voyago.viewmodel.MyProfileViewModel
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyProfileScreen(modifier: Modifier = Modifier, viewModel: MyProfileViewModel) {
+fun MyProfileScreen(viewModel: MyProfileViewModel) {
 
     //MVVM Code
     val userData = viewModel.userData.observeAsState()
@@ -180,5 +184,3 @@ fun MyProfileScreen(modifier: Modifier = Modifier, viewModel: MyProfileViewModel
         }
     }
 }
-
-

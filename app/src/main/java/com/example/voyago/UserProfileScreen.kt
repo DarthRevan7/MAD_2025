@@ -26,7 +26,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.voyago.Activities.*
+import com.example.voyago.Activities.ProfilePhoto
+import com.example.voyago.Activities.RatingAndReliability
+import com.example.voyago.Activities.TabAboutTripsReview
+import com.example.voyago.Activities.TopBar
 import com.example.voyago.viewmodel.MyProfileViewModel
 
 
@@ -106,6 +110,8 @@ fun UserProfileScreen(viewModel: MyProfileViewModel) {
             TopBar()
         },
         bottomBar = {
+            BottomBar()
+            /*
             NavigationBar(
                 containerColor = Color(0xf3, 0xed, 0xf7, 255),
                 contentColor = MaterialTheme.colorScheme.primary,
@@ -125,6 +131,8 @@ fun UserProfileScreen(viewModel: MyProfileViewModel) {
                     )
                 }
             }
+
+             */
         }
     ) { innerPadding ->
         Column(
@@ -145,7 +153,8 @@ fun UserProfileScreen(viewModel: MyProfileViewModel) {
                     .clickable{/*TODO*/}
                 )
 
-                ProfilePhoto(user.firstname, user.surname,
+                ProfilePhoto(
+                    user.firstname, user.surname,
                     modifier = Modifier.align(Alignment.Center).offset(y = (-20).dp)
                 )
 

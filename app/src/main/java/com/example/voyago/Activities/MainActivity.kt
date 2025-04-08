@@ -1,5 +1,7 @@
-package com.example.voyago
+package com.example.voyago.Activities
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -23,8 +25,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Tab
@@ -43,6 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -51,7 +57,11 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.voyago.view.MyProfileScreen
+import com.example.voyago.NavItem
+import com.example.voyago.R
+import com.example.voyago.TravelProposalScreen
+import com.example.voyago.UserProfileScreen
+import com.example.voyago.user
 import com.example.voyago.viewmodel.MyProfileViewModel
 
 class MainActivity : ComponentActivity() {
@@ -64,14 +74,19 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
             NavHost(navController= navController, startDestination= "main_page", builder= {
                 composable("main_page"){
-                    MainPage(navController)
+                    val context = LocalContext.current
+                    MainPage(navController, context)
                 }
                 composable("user_profile") {
                     UserProfileScreen(viewModel)
                 }
+                /*
                 composable("my_profile") {
-                    MyProfileScreen(Modifier, viewModel)
+                    //MyProfileScreen(Modifier, viewModel)
+                    //val context = LocalContext.current
+                    //context.startActivity(Intent(context, MyProfileActivity::class.java))
                 }
+                 */
                 composable("travel_proposal") {
                     TravelProposalScreen()
                 }
@@ -81,14 +96,15 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MainPage(navController: NavController) {
+fun MainPage(navController: NavController, context: Context) {
     Column (
         modifier = Modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Button(onClick = {
-            navController.navigate("my_profile")
+            //navController.navigate("my_profile")
+            context.startActivity(Intent(context, MyProfileActivity::class.java))
         }) {
             Text("Go To Own Profile")
         }
@@ -167,6 +183,150 @@ fun TopBar() {
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BottomBar() {
+
+//Bottom Bar Images
+    val painterExplore = painterResource(R.drawable.explore)
+    val painterTrips = painterResource(R.drawable.trips)
+    val painterHome = painterResource(R.drawable.home)
+    val painterChat = painterResource(R.drawable.chat)
+    val painterProfile = painterResource(R.drawable.profile)
+
+    //NavBarItem
+    val navItemList = listOf(
+        /*
+        NavItem(
+            "Explore", Image(
+                painter = painterExplore,
+                contentDescription = "explore"
+            ),
+            painter = painterExplore
+        ),
+
+         */
+        NavItem(
+            "My Trips", Image(
+                painter = painterTrips,
+                contentDescription = "trips"
+            ),
+            painter = painterTrips
+        ),
+        NavItem("Home", Image(
+            painter = painterHome,
+            contentDescription = "home"
+        ),
+            painter = painterHome
+        ),
+        /*
+        NavItem("Chats", Image(
+            painter = painterChat,
+            contentDescription = "chats"
+        ),
+            painter = painterChat
+        ),
+
+         */
+
+        NavItem("Profile", Image(
+            painter = painterProfile,
+            contentDescription = "profile"
+        ),
+            painter = painterProfile
+        ),
+    )
+
+    NavigationBar(
+        containerColor = Color(0xf3, 0xed, 0xf7, 255),
+        contentColor = MaterialTheme.colorScheme.primary,
+    ) {
+        navItemList.forEachIndexed { index, navItem ->
+            NavigationBarItem(
+                selected = false,
+                onClick = {},
+                icon = {
+                    Icon(
+                        navItem.painter,
+                        contentDescription = "Icon",
+                        modifier = Modifier.size(30.dp)) },
+                label = {
+                    Text(text = navItem.label)
+                }
+            )
+        }
+    }
+}
+
+/*
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BottomBar() {
+    //Bottom Bar Images
+    val painterExplore = painterResource(R.drawable.explore)
+    val painterTrips = painterResource(R.drawable.trips)
+    val painterHome = painterResource(R.drawable.home)
+    val painterChat = painterResource(R.drawable.chat)
+    val painterProfile = painterResource(R.drawable.profile)
+
+    val navItemList = listOf(
+        NavItem(
+            "Explore", Image(
+                painter = painterExplore,
+                contentDescription = "explore"
+            ),
+            painter = painterExplore
+        ),
+        NavItem(
+            "My Trips", Image(
+                painter = painterTrips,
+                contentDescription = "trips"
+            ),
+            painter = painterTrips
+        ),
+        NavItem("Home", Image(
+            painter = painterHome,
+            contentDescription = "home"
+        ),
+            painter = painterHome
+        ),
+        NavItem("Chats", Image(
+            painter = painterChat,
+            contentDescription = "chats"
+        ),
+            painter = painterChat
+        ),
+        NavItem("Profile", Image(
+            painter = painterProfile,
+            contentDescription = "profile"
+        ),
+            painter = painterProfile
+        ),
+    )
+
+    NavigationBar(
+        containerColor = Color(0xf3, 0xed, 0xf7, 255),
+        contentColor = MaterialTheme.colorScheme.primary,
+    ) {
+        navItemList.forEachIndexed { index, navItem ->
+            NavigationBarItem(
+                selected = false,
+                onClick = {},
+                icon = {
+                    Icon(
+                        navItem.painter,
+                        contentDescription = "Icon",
+                        modifier = Modifier.size(30.dp)) },
+                label = {
+                    Text(text = navItem.label)
+                }
+            )
+        }
+    }
+}
+
+ */
 @Composable
 fun RatingAndReliability(rating: Float, reliability: Int) {
 
