@@ -16,15 +16,17 @@ data class Trip(
     var status: TripStatus,
     var availableSpots: Int = groupSize - participants.size
 )
+{
+    data class Activity(
+        var date: String,           //yyyy-mm-gg
+        var time: String,           //hh:mm
+        var description: String
+    )
 
-data class Activity(
-    var date: String,           //yyyy-mm-gg
-    var time: String,           //hh:mm
-    var description: String
-)
-
-enum class TripStatus {
-    NOT_STARTED,
-    IN_PROGRESS,
-    COMPLETED
+    enum class TripStatus {
+        NOT_STARTED,
+        IN_PROGRESS,
+        COMPLETED
+    }
 }
+
