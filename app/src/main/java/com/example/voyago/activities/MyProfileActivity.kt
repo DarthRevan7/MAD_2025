@@ -9,9 +9,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.voyago.TravelProposalScreen
 import com.example.voyago.view.*
-import com.example.voyago.view.UserProfileScreen
 import com.example.voyago.viewmodel.*
 
 class MyProfileActivity : ComponentActivity() {

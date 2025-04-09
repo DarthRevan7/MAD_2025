@@ -26,10 +26,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
 import com.example.voyago.R
 import com.example.voyago.activities.*
-import com.example.voyago.activities.ProfilePhoto
-import com.example.voyago.activities.RatingAndReliability
-import com.example.voyago.activities.TabAboutTripsReview
-import com.example.voyago.activities.TopBar
 import com.example.voyago.viewmodel.*
 
 

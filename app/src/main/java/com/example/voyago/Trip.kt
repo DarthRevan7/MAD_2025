@@ -39,7 +39,7 @@ data class Trip(
 }
 
 
-public enum class TypeTravel {
+enum class TypeTravel {
     CULTURE,
     PARTY,
     ADVENTURE,
