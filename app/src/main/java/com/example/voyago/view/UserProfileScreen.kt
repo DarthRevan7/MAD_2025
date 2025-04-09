@@ -1,4 +1,4 @@
-package com.example.voyago
+package com.example.voyago.view
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
+import com.example.voyago.R
 import com.example.voyago.activities.*
 import com.example.voyago.activities.ProfilePhoto
 import com.example.voyago.activities.RatingAndReliability
