@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -29,6 +30,7 @@ import androidx.compose.material.icons.filled.ChatBubble
 import androidx.compose.material.icons.filled.Commute
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -485,7 +487,130 @@ fun TabAboutTripsReview(viewModel: ProfileViewModel, myProfile: Boolean) {
                 }
             }
             2 -> {
+                Column {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.width(391.dp).wrapContentHeight()
+                            .background(Color(0xdf, 0xd1, 0xe0, 255), shape = RoundedCornerShape(10.dp))
+                            .padding(10.dp)
+                    ) {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(5.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.size(376.dp, 43.dp)
+                                    .background(
+                                        Color(0xf9, 0xf6, 0xf9, 255),
+                                        shape = RectangleShape
+                                    )
+                                    .padding(5.dp)
+                            ) {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier
+                                        .size(30.dp)
+                                        .background(Color.Gray, shape = CircleShape)
+                                ) {
+                                    //Image
+                                }
+                                Spacer(modifier = Modifier.width(16.dp))
+                                Text(text = "John Doe")
+                                Spacer(modifier = Modifier.width(16.dp))
+                                Icon(Icons.Default.StarBorder, "star")
+                                Spacer(modifier = Modifier.width(5.dp))
+                                Text("4.5")
+                                Spacer(modifier = Modifier.width(140.dp))
+                                Text(text = "March, 2024", modifier = Modifier.weight(1f))
+                            }
 
+                            //Second review
+                            Row(verticalAlignment = Alignment.CenterVertically,
+                                //horizontalArrangement = Arrangement.Center,
+                                modifier = Modifier.size(376.dp, 43.dp)
+                                    .background(
+                                        Color(0xf9, 0xf6, 0xf9, 255),
+                                        shape = RectangleShape
+                                    )
+                            .padding(5.dp))
+                            {
+                                Row(
+                                    horizontalArrangement = Arrangement.SpaceEvenly,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.fillMaxSize())
+                                {
+                                    Row(
+                                        //modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.Start,
+                                        verticalAlignment = Alignment.CenterVertically)
+                                    {
+                                        Box(
+                                            contentAlignment = Alignment.CenterStart,
+                                            modifier = Modifier
+                                                .size(30.dp)
+                                                .background(Color.Gray, shape = CircleShape)
+                                        ) {
+                                            //Image
+                                        }
+                                        Text("Jon Snow", modifier = Modifier.padding( start = 16.dp))
+                                    }
+
+                                    Spacer(modifier = Modifier.width(20.dp))
+                                    Row(
+                                        //modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.Center,
+                                        verticalAlignment = Alignment.CenterVertically)
+                                    {
+                                        //Icon zone
+                                        Icon(Icons.Default.StarBorder, "star")
+                                        Spacer(modifier = Modifier.width(5.dp))
+                                        Text("4.5")
+                                    }
+
+                                    Spacer(modifier = Modifier.width(20.dp))
+                                    Row(
+                                        //modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.End,
+                                        verticalAlignment = Alignment.CenterVertically)
+                                    {
+                                        //Date zone
+                                        Text("April, 2025")
+                                    }
+                                }
+
+
+
+                            }
+
+
+                            /*
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.size(376.dp, 43.dp)
+                                    .background(
+                                        Color(0xf9, 0xf6, 0xf9, 255),
+                                        shape = RectangleShape
+                                    )
+                                    .padding(5.dp)
+                            ) {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier
+                                        .size(30.dp)
+                                        .background(Color.Gray, shape = CircleShape)
+                                ) {
+                                    //Image
+                                }
+                                Spacer(modifier = Modifier.width(16.dp))
+                                Text(text = "Patagonia")
+                                Spacer(modifier = Modifier.width(145.dp))
+                                Text(text = "May, 2023", modifier = Modifier.weight(1f))
+                            }
+
+                             */
+                        }
+                    }
+                }
             }
         }
     }
