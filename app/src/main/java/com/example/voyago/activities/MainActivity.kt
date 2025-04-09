@@ -279,10 +279,9 @@ fun RatingAndReliability(rating: Float, reliability: Int) {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TabAboutTripsReview(viewModel: ProfileViewModel, myProfile: Boolean) {
+
+    // TAB with About, trips, Reviews
     val tabs = listOf("About", "Trips", "Reviews")
-
-
-
 
     var selectedTabIndex by remember {
         mutableIntStateOf(0)
