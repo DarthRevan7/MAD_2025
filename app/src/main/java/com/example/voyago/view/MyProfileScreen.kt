@@ -1,5 +1,6 @@
 package com.example.voyago.view
 
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,20 +22,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.voyago.activities.ProfilePhoto
 import com.example.voyago.activities.RatingAndReliability
 import com.example.voyago.activities.TabAboutTripsReview
 import com.example.voyago.activities.TopBar
 import com.example.voyago.R
+import com.example.voyago.TravelProposalScreen
 import com.example.voyago.activities.BottomBar
+import com.example.voyago.activities.MainPage
 import com.example.voyago.viewmodel.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyProfileScreen(viewModel: ProfileViewModel, myProfile: Boolean) {
+fun MyProfileScreen(viewModel: ProfileViewModel, myProfile: Boolean, navController: NavController, context: Context) {
 
     //MVVM Code
     val userData = viewModel.userData.observeAsState()
@@ -42,6 +50,8 @@ fun MyProfileScreen(viewModel: ProfileViewModel, myProfile: Boolean) {
     //Icons
     val painterLogout = painterResource(R.drawable.logout)
     val painterEdit = painterResource(R.drawable.edit)
+
+
 
 
     Scaffold(
@@ -75,7 +85,7 @@ fun MyProfileScreen(viewModel: ProfileViewModel, myProfile: Boolean) {
                     .align(alignment = Alignment.BottomEnd)
                     .padding(16.dp)
                     .offset(y = (-30).dp)
-                    .clickable {/*TODO*/ }
+                    .clickable {  navController.navigate("edit_profile") }
                 )
 
                 ProfilePhoto(
