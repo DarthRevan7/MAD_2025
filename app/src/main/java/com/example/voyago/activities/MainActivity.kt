@@ -16,8 +16,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -60,8 +59,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.*
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -191,7 +189,7 @@ fun TopBar() {
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+//@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomBar(selectedIndex: Any?) {
 
@@ -555,7 +553,7 @@ fun TabAboutTripsReview(viewModel: ProfileViewModel, myProfile: Boolean) {
                                         Text("Jon Snow", modifier = Modifier.padding( start = 16.dp))
                                     }
 
-                                    Spacer(modifier = Modifier.width(20.dp))
+                                    //Spacer(modifier = Modifier.width(20.dp))
                                     Row(
                                         //modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.Center,
@@ -567,7 +565,7 @@ fun TabAboutTripsReview(viewModel: ProfileViewModel, myProfile: Boolean) {
                                         Text("4.5")
                                     }
 
-                                    Spacer(modifier = Modifier.width(20.dp))
+                                    //Spacer(modifier = Modifier.width(20.dp))
                                     Row(
                                         //modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.End,
