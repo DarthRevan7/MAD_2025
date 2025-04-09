@@ -58,6 +58,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -67,14 +68,14 @@ import com.example.voyago.NavItem
 import com.example.voyago.R
 import com.example.voyago.TravelProposalScreen
 import com.example.voyago.UserProfileScreen
-import com.example.voyago.viewmodel.MyProfileViewModel
+import com.example.voyago.viewmodel.*
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            val viewModel = ViewModelProvider(this)[MyProfileViewModel::class]
+            val viewModel = ViewModelProvider(this)[ProfileViewModel::class]
 
             val navController = rememberNavController()
             NavHost(navController= navController, startDestination= "main_page", builder= {
@@ -277,8 +278,11 @@ fun RatingAndReliability(rating: Float, reliability: Int) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun TabAboutTripsReview(viewModel: MyProfileViewModel) {
+fun TabAboutTripsReview(viewModel: ProfileViewModel, myProfile: Boolean) {
     val tabs = listOf("About", "Trips", "Reviews")
+
+
+
 
     var selectedTabIndex by remember {
         mutableIntStateOf(0)
@@ -307,8 +311,9 @@ fun TabAboutTripsReview(viewModel: MyProfileViewModel) {
     Box(
         modifier = Modifier.fillMaxSize().background(Color.White).padding(16.dp)
     ) {
+
         val userData = viewModel.userData.observeAsState()
-        viewModel.getUserData()
+        viewModel.getUserData(myProfile)
         when(selectedTabIndex) {
             0 -> {
                 Column {

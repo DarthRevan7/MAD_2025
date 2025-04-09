@@ -5,17 +5,15 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import com.example.voyago.view.MyProfileScreen
-import com.example.voyago.viewmodel.MyProfileViewModel
-
-
+import com.example.voyago.viewmodel.*
 
 class MyProfileActivity : ComponentActivity() {
-    private val viewModel: MyProfileViewModel by viewModels()       //What is this?? Check it!!
+    private val viewModel: ProfileViewModel by viewModels()       //What is this?? Check it!!
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MyProfileScreen(viewModel)
+            MyProfileScreen(viewModel, myProfile = true)
         }
     }
 }

@@ -27,7 +27,6 @@ data class UserData(
     fun age(): String
     {
         val calendarToday = Calendar.getInstance()
-
         return (calendarToday.get(Calendar.YEAR) - dateOfBirth.get(Calendar.YEAR)).toString()
 
     }

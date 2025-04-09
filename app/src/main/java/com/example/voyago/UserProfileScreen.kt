@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
 import com.example.voyago.activities.*
@@ -28,7 +29,7 @@ import com.example.voyago.activities.ProfilePhoto
 import com.example.voyago.activities.RatingAndReliability
 import com.example.voyago.activities.TabAboutTripsReview
 import com.example.voyago.activities.TopBar
-import com.example.voyago.viewmodel.MyProfileViewModel
+import com.example.voyago.viewmodel.*
 
 
 import java.util.*
@@ -36,28 +37,16 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserProfileScreen(viewModel: MyProfileViewModel) {
+fun UserProfileScreen(viewModel: ProfileViewModel) {
+
+    //MVVM Code
+    val userData = viewModel.userData.observeAsState()
 
     //Icons
     val painterStartChat = painterResource(R.drawable.start_chat)
 
     val calendar = Calendar.getInstance()
     calendar.set(1992,Calendar.MARCH,12)
-    //User info
-    val user = UserProfileInfo(
-        0,
-        "Isabella",
-        "Martinez",
-        "IsaWanders",
-        calendar,
-        "Spain",
-        "isabellamartinez@gmail.com",
-        "isa7rt5",
-        null,
-        listOf(TypeTravel.CULTURE, TypeTravel.ADVENTURE),
-        listOf("Kyoto"),
-        5.0f, 96, null, null, null, null, null,
-    )
 
     Scaffold(
         topBar = {
@@ -86,12 +75,12 @@ fun UserProfileScreen(viewModel: MyProfileViewModel) {
                 )
 
                 ProfilePhoto(
-                    user.firstname, user.surname,
+                    userData.value?.firstname.toString(), userData.value?.surname.toString(),
                     modifier = Modifier.align(Alignment.Center).offset(y = (-20).dp)
                 )
 
                Text(
-                   text = user.username,
+                   text = userData.value?.username.toString(),
                    style = MaterialTheme.typography.headlineLarge,
                    fontWeight = FontWeight.Bold,
                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 10.dp)
@@ -103,11 +92,14 @@ fun UserProfileScreen(viewModel: MyProfileViewModel) {
             Row(
                 modifier = Modifier.align(Alignment.CenterHorizontally).offset(y = (-25).dp)
             ) {
-                RatingAndReliability(user.rating, user.reliability)
+                RatingAndReliability(
+                    userData.value?.rating?.toFloat() ?: 0.0f,
+                    userData.value?.reliability?.toInt() ?: 0
+                )
             }
 
             //Tab About, My Trips, Review
-            TabAboutTripsReview(viewModel)
+            TabAboutTripsReview(viewModel, myProfile = false)
         }
     }
 }

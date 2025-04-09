@@ -6,15 +6,15 @@ import com.example.voyago.model.*
 import kotlinx.coroutines.launch
 
 
-class MyProfileViewModel : ViewModel() {
+class ProfileViewModel : ViewModel() {
     val userRepository: UserRepository = UserRepository()
 
     private val _userData = MutableLiveData<UserData>()
     val userData: LiveData<UserData> = _userData
 
-    fun getUserData(){
+    fun getUserData(myProfile: Boolean){
         viewModelScope.launch {
-            val userResult = userRepository.fetchUserData()
+            val userResult = userRepository.fetchUserData(myProfile)
             _userData.postValue(userResult)
         }
 

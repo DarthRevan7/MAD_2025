@@ -1,19 +1,17 @@
 package com.example.voyago.model
 
 import com.example.voyago.TypeTravel
-import kotlinx.coroutines.delay
 import java.util.Calendar
 import java.util.GregorianCalendar
 
 class UserRepository {
-    fun fetchUserData() : UserData
+    fun fetchUserData(myProfile: Boolean) : UserData
     {
-        //delay(1000)
-        return UserData(
+        val loggedUser = UserData(
             id = 1,
             firstname = "Alice",
-            surname = "Walkerina",
-            username = "alice_wer",
+            surname = "Walker",
+            username = "alice_w",
             dateOfBirth = GregorianCalendar(1995, Calendar.MARCH, 12),
             country = "USA",
             email = "alice@example.com",
@@ -29,5 +27,61 @@ class UserRepository {
             privateTrips = null,
             tripsAppliedTo = null
         )
+
+        val user = UserData(
+            id = 1,
+            firstname = "Bella",
+            surname = "Lestrange",
+            username = "beauty_lest",
+            dateOfBirth = GregorianCalendar(1985, Calendar.OCTOBER, 31),
+            country = "UK",
+            email = "bellalast@example.com",
+            password = "securePassword987",
+            profilePicture = null,
+            typeTravel = listOf(TypeTravel.RELAX, TypeTravel.PARTY),
+            desiredDestination = listOf("Romania", "USA", "South Korea"),
+            rating = 4.3f,
+            reliability = 55,
+            publicTrips = null,
+            articles = null,
+            reviews = null,
+            privateTrips = null,
+            tripsAppliedTo = null
+        )
+
+        if(myProfile)
+        {
+            return loggedUser
+        }
+        else
+        {
+            return user
+        }
+    }
+
+    fun fetchUnloggedUserData() : UserData
+    {
+        val user = UserData(
+            id = 1,
+            firstname = "Bella",
+            surname = "Lestrange",
+            username = "beauty_lest",
+            dateOfBirth = GregorianCalendar(1985, Calendar.OCTOBER, 31),
+            country = "UK",
+            email = "bellalast@example.com",
+            password = "securePassword987",
+            profilePicture = null,
+            typeTravel = listOf(TypeTravel.RELAX, TypeTravel.PARTY),
+            desiredDestination = listOf("Romania", "USA", "South Korea"),
+            rating = 4.3f,
+            reliability = 55,
+            publicTrips = null,
+            articles = null,
+            reviews = null,
+            privateTrips = null,
+            tripsAppliedTo = null
+        )
+
+        return user
     }
 }

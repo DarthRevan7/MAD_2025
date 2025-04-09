@@ -30,11 +30,11 @@ import com.example.voyago.activities.TabAboutTripsReview
 import com.example.voyago.activities.TopBar
 import com.example.voyago.R
 import com.example.voyago.activities.BottomBar
-import com.example.voyago.viewmodel.MyProfileViewModel
+import com.example.voyago.viewmodel.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyProfileScreen(viewModel: MyProfileViewModel) {
+fun MyProfileScreen(viewModel: ProfileViewModel, myProfile: Boolean) {
 
     //MVVM Code
     val userData = viewModel.userData.observeAsState()
@@ -52,7 +52,7 @@ fun MyProfileScreen(viewModel: MyProfileViewModel) {
             BottomBar(4)
         }
     ) { innerPadding ->
-        viewModel.getUserData()
+        viewModel.getUserData(myProfile)
         Column(
             modifier = Modifier.padding(innerPadding)
         ) {
@@ -109,7 +109,7 @@ fun MyProfileScreen(viewModel: MyProfileViewModel) {
             }
 
             //Tab About, My Trips, Review
-            TabAboutTripsReview(viewModel)
+            TabAboutTripsReview(viewModel, myProfile = true)
         }
     }
 }
