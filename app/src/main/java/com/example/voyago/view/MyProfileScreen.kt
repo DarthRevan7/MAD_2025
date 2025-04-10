@@ -72,9 +72,6 @@ fun MyProfileScreen(viewModel: ProfileViewModel, myProfile: Boolean, navControll
     val painterLogout = painterResource(R.drawable.logout)
     val painterEdit = painterResource(R.drawable.edit)
 
-
-
-
     Scaffold(
         topBar = {
             TopBar()
@@ -85,8 +82,8 @@ fun MyProfileScreen(viewModel: ProfileViewModel, myProfile: Boolean, navControll
     ) { innerPadding ->
         viewModel.getUserData(myProfile)
 
-
         val listState = rememberLazyListState()
+
         LazyColumn(
             state = listState,
             modifier = Modifier

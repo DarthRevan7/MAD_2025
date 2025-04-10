@@ -57,61 +57,8 @@ fun UserProfileScreen(viewModel: ProfileViewModel) {
             BottomBar(false)
         }
     ) { innerPadding ->
-
-        /*
-val listState = rememberLazyListState()
-LazyColumn(
-    state = listState,
-    modifier = Modifier
-        .fillMaxSize()
-        .padding(innerPadding),
-    verticalArrangement = Arrangement.Top,
-    horizontalAlignment = Alignment.Start
-) {
-    item {
-
-        Image(
-            painter = painterResource(R.drawable.rome_photo),
-            contentDescription = "Image before texts",
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
-                .padding(bottom = 16.dp)
-        )
-    }
-
-    item {
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp)
-        ) {
-            Text(
-                text = "Left Aligned Text",
-                modifier = Modifier.align(Alignment.CenterVertically)
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            Text(
-                text = "Right Aligned Text",
-                modifier = Modifier.align(Alignment.CenterVertically)
-            )
-        }
-    }
-
-    item {
-        ItineraryTitleBox()
-    }
-
-    items(3) { index ->
-        ItineraryText(
-            modifier = Modifier
-                .padding(start = 24.dp, top = 16.dp)
-        )
-    }
-}
- */
         val listState = rememberLazyListState()
+
         LazyColumn(
             state = listState,
             modifier = Modifier
