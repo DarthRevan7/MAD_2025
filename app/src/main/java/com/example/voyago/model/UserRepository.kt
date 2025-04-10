@@ -16,16 +16,17 @@ class UserRepository {
             country = "USA",
             email = "alice@example.com",
             password = "securePassword123",
+            userDescription = "hi",
             profilePicture = null,
             typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.ADVENTURE),
             desiredDestination = listOf("Greece", "Italy", "Japan"),
             rating = 4.7f,
             reliability = 90,
-            publicTrips = null,
-            articles = null,
-            reviews = null,
-            privateTrips = null,
-            tripsAppliedTo = null
+            publicTrips = emptyList(),
+            articles = emptyList(),
+            reviews = emptyList(),
+            privateTrips = emptyList(),
+            tripsAppliedTo = emptyList()
         )
 
         var user = UserData(
@@ -37,24 +38,22 @@ class UserRepository {
             country = "UK",
             email = "bellalast@example.com",
             password = "securePassword987",
+            userDescription = "hi",
             profilePicture = null,
             typeTravel = listOf(TypeTravel.RELAX, TypeTravel.PARTY),
             desiredDestination = listOf("Romania", "USA", "South Korea"),
             rating = 4.3f,
             reliability = 55,
-            publicTrips = null,
-            articles = null,
-            reviews = null,
-            privateTrips = null,
-            tripsAppliedTo = null
+            publicTrips = emptyList(),
+            articles = emptyList(),
+            reviews = emptyList(),
+            privateTrips = emptyList(),
+            tripsAppliedTo = emptyList()
         )
 
-        if(myProfile)
-        {
+        if(myProfile) {
             return loggedUser
-        }
-        else
-        {
+        } else {
             return user
         }
     }
@@ -70,16 +69,17 @@ class UserRepository {
             country = "UK",
             email = "bellalast@example.com",
             password = "securePassword987",
+            userDescription = "hi",
             profilePicture = null,
             typeTravel = listOf(TypeTravel.RELAX, TypeTravel.PARTY),
             desiredDestination = listOf("Romania", "USA", "South Korea"),
             rating = 4.3f,
             reliability = 55,
-            publicTrips = null,
-            articles = null,
-            reviews = null,
-            privateTrips = null,
-            tripsAppliedTo = null
+            publicTrips = emptyList(),
+            articles = emptyList(),
+            reviews = emptyList(),
+            privateTrips = emptyList(),
+            tripsAppliedTo = emptyList()
         )
 
         return user

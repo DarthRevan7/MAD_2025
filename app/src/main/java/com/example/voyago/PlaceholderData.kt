@@ -63,11 +63,12 @@ val user = UserProfileInfo(
     desiredDestination = listOf("Greece", "Italy", "Japan"),
     rating = 4.7f,
     reliability = 90,
-    publicTrips = null,
-    articles = null,
-    reviews = null,
-    privateTrips = null,
-    tripsAppliedTo = null
+    publicTrips = emptyList(),
+    articles = emptyList(),
+    reviews = emptyList(),
+    privateTrips = emptyList(),
+    tripsAppliedTo = emptyList()
+
 )
 data class UserProfileInfo(
     val id: Int,
@@ -83,9 +84,9 @@ data class UserProfileInfo(
     var desiredDestination: List<String>,
     var rating: Float,
     var reliability: Int,
-    var publicTrips: List<Int>?,         //Trip id
-    var articles: List<Int>?,           //Article id
-    var reviews: List<Int>?,             //Reviews id
-    var privateTrips: List<Int>?,         //Trip id
-    var tripsAppliedTo: List<Int>?       //Trip id
+    var publicTrips: List<Int>,         //Trip id
+    var articles: List<Int>,           //Article id
+    var reviews: List<Int>,             //Reviews id
+    var privateTrips: List<Int>,         //Trip id
+    var tripsAppliedTo: List<Int>       //Trip id
 )

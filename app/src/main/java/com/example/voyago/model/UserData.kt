@@ -18,15 +18,16 @@ data class UserData(
     var email: String,
     var password: String,
     var profilePicture: Image?,
+    var userDescription: String,
     var typeTravel: List<TypeTravel>,
     var desiredDestination: List<String>,
     var rating: Float,
     var reliability: Int,
-    var publicTrips: List<Trip>?,         //Trip id
-    var articles: List<Article>?,           //Article id
-    var reviews: List<Review>?,             //Reviews id
-    var privateTrips: List<Trip>?,         //Trip id
-    var tripsAppliedTo: List<Trip>?       //Trip id
+    var publicTrips: List<Trip>,         //Trip id
+    var articles: List<Article>,           //Article id
+    var reviews: List<Review>,             //Reviews id
+    var privateTrips: List<Trip>,         //Trip id
+    var tripsAppliedTo: List<Trip>       //Trip id
 ) {
     fun age(): String
     {
