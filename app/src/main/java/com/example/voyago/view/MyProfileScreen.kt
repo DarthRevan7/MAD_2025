@@ -23,8 +23,11 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -43,6 +46,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -80,66 +84,84 @@ fun MyProfileScreen(viewModel: ProfileViewModel, myProfile: Boolean, navControll
         }
     ) { innerPadding ->
         viewModel.getUserData(myProfile)
-        Column(
-            modifier = Modifier.padding(innerPadding)
+
+
+        val listState = rememberLazyListState()
+        LazyColumn(
+            state = listState,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            //Box with Profile Photo, Username and Logout and Edit icons
-            Box(modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .height(245.dp)
-                    .background(Color(0xdf, 0xd1, 0xe0, 255), shape = RectangleShape)) {
+            item {
+                //Box with Profile Photo, Username and Logout and Edit icons
+                Box(modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(245.dp)
+                        .background(Color(0xdf, 0xd1, 0xe0, 255), shape = RectangleShape)) {
 
-                Image(painter = painterLogout, "logout", modifier = Modifier
-                    .size(60.dp)
-                    .align(alignment = Alignment.TopEnd)
-                    .padding(16.dp)
-                    .clickable {/*TODO*/ }
-                )
+                    Image(painter = painterLogout, "logout", modifier = Modifier
+                        .size(60.dp)
+                        .align(alignment = Alignment.TopEnd)
+                        .padding(16.dp)
+                        .clickable {/*TODO*/ }
+                    )
 
-                Image(painter = painterEdit, "edit", modifier = Modifier
-                    .size(60.dp)
-                    .align(alignment = Alignment.BottomEnd)
-                    .padding(16.dp)
-                    .offset(y = (-30).dp)
-                    .clickable {  navController.navigate("edit_profile") }
-                )
+                    Image(painter = painterEdit, "edit", modifier = Modifier
+                        .size(60.dp)
+                        .align(alignment = Alignment.BottomEnd)
+                        .padding(16.dp)
+                        .offset(y = (-30).dp)
+                        .clickable {  navController.navigate("edit_profile") }
+                    )
 
-                ProfilePhoto(
-                    userData.value?.firstname.toString(), userData.value?.surname.toString(),
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .offset(y = (-20).dp)
-                )
+                    ProfilePhoto(
+                        userData.value?.firstname.toString(), userData.value?.surname.toString(),
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .offset(y = (-20).dp)
+                    )
 
-                Text(
-                    text = userData.value?.username.toString(),
-                    style = MaterialTheme.typography.headlineLarge,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 10.dp)
-                        .offset(y = (-20).dp)
-                )
+                    Text(
+                        text = userData.value?.username.toString(),
+                        style = MaterialTheme.typography.headlineLarge,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 10.dp)
+                            .offset(y = (-20).dp)
+                    )
+                }
             }
 
-            //Row with rating and reliability
-            Row(
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .offset(y = (-25).dp)
-            ) {
-                RatingAndReliability(
-                    userData.value?.rating?.toFloat() ?: 0.0f,
-                    userData.value?.reliability?.toInt() ?: 0
-                )
+            item {
+                //Row with rating and reliability
+                Row(
+                    modifier = Modifier
+                        .offset(y = (-25).dp)
+                        ,
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    RatingAndReliability(
+                        userData.value?.rating?.toFloat() ?: 0.0f,
+                        userData.value?.reliability?.toInt() ?: 0
+                    )
+                }
             }
 
-            //Tab About, My Trips, Review
-            TabAboutTripsReview(viewModel, myProfile = true)
+            item {
+                //Tab About, My Trips, Review
+                TabAboutTripsReview(viewModel, myProfile = true)
+            }
         }
     }
 }
+
+
 
 @Composable
 fun RatingAndReliability(rating: Float, reliability: Int) {
@@ -289,11 +311,14 @@ fun TabAboutTripsReview(viewModel: ProfileViewModel, myProfile: Boolean) {
                             .background(Color(0xdf, 0xd1, 0xe0, 255), shape = RoundedCornerShape(10.dp))
                             .padding(10.dp)
                     ) {
-                        LazyColumn(
-                            verticalArrangement = Arrangement.spacedBy(5.dp)
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(5.dp),
+                            modifier = Modifier
+                                .height((3*43).dp)
+                                .verticalScroll(rememberScrollState())
                         ) {
-                            items(tripList) {
-                                UITrip(it.destination,it.strDate)
+                            tripList.forEach {
+                                item -> UITrip(item.destination,item.strDate)
                             }
                         }
                     }
@@ -305,15 +330,20 @@ fun TabAboutTripsReview(viewModel: ProfileViewModel, myProfile: Boolean) {
                     )
                     Box(
                         contentAlignment = Alignment.Center,
-                        modifier = Modifier.width(391.dp).wrapContentHeight()
+                        modifier = Modifier
+                            .height(140.dp)
+                            .wrapContentWidth()
                             .background(Color(0xdf, 0xd1, 0xe0, 255), shape = RoundedCornerShape(10.dp))
                             .padding(10.dp)
                     ) {
-                        LazyColumn(
-                            verticalArrangement = Arrangement.spacedBy(5.dp)
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(5.dp),
+                            modifier = Modifier
+                                .height((3*43).dp)
+                                .verticalScroll(rememberScrollState())
                         ) {
-                            items(articleList) {
-                                UITrip(it.title,it.strDate)
+                            articleList.forEach {
+                                    item -> UITrip(item.title,item.strDate)
                             }
                         }
                     }
@@ -330,11 +360,14 @@ fun TabAboutTripsReview(viewModel: ProfileViewModel, myProfile: Boolean) {
                             .background(Color(0xdf, 0xd1, 0xe0, 255), shape = RoundedCornerShape(10.dp))
                             .padding(10.dp)
                     ) {
-                        LazyColumn(
-                            verticalArrangement = Arrangement.spacedBy(5.dp)
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(5.dp),
+                            modifier = Modifier
+                                .height((7*43).dp)
+                                .verticalScroll(rememberScrollState())
                         ) {
-                            items(reviewList) {
-                                UIReview(it.name, it.surname, it.rating, it.strDate)
+                            reviewList.forEach {
+                                    item -> UIReview(item.name, item.surname, item.rating, item.strDate)
                             }
                         }
                     }
