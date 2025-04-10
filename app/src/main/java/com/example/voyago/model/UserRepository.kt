@@ -7,7 +7,7 @@ import java.util.GregorianCalendar
 class UserRepository {
     fun fetchUserData(myProfile: Boolean) : UserData
     {
-        val loggedUser = UserData(
+        var loggedUser = UserData(
             id = 1,
             firstname = "Alice",
             surname = "Walker",
@@ -28,7 +28,7 @@ class UserRepository {
             tripsAppliedTo = null
         )
 
-        val user = UserData(
+        var user = UserData(
             id = 1,
             firstname = "Bella",
             surname = "Lestrange",

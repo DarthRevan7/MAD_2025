@@ -41,12 +41,20 @@ import com.example.voyago.model.*
 import androidx.compose.material3.*
 import androidx.compose.ui.Alignment
 import com.example.voyago.tripList
+import com.example.voyago.model.*
+
+//Edit this
+var userRepository:UserRepository = UserRepository()
+var userData = userRepository.fetchUserData(true)
 
 @Composable
 fun EditProfileScreen()
 {
     //Delete later
-    var textList = remember { mutableStateListOf("Serios", "White", "", "", "","","","","","","","","","","","","") }
+    var textList = remember { mutableStateListOf(userData.firstname,
+        userData.surname, userData.username, userData.email,
+        userData.country,
+        "Description",)}//,"DateOfBirth") }
 
 
 
@@ -60,59 +68,7 @@ fun EditProfileScreen()
     ) {
         innerPadding ->
 
-        /*
-val listState = rememberLazyListState()
-LazyColumn(
-state = listState,
-modifier = Modifier
-.fillMaxSize()
-.padding(innerPadding),
-verticalArrangement = Arrangement.Top,
-horizontalAlignment = Alignment.Start
-) {
-item {
 
-Image(
-    painter = painterResource(R.drawable.rome_photo),
-    contentDescription = "Image before texts",
-    modifier = Modifier
-        .fillMaxWidth()
-        .height(200.dp)
-        .padding(bottom = 16.dp)
-)
-}
-
-item {
-
-Row(
-    modifier = Modifier
-        .fillMaxWidth()
-        .padding(start = 16.dp, end = 16.dp)
-) {
-    Text(
-        text = "Left Aligned Text",
-        modifier = Modifier.align(Alignment.CenterVertically)
-    )
-    Spacer(modifier = Modifier.weight(1f))
-    Text(
-        text = "Right Aligned Text",
-        modifier = Modifier.align(Alignment.CenterVertically)
-    )
-}
-}
-
-item {
-ItineraryTitleBox()
-}
-
-items(3) { index ->
-ItineraryText(
-    modifier = Modifier
-        .padding(start = 24.dp, top = 16.dp)
-)
-}
-}
-*/
         val listState = rememberLazyListState()
         LazyColumn(
             state = listState,
@@ -130,7 +86,8 @@ ItineraryText(
                         .height(180.dp)
                 )//.background(Color(0xdf, 0xd1, 0xe0, 255), shape = RectangleShape))
                 {
-                    ProfilePhotoEditing("Serious", "Game",
+                    ProfilePhotoEditing(
+                        userData.firstname, userData.surname,
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
@@ -167,22 +124,41 @@ ItineraryText(
                         )
                     }
                 }*/
+
+
+
+                //Editing Fields
                 Column(
                     verticalArrangement = Arrangement.spacedBy(5.dp),
                     modifier = Modifier
                         .background(Color(0xdf, 0xd1, 0xe0, 255), shape = RectangleShape)
                         .fillMaxWidth()
                 ) {
-                    var index = 0
+
+                    //TextFields with various info
                     textList.forEach {
                             item, ->
-                            TextField(
-                                value = item,
-                                onValueChange = { textList[index] = it },
-                                label = { },//Text("Campo #$index") },
+                            //var index = 0
+                        TextField(
+                            value = item,
+                            onValueChange = { var itemIndex = textList.indexOf(item); textList[itemIndex] = it },
+                            label = { Text("Enter text") },
+                            maxLines = 2,//Text("Campo #$index") },
                                 modifier = Modifier.fillMaxWidth().padding(16.dp)
                             )
-                            index++
+                            //index++
+                    }
+
+                    Button(
+                        onClick = {
+                            userData.changeUserData(textList)
+                    },
+                        modifier = Modifier
+                            .align( Alignment.CenterHorizontally )
+                            .padding(5.dp)
+
+                    ) {
+                        Text("Update Profile Info")
                     }
                 }
             }

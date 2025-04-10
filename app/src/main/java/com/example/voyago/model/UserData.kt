@@ -5,6 +5,7 @@ import com.example.voyago.Article
 import com.example.voyago.Review
 import com.example.voyago.Trip
 import com.example.voyago.TypeTravel
+import com.example.voyago.user
 import java.util.Calendar
 
 data class UserData(
@@ -31,6 +32,16 @@ data class UserData(
     {
         val calendarToday = Calendar.getInstance()
         return (calendarToday.get(Calendar.YEAR) - dateOfBirth.get(Calendar.YEAR)).toString()
+
+    }
+    fun changeUserData(dataToChange:List<String>)
+    {
+        this.firstname = dataToChange[0]
+        this.surname = dataToChange[1]
+        this.username = dataToChange[2]
+        this.email = dataToChange[3]
+        this.country = dataToChange[4]
+
 
     }
 }
