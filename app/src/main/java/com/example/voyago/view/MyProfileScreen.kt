@@ -320,7 +320,6 @@ fun TabAboutTripsReview(viewModel: ProfileViewModel, myProfile: Boolean) {
                         }
                     }
 
-
                     Text(text = "Articles:",
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(top = 16.dp, bottom = 10.dp)

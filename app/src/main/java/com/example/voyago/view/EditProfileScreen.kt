@@ -1,5 +1,6 @@
 package com.example.voyago.view
 
+import android.R
 import android.graphics.Paint
 import android.provider.ContactsContract
 import androidx.compose.foundation.background
@@ -40,8 +41,11 @@ import com.example.voyago.activities.TopBar
 import com.example.voyago.model.*
 import androidx.compose.material3.*
 import androidx.compose.ui.Alignment
+import com.example.voyago.TypeTravel
 import com.example.voyago.tripList
 import com.example.voyago.model.*
+import com.example.voyago.ui.theme.Typography
+import androidx.compose.material3.SelectableChipColors
 
 //Edit this
 var userRepository:UserRepository = UserRepository()
@@ -137,17 +141,49 @@ fun EditProfileScreen()
 
                     //TextFields with various info
                     textList.forEach {
-                            item, ->
+                            item ->
                             //var index = 0
                         TextField(
                             value = item,
                             onValueChange = { var itemIndex = textList.indexOf(item); textList[itemIndex] = it },
                             label = { Text("Enter text") },
                             maxLines = 2,//Text("Campo #$index") },
-                                modifier = Modifier.fillMaxWidth().padding(16.dp)
-                            )
+                            modifier = Modifier.fillMaxWidth().padding(16.dp)
+                        )
                             //index++
                     }
+
+                    Text(text = "Preferences about the type of travel",
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.align(Alignment.CenterHorizontally).padding(bottom = 10.dp),
+                        fontSize = 14.sp
+                    )
+
+                    val selectedTypeTrip = remember { mutableStateListOf<TypeTravel?>(null) }
+                    Row(
+                        modifier = Modifier.align(Alignment.CenterHorizontally).padding(bottom = 10.dp)
+                    ) {
+                        TypeTravel.entries.forEach { type ->
+                            FilterChip(
+                                selected = type in selectedTypeTrip,
+                                onClick = {
+                                    if (type in selectedTypeTrip) {
+                                        selectedTypeTrip.remove(type)
+                                    } else {
+                                        selectedTypeTrip.add(type)
+                                    }
+                                },
+                                label = { Text(type.toString().lowercase())},
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                        }
+                    }
+
+                    Text(text = "Most Desired destination",
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.align(Alignment.CenterHorizontally).padding(bottom = 15.dp),
+                        fontSize = 14.sp
+                    )
 
                     Button(
                         onClick = {
