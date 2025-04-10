@@ -13,12 +13,12 @@ data class UserData(
     var firstname: String,
     var surname: String,
     var username: String,
-    var dateOfBirth: Calendar,
     var country: String,
     var email: String,
+    var userDescription: String,
+    var dateOfBirth: Calendar,
     var password: String,
     var profilePicture: Image?,
-    var userDescription: String,
     var typeTravel: List<TypeTravel>,
     var desiredDestination: List<String>,
     var rating: Float,
@@ -42,7 +42,5 @@ data class UserData(
         this.username = dataToChange[2]
         this.email = dataToChange[3]
         this.country = dataToChange[4]
-
-
     }
 }

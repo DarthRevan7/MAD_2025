@@ -1,8 +1,10 @@
 package com.example.voyago.view
 
 import android.R
+import android.content.Context
 import android.graphics.Paint
 import android.provider.ContactsContract
+import android.widget.SearchView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,10 +48,21 @@ import com.example.voyago.tripList
 import com.example.voyago.model.*
 import com.example.voyago.ui.theme.Typography
 import androidx.compose.material3.SelectableChipColors
+import kotlin.reflect.*
+import kotlin.reflect.full.*
+
 
 //Edit this
 var userRepository:UserRepository = UserRepository()
 var userData = userRepository.fetchUserData(true)
+
+@Composable
+fun SearchBarWithResults(context:Context)
+{
+    SearchView(context)
+
+}
+
 
 @Composable
 fun EditProfileScreen()
@@ -58,8 +71,8 @@ fun EditProfileScreen()
     var textList = remember { mutableStateListOf(userData.firstname,
         userData.surname, userData.username, userData.email,
         userData.country,
-        "Description",)}//,"DateOfBirth") }
-
+        userData.userDescription,)}
+    val fieldNames = listOf("First Name", "Surname", "Username", "Email address", "Country", "User Description")
 
 
     Scaffold(
@@ -111,26 +124,6 @@ fun EditProfileScreen()
             }
 
             item {
-                //Stuff to edit
-                /*LazyColumn (verticalArrangement = Arrangement.spacedBy(5.dp),
-                    modifier = Modifier
-                        .background(Color(0xdf, 0xd1, 0xe0, 255), shape = RectangleShape)
-                        .fillMaxWidth()
-                        .align(Alignment.CenterHorizontally)
-                ){
-
-                    items(textList.size) { index ->
-                        TextField(
-                            value = textList[index],
-                            onValueChange = { textList[index] = it },
-                            label = { },//Text("Campo #$index") },
-                            modifier = Modifier.fillMaxWidth().padding(16.dp)
-                        )
-                    }
-                }*/
-
-
-
                 //Editing Fields
                 Column(
                     verticalArrangement = Arrangement.spacedBy(5.dp),
@@ -145,8 +138,8 @@ fun EditProfileScreen()
                             //var index = 0
                         TextField(
                             value = item,
-                            onValueChange = { var itemIndex = textList.indexOf(item); textList[itemIndex] = it },
-                            label = { Text("Enter text") },
+                            onValueChange = { val itemIndex:Int = textList.indexOf(item); textList[itemIndex] = it },
+                            label = { val itemIndex:Int = textList.indexOf(item); Text(text = fieldNames[itemIndex]) },
                             maxLines = 2,//Text("Campo #$index") },
                             modifier = Modifier.fillMaxWidth().padding(16.dp)
                         )
@@ -159,6 +152,7 @@ fun EditProfileScreen()
                         fontSize = 14.sp
                     )
 
+                    //Selected trip type
                     val selectedTypeTrip = remember { mutableStateListOf<TypeTravel?>(null) }
                     Row(
                         modifier = Modifier.align(Alignment.CenterHorizontally).padding(bottom = 10.dp)
@@ -185,6 +179,10 @@ fun EditProfileScreen()
                         fontSize = 14.sp
                     )
 
+                    SearchBarWithResults(LocalContext.current)
+
+
+                    //Update datas
                     Button(
                         onClick = {
                             userData.changeUserData(textList)
