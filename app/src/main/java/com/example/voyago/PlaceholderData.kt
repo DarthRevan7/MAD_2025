@@ -1,6 +1,7 @@
 package com.example.voyago
 
 import android.media.Image
+import com.example.voyago.model.TypeTravel
 import java.util.*
 
 data class LazyTrip(

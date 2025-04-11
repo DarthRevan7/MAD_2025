@@ -1,11 +1,8 @@
 package com.example.voyago.model
 
 import android.media.Image
-import com.example.voyago.Article
-import com.example.voyago.Review
-import com.example.voyago.Trip
-import com.example.voyago.TypeTravel
-import com.example.voyago.user
+import com.example.voyago.model.Article
+import com.example.voyago.model.Review
 import java.util.Calendar
 
 data class UserData(

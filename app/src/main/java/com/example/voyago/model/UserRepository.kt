@@ -1,6 +1,5 @@
 package com.example.voyago.model
 
-import com.example.voyago.TypeTravel
 import java.util.Calendar
 import java.util.GregorianCalendar
 
@@ -26,7 +25,8 @@ class UserRepository {
             articles = emptyList(),
             reviews = emptyList(),
             privateTrips = emptyList(),
-            tripsAppliedTo = emptyList()
+            tripsAppliedTo = emptyList(),
+            tripsApplicationAccepted = emptyList()
         )
 
         var user = UserData(
@@ -48,7 +48,8 @@ class UserRepository {
             articles = emptyList(),
             reviews = emptyList(),
             privateTrips = emptyList(),
-            tripsAppliedTo = emptyList()
+            tripsAppliedTo = emptyList(),
+            tripsApplicationAccepted = emptyList()
         )
 
         if(myProfile) {
@@ -79,7 +80,8 @@ class UserRepository {
             articles = emptyList(),
             reviews = emptyList(),
             privateTrips = emptyList(),
-            tripsAppliedTo = emptyList()
+            tripsAppliedTo = emptyList(),
+            tripsApplicationAccepted = emptyList()
         )
 
         return user

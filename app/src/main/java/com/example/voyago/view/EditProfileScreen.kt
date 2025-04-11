@@ -1,10 +1,6 @@
 package com.example.voyago.view
 
-import android.R
 import android.content.Context
-import android.graphics.Paint
-import android.provider.ContactsContract
-import android.widget.SearchView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,56 +9,29 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
-import androidx.compose.ui.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.example.voyago.TravelProposalScreen
 import com.example.voyago.activities.BottomBar
-import com.example.voyago.activities.MainPage
-import com.example.voyago.activities.ProfilePhoto
 import com.example.voyago.activities.TopBar
 import com.example.voyago.model.*
 import androidx.compose.material3.*
 import androidx.compose.ui.Alignment
-import com.example.voyago.TypeTravel
-import com.example.voyago.tripList
-import com.example.voyago.model.*
-import com.example.voyago.ui.theme.Typography
-import androidx.compose.material3.SelectableChipColors
-import kotlin.reflect.*
-import kotlin.reflect.full.*
+import com.example.voyago.model.TypeTravel
 
 
 //Edit this
 var userRepository:UserRepository = UserRepository()
 var userData = userRepository.fetchUserData(true)
-
-@Composable
-fun SearchBarWithResults(context:Context)
-{
-    SearchView(context)
-
-}
-
 
 @Composable
 fun EditProfileScreen()
@@ -72,7 +41,7 @@ fun EditProfileScreen()
         userData.surname, userData.username, userData.email,
         userData.country,
         userData.userDescription,)}
-    val fieldNames = listOf("First Name", "Surname", "Username", "Email address", "Country", "User Description")
+    val fieldNames = listOf("First Name", "Surname", "Username", "Email address", "Country", "User Description")//, "Destination")
 
 
     Scaffold(
@@ -218,4 +187,18 @@ fun ProfilePhotoEditing(firstname: String, surname: String, modifier: Modifier =
             fontWeight = FontWeight.Bold
         )
     }
+}
+//Passare diretto desired destinations e la desired destination dell'user.
+@Composable
+fun SearchBarWithResults(context:Context)
+{
+    //SearchView(context)
+    TextField(
+        value = "Dombass",
+        onValueChange = {  },
+        label = { Text(text ="Desired Destinations" ) },
+        maxLines = 1,//Text("Campo #$index") },
+        modifier = Modifier.fillMaxWidth().padding(16.dp)
+    )
+
 }

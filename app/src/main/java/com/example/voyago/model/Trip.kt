@@ -1,4 +1,4 @@
-package com.example.voyago
+package com.example.voyago.model
 
 import android.media.Image
 import java.util.Calendar
