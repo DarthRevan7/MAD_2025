@@ -14,166 +14,6 @@ import com.example.voyago.model.*
 import java.util.*
 import kotlin.Nothing
 
-/*
-val sampleTrips = listOf(
-    Trip(
-        id = 1,
-        photo = R.drawable.paris,
-        title = "Romantic Getaway in Paris",
-        destination = "Paris, France",
-        startDate = Calendar.getInstance().apply { set(2025, 5, 10) },
-        endDate = Calendar.getInstance().apply { set(2025, 5, 17) },
-        estimatedPrice = 1200.0,
-        groupSize = 4,
-        participants = listOf(1, 2),
-        activities = mapOf(
-            Date(125, 5, 10) to 1,
-            Date(125, 5, 12) to 2
-        ),
-        status = Trip.TripStatus.NOT_STARTED,
-        typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.RELAX),
-        creatorId = 1,
-        appliedUsers = listOf(3, 4),
-        published = true
-    ),
-    Trip(
-        id = 2,
-        photo = R.drawable.tokyo,
-        title = "Tokyo Urban Adventure",
-        destination = "Tokyo, Japan",
-        startDate = Calendar.getInstance().apply { set(2025, 7, 5) },
-        endDate = Calendar.getInstance().apply { set(2025, 7, 15) },
-        estimatedPrice = 2200.0,
-        groupSize = 5,
-        participants = listOf(5, 6, 7),
-        activities = mapOf(
-            Date(125, 7, 6) to 1
-        ),
-        status = Trip.TripStatus.NOT_STARTED,
-        typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.CULTURE),
-        creatorId = 2,
-        appliedUsers = listOf(8, 9),
-        published = true
-    ),
-    Trip(
-        id = 3,
-        photo = R.drawable.bali,
-        title = "Bali Beach Escape",
-        destination = "Bali, Indonesia",
-        startDate = Calendar.getInstance().apply { set(2025, 8, 1) },
-        endDate = Calendar.getInstance().apply { set(2025, 8, 10) },
-        estimatedPrice = 1500.0,
-        groupSize = 6,
-        participants = listOf(10, 11),
-        activities = mapOf(
-            Date(125, 8, 2) to 3
-        ),
-        status = Trip.TripStatus.NOT_STARTED,
-        typeTravel = listOf(TypeTravel.RELAX),
-        creatorId = 3,
-        appliedUsers = listOf(12, 13),
-        published = true
-    ),
-    Trip(
-        id = 4,
-        photo = R.drawable.rome_photo,
-        title = "Historic Rome Tour",
-        destination = "Rome, Italy",
-        startDate = Calendar.getInstance().apply { set(2025, 9, 15) },
-        endDate = Calendar.getInstance().apply { set(2025, 9, 22) },
-        estimatedPrice = 1300.0,
-        groupSize = 8,
-        participants = listOf(14, 15, 16),
-        activities = mapOf(
-            Date(125, 9, 16) to 2
-        ),
-        status = Trip.TripStatus.NOT_STARTED,
-        typeTravel = listOf(TypeTravel.CULTURE),
-        creatorId = 4,
-        appliedUsers = listOf(),
-        published = true
-    ),
-    Trip(
-        id = 5,
-        photo = R.drawable.sydney,
-        title = "Sydney Down Under Party",
-        destination = "Sydney, Australia",
-        startDate = Calendar.getInstance().apply { set(2025, 11, 20) },
-        endDate = Calendar.getInstance().apply { set(2025, 11, 30) },
-        estimatedPrice = 2000.0,
-        groupSize = 10,
-        participants = listOf(17, 18),
-        activities = mapOf(
-            Date(125, 11, 21) to 1
-        ),
-        status = Trip.TripStatus.NOT_STARTED,
-        typeTravel = listOf(TypeTravel.PARTY, TypeTravel.ADVENTURE),
-        creatorId = 5,
-        appliedUsers = listOf(19),
-        published = true
-    ),
-    Trip(
-        id = 6,
-        photo = R.drawable.new_york,
-        title = "New York City Lights",
-        destination = "New York, USA",
-        startDate = Calendar.getInstance().apply { set(2025, 12, 10) },
-        endDate = Calendar.getInstance().apply { set(2025, 12, 20) },
-        estimatedPrice = 1800.0,
-        groupSize = 6,
-        participants = listOf(20, 21, 22),
-        activities = mapOf(
-            Date(125, 12, 11) to 1
-        ),
-        status = Trip.TripStatus.NOT_STARTED,
-        typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.PARTY),
-        creatorId = 6,
-        appliedUsers = listOf(23, 24),
-        published = true
-    ),
-    Trip(
-        id = 7,
-        photo = R.drawable.reykjavik,
-        title = "Icelandic Adventure",
-        destination = "Reykjavik, Iceland",
-        startDate = Calendar.getInstance().apply { set(2025, 10, 1) },
-        endDate = Calendar.getInstance().apply { set(2025, 10, 8) },
-        estimatedPrice = 1600.0,
-        groupSize = 5,
-        participants = listOf(25, 26),
-        activities = mapOf(
-            Date(125, 10, 2) to 2
-        ),
-        status = Trip.TripStatus.NOT_STARTED,
-        typeTravel = listOf(TypeTravel.ADVENTURE),
-        creatorId = 7,
-        appliedUsers = listOf(27),
-        published = true
-    ),
-    Trip(
-        id = 8,
-        photo = R.drawable.rio,
-        title = "Carnival in Rio",
-        destination = "Rio de Janeiro, Brazil",
-        startDate = Calendar.getInstance().apply { set(2025, 2, 20) },
-        endDate = Calendar.getInstance().apply { set(2025, 2, 28) },
-        estimatedPrice = 1700.0,
-        groupSize = 12,
-        participants = listOf(28, 29, 30),
-        activities = mapOf(
-            Date(125, 2, 21) to 3
-        ),
-        status = Trip.TripStatus.NOT_STARTED,
-        typeTravel = listOf(TypeTravel.PARTY),
-        creatorId = 8,
-        appliedUsers = listOf(31, 32),
-        published = true
-    )
-)
-
-
-*/
-
 data class LazyUser(
     var name:String,
     var surname:String,
@@ -190,6 +30,27 @@ data class LazyUser(
     var reviews:List<LazyReview>,
     var profileImage:Image?
 )
+{
+    fun applyStrChanges(name:String, surname:String, username:String, email:String, country:String, userDescription:String)
+    {
+        this.name = name
+        this.surname = surname
+        this.username = username
+        this.userDescription = userDescription
+        this.email = email
+        this.country = country
+    }
+    fun applyTypeTravelChanges(typeTravels:List<TypeTravel>)
+    {
+        if(typeTravels.isNotEmpty())
+            this.typeTravelPreferences = typeTravels
+    }
+    fun applyDestinations(destinations:List<String>)
+    {
+        if(destinations.isNotEmpty())
+            this.desiredDestinations = destinations
+    }
+}
 
 //LAZY DATA
 data class LazyTrip(

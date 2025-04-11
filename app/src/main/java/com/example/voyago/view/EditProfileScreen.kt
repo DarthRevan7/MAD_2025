@@ -38,6 +38,8 @@ import com.example.voyago.model.TypeTravel
 var userRepository:UserRepository = UserRepository()
 var userData = userRepository.fetchUserData(true)
 
+
+
 @Composable
 fun EditProfileScreen(user: LazyUser)
 {
@@ -48,8 +50,9 @@ fun EditProfileScreen(user: LazyUser)
         user.userDescription)}
     val fieldNames = listOf("First Name", "Surname",
         "Username", "Email address", "Country",
-        "User Description")//, "Destination")
-
+        "User Description")
+    val selected = remember { user.typeTravelPreferences.toMutableStateList() }
+    var userDestinations = user.desiredDestinations
 
     Scaffold(
         topBar = {
@@ -118,9 +121,9 @@ fun EditProfileScreen(user: LazyUser)
                             {
                                 TextField(
                                     value = item,
-                                    onValueChange = { val itemIndex:Int = fieldValues.indexOf(item); fieldValues[itemIndex] = it },
+                                    onValueChange = { fieldValues[index] = it },
                                     label = { val itemIndex:Int = fieldValues.indexOf(item); Text(text = fieldNames[itemIndex]) },
-                                    maxLines = 2,//Text("Campo #$index") },
+                                    maxLines = 2,
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(16.dp),
@@ -133,7 +136,7 @@ fun EditProfileScreen(user: LazyUser)
                                     value = item,
                                     onValueChange = { val itemIndex:Int = fieldValues.indexOf(item); fieldValues[itemIndex] = it },
                                     label = { val itemIndex:Int = fieldValues.indexOf(item); Text(text = fieldNames[itemIndex]) },
-                                    maxLines = 2,//Text("Campo #$index") },
+                                    maxLines = 2,
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(16.dp),
@@ -151,8 +154,6 @@ fun EditProfileScreen(user: LazyUser)
                     )
 
                     //Selected trip type
-                    val selectedTypeTrip = remember { mutableStateListOf<TypeTravel?>(null) }
-                    val selected = remember { user.typeTravelPreferences.toMutableStateList() }
                     Row(
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
@@ -188,8 +189,12 @@ fun EditProfileScreen(user: LazyUser)
                     //Update datas
                     Button(
                         onClick = {
-                            //Correggere
-                            userData.changeUserData(fieldValues)
+                            //ALL DATA ARE VALID
+                            if(true) {
+                                user.applyStrChanges(fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3], fieldValues[4], fieldValues[5])
+                                user.applyTypeTravelChanges(selected)
+                                //user.applyDestinations()
+                            }
                     },
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
@@ -203,6 +208,11 @@ fun EditProfileScreen(user: LazyUser)
         }
 
     }
+}
+
+fun emailDataChecK()
+{
+
 }
 
 @Composable
