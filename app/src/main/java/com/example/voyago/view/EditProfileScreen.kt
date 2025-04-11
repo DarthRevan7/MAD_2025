@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.MaterialTheme
@@ -28,6 +29,7 @@ import com.example.voyago.activities.TopBar
 import com.example.voyago.model.*
 import androidx.compose.material3.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.input.KeyboardType
 import com.example.voyago.LazyUser
 import com.example.voyago.model.TypeTravel
 
@@ -40,11 +42,13 @@ var userData = userRepository.fetchUserData(true)
 fun EditProfileScreen(user: LazyUser)
 {
     //Delete later
-    var textList = remember { mutableStateListOf(user.name,
+    var fieldValues = remember { mutableStateListOf(user.name,
         user.surname, user.username, user.email,
         user.country,
         user.userDescription)}
-    val fieldNames = listOf("First Name", "Surname", "Username", "Email address", "Country", "User Description")//, "Destination")
+    val fieldNames = listOf("First Name", "Surname",
+        "Username", "Email address", "Country",
+        "User Description")//, "Destination")
 
 
     Scaffold(
@@ -107,19 +111,35 @@ fun EditProfileScreen(user: LazyUser)
                 ) {
 
                     //TextFields with various info
-                    textList.forEach {
-                            item ->
-                            //var index = 0
-                        TextField(
-                            value = item,
-                            onValueChange = { val itemIndex:Int = textList.indexOf(item); textList[itemIndex] = it },
-                            label = { val itemIndex:Int = textList.indexOf(item); Text(text = fieldNames[itemIndex]) },
-                            maxLines = 2,//Text("Campo #$index") },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        )
-                            //index++
+                    fieldValues.forEachIndexed() {
+                            index, item ->
+                            //This is TextField with email
+                            if(index == 3)
+                            {
+                                TextField(
+                                    value = item,
+                                    onValueChange = { val itemIndex:Int = fieldValues.indexOf(item); fieldValues[itemIndex] = it },
+                                    label = { val itemIndex:Int = fieldValues.indexOf(item); Text(text = fieldNames[itemIndex]) },
+                                    maxLines = 2,//Text("Campo #$index") },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                                )
+                            }
+                            //These are other text fields
+                            else {
+                                TextField(
+                                    value = item,
+                                    onValueChange = { val itemIndex:Int = fieldValues.indexOf(item); fieldValues[itemIndex] = it },
+                                    label = { val itemIndex:Int = fieldValues.indexOf(item); Text(text = fieldNames[itemIndex]) },
+                                    maxLines = 2,//Text("Campo #$index") },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+                                )
+                                }
                     }
 
                     Text(text = "Preferences about the type of travel",
@@ -169,7 +189,7 @@ fun EditProfileScreen(user: LazyUser)
                     Button(
                         onClick = {
                             //Correggere
-                            userData.changeUserData(textList)
+                            userData.changeUserData(fieldValues)
                     },
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
