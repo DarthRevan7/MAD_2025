@@ -101,7 +101,7 @@ fun MainPage(navController: NavController, context: Context) {
 }
 
 @Composable
-fun ProfilePhoto(firstname: String, surname: String, modifier: Modifier = Modifier) {
+fun ProfilePhoto(firstname: String, surname: String, isSmall: Boolean, modifier: Modifier = Modifier) {
     val initials = "${firstname.first()}"+"${surname.first()}"
 
     Box(
@@ -110,12 +110,23 @@ fun ProfilePhoto(firstname: String, surname: String, modifier: Modifier = Modifi
             .size(130.dp)
             .background(Color.Blue, shape = CircleShape)
     ) {
-        Text(
-            text = initials,
-            color = Color.White,
-            style = MaterialTheme.typography.headlineLarge,
-            fontWeight = FontWeight.Bold
-        )
+        if(isSmall) {
+            Text(
+                text = initials,
+                color = Color.White,
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.Bold
+            )
+        }
+        else {
+            Text(
+                text = initials,
+                color = Color.White,
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
     }
 }
 

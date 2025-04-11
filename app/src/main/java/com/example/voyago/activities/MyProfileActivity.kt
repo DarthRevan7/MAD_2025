@@ -9,6 +9,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.voyago.*
 import com.example.voyago.view.*
 import com.example.voyago.viewmodel.*
 
@@ -26,14 +27,14 @@ class MyProfileActivity : ComponentActivity() {
             val navController = rememberNavController()
             val context = LocalContext.current
 
-            MyProfileScreen(viewModel, true, navController, context)
+            MyProfileScreen(viewModel, true, navController)
             NavHost(navController= navController, startDestination= "my_profile", builder= {
                 composable("my_profile"){
 
-                    MyProfileScreen(viewModel, true, navController, context)
+                    MyProfileScreen(viewModel, true, navController)
                 }
                 composable("edit_profile") {
-                    EditProfileScreen()
+                    EditProfileScreen(user1)
                 }
             })
 

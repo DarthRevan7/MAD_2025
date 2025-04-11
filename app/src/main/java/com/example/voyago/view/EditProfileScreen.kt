@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -26,6 +28,7 @@ import com.example.voyago.activities.TopBar
 import com.example.voyago.model.*
 import androidx.compose.material3.*
 import androidx.compose.ui.Alignment
+import com.example.voyago.LazyUser
 import com.example.voyago.model.TypeTravel
 
 
@@ -34,13 +37,13 @@ var userRepository:UserRepository = UserRepository()
 var userData = userRepository.fetchUserData(true)
 
 @Composable
-fun EditProfileScreen()
+fun EditProfileScreen(user: LazyUser)
 {
     //Delete later
-    var textList = remember { mutableStateListOf(userData.firstname,
-        userData.surname, userData.username, userData.email,
-        userData.country,
-        userData.userDescription,)}
+    var textList = remember { mutableStateListOf(user.name,
+        user.surname, user.username, user.email,
+        user.country,
+        user.userDescription)}
     val fieldNames = listOf("First Name", "Surname", "Username", "Email address", "Country", "User Description")//, "Destination")
 
 
@@ -87,7 +90,9 @@ fun EditProfileScreen()
                 {
                     Text(text = "Edit Profile",
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.align(Alignment.TopCenter).padding(bottom = 15.dp),
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(bottom = 15.dp),
                         fontSize = 20.sp)
                 }
             }
@@ -110,30 +115,37 @@ fun EditProfileScreen()
                             onValueChange = { val itemIndex:Int = textList.indexOf(item); textList[itemIndex] = it },
                             label = { val itemIndex:Int = textList.indexOf(item); Text(text = fieldNames[itemIndex]) },
                             maxLines = 2,//Text("Campo #$index") },
-                            modifier = Modifier.fillMaxWidth().padding(16.dp)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
                         )
                             //index++
                     }
 
                     Text(text = "Preferences about the type of travel",
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.align(Alignment.CenterHorizontally).padding(bottom = 10.dp),
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(bottom = 10.dp),
                         fontSize = 14.sp
                     )
 
                     //Selected trip type
                     val selectedTypeTrip = remember { mutableStateListOf<TypeTravel?>(null) }
+                    val selected = remember { user.typeTravelPreferences.toMutableStateList() }
                     Row(
-                        modifier = Modifier.align(Alignment.CenterHorizontally).padding(bottom = 10.dp)
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(bottom = 10.dp)
                     ) {
                         TypeTravel.entries.forEach { type ->
                             FilterChip(
-                                selected = type in selectedTypeTrip,
+                                selected = type in selected,
                                 onClick = {
-                                    if (type in selectedTypeTrip) {
-                                        selectedTypeTrip.remove(type)
+                                    if (type in selected) {
+                                        selected.remove(type)
                                     } else {
-                                        selectedTypeTrip.add(type)
+                                        selected.add(type)
                                     }
                                 },
                                 label = { Text(type.toString().lowercase())},
@@ -144,20 +156,23 @@ fun EditProfileScreen()
 
                     Text(text = "Most Desired destination",
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.align(Alignment.CenterHorizontally).padding(bottom = 15.dp),
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(bottom = 15.dp),
                         fontSize = 14.sp
                     )
 
-                    SearchBarWithResults(LocalContext.current)
+                    SearchBarWithResults(LocalContext.current, user)
 
 
                     //Update datas
                     Button(
                         onClick = {
+                            //Correggere
                             userData.changeUserData(textList)
                     },
                         modifier = Modifier
-                            .align( Alignment.CenterHorizontally )
+                            .align(Alignment.CenterHorizontally)
                             .padding(5.dp)
 
                     ) {
@@ -188,17 +203,24 @@ fun ProfilePhotoEditing(firstname: String, surname: String, modifier: Modifier =
         )
     }
 }
+
 //Passare diretto desired destinations e la desired destination dell'user.
 @Composable
-fun SearchBarWithResults(context:Context)
+fun SearchBarWithResults(context:Context, user: LazyUser)
 {
+
+    var destinationList = remember { mutableStateOf<List<String>>(user.desiredDestinations) }
+    var strData = destinationList.value.joinToString(", ")
+
     //SearchView(context)
     TextField(
-        value = "Dombass",
-        onValueChange = {  },
+        value = strData,
+        onValueChange = { strData = it }, //Splittare il dato con la virgola
         label = { Text(text ="Desired Destinations" ) },
-        maxLines = 1,//Text("Campo #$index") },
-        modifier = Modifier.fillMaxWidth().padding(16.dp)
+        maxLines = 1,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
     )
 
 }

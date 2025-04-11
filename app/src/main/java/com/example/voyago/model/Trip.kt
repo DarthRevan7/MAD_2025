@@ -1,12 +1,13 @@
 package com.example.voyago.model
 
 import android.media.Image
+import androidx.compose.ui.graphics.vector.ImageVector
 import java.util.Calendar
 import java.util.Date
 
 data class Trip(
     val id: Int,
-    var photo: Image,
+    var photo: Int,
     var title: String,
     var destination: String,
     var startDate: Calendar,
@@ -22,8 +23,6 @@ data class Trip(
     var published: Boolean
 )
 {
-
-
     data class Activity(
         val id: Int,
         var date: Date,           //yyyy-mm-gg

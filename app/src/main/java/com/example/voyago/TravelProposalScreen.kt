@@ -1,6 +1,5 @@
 package com.example.voyago
 
-import android.graphics.Paint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
