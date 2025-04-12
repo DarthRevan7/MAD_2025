@@ -1,6 +1,9 @@
 package com.example.voyago.view
 
 import android.content.Context
+import android.provider.ContactsContract
+import android.renderscript.ScriptGroup
+import android.util.Patterns
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,6 +35,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.input.KeyboardType
 import com.example.voyago.LazyUser
 import com.example.voyago.model.TypeTravel
+import kotlin.reflect.KProperty1
+import androidx.compose.runtime.mutableStateMapOf
+
 
 
 //Edit this
@@ -51,6 +57,18 @@ fun EditProfileScreen(user: LazyUser)
     val fieldNames = listOf("First Name", "Surname",
         "Username", "Email address", "Country",
         "User Description")
+
+    /*val editableFields = mapOf(
+        user.name to "First Name",
+        user.surname to "Surname",
+        user.username to "Username",
+        user.email to "Email",
+        user.country to "Country",
+        user.userDescription to "Description"
+    )*/
+
+
+
     val selected = remember { user.typeTravelPreferences.toMutableStateList() }
     var userDestinations = user.desiredDestinations
 
@@ -117,22 +135,33 @@ fun EditProfileScreen(user: LazyUser)
                     fieldValues.forEachIndexed() {
                             index, item ->
                             //This is TextField with email
-                            if(index == 3)
-                            {
-                                TextField(
+                            if(index == 3) {
+                                val emailHasErrors by derivedStateOf {
+                                    if (item.isNotEmpty()) {
+                                        !android.util.Patterns.EMAIL_ADDRESS.matcher(item).matches()
+                                    } else {
+                                        false
+                                    }
+                                }
+                                /*TextField(
                                     value = item,
-                                    onValueChange = { fieldValues[index] = it },
+                                    onValueChange = { fieldValues[index] = it},
                                     label = { val itemIndex:Int = fieldValues.indexOf(item); Text(text = fieldNames[itemIndex]) },
                                     maxLines = 2,
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(16.dp),
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
-                                )
+                                )*/
+                                ValidatingEmailInputTextField(item, {fieldValues[index] = it}, emailHasErrors)
                             }
                             //These are other text fields
                             else {
-                                TextField(
+                                val validatorHasErrors by derivedStateOf {
+                                    item.isBlank()
+                                }
+
+                                /*TextField(
                                     value = item,
                                     onValueChange = { val itemIndex:Int = fieldValues.indexOf(item); fieldValues[itemIndex] = it },
                                     label = { val itemIndex:Int = fieldValues.indexOf(item); Text(text = fieldNames[itemIndex]) },
@@ -141,8 +170,10 @@ fun EditProfileScreen(user: LazyUser)
                                         .fillMaxWidth()
                                         .padding(16.dp),
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
-                                )
-                                }
+                                )*/
+                                ValidatingInputTextField(item, {fieldValues[index] = it}, validatorHasErrors, fieldNames[fieldValues.indexOf(item)])
+                            }
+
                     }
 
                     Text(text = "Preferences about the type of travel",
@@ -210,11 +241,6 @@ fun EditProfileScreen(user: LazyUser)
     }
 }
 
-fun emailDataChecK()
-{
-
-}
-
 @Composable
 fun ProfilePhotoEditing(firstname: String, surname: String, modifier: Modifier = Modifier) {
     val initials = "${firstname.first()}"+"${surname.first()}"
@@ -253,4 +279,45 @@ fun SearchBarWithResults(context:Context, user: LazyUser)
             .padding(16.dp)
     )
 
+}
+
+
+
+
+@Composable
+fun ValidatingEmailInputTextField(email: String, updateState: (String) -> Unit, validatorHasErrors: Boolean) {
+    OutlinedTextField(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(10.dp),
+        value = email,
+        onValueChange = updateState,
+        label = { Text("Email") },
+        isError = validatorHasErrors,
+        supportingText = {
+            if (validatorHasErrors) {
+                Text("Incorrect email format")
+            }
+        },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+    )
+}
+
+@Composable
+fun ValidatingInputTextField(text:String, updateState: (String) -> Unit, validatorHasErrors: Boolean, label: String) {
+    OutlinedTextField(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(10.dp),
+        value = text,
+        onValueChange = updateState,
+        label = { Text(label) },
+        isError = validatorHasErrors,
+        supportingText = {
+            if (validatorHasErrors) {
+                Text("This field cannot be empty")
+            }
+        },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+    )
 }
