@@ -1,7 +1,9 @@
 package com.example.voyago.view
 
+
 import android.content.Context
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.*
@@ -10,7 +12,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -28,6 +33,7 @@ import com.example.voyago.model.*
 import androidx.compose.material3.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.window.Dialog
 import com.example.voyago.LazyUser
 import com.example.voyago.model.TypeTravel
 
@@ -88,9 +94,10 @@ fun EditProfileScreen(user: LazyUser)
                 )//.background(Color(0xdf, 0xd1, 0xe0, 255), shape = RectangleShape))
                 {
                     ProfilePhotoEditing(
-                        userData.firstname, userData.surname,
+                        user.name, user.surname,
                         modifier = Modifier.align(Alignment.Center)
                     )
+
                 }
             }
 
@@ -234,6 +241,8 @@ fun EditProfileScreen(user: LazyUser)
 fun ProfilePhotoEditing(firstname: String, surname: String, modifier: Modifier = Modifier) {
     val initials = "${firstname.first()}"+"${surname.first()}"
 
+    var showPopup by remember { mutableStateOf(false) }
+
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
@@ -246,7 +255,90 @@ fun ProfilePhotoEditing(firstname: String, surname: String, modifier: Modifier =
             style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold
         )
+        //Popup da implementare
+        Icon(Icons.Default.CameraAlt,
+            "camera",
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .clickable { showPopup = true }
+        )
     }
+
+    if(showPopup)
+        CameraPopup(onDismissRequest = { showPopup = false } )
+
+}
+
+@Composable
+fun CameraPopup(onDismissRequest: () -> Unit)
+{
+
+    Dialog(onDismissRequest = onDismissRequest) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                .align(Alignment.CenterVertically)
+                .padding(16.dp),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Button(
+                onClick = {
+
+                },
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(5.dp)
+
+            ) {
+                Text("Picture from Camera")
+            }
+
+            Button(
+                onClick = {
+
+                },
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(5.dp)
+
+            ) {
+                Text("Picture from Gallery")
+            }
+        }
+    }
+
+
+    /*
+    Box(modifier = Modifier.wrapContentSize())
+
+    {
+        Button(
+            onClick = {
+
+            },
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .padding(5.dp)
+
+        ) {
+            Text("Picture from Camera")
+        }
+
+        Button(
+            onClick = {
+
+            },
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(5.dp)
+
+        ) {
+            Text("Picture from Gallery")
+        }
+    }
+
+     */
 }
 
 //Passare diretto desired destinations e la desired destination dell'user.
