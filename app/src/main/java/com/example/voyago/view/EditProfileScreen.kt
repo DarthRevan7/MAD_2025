@@ -289,7 +289,7 @@ fun CameraPopup(onDismissRequest: () -> Unit)
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
+                .height(150.dp)
                 //.align(Alignment.CenterVertically)
                 .padding(16.dp),
             shape = RoundedCornerShape(16.dp),
