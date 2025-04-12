@@ -1,9 +1,6 @@
 package com.example.voyago.view
 
 import android.content.Context
-import android.provider.ContactsContract
-import android.renderscript.ScriptGroup
-import android.util.Patterns
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,8 +11,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -35,8 +30,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.input.KeyboardType
 import com.example.voyago.LazyUser
 import com.example.voyago.model.TypeTravel
-import kotlin.reflect.KProperty1
-import androidx.compose.runtime.mutableStateMapOf
 
 
 
@@ -53,20 +46,14 @@ fun EditProfileScreen(user: LazyUser)
     var fieldValues = remember { mutableStateListOf(user.name,
         user.surname, user.username, user.email,
         user.country,
-        user.userDescription)}
+        user.userDescription)
+    }
     val fieldNames = listOf("First Name", "Surname",
         "Username", "Email address", "Country",
-        "User Description")
+        "User Description"
+    )
 
-    /*val editableFields = mapOf(
-        user.name to "First Name",
-        user.surname to "Surname",
-        user.username to "Username",
-        user.email to "Email",
-        user.country to "Country",
-        user.userDescription to "Description"
-    )*/
-
+    var errors = arrayOf(false, false, false, false, false, false)
 
 
     val selected = remember { user.typeTravelPreferences.toMutableStateList() }
@@ -143,6 +130,8 @@ fun EditProfileScreen(user: LazyUser)
                                         false
                                     }
                                 }
+
+                                errors[index] = emailHasErrors
                                 /*TextField(
                                     value = item,
                                     onValueChange = { fieldValues[index] = it},
@@ -153,7 +142,7 @@ fun EditProfileScreen(user: LazyUser)
                                         .padding(16.dp),
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
                                 )*/
-                                ValidatingEmailInputTextField(item, {fieldValues[index] = it}, emailHasErrors)
+                                ValidatingInputEmailField(item, {fieldValues[index] = it}, emailHasErrors)
                             }
                             //These are other text fields
                             else {
@@ -161,6 +150,7 @@ fun EditProfileScreen(user: LazyUser)
                                     item.isBlank()
                                 }
 
+                                errors[index] = validatorHasErrors
                                 /*TextField(
                                     value = item,
                                     onValueChange = { val itemIndex:Int = fieldValues.indexOf(item); fieldValues[itemIndex] = it },
@@ -220,8 +210,7 @@ fun EditProfileScreen(user: LazyUser)
                     //Update datas
                     Button(
                         onClick = {
-                            //ALL DATA ARE VALID
-                            if(true) {
+                            if(!errors.any{it}) {
                                 user.applyStrChanges(fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3], fieldValues[4], fieldValues[5])
                                 user.applyTypeTravelChanges(selected)
                                 //user.applyDestinations()
@@ -285,7 +274,7 @@ fun SearchBarWithResults(context:Context, user: LazyUser)
 
 
 @Composable
-fun ValidatingEmailInputTextField(email: String, updateState: (String) -> Unit, validatorHasErrors: Boolean) {
+fun ValidatingInputEmailField(email: String, updateState: (String) -> Unit, validatorHasErrors: Boolean) {
     OutlinedTextField(
         modifier = Modifier
             .fillMaxWidth()
