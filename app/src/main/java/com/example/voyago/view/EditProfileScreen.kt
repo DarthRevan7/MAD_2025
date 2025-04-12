@@ -1,7 +1,8 @@
 package com.example.voyago.view
 
-
+import com.example.voyago.activities.*
 import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -49,7 +50,7 @@ var userData = userRepository.fetchUserData(true)
 
 
 @Composable
-fun EditProfileScreen(user: LazyUser, navController: NavController)
+fun EditProfileScreen(user: LazyUser, navController: NavController, context:Context)
 {
     //Delete later
     val fieldValues = rememberSaveable(saver = listSaver(
@@ -106,7 +107,8 @@ fun EditProfileScreen(user: LazyUser, navController: NavController)
                 {
                     ProfilePhotoEditing(
                         user.name, user.surname,
-                        modifier = Modifier.align(Alignment.Center)
+                        modifier = Modifier.align(Alignment.Center),
+                        context = context
                     )
 
                 }
@@ -250,7 +252,7 @@ fun EditProfileScreen(user: LazyUser, navController: NavController)
 }
 
 @Composable
-fun ProfilePhotoEditing(firstname: String, surname: String, modifier: Modifier = Modifier) {
+fun ProfilePhotoEditing(firstname: String, surname: String, modifier: Modifier = Modifier, context:Context) {
     val initials = "${firstname.first()}"+"${surname.first()}"
 
     var showPopup by remember { mutableStateOf(false) }
@@ -277,12 +279,12 @@ fun ProfilePhotoEditing(firstname: String, surname: String, modifier: Modifier =
     }
 
     if(showPopup)
-        CameraPopup(onDismissRequest = { showPopup = false } )
+        CameraPopup(onDismissRequest = { showPopup = false } , context=context)
 
 }
 
 @Composable
-fun CameraPopup(onDismissRequest: () -> Unit)
+fun CameraPopup(onDismissRequest: () -> Unit, context:Context)
 {
 
     Dialog(onDismissRequest = onDismissRequest) {
@@ -296,7 +298,7 @@ fun CameraPopup(onDismissRequest: () -> Unit)
         ) {
             Button(
                 onClick = {
-
+                    context.startActivity(Intent(context, CameraActivity::class.java))
                 },
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
