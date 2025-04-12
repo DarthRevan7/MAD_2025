@@ -34,7 +34,7 @@ class MyProfileActivity : ComponentActivity() {
                     MyProfileScreen(viewModel, true, navController)
                 }
                 composable("edit_profile") {
-                    EditProfileScreen(user1)
+                    EditProfileScreen(user1, navController)
                 }
             })
 

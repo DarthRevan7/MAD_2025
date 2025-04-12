@@ -31,8 +31,11 @@ import com.example.voyago.activities.BottomBar
 import com.example.voyago.activities.TopBar
 import com.example.voyago.model.*
 import androidx.compose.material3.*
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.navigation.NavController
 import androidx.compose.ui.window.Dialog
 import com.example.voyago.LazyUser
 import com.example.voyago.model.TypeTravel
@@ -46,13 +49,21 @@ var userData = userRepository.fetchUserData(true)
 
 
 @Composable
-fun EditProfileScreen(user: LazyUser)
+fun EditProfileScreen(user: LazyUser, navController: NavController)
 {
     //Delete later
-    var fieldValues = remember { mutableStateListOf(user.name,
-        user.surname, user.username, user.email,
-        user.country,
-        user.userDescription)
+    val fieldValues = rememberSaveable(saver = listSaver(
+        save = { it.toList() },
+        restore = { it.toMutableStateList() }
+    )) {
+        mutableStateListOf(
+            user.name,
+            user.surname,
+            user.username,
+            user.email,
+            user.country,
+            user.userDescription
+        )
     }
     val fieldNames = listOf("First Name", "Surname",
         "Username", "Email address", "Country",
@@ -221,6 +232,7 @@ fun EditProfileScreen(user: LazyUser)
                                 user.applyStrChanges(fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3], fieldValues[4], fieldValues[5])
                                 user.applyTypeTravelChanges(selected)
                                 //user.applyDestinations()
+                                navController.navigate("my_profile")
                             }
                     },
                         modifier = Modifier
@@ -278,7 +290,7 @@ fun CameraPopup(onDismissRequest: () -> Unit)
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp)
-                .align(Alignment.CenterVertically)
+                //.align(Alignment.CenterVertically)
                 .padding(16.dp),
             shape = RoundedCornerShape(16.dp),
         ) {
