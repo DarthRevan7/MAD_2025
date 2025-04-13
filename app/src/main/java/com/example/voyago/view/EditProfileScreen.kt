@@ -318,12 +318,11 @@ fun EditProfileScreen(user: LazyUser, navController: NavController, context:Cont
 
     }
 }
+var showPopup = mutableStateOf(false);
 
 @Composable
 fun ProfilePhotoEditing(firstname: String, surname: String, modifier: Modifier = Modifier, context:Context) {
     val initials = "${firstname.first()}"+"${surname.first()}"
-
-    var showPopup by remember { mutableStateOf(false) }
 
     Box(
         contentAlignment = Alignment.Center,
@@ -353,12 +352,15 @@ fun ProfilePhotoEditing(firstname: String, surname: String, modifier: Modifier =
             "camera",
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .clickable {showPopup = true}
+                .clickable {showPopup.value = true}
         )
     }
 
-    if(showPopup)
-        CameraPopup(onDismissRequest = { showPopup = false } , context=context)
+    if(showPopup.value)
+        CameraPopup(onDismissRequest = { if(newImageUri != null) showPopup.value = false } , context=context)
+
+
+
 }
 
 @Composable
@@ -373,6 +375,7 @@ fun CameraPopup(onDismissRequest: () -> Unit, context:Context)
             Log.d("PhotoPicker", "Selected URI: $uri")
             selectedImageUri = uri
             newImageUri = selectedImageUri
+            showPopup.value = false
         } else {
             Log.d("PhotoPicker", "No media selected")
         }

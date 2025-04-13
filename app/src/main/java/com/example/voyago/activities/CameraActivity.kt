@@ -26,6 +26,7 @@ import com.example.voyago.view.newImageUri
 import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.util.Locale
+import com.example.voyago.view.showPopup
 
 typealias LumaListener = (luma: Double) -> Unit
 
@@ -156,6 +157,7 @@ class CameraActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
+        showPopup.value = false
         super.onDestroy()
         cameraExecutor.shutdown()
     }
