@@ -2,6 +2,7 @@ package com.example.voyago.activities
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -48,6 +49,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import coil3.compose.AsyncImage
 import com.example.voyago.LazyUser
 import com.example.voyago.NavItem
 import com.example.voyago.R
@@ -105,7 +107,7 @@ fun MainPage(navController: NavController, context: Context) {
 }
 
 @Composable
-fun ProfilePhoto(firstname: String, surname: String, isSmall: Boolean, profileImage: ImageBitmap?, modifier: Modifier = Modifier) {
+fun ProfilePhoto(firstname: String, surname: String, isSmall: Boolean, profileImage: Uri?, modifier: Modifier = Modifier) {
     val initials = "${firstname.first()}"+"${surname.first()}"
 
     if(profileImage == null)
@@ -147,7 +149,7 @@ fun ProfilePhoto(firstname: String, surname: String, isSmall: Boolean, profileIm
 
         ) {
             //Icon(profileImage)
-            Image(profileImage,"profilePic",
+            AsyncImage(profileImage,"profilePic",
                 modifier=Modifier
                     //.size(130.dp)
                     .fillMaxSize()

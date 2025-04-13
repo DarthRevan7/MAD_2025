@@ -1,7 +1,9 @@
 package com.example.voyago.activities
 
 import android.Manifest
+import android.app.Activity
 import android.content.ContentValues
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -20,6 +22,8 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.core.Preview
 import androidx.camera.core.CameraSelector
 import android.util.Log
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
@@ -30,38 +34,22 @@ import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-
-object ImageHolder {
-    var selectedImage: ImageBitmap? = null
-}
-
 class GalleryActivity : AppCompatActivity() {
-
-    /*private val pickImage =
-        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-            uri?.let {
-                val inputStream = contentResolver.openInputStream(uri)
-                val bitmap = BitmapFactory.decodeStream(inputStream)
-                inputStream?.close()
-
-                val imageBitmap = bitmap?.asImageBitmap()
-                if (imageBitmap != null) {
-                    ImageHolder.selectedImage = imageBitmap
-                    setResult(RESULT_OK)
-                } else {
-                    setResult(RESULT_CANCELED)
-                }
-            } ?: run {
-                setResult(RESULT_CANCELED)
-            }
-
-            finish()
-        }*/
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Non serve layout, lanciamo subito la galleria
-        //pickImage.launch("image/*")
+        val pickMedia = registerForActivityResult(PickVisualMedia()) { uri ->
+            // Callback invoked after the user selects a media item or closes the photo picker
+            if (uri != null) {
+                user1.profileImage = uri
+                Log.d("PhotoPicker", "Selected URI: $uri")
+            } else {
+                Log.d("PhotoPicker", "No media selected")
+            }
+            finish() // Finish the activity after the selection
+        }
+
+        pickMedia.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
     }
 }

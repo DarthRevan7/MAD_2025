@@ -23,6 +23,7 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
 import androidx.compose.ui.graphics.asImageBitmap
+import coil3.Uri
 import com.example.voyago.user1
 import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
@@ -98,12 +99,12 @@ class CameraActivity : AppCompatActivity() {
 
                     if(output.savedUri != null)
                     {
-                        val imageUri = output.savedUri!!
-                        val inputStream = baseContext.contentResolver.openInputStream(imageUri)
+                        val imageUri = output.savedUri
+                        /*val inputStream = baseContext.contentResolver.openInputStream(imageUri)
                         val bitmap = BitmapFactory.decodeStream(inputStream)
-                        inputStream?.close()
+                        inputStream?.close()*/
 
-                        user1.profileImage = bitmap.asImageBitmap()
+                        user1.profileImage = output.savedUri
                     }
 
 

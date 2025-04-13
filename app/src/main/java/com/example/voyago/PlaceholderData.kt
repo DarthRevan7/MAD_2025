@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.Icon
 import android.media.*
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.*
@@ -59,7 +60,8 @@ data class LazyUser(
     var trips:List<LazyTrip>,
     var articles:List<LazyArticle>,
     var reviews:List<LazyReview>,
-    var profileImage: ImageBitmap?
+    //var profileImage: ImageBitmap?
+    var profileImage: Uri?
 )
 {
     fun applyStrChanges(name:String, surname:String, username:String, email:String, country:String, userDescription:String)
