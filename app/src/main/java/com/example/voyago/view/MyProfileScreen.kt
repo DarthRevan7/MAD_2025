@@ -47,8 +47,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -437,7 +439,13 @@ fun UITripArticle(destination:String, strData:String, image: Int?)
                             .size(30.dp)
                             //.background(Color.White ,shape = CircleShape)
                     ) {
-                        Image(painter = painterResource(image), "photo")
+                        Image(painter = painterResource(image), "photo",
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip( shape = CircleShape)
+                                .border(0.dp, Color.White, CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
 
                     }
                 }
