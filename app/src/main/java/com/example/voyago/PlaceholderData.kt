@@ -24,7 +24,7 @@ data class LazySeriousTrip(
     val sizeGroup:Int,
     val acceptedPeople:Int,
     val tripPhoto:Int,                      //Use the R.drawable which returns an integer
-    val activities:Map<String,LazyActivity>
+    val activities:Map<String,List<LazyActivity>>
 )
 {
     //Calculates the remaining spots
@@ -196,3 +196,52 @@ val reviewList = listOf(
 )
 
  */
+
+val romeTrip = LazySeriousTrip(
+    tripTitle = "Roaming Through Rome",
+    destination = "Rome, Italy",
+    startDate = "September 15, 2025",
+    endDate = "September 20, 2025",
+    esteemedPrice = 1350.0f,
+    sizeGroup = 10,
+    acceptedPeople = 6,
+    tripPhoto = R.drawable.rome_photo, // Replace with actual image resource
+    activities = mapOf(
+        "Day 1" to listOf(
+            LazyActivity("2025-09-15", "09:00", true, "Colosseum guided tour"),
+            LazyActivity("2025-09-15", "12:00", true, "Lunch near Roman Forum"),
+            LazyActivity("2025-09-15", "14:00", false, "Walk through Palatine Hill"),
+            LazyActivity("2025-09-15", "18:00", true, "Welcome dinner at Trastevere")
+        ),
+        "Day 2" to listOf(
+            LazyActivity("2025-09-16", "08:30", true, "Vatican Museums and Sistine Chapel"),
+            LazyActivity("2025-09-16", "12:30", true, "Lunch at Vatican area"),
+            LazyActivity("2025-09-16", "15:00", false, "Explore Castel Sant'Angelo"),
+            LazyActivity("2025-09-16", "20:00", true, "Tiber River sunset walk")
+        ),
+        "Day 3" to listOf(
+            LazyActivity("2025-09-17", "09:00", true, "Pantheon visit"),
+            LazyActivity("2025-09-17", "11:00", true, "Espresso tasting session"),
+            LazyActivity("2025-09-17", "14:00", false, "Free time at Piazza Navona"),
+            LazyActivity("2025-09-17", "19:00", true, "Group dinner and gelato tour")
+        ),
+        "Day 4" to listOf(
+            LazyActivity("2025-09-18", "10:00", true, "Cooking class: Make your own pasta"),
+            LazyActivity("2025-09-18", "13:00", true, "Eat what you cooked together"),
+            LazyActivity("2025-09-18", "15:00", false, "Relax in Villa Borghese gardens"),
+            LazyActivity("2025-09-18", "18:00", true, "Evening wine tasting event")
+        ),
+        "Day 5" to listOf(
+            LazyActivity("2025-09-19", "09:30", true, "Day trip to Tivoli (Villa d'Este)"),
+            LazyActivity("2025-09-19", "13:00", true, "Lunch in Tivoli"),
+            LazyActivity("2025-09-19", "16:00", false, "Explore Villa Adriana"),
+            LazyActivity("2025-09-19", "20:00", true, "Return to Rome and night walk")
+        ),
+        "Day 6" to listOf(
+            LazyActivity("2025-09-20", "08:00", false, "Optional early morning photo session"),
+            LazyActivity("2025-09-20", "10:00", true, "Farewell brunch"),
+            LazyActivity("2025-09-20", "12:00", false, "Free time for shopping or relaxing"),
+            LazyActivity("2025-09-20", "15:00", true, "Group wrap-up & feedback session")
+        )
+    )
+)
