@@ -2,6 +2,9 @@ package com.example.voyago.activities
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.Icon
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -34,8 +37,11 @@ import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -45,6 +51,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.voyago.LazyUser
 import com.example.voyago.NavItem
 import com.example.voyago.R
 import com.example.voyago.view.TravelProposalScreen
@@ -101,32 +108,57 @@ fun MainPage(navController: NavController, context: Context) {
 }
 
 @Composable
-fun ProfilePhoto(firstname: String, surname: String, isSmall: Boolean, modifier: Modifier = Modifier) {
+fun ProfilePhoto(firstname: String, surname: String, isSmall: Boolean, profileImage: ImageBitmap?, modifier: Modifier = Modifier) {
     val initials = "${firstname.first()}"+"${surname.first()}"
 
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = modifier
-            .size(130.dp)
-            .background(Color.Blue, shape = CircleShape)
-    ) {
-        if(isSmall) {
-            Text(
-                text = initials,
-                color = Color.White,
-                style = MaterialTheme.typography.bodySmall,
-                fontWeight = FontWeight.Bold
-            )
-        }
-        else {
-            Text(
-                text = initials,
-                color = Color.White,
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Bold
-            )
-        }
+    if(profileImage == null)
+    {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = modifier
+                .size(130.dp)
+                .background(Color.Blue, shape = CircleShape)
+        ) {
+            if(isSmall) {
+                Text(
+                    text = initials,
+                    color = Color.White,
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            else {
+                Text(
+                    text = initials,
+                    color = Color.White,
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Bold
+                )
+            }
 
+        }
+    }
+    else
+    {
+        //use the icon set in the user data
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = modifier
+                .size(width = 130.dp, height = 130.dp)
+                .background( color = Color.Blue , shape = CircleShape)
+                //.clip( CircleShape )
+
+        ) {
+            //Icon(profileImage)
+            Image(profileImage,"profilePic",
+                modifier=Modifier
+                    //.size(130.dp)
+                    .fillMaxSize()
+                    .clip( shape = CircleShape)
+            )
+                    //.matchParentSize())
+
+        }
     }
 }
 

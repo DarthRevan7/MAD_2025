@@ -2,7 +2,10 @@ package com.example.voyago.activities
 
 import android.Manifest
 import android.content.ContentValues
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
+import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
@@ -26,8 +29,14 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
 import androidx.camera.video.MediaStoreOutputOptions
 import androidx.camera.video.VideoRecordEvent
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.text.input.KeyboardType.Companion.Uri
 import androidx.core.content.PermissionChecker
+import androidx.core.graphics.drawable.toIcon
+import androidx.core.net.toFile
 import com.example.voyago.R
+import com.example.voyago.user1
 import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -44,6 +53,7 @@ class CameraActivity : AppCompatActivity() {
     private var recording: Recording? = null
 
     private lateinit var cameraExecutor: ExecutorService
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -101,6 +111,20 @@ class CameraActivity : AppCompatActivity() {
                     val msg = "Photo capture succeeded: ${output.savedUri}"
                     Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
                     Log.d(TAG, msg)
+                    //Save output data
+
+                    if(output.savedUri != null)
+                    {
+                        val imageUri = output.savedUri!!
+                        val inputStream = baseContext.contentResolver.openInputStream(imageUri)
+                        val bitmap = BitmapFactory.decodeStream(inputStream)
+                        inputStream?.close()
+
+                        user1.profileImage = bitmap.asImageBitmap()
+                    }
+
+
+
                 }
             }
         )

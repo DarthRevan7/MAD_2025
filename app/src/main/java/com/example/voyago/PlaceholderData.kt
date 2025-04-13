@@ -1,10 +1,14 @@
 package com.example.voyago
 
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.Icon
 import android.media.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
@@ -23,7 +27,7 @@ data class LazySeriousTrip(
     val esteemedPrice:Float,
     val sizeGroup:Int,
     val acceptedPeople:Int,
-    val tripPhoto:Int,                      //Use the R.drawable which returns an integer
+    val tripPhoto:Int,                              //Use the R.drawable which returns an integer
     val activities:Map<String,List<LazyActivity>>
 )
 {
@@ -55,7 +59,7 @@ data class LazyUser(
     var trips:List<LazyTrip>,
     var articles:List<LazyArticle>,
     var reviews:List<LazyReview>,
-    var profileImage:Image?
+    var profileImage: ImageBitmap?
 )
 {
     fun applyStrChanges(name:String, surname:String, username:String, email:String, country:String, userDescription:String)
