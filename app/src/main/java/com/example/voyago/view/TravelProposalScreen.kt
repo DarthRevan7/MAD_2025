@@ -26,7 +26,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.voyago.R
 import com.example.voyago.activities.BottomBar
 import com.example.voyago.activities.TopBar
 import com.example.voyago.romeTrip
@@ -65,7 +64,6 @@ fun TravelProposalScreen() {
             }
 
             item {
-
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -176,7 +174,6 @@ fun Hero() {
                     .align(Alignment.TopStart)
                     .padding(16.dp)
             )
-
         }
     }
 }

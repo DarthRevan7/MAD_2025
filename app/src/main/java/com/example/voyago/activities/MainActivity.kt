@@ -38,8 +38,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -51,7 +49,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
-import com.example.voyago.LazyUser
 import com.example.voyago.NavItem
 import com.example.voyago.R
 import com.example.voyago.view.TravelProposalScreen
@@ -146,7 +143,6 @@ fun ProfilePhoto(firstname: String, surname: String, isSmall: Boolean, profileIm
             modifier = modifier
                 .size(width = 130.dp, height = 130.dp)
                 .background( color = Color.Blue , shape = CircleShape)
-                //.clip( CircleShape )
 
         ) {
             //Icon(profileImage)
@@ -205,7 +201,6 @@ fun TopBar() {
     )
 }
 
-//@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomBar(selectedIndex: Any?) {
 

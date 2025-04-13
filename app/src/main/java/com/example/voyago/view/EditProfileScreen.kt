@@ -1,6 +1,5 @@
 package com.example.voyago.view
 
-import android.app.Activity
 import com.example.voyago.activities.*
 import android.content.Context
 import android.content.Intent
@@ -31,13 +30,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.voyago.activities.BottomBar
 import com.example.voyago.activities.TopBar
-import com.example.voyago.model.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -49,24 +46,17 @@ import androidx.compose.ui.window.Dialog
 import com.example.voyago.LazyUser
 import com.example.voyago.model.TypeTravel
 import android.net.Uri
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.border
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import coil3.compose.AsyncImage
 import com.example.voyago.user1
 
-
-//Edit this
-var userRepository:UserRepository = UserRepository()
-var userData = userRepository.fetchUserData(true)
-
 var newImageUri: Uri? = null
 
 @Composable
-fun EditProfileScreen(user: LazyUser, navController: NavController, context:Context)
-{
-    //Delete later
+fun EditProfileScreen(user: LazyUser, navController: NavController, context:Context) {
+
     val fieldValues = rememberSaveable(saver = listSaver(
         save = { it.toList() },
         restore = { it.toMutableStateList() }
@@ -80,6 +70,7 @@ fun EditProfileScreen(user: LazyUser, navController: NavController, context:Cont
             user.userDescription
         )
     }
+
     val fieldNames = listOf("First Name", "Surname",
         "Username", "Email address", "Country",
         "User Description"
@@ -90,7 +81,6 @@ fun EditProfileScreen(user: LazyUser, navController: NavController, context:Cont
     newImageUri = user1.profileImage
 
     val selected = remember { user.typeTravelPreferences.toMutableStateList() }
-
 
     //TODO: temporary, to be changed once database is fully implemented
     val availableDestinations = listOf("Argentina", "Armenia", "Australia", "Austria", "Azerbaijan",
@@ -120,7 +110,6 @@ fun EditProfileScreen(user: LazyUser, navController: NavController, context:Cont
         "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Vietnam"
     )
 
-
     val selectedDestinations = rememberSaveable(
         saver = listSaver(
             save = { it.toList() },
@@ -140,8 +129,8 @@ fun EditProfileScreen(user: LazyUser, navController: NavController, context:Cont
     ) {
         innerPadding ->
 
-
         val listState = rememberLazyListState()
+
         LazyColumn(
             state = listState,
             modifier = Modifier
@@ -156,13 +145,11 @@ fun EditProfileScreen(user: LazyUser, navController: NavController, context:Cont
                     Modifier
                         .fillMaxWidth()
                         .height(180.dp)
-                )//.background(Color(0xdf, 0xd1, 0xe0, 255), shape = RectangleShape))
-                {
+                ) {
                     ProfilePhotoEditing(
                         user.name, user.surname,
                         modifier = Modifier.align(Alignment.Center),
-                        context = context,
-                        user1.profileImage
+                        context = context
                     )
 
                 }
@@ -193,7 +180,7 @@ fun EditProfileScreen(user: LazyUser, navController: NavController, context:Cont
                 ) {
 
                     //TextFields with various info
-                    fieldValues.forEachIndexed() {
+                    fieldValues.forEachIndexed {
                             index, item ->
                             //This is TextField with email
                             if(index == 3) {
@@ -206,16 +193,7 @@ fun EditProfileScreen(user: LazyUser, navController: NavController, context:Cont
                                 }
 
                                 errors[index] = emailHasErrors
-                                /*TextField(
-                                    value = item,
-                                    onValueChange = { fieldValues[index] = it},
-                                    label = { val itemIndex:Int = fieldValues.indexOf(item); Text(text = fieldNames[itemIndex]) },
-                                    maxLines = 2,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
-                                )*/
+
                                 ValidatingInputEmailField(item, {fieldValues[index] = it}, emailHasErrors)
                             }
                             //These are other text fields
@@ -225,19 +203,9 @@ fun EditProfileScreen(user: LazyUser, navController: NavController, context:Cont
                                 }
 
                                 errors[index] = validatorHasErrors
-                                /*TextField(
-                                    value = item,
-                                    onValueChange = { val itemIndex:Int = fieldValues.indexOf(item); fieldValues[itemIndex] = it },
-                                    label = { val itemIndex:Int = fieldValues.indexOf(item); Text(text = fieldNames[itemIndex]) },
-                                    maxLines = 2,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
-                                )*/
+
                                 ValidatingInputTextField(item, {fieldValues[index] = it}, validatorHasErrors, fieldNames[fieldValues.indexOf(item)])
                             }
-
                     }
 
                     Text(text = "Preferences about the type of travel",
@@ -278,8 +246,6 @@ fun EditProfileScreen(user: LazyUser, navController: NavController, context:Cont
                         fontSize = 14.sp
                     )
 
-
-
                     Box(
                         modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.Center
@@ -289,7 +255,7 @@ fun EditProfileScreen(user: LazyUser, navController: NavController, context:Cont
                         Column(
                             modifier = Modifier
                                 .height(200.dp)
-                                .background(Color.LightGray)
+                                .background(Color(0xc1, 0xa5, 0xc3, 128))
                                 .verticalScroll(scrollState)
                                 .fillMaxWidth(0.8f)
                                 .padding(horizontal = 16.dp)
@@ -354,7 +320,7 @@ fun EditProfileScreen(user: LazyUser, navController: NavController, context:Cont
 }
 
 @Composable
-fun ProfilePhotoEditing(firstname: String, surname: String, modifier: Modifier = Modifier, context:Context, uri:Uri?) {
+fun ProfilePhotoEditing(firstname: String, surname: String, modifier: Modifier = Modifier, context:Context) {
     val initials = "${firstname.first()}"+"${surname.first()}"
 
     var showPopup by remember { mutableStateOf(false) }
@@ -369,15 +335,12 @@ fun ProfilePhotoEditing(firstname: String, surname: String, modifier: Modifier =
             AsyncImage(
                 newImageUri,"newProfilePic",
                 modifier = Modifier
-                    //.size(130.dp)
                     .fillMaxSize()
                     .clip( shape = CircleShape)
                     .border(0.dp, Color.White, CircleShape),
                 contentScale = ContentScale.Crop
             )
-        }
-        else
-        {
+        } else {
             Text(
                 text = initials,
                 color = Color.White,
@@ -390,22 +353,18 @@ fun ProfilePhotoEditing(firstname: String, surname: String, modifier: Modifier =
             "camera",
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .clickable { showPopup = true }
+                .clickable {showPopup = true}
         )
     }
 
     if(showPopup)
         CameraPopup(onDismissRequest = { showPopup = false } , context=context)
-
 }
-
-
 
 @Composable
 fun CameraPopup(onDismissRequest: () -> Unit, context:Context)
 {
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
-
 
     val pickMedia = rememberLauncherForActivityResult(
         contract = PickVisualMedia()
@@ -419,15 +378,11 @@ fun CameraPopup(onDismissRequest: () -> Unit, context:Context)
         }
     }
 
-
-
-
     Dialog(onDismissRequest = onDismissRequest) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(150.dp)
-                //.align(Alignment.CenterVertically)
                 .padding(16.dp),
             shape = RoundedCornerShape(16.dp),
         ) {
@@ -446,88 +401,16 @@ fun CameraPopup(onDismissRequest: () -> Unit, context:Context)
             Button(
                 onClick = {
                     pickMedia.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
-
-                    /*
-                    selectedImageUri?.let { uri ->
-                        user1.profileImage = uri
-                    }
-
-                     */
-                    /*
-                    if(selectedImageUri != null)
-                    {
-                        //user1.applyNewImage(selectedImageUri!!)
-                    }
-                    */
-
-                    //context.startActivity(Intent(context, GalleryActivity::class.java))
                 },
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .padding(5.dp)
-
             ) {
                 Text("Picture from Gallery")
             }
         }
     }
-
-
-    /*
-    Box(modifier = Modifier.wrapContentSize())
-
-    {
-        Button(
-            onClick = {
-
-            },
-            modifier = Modifier
-                .align(Alignment.CenterStart)
-                .padding(5.dp)
-
-        ) {
-            Text("Picture from Camera")
-        }
-
-        Button(
-            onClick = {
-
-            },
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .padding(5.dp)
-
-        ) {
-            Text("Picture from Gallery")
-        }
-    }
-
-     */
 }
-
-//Passare diretto desired destinations e la desired destination dell'user.
-@Composable
-fun SearchBarWithResults(context:Context, user: LazyUser)
-{
-
-    var destinationList = remember { mutableStateOf<List<String>>(user.desiredDestinations) }
-    var strData = destinationList.value.joinToString(", ")
-
-    //SearchView(context)
-    TextField(
-        value = strData,
-        onValueChange = { strData = it }, //Splittare il dato con la virgola
-        label = { Text(text ="Desired Destinations" ) },
-        maxLines = 1,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    )
-
-}
-
-
-
 
 @Composable
 fun ValidatingInputEmailField(email: String, updateState: (String) -> Unit, validatorHasErrors: Boolean) {
@@ -565,51 +448,4 @@ fun ValidatingInputTextField(text:String, updateState: (String) -> Unit, validat
         },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
     )
-}
-
-@Composable
-fun SelectDestinations(
-    availableDestinations: List<String>,
-    selectedDestinations: MutableList<String>,
-    onDestinationChanged: (List<String>) -> Unit
-) {
-    LazyColumn(modifier = Modifier.fillMaxWidth()) {
-        items(availableDestinations) { country ->
-            DestinationCheckbox(
-                country = country,
-                isSelected = selectedDestinations.contains(country),
-                onCheckedChange = { isChecked ->
-                    if (isChecked) {
-                        selectedDestinations.add(country)
-                    } else {
-                        selectedDestinations.remove(country)
-                    }
-                    onDestinationChanged(selectedDestinations)
-                }
-            )
-        }
-    }
-}
-
-@Composable
-fun DestinationCheckbox(
-    country: String,
-    isSelected: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-    ) {
-        Text(
-            text = country,
-            modifier = Modifier.weight(1f),
-        )
-        Checkbox(
-            checked = isSelected,
-            onCheckedChange = onCheckedChange
-        )
-    }
 }

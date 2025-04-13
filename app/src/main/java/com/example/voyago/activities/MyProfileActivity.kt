@@ -14,7 +14,7 @@ import com.example.voyago.view.*
 import com.example.voyago.viewmodel.*
 
 class MyProfileActivity : ComponentActivity() {
-    private val viewModel: ProfileViewModel by viewModels()       //What is this?? Check it!!
+    private val viewModel: ProfileViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,14 +27,12 @@ class MyProfileActivity : ComponentActivity() {
             MyProfileScreen(viewModel, true, navController)
             NavHost(navController= navController, startDestination= "my_profile", builder= {
                 composable("my_profile"){
-
                     MyProfileScreen(viewModel, true, navController)
                 }
                 composable("edit_profile") {
                     EditProfileScreen(user1, navController, context)
                 }
             })
-
         }
     }
 }

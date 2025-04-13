@@ -3,7 +3,6 @@ package com.example.voyago.activities
 import android.Manifest
 import android.content.ContentValues
 import android.content.pm.PackageManager
-import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
@@ -22,8 +21,6 @@ import android.util.Log
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
-import androidx.compose.ui.graphics.asImageBitmap
-import coil3.Uri
 import com.example.voyago.user1
 import com.example.voyago.view.newImageUri
 import java.nio.ByteBuffer
@@ -52,7 +49,7 @@ class CameraActivity : AppCompatActivity() {
             requestPermissions()
         }
 
-        // Set up the listeners for take photo and video capture buttons
+        // Set up the listeners for take photo
         viewBinding.imageCaptureButton.setOnClickListener { takePhoto() }
 
 
@@ -60,7 +57,7 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun takePhoto() {
-        // Get a stable reference of the modifiable image capture use case
+        // Get reference of the modifiable image capture use case
         val imageCapture = imageCapture ?: return
 
         // Create time stamped name and MediaStore entry.
@@ -96,21 +93,12 @@ class CameraActivity : AppCompatActivity() {
                     val msg = "Photo capture succeeded: ${output.savedUri}"
                     Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
                     Log.d(TAG, msg)
+
                     //Save output data
-
-                    if(output.savedUri != null)
-                    {
-                        val imageUri = output.savedUri
-                        /*val inputStream = baseContext.contentResolver.openInputStream(imageUri)
-                        val bitmap = BitmapFactory.decodeStream(inputStream)
-                        inputStream?.close()*/
-
+                    if(output.savedUri != null) {
                         newImageUri = output.savedUri
                         user1.profileImage = output.savedUri
                     }
-
-
-
                 }
             }
         )
@@ -155,7 +143,6 @@ class CameraActivity : AppCompatActivity() {
             } catch(exc: Exception) {
                 Log.e(TAG, "Use case binding failed", exc)
             }
-
         }, ContextCompat.getMainExecutor(this))
     }
 

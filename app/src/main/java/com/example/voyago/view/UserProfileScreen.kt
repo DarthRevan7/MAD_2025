@@ -1,7 +1,6 @@
 package com.example.voyago.view
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,12 +25,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
 import com.example.voyago.R
 import com.example.voyago.activities.*
-import com.example.voyago.user1
 import com.example.voyago.user2
 import com.example.voyago.viewmodel.*
 
@@ -41,7 +38,7 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserProfileScreen(viewModel: ProfileViewModel) {
+fun UserProfileScreen() {
 
     //Icons
     val painterStartChat = painterResource(R.drawable.start_chat)
@@ -100,7 +97,6 @@ fun UserProfileScreen(viewModel: ProfileViewModel) {
                             .offset(y = (40).dp)
                     )
 
-
                     Text(
                         text = user2.name + " " + user2.surname,
                         style = MaterialTheme.typography.headlineSmall,
@@ -110,7 +106,9 @@ fun UserProfileScreen(viewModel: ProfileViewModel) {
                             .padding(bottom = 10.dp)
                             .offset(y = (-50).dp)
                     )
+
                     Spacer( Modifier.height(20.dp) )
+
                     Text(
                         text = user2.country,
                         style = MaterialTheme.typography.headlineSmall,
@@ -126,7 +124,7 @@ fun UserProfileScreen(viewModel: ProfileViewModel) {
             item {
                 //Row with rating and reliability
                 Row(
-                    modifier = Modifier./*align(Alignment.CenterHorizontally).*/offset(y = (-25).dp)
+                    modifier = Modifier.offset(y = (-25).dp)
                 ) {
                     RatingAndReliability(
                         user2.approvalRate,

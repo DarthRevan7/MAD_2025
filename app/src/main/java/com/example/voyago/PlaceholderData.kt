@@ -1,24 +1,7 @@
 package com.example.voyago
 
-import android.graphics.Bitmap
-import android.graphics.drawable.Drawable
-import android.graphics.drawable.Icon
-import android.media.*
 import android.net.Uri
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.size
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
-import com.example.voyago.activities.ProfilePhoto
 import com.example.voyago.model.*
-import java.util.*
-import kotlin.Nothing
-
 
 data class LazySeriousTrip(
     val tripTitle:String,
@@ -30,8 +13,7 @@ data class LazySeriousTrip(
     val acceptedPeople:Int,
     val tripPhoto:Int,                              //Use the R.drawable which returns an integer
     val activities:Map<String,List<LazyActivity>>
-)
-{
+) {
     //Calculates the remaining spots
     fun remainingSpots():Int
     {
@@ -60,10 +42,8 @@ data class LazyUser(
     var trips:List<LazyTrip>,
     var articles:List<LazyArticle>,
     var reviews:List<LazyReview>,
-    //var profileImage: ImageBitmap?
     var profileImage: Uri?
-)
-{
+) {
     fun applyStrChanges(name:String, surname:String, username:String, email:String, country:String, userDescription:String)
     {
         this.name = name
@@ -73,16 +53,13 @@ data class LazyUser(
         this.email = email
         this.country = country
     }
+
     fun applyTypeTravelChanges(typeTravels:List<TypeTravel>)
     {
         if(typeTravels.isNotEmpty())
             this.typeTravelPreferences = typeTravels
     }
-    fun applyDestinations(destinations:List<String>)
-    {
-        if(destinations.isNotEmpty())
-            this.desiredDestinations = destinations
-    }
+
     fun applyNewImage(uri:Uri)
     {
         this.profileImage=uri
@@ -98,7 +75,8 @@ data class LazyTrip(
 
 data class LazyArticle(
     val title:String,
-    val strDate:String
+    val strDate:String,
+    val photo: Int
 )
 
 data class LazyReview(
@@ -124,17 +102,17 @@ val tripList1 = listOf(
 )
 
 val articleList2 = listOf(
-    LazyArticle("Chasing Iceland Lights", "October, 2024"),
-    LazyArticle("Dancing Through Rio", "February, 2025"),
-    LazyArticle("Fall in Love in Paris", "May, 2025"),
-    LazyArticle("Discover New York City", "December, 2025")
+    LazyArticle("Chasing Iceland Lights", "October, 2024", R.drawable.reykjavik),
+    LazyArticle("Dancing Through Rio", "February, 2025", R.drawable.rio),
+    LazyArticle("Fall in Love in Paris", "May, 2025", R.drawable.paris),
+    LazyArticle("Discover New York City", "December, 2025", R.drawable.new_york)
 )
 
 val articleList1 = listOf(
-    LazyArticle("Journey into Rome's History", "September, 2024"),
-    LazyArticle("Sydney Nights & Surf Days", "November, 2024"),
-    LazyArticle("Ultimate Tokyo Adventure", "July, 2004"),
-    LazyArticle("Ocean Meets Culture", "August, 2025")
+    LazyArticle("Journey into Rome's History", "September, 2024", R.drawable.rome_photo),
+    LazyArticle("Sydney Nights & Surf Days", "November, 2024", R.drawable.sydney),
+    LazyArticle("Ultimate Tokyo Adventure", "July, 2004", R.drawable.tokyo),
+    LazyArticle("Ocean Meets Culture", "August, 2025", R.drawable.bali)
 )
 
 val reviewList1 = listOf(
@@ -192,20 +170,6 @@ val user2 = LazyUser(
     reviews = reviewList2,
     profileImage = null
 )
-
-/*
-val reviewList = listOf(
-    LazyReview("Jon", "Dan", 4.7f, "April, 2000"),
-    LazyReview("John", "Snow", 4.5f, "September, 2023"),
-    LazyReview("Lara", "Croft", 4.9f, "November, 1997"),
-    LazyReview("Sally", "Martin", 4.6f, "April, 2025"),
-    LazyReview("Harry", "Weasley", 3.5f, "June, 1999"),
-    LazyReview("Rhys", "Black", 3.2f, "February, 2005"),
-    LazyReview("Serious", "Black", 3.2f, "January, 2005"),
-    LazyReview("Remus", "Scarface", 3.2f, "February, 2023")
-)
-
- */
 
 val romeTrip = LazySeriousTrip(
     tripTitle = "Roaming Through Rome",
