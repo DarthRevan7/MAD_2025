@@ -74,6 +74,7 @@ dependencies {
     implementation ("androidx.camera:camera-extensions:${camerax_version}")
 
     implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("io.coil-kt.coil3:coil-compose:3.1.0")
 
 
 }
