@@ -50,6 +50,7 @@ import com.example.voyago.LazyUser
 import com.example.voyago.model.TypeTravel
 import android.net.Uri
 import androidx.activity.result.contract.ActivityResultContracts
+import com.example.voyago.user1
 
 
 //Edit this
@@ -414,6 +415,9 @@ fun CameraPopup(onDismissRequest: () -> Unit, context:Context)
             Button(
                 onClick = {
                     pickMedia.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
+                    selectedImageUri?.let { uri ->
+                        user1.profileImage = uri
+                    }
                     //context.startActivity(Intent(context, GalleryActivity::class.java))
                 },
                 modifier = Modifier
