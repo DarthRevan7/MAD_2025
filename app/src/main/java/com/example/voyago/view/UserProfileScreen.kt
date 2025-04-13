@@ -84,7 +84,7 @@ fun UserProfileScreen(viewModel: ProfileViewModel) {
                     )
 
                     ProfilePhoto(
-                        user2.name, user2.surname, false,
+                        user2.name, user2.surname, false, null,
                         modifier = Modifier
                             .align(Alignment.Center)
                             .offset(y = (-50).dp)

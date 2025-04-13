@@ -108,7 +108,7 @@ fun MyProfileScreen(viewModel: ProfileViewModel, myProfile: Boolean, navControll
                     )
 
                     ProfilePhoto(
-                        user1.name, user1.surname, false,
+                        user1.name, user1.surname, false, user1.profileImage,
                         modifier = Modifier
                             .align(Alignment.Center)
                             .offset(y = (-50).dp)
@@ -482,7 +482,7 @@ fun UIReview(name:String, surname:String, rating:Float, strData:String) {
                         .background(Color.Gray, shape = CircleShape)
                 ) {
                     //Image
-                    ProfilePhoto(name, surname,true)
+                    ProfilePhoto(name, surname,true, null)
                 }
                 Text("$name $surname", modifier = Modifier.padding( start = 16.dp))
             }
