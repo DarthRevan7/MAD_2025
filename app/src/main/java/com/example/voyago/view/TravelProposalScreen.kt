@@ -29,6 +29,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.voyago.R
 import com.example.voyago.activities.BottomBar
 import com.example.voyago.activities.TopBar
+import com.example.voyago.romeTrip
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,13 +72,13 @@ fun TravelProposalScreen() {
                         .padding(start = 24.dp, end = 24.dp)
                 ) {
                     Text(
-                        text = "March 16th - March 20th, 2025 \n" +
-                                "4 people (2 spots left)",
+                        text = "${romeTrip.startDate} - ${romeTrip.endDate} \n" +
+                                "${romeTrip.sizeGroup} people (${romeTrip.remainingSpots()} spots left)",
                         modifier = Modifier.align(Alignment.CenterVertically)
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     Text(
-                        text = "750 €",
+                        text = "${romeTrip.esteemedPrice} €",
                         modifier = Modifier.align(Alignment.CenterVertically)
                     )
                 }
@@ -123,46 +124,18 @@ fun ItineraryTitleBox() {
 
 @Composable
 fun ItineraryText(modifier: Modifier = Modifier) {
+
+    val itineraryString = romeTrip.activities.entries.joinToString("\n\n") { (day, activities) ->
+        val dayHeader = "$day:\n"
+        val activityDescriptions = activities.joinToString("\n") {activity ->
+            val groupActivity = if (activity.isGroupActivity) "(group activity)" else ""
+            "- ${activity.activityTime} → ${activity.description} $groupActivity"
+        }
+        dayHeader + activityDescriptions
+    }
+
     Text(
-        text = "Day 1 - Arrival & Ancient Rome\n" +
-                "09:00 Arrival in Rome\n" +
-                "10:30 Hotel check-in and brief rest (Independent)\n" +
-                "12:00 Lunch near the Colosseum (Group)\n" +
-                "13:30 Visit the Colosseum and Roman Forum – Guided Tour (Group)\n" +
-                "17:00 Walk up Palatine Hill – Scenic Views (Independent)\n" +
-                "19:30 Dinner at a traditional Roman trattoria (Group) \n\n" +
-
-                "Day 2 - Vatican City & Art\n" +
-                "08:00 Breakfast at hotel (Independent)\n" +
-                "09:00 Visit Vatican Museums & Sistine Chapel – Skip-the-line ticket (Group)\n" +
-                "12:30 Lunch near St. Peter’s Square (Independent)\n" +
-                "14:00 Climb to the top of St. Peter’s Basilica Dome (Independent)\n" +
-                "16:00 Explore Castel Sant’Angelo and its bridge (Group)\n" +
-                "20:00 Aperitivo in Trastevere + Dinner (Group)\n\n" +
-
-                "Day 3 - Baroque Rome & Hidden Gems\n" +
-                "08:30 Morning coffee & cornetto at Piazza Navona (Independent)\n" +
-                "10:00 Walking tour: Pantheon, Trevi Fountain, Spanish Steps (Group)\n" +
-                "13:00 Lunch in Campo de’ Fiori area (Independent)\n" +
-                "15:00 Time for shopping or gelato hunt around Via del Corso (Independent)\n" +
-                "18:00 Sunset view from Pincian Hill (Group)\n" +
-                "20:30 Optional night walk or open-air opera (Group)\n\n" +
-
-                "Day 4 - Roman Lifestyle & Nature\n" +
-                "08:00 Breakfast in a local café (Independent)\n" +
-                "09:00 Visit Borghese Gallery and gardens – Pre-booked ticket (Group)\n" +
-                "12:30 Picnic in Villa Borghese Park (Group)\n" +
-                "14:30 Free afternoon to explore Monti or Testaccio neighborhoods (Independent)\n" +
-                "17:30 Cooking class: Make fresh pasta & tiramisù (Group)\n" +
-                "20:00 Enjoy self-cooked dinner with wine (Group)\n\n" +
-
-                "Day 5 - Departure & Last Explorations\n" +
-                "08:00 Early walk at Tiber River banks or local market (Independent)\n" +
-                "09:30 Farewell group brunch (Group)\n" +
-                "11:00 Quick stop at any missed sites or souvenir shopping (Independent)\n" +
-                "13:00 Return to hotel & check-out (Independent)\n" +
-                "15:00 Departure from Rome",
-
+        text = itineraryString,
         style = MaterialTheme.typography.bodySmall,
         fontWeight = FontWeight.Bold,
         modifier = modifier
@@ -178,7 +151,7 @@ fun Hero() {
             .height(300.dp)
     ) {
         Image(
-            painter = painterResource(R.drawable.rome_photo),
+            painter = painterResource(romeTrip.tripPhoto),
             contentDescription = "Trip Hero photo",
             modifier = Modifier
                 .fillMaxSize()
@@ -194,8 +167,9 @@ fun Hero() {
 
         ) {
             Text(
-                text = "ROME \n" +
-                        "Discover Rome in 5 days",
+                text = romeTrip.destination +
+                        "\n" +
+                        romeTrip.tripTitle,
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
