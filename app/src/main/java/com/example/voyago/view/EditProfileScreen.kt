@@ -12,9 +12,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material3.MaterialTheme
@@ -52,6 +54,8 @@ var userData = userRepository.fetchUserData(true)
 @Composable
 fun EditProfileScreen(user: LazyUser, navController: NavController, context:Context)
 {
+
+
     //Delete later
     val fieldValues = rememberSaveable(saver = listSaver(
         save = { it.toList() },
@@ -75,7 +79,45 @@ fun EditProfileScreen(user: LazyUser, navController: NavController, context:Cont
 
 
     val selected = remember { user.typeTravelPreferences.toMutableStateList() }
-    var userDestinations = user.desiredDestinations
+
+
+    //TODO: temporary, to be changed once database is fully implemented
+    val availableDestinations = listOf("Argentina", "Armenia", "Australia", "Austria", "Azerbaijan",
+        "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus",
+        "Belgium", "Belize", "Benin", "Bhutan", "Bolivia",
+        "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria",
+        "Cambodia", "Cameroon", "Canada", "Cape Verde", "Chile",
+        "China", "Colombia", "Costa Rica", "Croatia", "Cuba",
+        "Cyprus", "Czech Republic", "Denmark", "Dominican Republic", "Ecuador",
+        "Egypt", "El Salvador", "Estonia", "Ethiopia", "Fiji",
+        "Finland", "France", "Georgia", "Germany", "Ghana",
+        "Greece", "Guatemala", "Honduras", "Hungary", "Iceland",
+        "India", "Indonesia", "Iran", "Iraq", "Ireland",
+        "Israel", "Italy", "Jamaica", "Japan", "Jordan",
+        "Kazakhstan", "Kenya", "Kuwait", "Kyrgyzstan", "Laos",
+        "Latvia", "Lebanon", "Lithuania", "Luxembourg", "Madagascar",
+        "Malaysia", "Maldives", "Malta", "Mauritius", "Mexico",
+        "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco",
+        "Myanmar", "Namibia", "Nepal", "Netherlands", "New Zealand",
+        "Nicaragua", "Nigeria", "North Macedonia", "Norway", "Oman",
+        "Pakistan", "Panama", "Paraguay", "Peru", "Philippines",
+        "Poland", "Portugal", "Qatar", "Romania", "Russia",
+        "Rwanda", "Saudi Arabia", "Serbia", "Singapore", "Slovakia",
+        "Slovenia", "South Africa", "South Korea", "Spain", "Sri Lanka",
+        "Sweden", "Switzerland", "Taiwan", "Tanzania", "Thailand",
+        "Trinidad and Tobago", "Tunisia", "Turkey", "Uganda", "Ukraine",
+        "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Vietnam"
+    )
+
+
+    val selectedDestinations = rememberSaveable(
+        saver = listSaver(
+            save = { it.toList() },
+            restore = { it.toMutableStateList() }
+        )
+    ) {
+        mutableStateListOf<String>().apply { addAll(user.desiredDestinations) }
+    }
 
     Scaffold(
         topBar = {
@@ -224,7 +266,50 @@ fun EditProfileScreen(user: LazyUser, navController: NavController, context:Cont
                         fontSize = 14.sp
                     )
 
-                    SearchBarWithResults(LocalContext.current, user)
+
+
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        val scrollState = rememberScrollState()
+
+                        Column(
+                            modifier = Modifier
+                                .height(200.dp)
+                                .background(Color.LightGray)
+                                .verticalScroll(scrollState)
+                                .fillMaxWidth(0.8f)
+                                .padding(horizontal = 16.dp)
+                        ) {
+                            availableDestinations.forEach { destination ->
+                                val isChecked = destination in selectedDestinations
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp)
+                                        .clickable {
+                                            if (isChecked) {
+                                                selectedDestinations.remove(destination)
+                                            } else {
+                                                selectedDestinations.add(destination)
+                                            }
+                                        }
+                                ) {
+                                    Checkbox(
+                                        checked = isChecked,
+                                        onCheckedChange = {
+                                            if (it) selectedDestinations.add(destination)
+                                            else selectedDestinations.remove(destination)
+                                        }
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(destination)
+                                }
+                            }
+                        }
+                    }
 
 
                     //Update datas
@@ -233,7 +318,7 @@ fun EditProfileScreen(user: LazyUser, navController: NavController, context:Cont
                             if(!errors.any{it}) {
                                 user.applyStrChanges(fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3], fieldValues[4], fieldValues[5])
                                 user.applyTypeTravelChanges(selected)
-                                //user.applyDestinations()
+                                user.desiredDestinations = selectedDestinations.toList()
                                 navController.navigate("my_profile")
                             }
                     },
@@ -415,4 +500,51 @@ fun ValidatingInputTextField(text:String, updateState: (String) -> Unit, validat
         },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
     )
+}
+
+@Composable
+fun SelectDestinations(
+    availableDestinations: List<String>,
+    selectedDestinations: MutableList<String>,
+    onDestinationChanged: (List<String>) -> Unit
+) {
+    LazyColumn(modifier = Modifier.fillMaxWidth()) {
+        items(availableDestinations) { country ->
+            DestinationCheckbox(
+                country = country,
+                isSelected = selectedDestinations.contains(country),
+                onCheckedChange = { isChecked ->
+                    if (isChecked) {
+                        selectedDestinations.add(country)
+                    } else {
+                        selectedDestinations.remove(country)
+                    }
+                    onDestinationChanged(selectedDestinations)
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun DestinationCheckbox(
+    country: String,
+    isSelected: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
+        Text(
+            text = country,
+            modifier = Modifier.weight(1f),
+        )
+        Checkbox(
+            checked = isSelected,
+            onCheckedChange = onCheckedChange
+        )
+    }
 }
