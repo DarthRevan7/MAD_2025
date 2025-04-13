@@ -25,6 +25,7 @@ import androidx.camera.core.ImageProxy
 import androidx.compose.ui.graphics.asImageBitmap
 import coil3.Uri
 import com.example.voyago.user1
+import com.example.voyago.view.newImageUri
 import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -104,6 +105,7 @@ class CameraActivity : AppCompatActivity() {
                         val bitmap = BitmapFactory.decodeStream(inputStream)
                         inputStream?.close()*/
 
+                        newImageUri = output.savedUri
                         user1.profileImage = output.savedUri
                     }
 
