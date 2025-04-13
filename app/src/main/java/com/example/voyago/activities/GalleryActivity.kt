@@ -29,6 +29,7 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.core.app.ActivityCompat
 import com.example.voyago.user1
 import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
@@ -36,9 +37,49 @@ import java.util.Locale
 
 class GalleryActivity : AppCompatActivity() {
 
+    // Request code for permissions
+    private val PERMISSION_REQUEST_CODE = 100
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Check if permissions are granted
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // If permissions are not granted, request them
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+                PERMISSION_REQUEST_CODE
+            )
+        } else {
+            // Permissions already granted, proceed to open photo picker
+            startPhotoPicker()
+        }
+    }
+        // Handle the result of permission request
+        override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+            if (requestCode == PERMISSION_REQUEST_CODE) {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Permission granted, proceed to open the photo picker
+                    startPhotoPicker()
+                } else {
+                    // Permission denied, show a message
+                    Toast.makeText(
+                        this,
+                        "Permission denied. Cannot access the gallery.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+
+    private fun startPhotoPicker() {
         val pickMedia = registerForActivityResult(PickVisualMedia()) { uri ->
             // Callback invoked after the user selects a media item or closes the photo picker
             if (uri != null) {

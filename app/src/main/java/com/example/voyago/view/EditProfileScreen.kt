@@ -376,6 +376,20 @@ fun ProfilePhotoEditing(firstname: String, surname: String, modifier: Modifier =
 @Composable
 fun CameraPopup(onDismissRequest: () -> Unit, context:Context)
 {
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
+    val pickMedia = rememberLauncherForActivityResult(
+        contract = PickVisualMedia()
+    ) { uri ->
+        if (uri != null) {
+            Log.d("PhotoPicker", "Selected URI: $uri")
+            selectedImageUri = uri
+        } else {
+            Log.d("PhotoPicker", "No media selected")
+        }
+    }
+
+
     Dialog(onDismissRequest = onDismissRequest) {
         Card(
             modifier = Modifier
@@ -399,6 +413,7 @@ fun CameraPopup(onDismissRequest: () -> Unit, context:Context)
 
             Button(
                 onClick = {
+                    pickMedia.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
                     //context.startActivity(Intent(context, GalleryActivity::class.java))
                 },
                 modifier = Modifier
