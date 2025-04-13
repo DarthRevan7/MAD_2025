@@ -57,7 +57,7 @@ import com.example.voyago.user1
 var userRepository:UserRepository = UserRepository()
 var userData = userRepository.fetchUserData(true)
 
-
+var newImageUri: Uri? = null
 
 @Composable
 fun EditProfileScreen(user: LazyUser, navController: NavController, context:Context)
@@ -156,7 +156,8 @@ fun EditProfileScreen(user: LazyUser, navController: NavController, context:Cont
                     ProfilePhotoEditing(
                         user.name, user.surname,
                         modifier = Modifier.align(Alignment.Center),
-                        context = context
+                        context = context,
+                        user1.profileImage
                     )
 
                 }
@@ -325,6 +326,11 @@ fun EditProfileScreen(user: LazyUser, navController: NavController, context:Cont
                                 user.applyStrChanges(fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3], fieldValues[4], fieldValues[5])
                                 user.applyTypeTravelChanges(selected)
                                 user.desiredDestinations = selectedDestinations.toList()
+                                if(newImageUri != null)
+                                {
+                                    user.applyNewImage(newImageUri!!)
+                                }
+
                                 navController.navigate("my_profile")
                             }
                     },
@@ -343,7 +349,7 @@ fun EditProfileScreen(user: LazyUser, navController: NavController, context:Cont
 }
 
 @Composable
-fun ProfilePhotoEditing(firstname: String, surname: String, modifier: Modifier = Modifier, context:Context) {
+fun ProfilePhotoEditing(firstname: String, surname: String, modifier: Modifier = Modifier, context:Context, uri:Uri?) {
     val initials = "${firstname.first()}"+"${surname.first()}"
 
     var showPopup by remember { mutableStateOf(false) }
@@ -360,7 +366,7 @@ fun ProfilePhotoEditing(firstname: String, surname: String, modifier: Modifier =
             style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold
         )
-        //Popup da implementare
+
         Icon(Icons.Default.CameraAlt,
             "camera",
             modifier = Modifier
@@ -374,10 +380,13 @@ fun ProfilePhotoEditing(firstname: String, surname: String, modifier: Modifier =
 
 }
 
+
+
 @Composable
 fun CameraPopup(onDismissRequest: () -> Unit, context:Context)
 {
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
 
     val pickMedia = rememberLauncherForActivityResult(
         contract = PickVisualMedia()
@@ -385,10 +394,13 @@ fun CameraPopup(onDismissRequest: () -> Unit, context:Context)
         if (uri != null) {
             Log.d("PhotoPicker", "Selected URI: $uri")
             selectedImageUri = uri
+            newImageUri = selectedImageUri
         } else {
             Log.d("PhotoPicker", "No media selected")
         }
     }
+
+
 
 
     Dialog(onDismissRequest = onDismissRequest) {
@@ -415,9 +427,20 @@ fun CameraPopup(onDismissRequest: () -> Unit, context:Context)
             Button(
                 onClick = {
                     pickMedia.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
+
+                    /*
                     selectedImageUri?.let { uri ->
                         user1.profileImage = uri
                     }
+
+                     */
+                    /*
+                    if(selectedImageUri != null)
+                    {
+                        //user1.applyNewImage(selectedImageUri!!)
+                    }
+                    */
+
                     //context.startActivity(Intent(context, GalleryActivity::class.java))
                 },
                 modifier = Modifier

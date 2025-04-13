@@ -83,6 +83,10 @@ data class LazyUser(
         if(destinations.isNotEmpty())
             this.desiredDestinations = destinations
     }
+    fun applyNewImage(uri:Uri)
+    {
+        this.profileImage=uri
+    }
 }
 
 //LAZY DATA
