@@ -3,6 +3,10 @@ package com.example.voyago.view
 import com.example.voyago.activities.*
 import android.content.Context
 import android.content.Intent
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -36,12 +40,14 @@ import com.example.voyago.model.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.navigation.NavController
 import androidx.compose.ui.window.Dialog
 import com.example.voyago.LazyUser
 import com.example.voyago.model.TypeTravel
+import android.net.Uri
 
 
 
@@ -54,8 +60,6 @@ var userData = userRepository.fetchUserData(true)
 @Composable
 fun EditProfileScreen(user: LazyUser, navController: NavController, context:Context)
 {
-
-
     //Delete later
     val fieldValues = rememberSaveable(saver = listSaver(
         save = { it.toList() },
@@ -372,6 +376,20 @@ fun ProfilePhotoEditing(firstname: String, surname: String, modifier: Modifier =
 fun CameraPopup(onDismissRequest: () -> Unit, context:Context)
 {
 
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
+    val pickMedia = rememberLauncherForActivityResult(
+        contract = PickVisualMedia()
+    ) { uri ->
+        if (uri != null) {
+            Log.d("PhotoPicker", "Selected URI: $uri")
+            selectedImageUri = uri //
+        } else {
+            Log.d("PhotoPicker", "No media selected")
+        }
+    }
+
+
     Dialog(onDismissRequest = onDismissRequest) {
         Card(
             modifier = Modifier
@@ -395,7 +413,7 @@ fun CameraPopup(onDismissRequest: () -> Unit, context:Context)
 
             Button(
                 onClick = {
-                    
+                    pickMedia.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
                 },
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)

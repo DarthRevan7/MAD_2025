@@ -37,7 +37,7 @@ object ImageHolder {
 
 class GalleryActivity : AppCompatActivity() {
 
-    private val pickImage =
+    /*private val pickImage =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             uri?.let {
                 val inputStream = contentResolver.openInputStream(uri)
@@ -56,12 +56,12 @@ class GalleryActivity : AppCompatActivity() {
             }
 
             finish()
-        }
+        }*/
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         // Non serve layout, lanciamo subito la galleria
-        pickImage.launch("image/*")
+        //pickImage.launch("image/*")
     }
 }
