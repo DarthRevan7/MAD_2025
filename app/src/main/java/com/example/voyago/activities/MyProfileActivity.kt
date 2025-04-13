@@ -20,9 +20,6 @@ class MyProfileActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-
-
-
             //NAV CONTROLLER
             val navController = rememberNavController()
             val context = LocalContext.current

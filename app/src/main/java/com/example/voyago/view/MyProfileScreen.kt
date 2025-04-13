@@ -1,5 +1,6 @@
 package com.example.voyago.view
 
+import android.app.Activity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -27,6 +28,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -107,6 +109,12 @@ fun MyProfileScreen(viewModel: ProfileViewModel, myProfile: Boolean, navControll
                         .padding(16.dp)
                         .offset(y = (-30).dp)
                         .clickable {  navController.navigate("edit_profile") }
+                    )
+
+                    val context = LocalContext.current
+
+                    Icon(Icons.Default.ArrowBackIosNew, "back", modifier = Modifier.padding(16.dp).offset(y = 5.dp)
+                        .clickable{ (context as? Activity)?.finish() }
                     )
 
                     ProfilePhoto(
