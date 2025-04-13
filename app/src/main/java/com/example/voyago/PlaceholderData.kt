@@ -16,7 +16,7 @@ import kotlin.Nothing
 
 
 data class LazySeriousTrip(
-    val tripTitile:String,
+    val tripTitle:String,
     val destination:String,
     val startDate:String,
     val endDate:String,
