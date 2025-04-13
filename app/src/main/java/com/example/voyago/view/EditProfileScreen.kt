@@ -395,7 +395,7 @@ fun CameraPopup(onDismissRequest: () -> Unit, context:Context)
 
             Button(
                 onClick = {
-
+                    
                 },
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
