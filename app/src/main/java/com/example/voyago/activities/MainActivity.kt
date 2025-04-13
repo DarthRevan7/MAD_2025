@@ -47,7 +47,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.voyago.NavItem
 import com.example.voyago.R
-import com.example.voyago.TravelProposalScreen
+import com.example.voyago.view.TravelProposalScreen
 import com.example.voyago.view.UserProfileScreen
 import com.example.voyago.viewmodel.*
 

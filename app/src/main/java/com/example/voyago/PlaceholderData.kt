@@ -14,6 +14,33 @@ import com.example.voyago.model.*
 import java.util.*
 import kotlin.Nothing
 
+
+data class LazySeriousTrip(
+    val tripTitile:String,
+    val destination:String,
+    val startDate:String,
+    val endDate:String,
+    val esteemedPrice:Float,
+    val sizeGroup:Int,
+    val acceptedPeople:Int,
+    val tripPhoto:Int,                      //Use the R.drawable which returns an integer
+    val activities:Map<String,LazyActivity>
+)
+{
+    //Calculates the remaining spots
+    fun remainingSpots():Int
+    {
+        return this.sizeGroup-this.acceptedPeople
+    }
+}
+
+data class LazyActivity(
+    val activityDate:String,
+    val activityTime:String,
+    val isGroupActivity:Boolean,
+    val description:String
+)
+
 data class LazyUser(
     var name:String,
     var surname:String,
@@ -156,7 +183,7 @@ val user2 = LazyUser(
     profileImage = null
 )
 
-
+/*
 val reviewList = listOf(
     LazyReview("Jon", "Dan", 4.7f, "April, 2000"),
     LazyReview("John", "Snow", 4.5f, "September, 2023"),
@@ -167,3 +194,5 @@ val reviewList = listOf(
     LazyReview("Serious", "Black", 3.2f, "January, 2005"),
     LazyReview("Remus", "Scarface", 3.2f, "February, 2023")
 )
+
+ */
