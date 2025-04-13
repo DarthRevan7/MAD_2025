@@ -40,6 +40,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -150,12 +151,12 @@ fun ProfilePhoto(firstname: String, surname: String, isSmall: Boolean, profileIm
         ) {
             //Icon(profileImage)
             AsyncImage(profileImage,"profilePic",
-                modifier=Modifier
-                    //.size(130.dp)
+                modifier = Modifier
                     .fillMaxSize()
                     .clip( shape = CircleShape)
+                    .border(0.dp, Color.White, CircleShape),
+                contentScale = ContentScale.Crop
             )
-                    //.matchParentSize())
 
         }
     }

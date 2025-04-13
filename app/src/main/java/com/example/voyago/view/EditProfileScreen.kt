@@ -50,7 +50,9 @@ import com.example.voyago.LazyUser
 import com.example.voyago.model.TypeTravel
 import android.net.Uri
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.border
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import coil3.compose.AsyncImage
 import com.example.voyago.user1
 
@@ -366,10 +368,12 @@ fun ProfilePhotoEditing(firstname: String, surname: String, modifier: Modifier =
         if(newImageUri != null) {
             AsyncImage(
                 newImageUri,"newProfilePic",
-                modifier=Modifier
+                modifier = Modifier
                     //.size(130.dp)
                     .fillMaxSize()
                     .clip( shape = CircleShape)
+                    .border(0.dp, Color.White, CircleShape),
+                contentScale = ContentScale.Crop
             )
         }
         else
