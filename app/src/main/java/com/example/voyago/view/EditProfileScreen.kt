@@ -50,6 +50,8 @@ import com.example.voyago.LazyUser
 import com.example.voyago.model.TypeTravel
 import android.net.Uri
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.draw.clip
+import coil3.compose.AsyncImage
 import com.example.voyago.user1
 
 
@@ -83,6 +85,7 @@ fun EditProfileScreen(user: LazyUser, navController: NavController, context:Cont
 
     var errors = arrayOf(false, false, false, false, false, false)
 
+    newImageUri = user1.profileImage
 
     val selected = remember { user.typeTravelPreferences.toMutableStateList() }
 
@@ -360,12 +363,24 @@ fun ProfilePhotoEditing(firstname: String, surname: String, modifier: Modifier =
             .size(130.dp)
             .background(Color.Blue, shape = CircleShape)
     ) {
-        Text(
-            text = initials,
-            color = Color.White,
-            style = MaterialTheme.typography.headlineLarge,
-            fontWeight = FontWeight.Bold
-        )
+        if(newImageUri != null) {
+            AsyncImage(
+                newImageUri,"newProfilePic",
+                modifier=Modifier
+                    //.size(130.dp)
+                    .fillMaxSize()
+                    .clip( shape = CircleShape)
+            )
+        }
+        else
+        {
+            Text(
+                text = initials,
+                color = Color.White,
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.Bold
+            )
+        }
 
         Icon(Icons.Default.CameraAlt,
             "camera",
