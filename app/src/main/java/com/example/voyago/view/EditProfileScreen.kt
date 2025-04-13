@@ -53,6 +53,7 @@ import coil3.compose.AsyncImage
 import com.example.voyago.user1
 
 var newImageUri: Uri? = null
+var showPopup = mutableStateOf(false)
 
 @Composable
 fun EditProfileScreen(user: LazyUser, navController: NavController, context:Context) {
@@ -318,7 +319,6 @@ fun EditProfileScreen(user: LazyUser, navController: NavController, context:Cont
 
     }
 }
-var showPopup = mutableStateOf(false);
 
 @Composable
 fun ProfilePhotoEditing(firstname: String, surname: String, modifier: Modifier = Modifier, context:Context) {
@@ -358,9 +358,6 @@ fun ProfilePhotoEditing(firstname: String, surname: String, modifier: Modifier =
 
     if(showPopup.value)
         CameraPopup(onDismissRequest = { if(newImageUri != null) showPopup.value = false } , context=context)
-
-
-
 }
 
 @Composable
