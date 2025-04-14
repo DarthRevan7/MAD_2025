@@ -32,7 +32,7 @@ class UserRepository {
         var user = UserData(
             id = 1,
             firstname = "Bella",
-            surname = "Lestrange",
+            surname = "Estrange",
             username = "beauty_lest",
             dateOfBirth = GregorianCalendar(1985, Calendar.OCTOBER, 31),
             country = "UK",
@@ -52,38 +52,10 @@ class UserRepository {
             tripsApplicationAccepted = emptyList()
         )
 
-        if(myProfile) {
-            return loggedUser
+        return if(myProfile) {
+            loggedUser
         } else {
-            return user
+            user
         }
-    }
-
-    fun fetchUnloggedUserData() : UserData
-    {
-        val user = UserData(
-            id = 1,
-            firstname = "Bella",
-            surname = "Lestrange",
-            username = "beauty_lest",
-            dateOfBirth = GregorianCalendar(1985, Calendar.OCTOBER, 31),
-            country = "UK",
-            email = "bellalast@example.com",
-            password = "securePassword987",
-            userDescription = "hi",
-            profilePicture = null,
-            typeTravel = listOf(TypeTravel.RELAX, TypeTravel.PARTY),
-            desiredDestination = listOf("Romania", "USA", "South Korea"),
-            rating = 4.3f,
-            reliability = 55,
-            publicTrips = emptyList(),
-            articles = emptyList(),
-            reviews = emptyList(),
-            privateTrips = emptyList(),
-            tripsAppliedTo = emptyList(),
-            tripsApplicationAccepted = emptyList()
-        )
-
-        return user
     }
 }

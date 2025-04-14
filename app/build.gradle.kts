@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.voyago"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -36,6 +36,7 @@ android {
     }
     buildFeatures {
         compose = true
+        viewBinding = true
     }
 }
 
@@ -50,6 +51,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.runtime.livedata)
+    implementation(libs.androidx.constraintlayout)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -61,4 +63,18 @@ dependencies {
     val nav_version = "2.8.9"
     implementation("androidx.navigation:navigation-compose:$nav_version")
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.5.31")
+
+    val camerax_version = "1.2.2"
+    implementation ("androidx.camera:camera-core:${camerax_version}")
+    implementation ("androidx.camera:camera-camera2:${camerax_version}")
+    implementation ("androidx.camera:camera-lifecycle:${camerax_version}")
+    implementation ("androidx.camera:camera-video:${camerax_version}")
+
+    implementation ("androidx.camera:camera-view:${camerax_version}")
+    implementation ("androidx.camera:camera-extensions:${camerax_version}")
+
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("io.coil-kt.coil3:coil-compose:3.1.0")
+
+
 }

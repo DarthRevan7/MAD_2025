@@ -2,6 +2,7 @@ package com.example.voyago.activities
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -34,29 +35,29 @@ import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.*
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import coil3.compose.AsyncImage
 import com.example.voyago.NavItem
 import com.example.voyago.R
-import com.example.voyago.TravelProposalScreen
+import com.example.voyago.view.TravelProposalScreen
 import com.example.voyago.view.UserProfileScreen
-import com.example.voyago.viewmodel.*
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            val viewModel = ViewModelProvider(this)[ProfileViewModel::class]
 
             val navController = rememberNavController()
             NavHost(navController= navController, startDestination= "main_page", builder= {
@@ -65,7 +66,7 @@ class MainActivity : ComponentActivity() {
                     MainPage(navController, context)
                 }
                 composable("user_profile") {
-                    UserProfileScreen(viewModel)
+                    UserProfileScreen()
                 }
                 composable("travel_proposal") {
                     TravelProposalScreen()
@@ -101,21 +102,56 @@ fun MainPage(navController: NavController, context: Context) {
 }
 
 @Composable
-fun ProfilePhoto(firstname: String, surname: String, modifier: Modifier = Modifier) {
+fun ProfilePhoto(firstname: String, surname: String, isSmall: Boolean, profileImage: Uri?, modifier: Modifier = Modifier) {
     val initials = "${firstname.first()}"+"${surname.first()}"
 
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = modifier
-            .size(130.dp)
-            .background(Color.Blue, shape = CircleShape)
-    ) {
-        Text(
-            text = initials,
-            color = Color.White,
-            style = MaterialTheme.typography.headlineLarge,
-            fontWeight = FontWeight.Bold
-        )
+    if(profileImage == null)
+    {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = modifier
+                .size(130.dp)
+                .background(Color.Blue, shape = CircleShape)
+        ) {
+            if(isSmall) {
+                Text(
+                    text = initials,
+                    color = Color.White,
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            else {
+                Text(
+                    text = initials,
+                    color = Color.White,
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+        }
+    }
+    else
+    {
+        //use the icon set in the user data
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = modifier
+                .size(width = 130.dp, height = 130.dp)
+                .background( color = Color.Blue , shape = CircleShape)
+
+        ) {
+            //Icon(profileImage)
+            AsyncImage(profileImage,"profilePic",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip( shape = CircleShape)
+                    .border(0.dp, Color.White, CircleShape),
+                contentScale = ContentScale.Crop
+            )
+
+        }
     }
 }
 
@@ -162,7 +198,6 @@ fun TopBar() {
     )
 }
 
-//@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomBar(selectedIndex: Any?) {
 

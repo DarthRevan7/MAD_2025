@@ -1,6 +1,6 @@
 package com.example.voyago.view
 
-import android.content.Context
+import android.app.Activity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -22,13 +22,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -41,32 +41,28 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.voyago.R
 import com.example.voyago.activities.*
-import com.example.voyago.articleList
-import com.example.voyago.reviewList
-import com.example.voyago.tripList
+import com.example.voyago.*
 import com.example.voyago.viewmodel.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyProfileScreen(viewModel: ProfileViewModel, myProfile: Boolean, navController: NavController, context: Context) {
-
-    //MVVM Code
-    val userData = viewModel.userData.observeAsState()
+fun MyProfileScreen(viewModel: ProfileViewModel, myProfile: Boolean, navController: NavController) {
 
     //Icons
     val painterLogout = painterResource(R.drawable.logout)
@@ -93,18 +89,18 @@ fun MyProfileScreen(viewModel: ProfileViewModel, myProfile: Boolean, navControll
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
-                //Box with Profile Photo, Username and Logout and Edit icons
+                //Box with Profile Photo, Username and Logout, Back and Edit icons
                 Box(modifier =
                     Modifier
                         .fillMaxWidth()
-                        .height(245.dp)
+                        .height(300.dp)
                         .background(Color(0xdf, 0xd1, 0xe0, 255), shape = RectangleShape)) {
 
                     Image(painter = painterLogout, "logout", modifier = Modifier
                         .size(60.dp)
                         .align(alignment = Alignment.TopEnd)
                         .padding(16.dp)
-                        .clickable {/*TODO*/ }
+                        .clickable {/*TODO*/}
                     )
 
                     Image(painter = painterEdit, "edit", modifier = Modifier
@@ -115,17 +111,44 @@ fun MyProfileScreen(viewModel: ProfileViewModel, myProfile: Boolean, navControll
                         .clickable {  navController.navigate("edit_profile") }
                     )
 
+                    val context = LocalContext.current
+
+                    Icon(Icons.Default.ArrowBackIosNew, "back", modifier = Modifier.padding(16.dp).offset(y = 5.dp)
+                        .clickable{ (context as? Activity)?.finish() }
+                    )
+
                     ProfilePhoto(
-                        userData.value?.firstname.toString(), userData.value?.surname.toString(),
+                        user1.name, user1.surname, false, user1.profileImage,
                         modifier = Modifier
                             .align(Alignment.Center)
-                            .offset(y = (-20).dp)
+                            .offset(y = (-50).dp)
+                    )
+                    Text(
+                        text = user1.username,
+                        style = MaterialTheme.typography.headlineLarge,
+                        fontWeight = FontWeight.ExtraBold,
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(bottom = 10.dp)
+                            .offset(y = (40).dp)
                     )
 
                     Text(
-                        text = userData.value?.username.toString(),
-                        style = MaterialTheme.typography.headlineLarge,
+                        text = user1.name + " " + user1.surname,
+                        style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 10.dp)
+                            .offset(y = (-50).dp)
+                    )
+
+                    Spacer( Modifier.height(20.dp))
+
+                    Text(
+                        text = user1.country,
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Normal,
                         modifier = Modifier
                             .align(Alignment.BottomCenter)
                             .padding(bottom = 10.dp)
@@ -138,27 +161,24 @@ fun MyProfileScreen(viewModel: ProfileViewModel, myProfile: Boolean, navControll
                 //Row with rating and reliability
                 Row(
                     modifier = Modifier
-                        .offset(y = (-25).dp)
-                        ,
+                        .offset(y = (-25).dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
                     RatingAndReliability(
-                        userData.value?.rating?.toFloat() ?: 0.0f,
-                        userData.value?.reliability?.toInt() ?: 0
+                        user1.approvalRate,
+                        user1.reliability
                     )
                 }
             }
 
             item {
                 //Tab About, My Trips, Review
-                TabAboutTripsReview(viewModel, myProfile = true)
+                TabAboutTripsReview(user1)
             }
         }
     }
 }
-
-
 
 @Composable
 fun RatingAndReliability(rating: Float, reliability: Int) {
@@ -214,10 +234,10 @@ fun RatingAndReliability(rating: Float, reliability: Int) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun TabAboutTripsReview(viewModel: ProfileViewModel, myProfile: Boolean) {
+fun TabAboutTripsReview(user: LazyUser) {
 
-    // TAB with About, trips, Reviews
-    val tabs = listOf("About", "Trips", "Reviews")
+    // TAB with About, Trips & Articles, Reviews
+    val tabs = listOf("About", "Trips & Articles", "Reviews")
 
     var selectedTabIndex by remember {
         mutableIntStateOf(0)
@@ -247,12 +267,14 @@ fun TabAboutTripsReview(viewModel: ProfileViewModel, myProfile: Boolean) {
         modifier = Modifier.fillMaxSize().background(Color.White).padding(16.dp)
     ) {
 
-        val userData = viewModel.userData.observeAsState()
-        viewModel.getUserData(myProfile)
         when(selectedTabIndex) {
+
             0 -> {
-                Column {
-                    Text("Hi. my name is ${userData.value?.firstname.toString()} ${userData.value?.surname.toString()} and I am ${userData.value?.age()} years old. I am from ${userData.value?.country} and would love to explore the world with you!")
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Text(user.userDescription)
                     Text(text = "Preferences about the type of travel:",
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(top = 16.dp)
@@ -261,7 +283,7 @@ fun TabAboutTripsReview(viewModel: ProfileViewModel, myProfile: Boolean) {
                     FlowRow(
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                     ) {
-                        userData.value?.typeTravel?.forEach { type ->
+                        user.typeTravelPreferences.forEach { type ->
                             SuggestionChip(
                                 onClick = {},
                                 label = {Text(type.toString().lowercase())},
@@ -281,7 +303,7 @@ fun TabAboutTripsReview(viewModel: ProfileViewModel, myProfile: Boolean) {
                     FlowRow(
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                     ) {
-                        userData.value?.desiredDestination?.forEach { destination ->
+                        user.desiredDestinations.forEach { destination ->
                             SuggestionChip(
                                 onClick = {},
                                 label = {Text(destination)},
@@ -294,6 +316,7 @@ fun TabAboutTripsReview(viewModel: ProfileViewModel, myProfile: Boolean) {
                     }
                 }
             }
+
             1 -> {
                 Column {
                     Text(text = "Trips:",
@@ -314,8 +337,8 @@ fun TabAboutTripsReview(viewModel: ProfileViewModel, myProfile: Boolean) {
                                 .height((3*43).dp)
                                 .verticalScroll(rememberScrollState())
                         ) {
-                            tripList.forEach {
-                                item -> UITrip(item.destination,item.strDate)
+                            user.trips.forEach {
+                                    item -> UITripArticle(item.destination,item.strDate,item.photo)
                             }
                         }
                     }
@@ -338,13 +361,14 @@ fun TabAboutTripsReview(viewModel: ProfileViewModel, myProfile: Boolean) {
                                 .height((3*43).dp)
                                 .verticalScroll(rememberScrollState())
                         ) {
-                            articleList.forEach {
-                                    item -> UITrip(item.title,item.strDate)
+                            user.articles.forEach {
+                                    item -> UITripArticle(item.title,item.strDate, item.photo)
                             }
                         }
                     }
                 }
             }
+
             2 -> {
                 Column {
 
@@ -362,8 +386,8 @@ fun TabAboutTripsReview(viewModel: ProfileViewModel, myProfile: Boolean) {
                                 .height((7*43).dp)
                                 .verticalScroll(rememberScrollState())
                         ) {
-                            reviewList.forEach {
-                                    item -> UIReview(item.name, item.surname, item.rating, item.strDate)
+                            user.reviews.forEach {
+                                    item -> UIReview(item.name, item.surname, item.rating,item.strDate)
                             }
                         }
                     }
@@ -374,7 +398,7 @@ fun TabAboutTripsReview(viewModel: ProfileViewModel, myProfile: Boolean) {
 }
 
 @Composable
-fun UITrip(destination:String, strData:String)
+fun UITripArticle(destination:String, strData:String, image: Int?)
 {
     Row(verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -397,18 +421,32 @@ fun UITrip(destination:String, strData:String)
                 horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.CenterVertically)
             {
-                Box(
-                    contentAlignment = Alignment.CenterStart,
-                    modifier = Modifier
-                        .size(30.dp)
-                        .background(Color.Gray, shape = CircleShape)
-                ) {
-                    //Image
+                if(image == null) {
+                    Box(
+                        contentAlignment = Alignment.CenterStart,
+                        modifier = Modifier
+                            .size(30.dp)
+                            .background(Color.Gray, shape = CircleShape)
+                    ) {}
+                } else {
+                    Box(
+                        contentAlignment = Alignment.CenterStart,
+                        modifier = Modifier
+                            .size(30.dp)
+                            //.background(Color.White ,shape = CircleShape)
+                    ) {
+                        Image(painter = painterResource(image), "photo",
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip( shape = CircleShape)
+                                .border(0.dp, Color.White, CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
                 }
+
                 Text(destination, modifier = Modifier.padding( start = 16.dp))
             }
-
-
 
             Row(
                 modifier = Modifier
@@ -427,7 +465,6 @@ fun UITrip(destination:String, strData:String)
 fun UIReview(name:String, surname:String, rating:Float, strData:String) {
     Row(verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
-            //.size(376.dp, 43.dp)
             .fillMaxWidth()
             .height(43.dp)
             .background(
@@ -442,7 +479,6 @@ fun UIReview(name:String, surname:String, rating:Float, strData:String) {
             modifier = Modifier.fillMaxSize())
         {
             Row(
-                //modifier = Modifier.fillMaxWidth(),
                 modifier = Modifier
                     .weight(1f),
                 horizontalArrangement = Arrangement.Start,
@@ -455,25 +491,23 @@ fun UIReview(name:String, surname:String, rating:Float, strData:String) {
                         .background(Color.Gray, shape = CircleShape)
                 ) {
                     //Image
+                    ProfilePhoto(name, surname,true, null)
                 }
                 Text("$name $surname", modifier = Modifier.padding( start = 16.dp))
             }
 
             Row(
-                //modifier = Modifier.fillMaxWidth(),
                 modifier = Modifier
                     .weight(1f),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically)
             {
-                //Icon zone
                 Icon(Icons.Default.StarBorder, "star")
                 Spacer(modifier = Modifier.width(5.dp))
                 Text(rating.toString())
             }
 
             Row(
-                //modifier = Modifier.fillMaxWidth(),
                 modifier = Modifier
                     .weight(1f),
                 horizontalArrangement = Arrangement.End,

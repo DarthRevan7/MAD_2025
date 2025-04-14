@@ -1,7 +1,6 @@
 package com.example.voyago.view
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -20,16 +19,17 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
 import com.example.voyago.R
 import com.example.voyago.activities.*
+import com.example.voyago.user2
 import com.example.voyago.viewmodel.*
 
 
@@ -38,10 +38,7 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserProfileScreen(viewModel: ProfileViewModel) {
-
-    //MVVM Code
-    val userData = viewModel.userData.observeAsState()
+fun UserProfileScreen() {
 
     //Icons
     val painterStartChat = painterResource(R.drawable.start_chat)
@@ -72,7 +69,7 @@ fun UserProfileScreen(viewModel: ProfileViewModel) {
                 Box(modifier =
                     Modifier
                         .fillMaxWidth()
-                        .height(245.dp)
+                        .height(300.dp)
                         .background(Color(0xdf,0xd1,0xe0,255), shape = RectangleShape)
                 ) {
 
@@ -84,15 +81,41 @@ fun UserProfileScreen(viewModel: ProfileViewModel) {
                     )
 
                     ProfilePhoto(
-                        userData.value?.firstname.toString(), userData.value?.surname.toString(),
-                        modifier = Modifier.align(Alignment.Center).offset(y = (-20).dp)
+                        user2.name, user2.surname, false, null,
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .offset(y = (-50).dp)
                     )
 
                     Text(
-                        text = userData.value?.username.toString(),
+                        text = user2.username,
                         style = MaterialTheme.typography.headlineLarge,
+                        fontWeight = FontWeight.ExtraBold,
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(bottom = 10.dp)
+                            .offset(y = (40).dp)
+                    )
+
+                    Text(
+                        text = user2.name + " " + user2.surname,
+                        style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 10.dp)
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 10.dp)
+                            .offset(y = (-50).dp)
+                    )
+
+                    Spacer( Modifier.height(20.dp) )
+
+                    Text(
+                        text = user2.country,
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Normal,
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 10.dp)
                             .offset(y = (-20).dp)
                     )
                 }
@@ -101,18 +124,18 @@ fun UserProfileScreen(viewModel: ProfileViewModel) {
             item {
                 //Row with rating and reliability
                 Row(
-                    modifier = Modifier./*align(Alignment.CenterHorizontally).*/offset(y = (-25).dp)
+                    modifier = Modifier.offset(y = (-25).dp)
                 ) {
                     RatingAndReliability(
-                        userData.value?.rating?.toFloat() ?: 0.0f,
-                        userData.value?.reliability?.toInt() ?: 0
+                        user2.approvalRate,
+                        user2.reliability
                     )
                 }
             }
 
             item {
                 //Tab About, My Trips, Review
-                TabAboutTripsReview(viewModel, myProfile = false)
+                TabAboutTripsReview(user2)
             }
         }
     }
