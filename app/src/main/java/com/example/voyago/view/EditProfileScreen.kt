@@ -388,7 +388,7 @@ fun CameraPopup(onDismissRequest: () -> Unit, context:Context)
         ) {
             Button(
                 onClick = {
-                    context.startActivity(Intent(context, CameraActivity::class.java))
+                    //context.startActivity(Intent(context, CameraActivity::class.java))
                 },
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
