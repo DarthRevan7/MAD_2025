@@ -4,7 +4,7 @@ import android.net.Uri
 import com.example.voyago.model.*
 
 
-fun TripFilter(dbList: List<Trip>, destination: String, minPrice:Float, maxPrice:Float, minDays:Int, maxDays:Int, minSize:Int, maxSize:Int, vararg typesTravel:TypeTravel, searchForCompleted:Boolean, minAvailableSeats:Int)
+fun TripFilter(dbList: List<Trip>, destination: String, minPrice:Float, maxPrice:Float, minDays:Int, maxDays:Int, minSize:Int, maxSize:Int, vararg typesTravel:TypeTravel, searchForCompleted:Boolean, minAvailableSeats:Int):List<Trip>
 {
     var dbFiltrableList = dbList
 
@@ -26,7 +26,7 @@ fun TripFilter(dbList: List<Trip>, destination: String, minPrice:Float, maxPrice
         dbFiltrableList = FilterByAvailableSeats(dbFiltrableList, minAvailableSeats)
     }
 
-
+    return dbFiltrableList
 
 
 
