@@ -483,7 +483,7 @@ val trips = listOf<Trip>(
     ),
     Trip(
         id = 2,
-        photo = 102,
+        photo = R.drawable.maldives,
         title = "Tropical Island Party",
         destination = "Maldives",
         startDate = trip2StartDate,
@@ -501,7 +501,7 @@ val trips = listOf<Trip>(
     ),
     Trip(
         id = 3,
-        photo = 103,
+        photo = R.drawable.mountrocky,
         title = "Adventure in the Rockies",
         destination = "Rocky Mountains, USA",
         startDate = trip3StartDate,
@@ -519,7 +519,7 @@ val trips = listOf<Trip>(
     ),
     Trip(
         id = 4,
-        photo = 104,
+        photo = R.drawable.santorini,
         title = "Creative Arts Retreat",
         destination = "Santorini, Greece",
         startDate = trip4StartDate,
@@ -537,7 +537,7 @@ val trips = listOf<Trip>(
     ),
     Trip(
         id = 5,
-        photo = 105,
+        photo = R.drawable.serengetis,
         title = "African Safari Adventure",
         destination = "Serengeti, Tanzania",
         startDate = trip5StartDate,
@@ -555,7 +555,7 @@ val trips = listOf<Trip>(
     ),
     Trip(
         id = 6,
-        photo = 106,
+        photo = R.drawable.tuscany,
         title = "Vineyard Retreat in Tuscany",
         destination = "Tuscany, Italy",
         startDate = trip6StartDate,
@@ -573,7 +573,7 @@ val trips = listOf<Trip>(
     ),
     Trip(
         id = 7,
-        photo = 107,
+        photo = R.drawable.colorado,
         title = "Mountain Adventure in Colorado",
         destination = "Colorado, USA",
         startDate = trip7StartDate,
@@ -591,7 +591,7 @@ val trips = listOf<Trip>(
     ),
     Trip(
         id = 8,
-        photo = 108,
+        photo = R.drawable.kyoto,
         title = "Cultural Immersion in Kyoto",
         destination = "Kyoto, Japan",
         startDate = trip8StartDate,
@@ -609,7 +609,7 @@ val trips = listOf<Trip>(
     ),
     Trip(
         id = 9,
-        photo = 109,
+        photo = R.drawable.monaco,
         title = "Exclusive City Experience",
         destination = "Monaco",
         startDate = trip9StartDate,
@@ -626,7 +626,7 @@ val trips = listOf<Trip>(
         isCompleted = false
     ),
     Trip(
-        id = 10,
+        id = R.drawable.tulum,
         photo = 110,
         title = "Beachside Bliss in Tulum",
         destination = "Tulum, Mexico",
@@ -645,7 +645,7 @@ val trips = listOf<Trip>(
     ),
     Trip(
         id = 11,
-        photo = 111,
+        photo = R.drawable.peru,
         title = "Ancient Civilizations Exploration",
         destination = "Peru",
         startDate = trip11StartDate,
@@ -663,7 +663,7 @@ val trips = listOf<Trip>(
     ),
     Trip(
         id = 12,
-        photo = 112,
+        photo = R.drawable.fiji,
         title = "Island Getaway in Fiji",
         destination = "Fiji",
         startDate = trip12StartDate,
@@ -680,7 +680,7 @@ val trips = listOf<Trip>(
         isCompleted = false
     ),
     Trip(
-        id = 13,
+        id = R.drawable.brazil,
         photo = 113,
         title = "Jungle Adventure in the Amazon",
         destination = "Amazon Rainforest, Brazil",
@@ -699,7 +699,7 @@ val trips = listOf<Trip>(
     ),
     Trip(
         id = 14,
-        photo = 114,
+        photo = R.drawable.dubai,
         title = "Desert Safari Adventure",
         destination = "Dubai, UAE",
         startDate = trip14StartDate,
@@ -717,7 +717,7 @@ val trips = listOf<Trip>(
     ),
     Trip(
         id = 15,
-        photo = 115,
+        photo = R.drawable.kenya,
         title = "Safari Adventure in Kenya",
         destination = "Kenya",
         startDate = trip15StartDate,
