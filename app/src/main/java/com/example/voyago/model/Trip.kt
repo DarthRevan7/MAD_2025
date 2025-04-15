@@ -1,7 +1,5 @@
 package com.example.voyago.model
 
-import android.media.Image
-import androidx.compose.ui.graphics.vector.ImageVector
 import java.util.Calendar
 import java.util.Date
 
