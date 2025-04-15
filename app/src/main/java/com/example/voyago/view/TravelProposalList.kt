@@ -3,6 +3,7 @@
 package com.example.voyago.view
 
 import android.app.Activity
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -33,6 +34,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -55,7 +58,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.voyago.R
 import com.example.voyago.activities.*
@@ -75,7 +80,7 @@ fun TravelProposalListScreen() {
             TopBar()
         },
         bottomBar = {
-            BottomBar(4)
+            BottomBar(0)
         }
     ) { innerPadding ->
 
@@ -90,97 +95,187 @@ fun TravelProposalListScreen() {
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            /*item {
-                //Box with Profile Photo, Username and Logout, Back and Edit icons
-                Box(modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .height(300.dp)
-                        .background(Color(0xdf, 0xd1, 0xe0, 255), shape = RectangleShape)) {
+            item{
 
-                    Image(painter = painterLogout, "logout", modifier = Modifier
-                        .size(60.dp)
-                        .align(alignment = Alignment.TopEnd)
-                        .padding(16.dp)
-                        .clickable {/*TODO*/}
-                    )
-
-                    Image(painter = painterEdit, "edit", modifier = Modifier
-                        .size(60.dp)
-                        .align(alignment = Alignment.BottomEnd)
-                        .padding(16.dp)
-                        .offset(y = (-30).dp)
-                        .clickable {  navController.navigate("edit_profile") }
-                    )
-
-                    val context = LocalContext.current
-
-                    Icon(Icons.Default.ArrowBackIosNew, "back", modifier = Modifier.padding(16.dp).offset(y = 5.dp)
-                        .clickable{ (context as? Activity)?.finish() }
-                    )
-
-                    ProfilePhoto(
-                        user1.name, user1.surname, false, user1.profileImage,
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .offset(y = (-50).dp)
-                    )
-                    Text(
-                        text = user1.username,
-                        style = MaterialTheme.typography.headlineLarge,
-                        fontWeight = FontWeight.ExtraBold,
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(bottom = 10.dp)
-                            .offset(y = (40).dp)
-                    )
-
-                    Text(
-                        text = user1.name + " " + user1.surname,
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .padding(bottom = 10.dp)
-                            .offset(y = (-50).dp)
-                    )
-
-                    Spacer( Modifier.height(20.dp))
-
-                    Text(
-                        text = user1.country,
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Normal,
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .padding(bottom = 10.dp)
-                            .offset(y = (-20).dp)
-                    )
-                }
-            }
-
-            item {
-                //Row with rating and reliability
                 Row(
                     modifier = Modifier
-                        .offset(y = (-25).dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
+                        .fillMaxWidth(0.9f) // Ensure the Row takes up the full width
+                        .padding(top = 15.dp), // Padding for the Row
+                    horizontalArrangement = Arrangement.Start // Align items to the left in the Row
                 ) {
-                    RatingAndReliability(
-                        user1.approvalRate,
-                        user1.reliability
+                    Button(
+                        onClick = {
+                            // Click functionality
+                        },
+                        border = BorderStroke(1.dp, Color.Black),
+                        shape = RoundedCornerShape(10.dp),// Border with rounded corne
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(193, 165, 195), // Change background color
+                            contentColor = Color.Black // Change text color
+                        )
+                    ) {
+                        Text("Filters")
+                    }
+                }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .padding(top = 15.dp)
+                        .height(200.dp)
+                        .clip(RoundedCornerShape(30.dp)) // round corners for the whole box
+                ) {
+//                    Image(
+//                        painter = painterResource(id = R.drawable.your_image), // replace with your image
+//                        contentDescription = "Background image",
+//                        modifier = Modifier
+//                            .fillMaxSize(),
+//                        contentScale = ContentScale.Crop // makes the image fill the box nicely
+//                    )
+
+                    // semi-transparent overlay
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color(0x55000000)) // optional overlay for better text visibility
                     )
+
+                    // Content (text, icons, etc.) goes here
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.Bottom
+                    ) {
+                        Text(
+                            text = "Title or Info",
+                            color = Color.White,
+                            fontSize = 20.sp
+                        )
+                        Text(
+                            text = "More details here",
+                            color = Color.White,
+                            fontSize = 14.sp
+                        )
+                    }
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.Bottom,
+                        horizontalAlignment = Alignment.End
+                    ) {
+                        Text(
+                            text = "Price",
+                            color = Color.White,
+                            fontSize = 14.sp
+                        )
+                        Text(
+                            text = "Date - Days",
+                            color = Color.White,
+                            fontSize = 14.sp
+                        )
+                        Text(
+                            text = "Participants",
+                            color = Color.White,
+                            fontSize = 14.sp
+                        )
+                    }
                 }
             }
 
-            item {
-                //Tab About, My Trips, Review
-                TabAboutTripsReview(user1)
-            }
-        }
+                /*item {
+                    //Box with Profile Photo, Username and Logout, Back and Edit icons
+                    Box(modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .height(300.dp)
+                            .background(Color(0xdf, 0xd1, 0xe0, 255), shape = RectangleShape)) {
 
-             */
+                        Image(painter = painterLogout, "logout", modifier = Modifier
+                            .size(60.dp)
+                            .align(alignment = Alignment.TopEnd)
+                            .padding(16.dp)
+                            .clickable {/*TODO*/}
+                        )
+
+                        Image(painter = painterEdit, "edit", modifier = Modifier
+                            .size(60.dp)
+                            .align(alignment = Alignment.BottomEnd)
+                            .padding(16.dp)
+                            .offset(y = (-30).dp)
+                            .clickable {  navController.navigate("edit_profile") }
+                        )
+
+                        val context = LocalContext.current
+
+                        Icon(Icons.Default.ArrowBackIosNew, "back", modifier = Modifier.padding(16.dp).offset(y = 5.dp)
+                            .clickable{ (context as? Activity)?.finish() }
+                        )
+
+                        ProfilePhoto(
+                            user1.name, user1.surname, false, user1.profileImage,
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .offset(y = (-50).dp)
+                        )
+                        Text(
+                            text = user1.username,
+                            style = MaterialTheme.typography.headlineLarge,
+                            fontWeight = FontWeight.ExtraBold,
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .padding(bottom = 10.dp)
+                                .offset(y = (40).dp)
+                        )
+
+                        Text(
+                            text = user1.name + " " + user1.surname,
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(bottom = 10.dp)
+                                .offset(y = (-50).dp)
+                        )
+
+                        Spacer( Modifier.height(20.dp))
+
+                        Text(
+                            text = user1.country,
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Normal,
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(bottom = 10.dp)
+                                .offset(y = (-20).dp)
+                        )
+                    }
+                }
+
+                item {
+                    //Row with rating and reliability
+                    Row(
+                        modifier = Modifier
+                            .offset(y = (-25).dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        RatingAndReliability(
+                            user1.approvalRate,
+                            user1.reliability
+                        )
+                    }
+                }
+
+                item {
+                    //Tab About, My Trips, Review
+                    TabAboutTripsReview(user1)
+                }
+            }
+
+                 */
         }
     }
 }
@@ -526,3 +621,9 @@ fun UIReview(name:String, surname:String, rating:Float, strData:String) {
 }
 
  */
+
+@Preview
+@Composable
+fun TravelProposalListScreenPreview() {
+    TravelProposalListScreen()
+}
