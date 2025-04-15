@@ -1,5 +1,6 @@
 package com.example.voyago.model
 
+import android.net.*
 import java.util.Calendar
 import java.util.Date
 
@@ -13,7 +14,7 @@ data class Trip(
     var estimatedPrice: Double,
     var groupSize: Int,
     var participants: List<Int>,               //user id - is this useful?
-    var activities: Map<Date,Int>,            //Map<Date,Activity> to filter by day
+    var activities: Map<Calendar, List<Activity>>,            //Map<Date,Activity> to filter by day
     var status: TripStatus,
     var typeTravel: List<TypeTravel>,
     var creatorId: Int,
@@ -24,8 +25,9 @@ data class Trip(
 {
     data class Activity(
         val id: Int,
-        var date: Date,           //yyyy-mm-gg
+        var date: Calendar,           //yyyy-mm-gg
         var time: String,           //hh:mm
+        var isGroupActivity:Boolean,
         var description: String
     )
 
@@ -50,7 +52,6 @@ data class Trip(
 
     }
 }
-
 
 enum class TypeTravel {
     CULTURE,
