@@ -65,10 +65,13 @@ class MainActivity : ComponentActivity() {
                     val context = LocalContext.current
                     MainPage(navController, context)
                 }
-                composable("user_profile") {
+                composable("travel_proposal_list") {
                     UserProfileScreen()
                 }
-                composable("travel_proposal") {
+                composable("owned_travel_proposal_list") {
+                    UserProfileScreen()
+                }
+                composable("create_new_travel_proposal") {
                     TravelProposalScreen()
                 }
             })
@@ -84,19 +87,19 @@ fun MainPage(navController: NavController, context: Context) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Button(onClick = {
-            context.startActivity(Intent(context, MyProfileActivity::class.java))
+            navController.navigate("travel_proposal_list")
         }) {
-            Text("Go To Own Profile")
+            Text("Go To TravelProposalList ")
         }
         Button(onClick = {
-            navController.navigate("user_profile")
+            navController.navigate("owned_travel_proposal_list")
         }) {
-            Text("Go To Other Profile")
+            Text("Go To OwnedTravelProposalList ")
         }
         Button(onClick = {
-            navController.navigate("travel_proposal")
+            navController.navigate("create_new_travel_proposal")
         }) {
-            Text("View Travel Proposal")
+            Text("Go To CreateNewTravelProposal")
         }
     }
 }
