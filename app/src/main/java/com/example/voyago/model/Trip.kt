@@ -12,13 +12,14 @@ data class Trip(
     var endDate: Calendar,
     var estimatedPrice: Double,
     var groupSize: Int,
-    var participants: List<Int>,               //user id
+    var participants: List<Int>,               //user id - is this useful?
     var activities: Map<Date,Int>,            //Map<Date,Activity> to filter by day
     var status: TripStatus,
     var typeTravel: List<TypeTravel>,
     var creatorId: Int,
     var appliedUsers: List<Int>,
-    var published: Boolean
+    var published: Boolean,
+    var isCompleted: Boolean
 )
 {
     data class Activity(
@@ -32,6 +33,21 @@ data class Trip(
         NOT_STARTED,
         IN_PROGRESS,
         COMPLETED
+    }
+
+    fun availableSpots(): Int {
+        return this.groupSize - this.participants.size
+    }
+
+    fun tripDuration():Int
+    {
+        return endDate.get(Calendar.DAY_OF_YEAR) - startDate.get(Calendar.DAY_OF_YEAR)
+    }
+
+
+    fun search(destination: String?, minPrice: Double?, maxPrice: Double?, duration: String?,
+               gruopSize: Int?, type: TypeTravel?, isCompleted: Boolean?, minAvailableSeats: Int?) {
+
     }
 }
 

@@ -3,6 +3,140 @@ package com.example.voyago
 import android.net.Uri
 import com.example.voyago.model.*
 
+
+
+
+fun FilterByDestination(dbList:List<Trip>, destination:String): List<Trip>
+{
+    val filteredList:MutableList<Trip> = mutableListOf<Trip>()
+
+    dbList.forEach {
+            item ->
+        if(item.destination == destination && destination != "")
+        {
+            filteredList.add(item)
+        }
+    }
+
+    val trueFilteredList = filteredList as List<Trip>
+
+    return trueFilteredList
+}
+
+fun FilterByPriceRange(dbList:List<Trip>, minPrice:Float, maxPrice:Float): List<Trip>
+{
+    val filteredList:MutableList<Trip> = mutableListOf<Trip>()
+
+    dbList.forEach {
+            item ->
+        if(item.estimatedPrice in minPrice..maxPrice)
+        {
+            filteredList.add(item)
+        }
+    }
+
+    val trueFilteredList = filteredList as List<Trip>
+
+    return trueFilteredList
+}
+
+fun FilterByDuration(dbList:List<Trip>, minDays:Int, maxDays:Int): List<Trip>
+{
+    val filteredList:MutableList<Trip> = mutableListOf<Trip>()
+
+    dbList.forEach {
+            item ->
+        if(item.tripDuration() in minDays.. maxDays)
+        {
+            filteredList.add(item)
+        }
+    }
+
+    val trueFilteredList = filteredList as List<Trip>
+
+    return trueFilteredList
+}
+
+fun FilterByGroupSize(dbList:List<Trip>, minSize:Int, maxSize:Int): List<Trip>
+{
+    val filteredList:MutableList<Trip> = mutableListOf<Trip>()
+
+    dbList.forEach {
+            item ->
+        if(item.tripDuration() in minSize.. maxSize)
+        {
+            filteredList.add(item)
+        }
+    }
+
+    val trueFilteredList = filteredList as List<Trip>
+
+    return trueFilteredList
+}
+
+fun FilterByTripType(dbList:List<Trip>, vararg tripTypes:TypeTravel): List<Trip>
+{
+    val filteredList:MutableList<Trip> = mutableListOf<Trip>()
+
+    if(tripTypes.isNotEmpty())
+    {
+        dbList.forEach {
+                item ->
+            tripTypes.forEach {
+                    element ->
+                if(item.typeTravel.contains(element))
+                {
+                    filteredList.add(item)
+                }
+            }
+        }
+    }
+
+    val trueFilteredList = filteredList as List<Trip>
+
+    return trueFilteredList
+}
+
+fun FilterByCompletion(dbList:List<Trip>): List<Trip>
+{
+    val filteredList:MutableList<Trip> = mutableListOf<Trip>()
+
+    dbList.forEach {
+            item ->
+        if(item.isCompleted)
+        {
+            filteredList.add(item)
+        }
+    }
+
+    val trueFilteredList = filteredList as List<Trip>
+
+    return trueFilteredList
+}
+
+fun FilterByAvailableSeats(dbList:List<Trip>, minSeats:Int): List<Trip>
+{
+    val filteredList:MutableList<Trip> = mutableListOf<Trip>()
+
+    dbList.forEach {
+            item ->
+        if(item.availableSpots() >= minSeats && minSeats != 0)
+        {
+            filteredList.add(item)
+        }
+    }
+
+    val trueFilteredList = filteredList as List<Trip>
+
+    return trueFilteredList
+}
+
+
+
+
+
+
+
 data class LazySeriousTrip(
     val tripTitle:String,
     val destination:String,

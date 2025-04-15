@@ -5,7 +5,7 @@ import com.example.voyago.model.*
 import kotlinx.coroutines.launch
 
 
-class ProfileViewModel : ViewModel() {
+class GenericViewModel : ViewModel() {
     /*val userRepository: UserRepository = UserRepository()
 
     private val _userData = MutableLiveData<UserData>()
