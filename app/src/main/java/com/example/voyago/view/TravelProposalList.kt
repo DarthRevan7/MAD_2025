@@ -125,6 +125,7 @@ fun TravelProposalListScreen() {
                         .height(200.dp)
                         .clip(RoundedCornerShape(30.dp)) // round corners for the whole box
                 ) {
+                    // uncomment the follow lines of code for the image.
 //                    Image(
 //                        painter = painterResource(id = R.drawable.your_image), // replace with your image
 //                        contentDescription = "Background image",
