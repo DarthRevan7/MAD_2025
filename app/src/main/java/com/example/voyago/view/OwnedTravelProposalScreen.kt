@@ -32,7 +32,7 @@ import com.example.voyago.romeTrip
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TravelProposalScreen() {
+fun OwnedTravelProposalScreen() {
 
     Scaffold(
         topBar = {
@@ -182,5 +182,5 @@ fun Hero() {
 @Preview
 @Composable
 fun TravelProposalScreenPreview() {
-    TravelProposalScreen()
+    OwnedTravelProposalScreen()
 }

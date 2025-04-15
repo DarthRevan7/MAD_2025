@@ -62,11 +62,11 @@ import com.example.voyago.viewmodel.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyProfileScreen(viewModel: ProfileViewModel, myProfile: Boolean, navController: NavController) {
+fun CreateNewTravelProposalScreen() {
 
     //Icons
-    val painterLogout = painterResource(R.drawable.logout)
-    val painterEdit = painterResource(R.drawable.edit)
+    /*val painterLogout = painterResource(R.drawable.logout)
+    val painterEdit = painterResource(R.drawable.edit)*/
 
     Scaffold(
         topBar = {
@@ -76,7 +76,7 @@ fun MyProfileScreen(viewModel: ProfileViewModel, myProfile: Boolean, navControll
             BottomBar(4)
         }
     ) { innerPadding ->
-        viewModel.getUserData(myProfile)
+
 
         val listState = rememberLazyListState()
 
@@ -88,7 +88,7 @@ fun MyProfileScreen(viewModel: ProfileViewModel, myProfile: Boolean, navControll
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            item {
+            /*item {
                 //Box with Profile Photo, Username and Logout, Back and Edit icons
                 Box(modifier =
                     Modifier
@@ -177,10 +177,13 @@ fun MyProfileScreen(viewModel: ProfileViewModel, myProfile: Boolean, navControll
                 TabAboutTripsReview(user1)
             }
         }
+
+             */
+        }
     }
 }
 
-@Composable
+/*@Composable
 fun RatingAndReliability(rating: Float, reliability: Int) {
 
     val painterStar = painterResource(R.drawable.star)
@@ -519,3 +522,5 @@ fun UIReview(name:String, surname:String, rating:Float, strData:String) {
         }
     }
 }
+
+ */

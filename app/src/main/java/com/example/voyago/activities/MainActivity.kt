@@ -50,8 +50,7 @@ import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
 import com.example.voyago.NavItem
 import com.example.voyago.R
-import com.example.voyago.view.TravelProposalScreen
-import com.example.voyago.view.UserProfileScreen
+import com.example.voyago.view.*
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,13 +65,13 @@ class MainActivity : ComponentActivity() {
                     MainPage(navController, context)
                 }
                 composable("travel_proposal_list") {
-                    UserProfileScreen()
+                    TravelProposalListScreen()
                 }
                 composable("owned_travel_proposal_list") {
-                    UserProfileScreen()
+                    OwnedTravelProposalScreen()
                 }
                 composable("create_new_travel_proposal") {
-                    TravelProposalScreen()
+                    CreateNewTravelProposalScreen()
                 }
             })
         }
