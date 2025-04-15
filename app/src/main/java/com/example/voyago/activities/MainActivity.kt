@@ -71,7 +71,7 @@ class MainActivity : ComponentActivity() {
                     OwnedTravelProposalScreen()
                 }
                 composable("create_new_travel_proposal") {
-                    CreateNewTravelProposalScreen()
+                    CreateNewTravelProposalScreen(navController)
                 }
             })
         }
