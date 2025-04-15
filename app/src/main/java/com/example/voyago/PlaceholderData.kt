@@ -4,8 +4,33 @@ import android.net.Uri
 import com.example.voyago.model.*
 
 
+fun TripFilter(dbList: List<Trip>, destination: String, minPrice:Float, maxPrice:Float, minDays:Int, maxDays:Int, minSize:Int, maxSize:Int, vararg typesTravel:TypeTravel, searchForCompleted:Boolean, minAvailableSeats:Int)
+{
+    var dbFiltrableList = dbList
+
+    if(destination != "")
+    {
+        dbFiltrableList = FilterByDestination(dbFiltrableList, destination)
+    }
+
+    dbFiltrableList = FilterByPriceRange(dbFiltrableList, minPrice, maxPrice)
+    dbFiltrableList = FilterByDuration(dbFiltrableList, minDays, maxDays)
+    dbFiltrableList = FilterByGroupSize(dbFiltrableList, minSize, maxSize)
+    dbFiltrableList = FilterByTripType(dbFiltrableList, *typesTravel)
+
+    if(searchForCompleted)
+        dbFiltrableList = FilterByCompletion(dbFiltrableList)
+
+    if(minAvailableSeats > 0)
+    {
+        dbFiltrableList = FilterByAvailableSeats(dbFiltrableList, minAvailableSeats)
+    }
 
 
+
+
+
+}
 fun FilterByDestination(dbList:List<Trip>, destination:String): List<Trip>
 {
     val filteredList:MutableList<Trip> = mutableListOf<Trip>()
