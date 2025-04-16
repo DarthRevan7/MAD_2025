@@ -4,6 +4,8 @@ import com.example.voyago.model.Trip.Activity
 import com.example.voyago.model.Trip.TripStatus
 import java.util.Calendar
 
+
+
 val users = listOf(
     LazyUser(1, "Alice", "Johnson"),
     LazyUser(2, "Bob", "Smith"),
