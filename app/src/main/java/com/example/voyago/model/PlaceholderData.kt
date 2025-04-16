@@ -160,7 +160,7 @@ fun filterByAvailableSeats(dbList:List<Trip>, minSeats:Int): List<Trip>
 }
 
 
-val trips = listOf(
+/*val trips = listOf(
     //TRIP 1
     Trip(
         id = 1,
@@ -337,6 +337,8 @@ val trips = listOf(
 
 )
 
+
+ */
 
 
 
