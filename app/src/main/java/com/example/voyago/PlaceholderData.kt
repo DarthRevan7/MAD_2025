@@ -2,6 +2,8 @@ package com.example.voyago
 
 import android.net.Uri
 import com.example.voyago.model.*
+import com.example.voyago.model.Trip.Activity
+import com.example.voyago.model.Trip.TripStatus
 import java.util.Calendar
 
 
@@ -158,7 +160,190 @@ fun filterByAvailableSeats(dbList:List<Trip>, minSeats:Int): List<Trip>
 }
 
 
+val trips = listOf<Trip>(
+    //TRIP 1
+    Trip(
+        id = 1,
+        photo = 123, // Resource ID for the photo
+        title = "Summer Adventure in Spain",
+        destination = "Barcelona",
+        startDate = Calendar.getInstance().apply {
+            set(2025, Calendar.JUNE, 1)
+        },
+        endDate = Calendar.getInstance().apply {
+            set(2025, Calendar.JUNE, 7)
+        },
+        estimatedPrice = 1200.00,
+        groupSize = 10,
+        participants = listOf(1, 2, 3, 4, 5, 6, 7, 8),
+        activities = mapOf(
+            Calendar.getInstance().apply { set(2025, Calendar.JUNE, 1) } to listOf(
+                Activity(1, Calendar.getInstance().apply { set(2025, Calendar.JUNE, 1) }, "08:00", true, "Morning Yoga at the beach"),
+                Activity(2, Calendar.getInstance().apply { set(2025, Calendar.JUNE, 1) }, "12:00", false, "Museum Tour"),
+                Activity(3, Calendar.getInstance().apply { set(2025, Calendar.JUNE, 1) }, "15:00", true, "Paella Cooking Class"),
+                Activity(4, Calendar.getInstance().apply { set(2025, Calendar.JUNE, 1) }, "18:00", false, "Gothic Quarter Walking Tour")
+            ),
+            Calendar.getInstance().apply { set(2025, Calendar.JUNE, 2) } to listOf(
+                Activity(5, Calendar.getInstance().apply { set(2025, Calendar.JUNE, 2) }, "09:00", true, "Hike in Montserrat Mountains"),
+                Activity(6, Calendar.getInstance().apply { set(2025, Calendar.JUNE, 2) }, "13:00", false, "Wine Tasting"),
+                Activity(7, Calendar.getInstance().apply { set(2025, Calendar.JUNE, 2) }, "16:00", true, "Beach Volleyball Tournament"),
+                Activity(8, Calendar.getInstance().apply { set(2025, Calendar.JUNE, 2) }, "19:00", false, "Tapas Dinner")
+            ),
+            Calendar.getInstance().apply { set(2025, Calendar.JUNE, 3) } to listOf(
+                Activity(9, Calendar.getInstance().apply { set(2025, Calendar.JUNE, 3) }, "07:00", true, "Sunrise Boat Ride"),
+                Activity(10, Calendar.getInstance().apply { set(2025, Calendar.JUNE, 3) }, "11:00", false, "Art Gallery Visit"),
+                Activity(11, Calendar.getInstance().apply { set(2025, Calendar.JUNE, 3) }, "14:00", true, "Scuba Diving Lesson"),
+                Activity(12, Calendar.getInstance().apply { set(2025, Calendar.JUNE, 3) }, "17:00", false, "Sagrada Familia Tour")
+            ),
+            Calendar.getInstance().apply { set(2025, Calendar.JUNE, 4) } to listOf(
+                Activity(13, Calendar.getInstance().apply { set(2025, Calendar.JUNE, 4) }, "08:00", true, "Morning Surfing Lesson"),
+                Activity(14, Calendar.getInstance().apply { set(2025, Calendar.JUNE, 4) }, "12:00", false, "Cooking Class - Spanish Cuisine"),
+                Activity(15, Calendar.getInstance().apply { set(2025, Calendar.JUNE, 4) }, "15:00", true, "Biking Tour of the City"),
+                Activity(16, Calendar.getInstance().apply { set(2025, Calendar.JUNE, 4) }, "18:00", false, "Fountain Show at Montjuïc")
+            ),
+            Calendar.getInstance().apply { set(2025, Calendar.JUNE, 5) } to listOf(
+                Activity(17, Calendar.getInstance().apply { set(2025, Calendar.JUNE, 5) }, "09:00", true, "Morning Trek to the Castle"),
+                Activity(18, Calendar.getInstance().apply { set(2025, Calendar.JUNE, 5) }, "12:00", false, "Wine and Cheese Tasting"),
+                Activity(19, Calendar.getInstance().apply { set(2025, Calendar.JUNE, 5) }, "15:00", true, "Beach Volleyball Finals"),
+                Activity(20, Calendar.getInstance().apply { set(2025, Calendar.JUNE, 5) }, "19:00", false, "Salsa Night at a Local Club")
+            ),
+            Calendar.getInstance().apply { set(2025, Calendar.JUNE, 6) } to listOf(
+                Activity(21, Calendar.getInstance().apply { set(2025, Calendar.JUNE, 6) }, "08:00", true, "Morning Paddleboarding"),
+                Activity(22, Calendar.getInstance().apply { set(2025, Calendar.JUNE, 6) }, "12:00", false, "Cooking Class - Tapas"),
+                Activity(23, Calendar.getInstance().apply { set(2025, Calendar.JUNE, 6) }, "15:00", true, "Walking Tour of Parc Guell"),
+                Activity(24, Calendar.getInstance().apply { set(2025, Calendar.JUNE, 6) }, "18:00", false, "La Rambla Exploration")
+            ),
+            Calendar.getInstance().apply { set(2025, Calendar.JUNE, 7) } to listOf(
+                Activity(25, Calendar.getInstance().apply { set(2025, Calendar.JUNE, 7) }, "09:00", true, "Final Day Yoga"),
+                Activity(26, Calendar.getInstance().apply { set(2025, Calendar.JUNE, 7) }, "12:00", false, "Art and Architecture Tour"),
+                Activity(27, Calendar.getInstance().apply { set(2025, Calendar.JUNE, 7) }, "15:00", true, "Adventure Park Day"),
+                Activity(28, Calendar.getInstance().apply { set(2025, Calendar.JUNE, 7) }, "18:00", false, "Farewell Dinner at the Beach")
+            )
+        ),
+        status = TripStatus.NOT_STARTED,
+        typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.ADVENTURE),
+        creatorId = 101,
+        appliedUsers = listOf(102, 103, 104, 105),
+        published = true,
+        isCompleted = false
+    ),
 
+    //TRIP 2
+    Trip(
+        id = 2,
+        photo = R.drawable.bali,
+        title = "Tropical Escape in Bali",
+        destination = "Bali",
+        startDate = Calendar.getInstance().apply {
+            set(2025, Calendar.JULY, 10)
+        },
+        endDate = Calendar.getInstance().apply {
+            set(2025, Calendar.JULY, 16)
+        },
+        estimatedPrice = 1500.00,
+        groupSize = 8,
+        participants = listOf(11, 12, 13, 14),
+        activities = mapOf(
+            Calendar.getInstance().apply { set(2025, Calendar.JULY, 10) } to listOf(
+                Activity(1, Calendar.getInstance().apply { set(2025, Calendar.JULY, 10) }, "07:00", true, "Morning Rice Terrace Walk"),
+                Activity(2, Calendar.getInstance().apply { set(2025, Calendar.JULY, 10) }, "11:00", false, "Sacred Monkey Forest Visit"),
+                Activity(3, Calendar.getInstance().apply { set(2025, Calendar.JULY, 10) }, "14:00", true, "Traditional Balinese Cooking Class"),
+                Activity(4, Calendar.getInstance().apply { set(2025, Calendar.JULY, 10) }, "18:00", false, "Sunset at Uluwatu Temple")
+            ),
+            Calendar.getInstance().apply { set(2025, Calendar.JULY, 11) } to listOf(
+                Activity(5, Calendar.getInstance().apply { set(2025, Calendar.JULY, 11) }, "08:00", true, "Morning Yoga by the Beach"),
+                Activity(6, Calendar.getInstance().apply { set(2025, Calendar.JULY, 11) }, "12:00", false, "Bali Museum Tour"),
+                Activity(7, Calendar.getInstance().apply { set(2025, Calendar.JULY, 11) }, "15:00", true, "Cycling Tour through Ubud"),
+                Activity(8, Calendar.getInstance().apply { set(2025, Calendar.JULY, 11) }, "18:30", false, "Balinese Cultural Dance Performance")
+            ),
+            Calendar.getInstance().apply { set(2025, Calendar.JULY, 12) } to listOf(
+                Activity(9, Calendar.getInstance().apply { set(2025, Calendar.JULY, 12) }, "06:00", true, "Sunrise Trek to Mount Batur"),
+                Activity(10, Calendar.getInstance().apply { set(2025, Calendar.JULY, 12) }, "10:00", false, "Bali Swing Adventure"),
+                Activity(11, Calendar.getInstance().apply { set(2025, Calendar.JULY, 12) }, "14:00", true, "Waterfall Hike in Tegenungan"),
+                Activity(12, Calendar.getInstance().apply { set(2025, Calendar.JULY, 12) }, "17:00", false, "Dinner at a Floating Restaurant")
+            ),
+            Calendar.getInstance().apply { set(2025, Calendar.JULY, 13) } to listOf(
+                Activity(13, Calendar.getInstance().apply { set(2025, Calendar.JULY, 13) }, "08:30", true, "Morning Paddleboarding at Sanur Beach"),
+                Activity(14, Calendar.getInstance().apply { set(2025, Calendar.JULY, 13) }, "12:00", false, "Visit to Tegenungan Waterfall"),
+                Activity(15, Calendar.getInstance().apply { set(2025, Calendar.JULY, 13) }, "14:30", true, "Lunch at a Traditional Warung"),
+                Activity(16, Calendar.getInstance().apply { set(2025, Calendar.JULY, 13) }, "19:00", false, "Sunset Dinner Cruise")
+            ),
+            Calendar.getInstance().apply { set(2025, Calendar.JULY, 14) } to listOf(
+                Activity(17, Calendar.getInstance().apply { set(2025, Calendar.JULY, 14) }, "08:00", true, "Morning Snorkeling at Nusa Dua"),
+                Activity(18, Calendar.getInstance().apply { set(2025, Calendar.JULY, 14) }, "12:30", false, "Bali Coffee Plantation Visit"),
+                Activity(19, Calendar.getInstance().apply { set(2025, Calendar.JULY, 14) }, "15:00", true, "Traditional Balinese Art Class"),
+                Activity(20, Calendar.getInstance().apply { set(2025, Calendar.JULY, 14) }, "18:00", false, "Relaxing Spa at a Resort")
+            ),
+            Calendar.getInstance().apply { set(2025, Calendar.JULY, 15) } to listOf(
+                Activity(21, Calendar.getInstance().apply { set(2025, Calendar.JULY, 15) }, "09:00", true, "Jungle Trekking to Hidden Temples"),
+                Activity(22, Calendar.getInstance().apply { set(2025, Calendar.JULY, 15) }, "12:00", false, "Visit to Ubud Palace"),
+                Activity(23, Calendar.getInstance().apply { set(2025, Calendar.JULY, 15) }, "14:00", true, "Bali Bird Park Tour"),
+                Activity(24, Calendar.getInstance().apply { set(2025, Calendar.JULY, 15) }, "18:30", false, "Traditional Dinner in a Balinese Village")
+            ),
+            Calendar.getInstance().apply { set(2025, Calendar.JULY, 16) } to listOf(
+                Activity(25, Calendar.getInstance().apply { set(2025, Calendar.JULY, 16) }, "07:00", true, "Sunrise Beach Yoga"),
+                Activity(26, Calendar.getInstance().apply { set(2025, Calendar.JULY, 16) }, "11:00", false, "Ubud Market Shopping"),
+                Activity(27, Calendar.getInstance().apply { set(2025, Calendar.JULY, 16) }, "14:00", true, "Bali Elephant Safari"),
+                Activity(28, Calendar.getInstance().apply { set(2025, Calendar.JULY, 16) }, "17:00", false, "Farewell Dinner with Fire Dance Show")
+            )
+        ),
+        status = TripStatus.NOT_STARTED,
+        typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.ADVENTURE, TypeTravel.RELAX),
+        creatorId = 201,
+        appliedUsers = listOf(202, 203, 204, 205, 206, 207, 208, 209),
+        published = true,
+        isCompleted = false
+    ),
+
+    //TRIP 3
+    Trip(
+        id = 3,
+        photo = R.drawable.new_york,
+        title = "City Adventure in New York",
+        destination = "New York City",
+        startDate = Calendar.getInstance().apply {
+            set(2025, Calendar.SEPTEMBER, 15)
+        },
+        endDate = Calendar.getInstance().apply {
+            set(2025, Calendar.SEPTEMBER, 17)
+        },
+        estimatedPrice = 800.00,
+        groupSize = 6,
+        participants = listOf(301, 302, 303, 304),
+        activities = mapOf(
+            Calendar.getInstance().apply { set(2025, Calendar.SEPTEMBER, 15) } to listOf(
+                Activity(1, Calendar.getInstance().apply { set(2025, Calendar.SEPTEMBER, 15) }, "08:00", true, "Morning Jog in Central Park"),
+                Activity(2, Calendar.getInstance().apply { set(2025, Calendar.SEPTEMBER, 15) }, "11:00", false, "Visit to the Empire State Building"),
+                Activity(3, Calendar.getInstance().apply { set(2025, Calendar.SEPTEMBER, 15) }, "14:00", true, "Boat Tour to Statue of Liberty"),
+                Activity(4, Calendar.getInstance().apply { set(2025, Calendar.SEPTEMBER, 15) }, "19:00", false, "Dinner at Times Square")
+            ),
+            Calendar.getInstance().apply { set(2025, Calendar.SEPTEMBER, 16) } to listOf(
+                Activity(5, Calendar.getInstance().apply { set(2025, Calendar.SEPTEMBER, 16) }, "09:00", true, "Visit to the Metropolitan Museum of Art"),
+                Activity(6, Calendar.getInstance().apply { set(2025, Calendar.SEPTEMBER, 16) }, "12:00", false, "Lunch in Little Italy"),
+                Activity(7, Calendar.getInstance().apply { set(2025, Calendar.SEPTEMBER, 16) }, "15:00", true, "Walking Tour of Brooklyn Bridge"),
+                Activity(8, Calendar.getInstance().apply { set(2025, Calendar.SEPTEMBER, 16) }, "18:00", false, "Broadway Show in the Evening")
+            ),
+            Calendar.getInstance().apply { set(2025, Calendar.SEPTEMBER, 17) } to listOf(
+                Activity(9, Calendar.getInstance().apply { set(2025, Calendar.SEPTEMBER, 17) }, "08:00", true, "Morning Cycling Tour in Central Park"),
+                Activity(10, Calendar.getInstance().apply { set(2025, Calendar.SEPTEMBER, 17) }, "11:00", false, "Visit to the 9/11 Memorial"),
+                Activity(11, Calendar.getInstance().apply { set(2025, Calendar.SEPTEMBER, 17) }, "14:00", true, "High Line Park Walk"),
+                Activity(12, Calendar.getInstance().apply { set(2025, Calendar.SEPTEMBER, 17) }, "17:00", false, "Farewell Dinner at a Rooftop Restaurant")
+            )
+        ),
+        status = TripStatus.NOT_STARTED,
+        typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.ADVENTURE),
+        creatorId = 401,
+        appliedUsers = listOf(402, 403, 404, 405, 406, 407),
+        published = true,
+        isCompleted = false
+    ),
+
+)
+
+
+
+
+/*
 // Trip 1
 val trip1StartDate = Calendar.getInstance().apply { set(2025, Calendar.MAY, 1) }
 val trip1EndDate = Calendar.getInstance().apply { set(2025, Calendar.MAY, 5) }
@@ -734,6 +919,8 @@ val trips = listOf<Trip>(
         isCompleted = false
     )
 )
+
+ */
 
 
 

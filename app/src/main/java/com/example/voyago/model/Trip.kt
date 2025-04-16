@@ -46,11 +46,6 @@ data class Trip(
         return endDate.get(Calendar.DAY_OF_YEAR) - startDate.get(Calendar.DAY_OF_YEAR)
     }
 
-
-    fun search(destination: String?, minPrice: Double?, maxPrice: Double?, duration: String?,
-               gruopSize: Int?, type: TypeTravel?, isCompleted: Boolean?, minAvailableSeats: Int?) {
-
-    }
 }
 
 enum class TypeTravel {
