@@ -5,26 +5,26 @@ import com.example.voyago.model.*
 import java.util.Calendar
 
 
-fun TripFilter(dbList: List<Trip>, destination: String, minPrice:Float, maxPrice:Float, minDays:Int, maxDays:Int, minSize:Int, maxSize:Int, vararg typesTravel:TypeTravel, searchForCompleted:Boolean, minAvailableSeats:Int):List<Trip>
+fun tripFilter(dbList: List<Trip>, destination: String, minPrice:Float, maxPrice:Float, minDays:Int, maxDays:Int, minSize:Int, maxSize:Int, vararg typesTravel:TypeTravel, searchForCompleted:Boolean, minAvailableSeats:Int):List<Trip>
 {
     var dbFiltrableList = dbList
 
     if(destination != "")
     {
-        dbFiltrableList = FilterByDestination(dbFiltrableList, destination)
+        dbFiltrableList = filterByDestination(dbFiltrableList, destination)
     }
 
-    dbFiltrableList = FilterByPriceRange(dbFiltrableList, minPrice, maxPrice)
-    dbFiltrableList = FilterByDuration(dbFiltrableList, minDays, maxDays)
-    dbFiltrableList = FilterByGroupSize(dbFiltrableList, minSize, maxSize)
-    dbFiltrableList = FilterByTripType(dbFiltrableList, *typesTravel)
+    dbFiltrableList = filterByPriceRange(dbFiltrableList, minPrice, maxPrice)
+    dbFiltrableList = filterByDuration(dbFiltrableList, minDays, maxDays)
+    dbFiltrableList = filterByGroupSize(dbFiltrableList, minSize, maxSize)
+    dbFiltrableList = filterByTripType(dbFiltrableList, *typesTravel)
 
     if(searchForCompleted)
-        dbFiltrableList = FilterByCompletion(dbFiltrableList)
+        dbFiltrableList = filterByCompletion(dbFiltrableList)
 
     if(minAvailableSeats > 0)
     {
-        dbFiltrableList = FilterByAvailableSeats(dbFiltrableList, minAvailableSeats)
+        dbFiltrableList = filterByAvailableSeats(dbFiltrableList, minAvailableSeats)
     }
 
     return dbFiltrableList
@@ -32,7 +32,7 @@ fun TripFilter(dbList: List<Trip>, destination: String, minPrice:Float, maxPrice
 
 
 }
-fun FilterByDestination(dbList:List<Trip>, destination:String): List<Trip>
+fun filterByDestination(dbList:List<Trip>, destination:String): List<Trip>
 {
     val filteredList:MutableList<Trip> = mutableListOf<Trip>()
 
@@ -49,7 +49,7 @@ fun FilterByDestination(dbList:List<Trip>, destination:String): List<Trip>
     return trueFilteredList
 }
 
-fun FilterByPriceRange(dbList:List<Trip>, minPrice:Float, maxPrice:Float): List<Trip>
+fun filterByPriceRange(dbList:List<Trip>, minPrice:Float, maxPrice:Float): List<Trip>
 {
     val filteredList:MutableList<Trip> = mutableListOf<Trip>()
 
@@ -66,7 +66,7 @@ fun FilterByPriceRange(dbList:List<Trip>, minPrice:Float, maxPrice:Float): List<
     return trueFilteredList
 }
 
-fun FilterByDuration(dbList:List<Trip>, minDays:Int, maxDays:Int): List<Trip>
+fun filterByDuration(dbList:List<Trip>, minDays:Int, maxDays:Int): List<Trip>
 {
     val filteredList:MutableList<Trip> = mutableListOf<Trip>()
 
@@ -83,7 +83,7 @@ fun FilterByDuration(dbList:List<Trip>, minDays:Int, maxDays:Int): List<Trip>
     return trueFilteredList
 }
 
-fun FilterByGroupSize(dbList:List<Trip>, minSize:Int, maxSize:Int): List<Trip>
+fun filterByGroupSize(dbList:List<Trip>, minSize:Int, maxSize:Int): List<Trip>
 {
     val filteredList:MutableList<Trip> = mutableListOf<Trip>()
 
@@ -100,7 +100,7 @@ fun FilterByGroupSize(dbList:List<Trip>, minSize:Int, maxSize:Int): List<Trip>
     return trueFilteredList
 }
 
-fun FilterByTripType(dbList:List<Trip>, vararg tripTypes:TypeTravel): List<Trip>
+fun filterByTripType(dbList:List<Trip>, vararg tripTypes:TypeTravel): List<Trip>
 {
     val filteredList:MutableList<Trip> = mutableListOf<Trip>()
 
@@ -123,7 +123,7 @@ fun FilterByTripType(dbList:List<Trip>, vararg tripTypes:TypeTravel): List<Trip>
     return trueFilteredList
 }
 
-fun FilterByCompletion(dbList:List<Trip>): List<Trip>
+fun filterByCompletion(dbList:List<Trip>): List<Trip>
 {
     val filteredList:MutableList<Trip> = mutableListOf<Trip>()
 
@@ -140,7 +140,7 @@ fun FilterByCompletion(dbList:List<Trip>): List<Trip>
     return trueFilteredList
 }
 
-fun FilterByAvailableSeats(dbList:List<Trip>, minSeats:Int): List<Trip>
+fun filterByAvailableSeats(dbList:List<Trip>, minSeats:Int): List<Trip>
 {
     val filteredList:MutableList<Trip> = mutableListOf<Trip>()
 
