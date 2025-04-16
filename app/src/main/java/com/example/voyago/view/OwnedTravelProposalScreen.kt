@@ -29,7 +29,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.voyago.R
 import com.example.voyago.activities.BottomBar
 import com.example.voyago.activities.TopBar
-import com.example.voyago.romeTrip
+import com.example.voyago.model.romeTrip
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

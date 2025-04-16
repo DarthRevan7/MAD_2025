@@ -1,7 +1,7 @@
-package com.example.voyago
+package com.example.voyago.model
 
 import android.net.Uri
-import com.example.voyago.model.*
+import com.example.voyago.R
 import com.example.voyago.model.Trip.Activity
 import com.example.voyago.model.Trip.TripStatus
 import java.util.Calendar
@@ -36,7 +36,7 @@ fun tripFilter(dbList: List<Trip>, destination: String, minPrice:Float, maxPrice
 }
 fun filterByDestination(dbList:List<Trip>, destination:String): List<Trip>
 {
-    val filteredList:MutableList<Trip> = mutableListOf<Trip>()
+    val filteredList:MutableList<Trip> = mutableListOf()
 
     dbList.forEach {
             item ->
@@ -53,7 +53,7 @@ fun filterByDestination(dbList:List<Trip>, destination:String): List<Trip>
 
 fun filterByPriceRange(dbList:List<Trip>, minPrice:Float, maxPrice:Float): List<Trip>
 {
-    val filteredList:MutableList<Trip> = mutableListOf<Trip>()
+    val filteredList:MutableList<Trip> = mutableListOf()
 
     dbList.forEach {
             item ->
@@ -70,7 +70,7 @@ fun filterByPriceRange(dbList:List<Trip>, minPrice:Float, maxPrice:Float): List<
 
 fun filterByDuration(dbList:List<Trip>, minDays:Int, maxDays:Int): List<Trip>
 {
-    val filteredList:MutableList<Trip> = mutableListOf<Trip>()
+    val filteredList:MutableList<Trip> = mutableListOf()
 
     dbList.forEach {
             item ->
@@ -87,7 +87,7 @@ fun filterByDuration(dbList:List<Trip>, minDays:Int, maxDays:Int): List<Trip>
 
 fun filterByGroupSize(dbList:List<Trip>, minSize:Int, maxSize:Int): List<Trip>
 {
-    val filteredList:MutableList<Trip> = mutableListOf<Trip>()
+    val filteredList:MutableList<Trip> = mutableListOf()
 
     dbList.forEach {
             item ->
@@ -104,7 +104,7 @@ fun filterByGroupSize(dbList:List<Trip>, minSize:Int, maxSize:Int): List<Trip>
 
 fun filterByTripType(dbList:List<Trip>, vararg tripTypes:TypeTravel): List<Trip>
 {
-    val filteredList:MutableList<Trip> = mutableListOf<Trip>()
+    val filteredList:MutableList<Trip> = mutableListOf()
 
     if(tripTypes.isNotEmpty())
     {
@@ -127,11 +127,11 @@ fun filterByTripType(dbList:List<Trip>, vararg tripTypes:TypeTravel): List<Trip>
 
 fun filterByCompletion(dbList:List<Trip>): List<Trip>
 {
-    val filteredList:MutableList<Trip> = mutableListOf<Trip>()
+    val filteredList:MutableList<Trip> = mutableListOf()
 
     dbList.forEach {
             item ->
-        if(item.isCompleted)
+        if(!item.canJoin())
         {
             filteredList.add(item)
         }
@@ -144,7 +144,7 @@ fun filterByCompletion(dbList:List<Trip>): List<Trip>
 
 fun filterByAvailableSeats(dbList:List<Trip>, minSeats:Int): List<Trip>
 {
-    val filteredList:MutableList<Trip> = mutableListOf<Trip>()
+    val filteredList:MutableList<Trip> = mutableListOf()
 
     dbList.forEach {
             item ->
@@ -160,7 +160,7 @@ fun filterByAvailableSeats(dbList:List<Trip>, minSeats:Int): List<Trip>
 }
 
 
-val trips = listOf<Trip>(
+val trips = listOf(
     //TRIP 1
     Trip(
         id = 1,
@@ -224,8 +224,7 @@ val trips = listOf<Trip>(
         typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.ADVENTURE),
         creatorId = 101,
         appliedUsers = listOf(102, 103, 104, 105),
-        published = true,
-        isCompleted = false
+        published = true
     ),
 
     //TRIP 2
@@ -291,8 +290,7 @@ val trips = listOf<Trip>(
         typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.ADVENTURE, TypeTravel.RELAX),
         creatorId = 201,
         appliedUsers = listOf(202, 203, 204, 205, 206, 207, 208, 209),
-        published = true,
-        isCompleted = false
+        published = true
     ),
 
     //TRIP 3
@@ -334,8 +332,7 @@ val trips = listOf<Trip>(
         typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.ADVENTURE),
         creatorId = 401,
         appliedUsers = listOf(402, 403, 404, 405, 406, 407),
-        published = true,
-        isCompleted = false
+        published = true
     ),
 
 )
@@ -951,6 +948,7 @@ data class LazyActivity(
     val description:String
 )
 
+/*
 data class LazyUser(
     var name:String,
     var surname:String,
@@ -988,6 +986,8 @@ data class LazyUser(
         this.profileImage=uri
     }
 }
+
+ */
 
 //LAZY DATA
 data class LazyTrip(
@@ -1059,7 +1059,7 @@ val reviewList2 = listOf(
     LazyReview("Ava", "Johnson", 4.3f, "July, 2025"),
     LazyReview("Mateo", "Silva", 4.0f, "May, 2025")
 )
-
+/*
 val user1 = LazyUser(
     name = "James",
     surname = "Lee",
@@ -1142,3 +1142,6 @@ val romeTrip = LazySeriousTrip(
         )
     )
 )
+
+
+ */

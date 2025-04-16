@@ -20,7 +20,7 @@ data class Trip(
     var creatorId: Int,
     var appliedUsers: List<Int>,
     var published: Boolean,
-    var isCompleted: Boolean
+    var reviews:List<Review>
 )
 {
     data class Activity(
@@ -35,6 +35,16 @@ data class Trip(
         NOT_STARTED,
         IN_PROGRESS,
         COMPLETED
+    }
+
+    fun canJoin():Boolean
+    {
+        return this.status == TripStatus.NOT_STARTED && hasAvailableSpots()
+    }
+
+    fun hasAvailableSpots():Boolean
+    {
+        return availableSpots() > 0
     }
 
     fun availableSpots(): Int {
