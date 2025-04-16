@@ -88,17 +88,17 @@ fun MainPage(navController: NavController, context: Context) {
         Button(onClick = {
             navController.navigate("travel_proposal_list")
         }) {
-            Text("Go To TravelProposalList ")
+            Text("Travel Proposal List ")
         }
         Button(onClick = {
             navController.navigate("owned_travel_proposal_list")
         }) {
-            Text("Go To OwnedTravelProposalList ")
+            Text("Owned Travel Proposal List ")
         }
         Button(onClick = {
             navController.navigate("create_new_travel_proposal")
         }) {
-            Text("Go To CreateNewTravelProposal")
+            Text("Create New Travel Proposal")
         }
     }
 }

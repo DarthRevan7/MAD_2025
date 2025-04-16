@@ -26,6 +26,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.voyago.R
 import com.example.voyago.activities.BottomBar
 import com.example.voyago.activities.TopBar
 import com.example.voyago.romeTrip
@@ -149,7 +150,7 @@ fun Hero() {
             .height(300.dp)
     ) {
         Image(
-            painter = painterResource(romeTrip.tripPhoto),
+            painter = painterResource(R.drawable.rome_photo),
             contentDescription = "Trip Hero photo",
             modifier = Modifier
                 .fillMaxSize()
