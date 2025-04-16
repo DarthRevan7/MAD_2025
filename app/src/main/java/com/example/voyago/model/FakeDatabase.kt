@@ -1,5 +1,6 @@
 package com.example.voyago.model
 
+import com.example.voyago.R
 import com.example.voyago.model.Trip.Activity
 import com.example.voyago.model.Trip.TripStatus
 import java.util.Calendar
@@ -18,7 +19,7 @@ val users = listOf(
 var tripList = mutableListOf<Trip>(
     Trip(
         id = 101,
-        photo = 0,
+        photo = R.drawable.barcelona,
         title = "Cultural Wonders of Spain",
         destination = "Barcelona",
         startDate = Calendar.getInstance().apply { set(2025, 6, 10) },
@@ -66,7 +67,7 @@ var tripList = mutableListOf<Trip>(
 
     Trip(
         id = 102,
-        photo = 1,
+        photo = R.drawable.phuket,
         title = "Beach Escape in Thailand",
         destination = "Phuket",
         startDate = Calendar.getInstance().apply { set(2025, 7, 20) },
@@ -114,7 +115,7 @@ var tripList = mutableListOf<Trip>(
 
     Trip(
         id = 103,
-        photo = 2,
+        photo = R.drawable.peru,
         title = "Adventures in Peru",
         destination = "Cusco",
         startDate = Calendar.getInstance().apply { set(2025, 9, 5) },
@@ -145,7 +146,9 @@ var tripList = mutableListOf<Trip>(
     ),
 
     Trip(
-        id = 106, photo = 5, title = "Japanese Autumn Journey",
+        id = 106,
+        photo = R.drawable.japan,
+        title = "Japanese Autumn Journey",
         destination = "Japan",
         startDate = Calendar.getInstance().apply { set(2025, 11, 5) },
         endDate = Calendar.getInstance().apply { set(2025, 11, 8) },
@@ -186,7 +189,10 @@ var tripList = mutableListOf<Trip>(
     ),
 
     Trip(
-        id = 107, photo = 6, title = "Kyoto Zen Retreat", destination = "Kyoto",
+        id = 107,
+        photo = R.drawable.kyoto,
+        title = "Kyoto Zen Retreat",
+        destination = "Kyoto",
         startDate = Calendar.getInstance().apply { set(2025, 12, 1) },
         endDate = Calendar.getInstance().apply { set(2025, 12, 4) },
         estimatedPrice = 1650.0,
@@ -226,7 +232,10 @@ var tripList = mutableListOf<Trip>(
     ),
 
     Trip(
-        id = 108, photo = 7, title = "Sydney Coastal Explorer", destination = "Sydney",
+        id = 108,
+        photo = R.drawable.sydney,
+        title = "Sydney Coastal Explorer",
+        destination = "Sydney",
         startDate = Calendar.getInstance().apply { set(2025, 12, 10) },
         endDate = Calendar.getInstance().apply { set(2025, 12, 13) },
         estimatedPrice = 1900.0,
@@ -268,7 +277,7 @@ var tripList = mutableListOf<Trip>(
 
     Trip(
         id = 109,
-        photo = 8,
+        photo = R.drawable.rio,
         title = "Rio Rhythms & Rainforests",
         destination = "Rio de Janeiro, Brazil",
         startDate = Calendar.getInstance().apply { set(2026, 0, 10) },
@@ -330,7 +339,7 @@ var tripList = mutableListOf<Trip>(
 
     Trip(
         id = 110,
-        photo = 9,
+        photo = R.drawable.monaco,
         title = "Monaco Luxe Experience",
         destination = "Monaco",
         startDate = Calendar.getInstance().apply { set(2026, 4, 5) },
