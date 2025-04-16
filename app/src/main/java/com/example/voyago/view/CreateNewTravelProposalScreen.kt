@@ -30,9 +30,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.StarBorder
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
@@ -42,7 +44,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,11 +66,15 @@ import com.example.voyago.viewmodel.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateNewTravelProposalScreen() {
+fun CreateNewTravelProposalScreen(navController: NavController) {
 
-    //Icons
-    /*val painterLogout = painterResource(R.drawable.logout)
-    val painterEdit = painterResource(R.drawable.edit)*/
+    var tripName by rememberSaveable {mutableStateOf("")}
+    var destination by rememberSaveable {mutableStateOf("")}
+    var groupSize by rememberSaveable {mutableStateOf("")}
+
+    var price by rememberSaveable {mutableStateOf("")}
+    var priceError by rememberSaveable {mutableStateOf(false)}
+    var priceErrorMessage by rememberSaveable {mutableStateOf("")}
 
     Scaffold(
         topBar = {
@@ -88,100 +96,103 @@ fun CreateNewTravelProposalScreen() {
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            /*item {
-                //Box with Profile Photo, Username and Logout, Back and Edit icons
-                Box(modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .height(300.dp)
-                        .background(Color(0xdf, 0xd1, 0xe0, 255), shape = RectangleShape)) {
+            item{
 
-                    Image(painter = painterLogout, "logout", modifier = Modifier
-                        .size(60.dp)
-                        .align(alignment = Alignment.TopEnd)
-                        .padding(16.dp)
-                        .clickable {/*TODO*/}
-                    )
 
-                    Image(painter = painterEdit, "edit", modifier = Modifier
-                        .size(60.dp)
-                        .align(alignment = Alignment.BottomEnd)
-                        .padding(16.dp)
-                        .offset(y = (-30).dp)
-                        .clickable {  navController.navigate("edit_profile") }
-                    )
+                OutlinedTextField(
+                    value =  tripName,
+                    onValueChange = { tripName = it },
+                    label = { Text("Trip name") },
+                    modifier = Modifier.fillMaxWidth(0.8f)
+                )
+            }
 
-                    val context = LocalContext.current
+            item{
+                Spacer(modifier = Modifier.height(8.dp))
+            }
 
-                    Icon(Icons.Default.ArrowBackIosNew, "back", modifier = Modifier.padding(16.dp).offset(y = 5.dp)
-                        .clickable{ (context as? Activity)?.finish() }
-                    )
+            item{
 
-                    ProfilePhoto(
-                        user1.name, user1.surname, false, user1.profileImage,
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .offset(y = (-50).dp)
-                    )
-                    Text(
-                        text = user1.username,
-                        style = MaterialTheme.typography.headlineLarge,
-                        fontWeight = FontWeight.ExtraBold,
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(bottom = 10.dp)
-                            .offset(y = (40).dp)
-                    )
 
-                    Text(
-                        text = user1.name + " " + user1.surname,
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .padding(bottom = 10.dp)
-                            .offset(y = (-50).dp)
-                    )
+                OutlinedTextField(
+                    value =  destination,
+                    onValueChange = { destination = it },
+                    label = { Text("Destination") },
+                    modifier = Modifier.fillMaxWidth(0.8f)
+                )
+            }
 
-                    Spacer( Modifier.height(20.dp))
+            item{
+                Spacer(modifier = Modifier.height(8.dp))
+            }
 
-                    Text(
-                        text = user1.country,
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Normal,
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .padding(bottom = 10.dp)
-                            .offset(y = (-20).dp)
-                    )
-                }
+            item{
+
+                OutlinedTextField(
+                    value = price,
+                    onValueChange = {
+                        price = it
+                        priceError = false
+                    },
+                    label = { Text("Price") },
+                    modifier = Modifier.fillMaxWidth(0.8f),
+                    isError = priceError,
+                    supportingText = {
+                        if (priceError) {
+                            Text(
+                                text = priceErrorMessage,
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                    }
+                )
+            }
+
+            item{
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            item{
+
+
+                OutlinedTextField(
+                    value =  groupSize,
+                    onValueChange = { groupSize = it },
+                    label = { Text("Group Size") },
+                    modifier = Modifier.fillMaxWidth(0.8f)
+                )
             }
 
             item {
-                //Row with rating and reliability
-                Row(
-                    modifier = Modifier
-                        .offset(y = (-25).dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
+                Button(
+                    onClick = {
+                        if (!validatePrice(price)) {
+                            priceError = true
+                            priceErrorMessage = "Price must be a number greater than 1"
+                        } else {
+                            priceError = false
+                            priceErrorMessage = ""
+                            navController.navigate("main_page")
+
+                        }
+                    },
+                    modifier = Modifier.padding(top = 16.dp)
                 ) {
-                    RatingAndReliability(
-                        user1.approvalRate,
-                        user1.reliability
-                    )
+                    Text("Next")
                 }
             }
-
-            item {
-                //Tab About, My Trips, Review
-                TabAboutTripsReview(user1)
-            }
-        }
-
-             */
         }
     }
 }
+
+
+fun validatePrice(price: String): Boolean {
+    return price.toDoubleOrNull()?.let { it > 1.0 } ?: false
+}
+
+
+
 
 /*@Composable
 fun RatingAndReliability(rating: Float, reliability: Int) {
