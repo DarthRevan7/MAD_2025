@@ -1,11 +1,13 @@
 package com.example.voyago.model
 
+import android.net.Uri
+import androidx.core.net.*
 import com.example.voyago.R
 import com.example.voyago.model.Trip.Activity
 import com.example.voyago.model.Trip.TripStatus
 import java.util.Calendar
 
-
+/*
 
 val users = listOf(
     LazyUser(1, "Alice", "Johnson"),
@@ -19,7 +21,7 @@ val users = listOf(
 var tripList = mutableListOf<Trip>(
     Trip(
         id = 101,
-        photo = R.drawable.barcelona,
+        photo = "file:///storage/emulated/0/Images/CameraX-Image/barcelona.jpg".toUri(),
         title = "Cultural Wonders of Spain",
         destination = "Barcelona",
         startDate = Calendar.getInstance().apply { set(2025, 6, 10) },
@@ -400,3 +402,6 @@ var tripList = mutableListOf<Trip>(
     )
 )
 
+
+
+ */

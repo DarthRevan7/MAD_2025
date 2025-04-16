@@ -1,5 +1,14 @@
 package com.example.voyago.view
 
+
+import android.Manifest
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
+import android.os.Environment
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -18,18 +27,29 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
+import coil3.ImageLoader
+import coil3.compose.AsyncImage
+import coil3.request.crossfade
 import com.example.voyago.R
 import com.example.voyago.activities.BottomBar
 import com.example.voyago.activities.TopBar
-import com.example.voyago.model.romeTrip
+import java.io.File
+
+//import com.example.voyago.model.romeTrip
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,98 +83,59 @@ fun OwnedTravelProposalScreen() {
             item{
                 Spacer(modifier = Modifier.height(16.dp))
             }
-
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 24.dp, end = 24.dp)
-                ) {
-                    Text(
-                        text = "${romeTrip.startDate} - ${romeTrip.endDate} \n" +
-                                "${romeTrip.sizeGroup} people (${romeTrip.remainingSpots()} spots left)",
-                        modifier = Modifier.align(Alignment.CenterVertically)
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                    Text(
-                        text = "${romeTrip.esteemedPrice} €",
-                        modifier = Modifier.align(Alignment.CenterVertically)
-                    )
-                }
-            }
-
-            item{
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            item {
-                ItineraryTitleBox()
-            }
-
-            item {
-                ItineraryText(
-                    modifier = Modifier
-                        .padding(start = 24.dp, top = 16.dp, end = 20.dp)
-                )
-            }
         }
     }
 }
 
-
-@Composable
-fun ItineraryTitleBox() {
-    Box(
-        modifier = Modifier
-            .height(50.dp)
-            .fillMaxWidth()
-            .shadow(elevation = 8.dp, shape = RoundedCornerShape(8.dp), clip = false)
-            .background(
-                color = Color(0xFFF4F4F4))
-    ) {
-        Text(
-            text = "My Itinerary",
-            modifier = Modifier
-                .align(Alignment.CenterStart)
-                .padding(start = 16.dp)
-        )
-    }
-}
-
-@Composable
-fun ItineraryText(modifier: Modifier = Modifier) {
-
-    val itineraryString = romeTrip.activities.entries.joinToString("\n\n") { (day, activities) ->
-        val dayHeader = "$day:\n"
-        val activityDescriptions = activities.joinToString("\n") {activity ->
-            val groupActivity = if (activity.isGroupActivity) "(group activity)" else ""
-            "- ${activity.activityTime} → ${activity.description} $groupActivity"
-        }
-        dayHeader + activityDescriptions
-    }
-
-    Text(
-        text = itineraryString,
-        style = MaterialTheme.typography.bodySmall,
-        fontWeight = FontWeight.Bold,
-        modifier = modifier
-
-    )
-}
+var hasPermission = false
 
 @Composable
 fun Hero() {
+
+    RequestStoragePermission { hasPermission = true }
+
+    Log.d("PERMISSION:","Has Permission T: ${hasPermission}")
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(300.dp)
     ) {
-        Image(
-            painter = painterResource(R.drawable.rome_photo),
-            contentDescription = "Trip Hero photo",
-            modifier = Modifier
-                .fillMaxSize()
+        val file = File(
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+            "barcelona.jpg"
         )
+
+        val uri = Uri.fromFile(file)
+
+        val context = LocalContext.current
+        val imageLoader = ImageLoader.Builder(context)
+            .crossfade(true)
+            .build()
+        //val uri = "content:/Pictures/CameraX-Image/barcelona.jpg".toUri()
+        AsyncImage(file,
+            null,
+            modifier = Modifier.fillMaxSize(),
+            imageLoader = imageLoader
+
+        )
+        Log.d("URI-CHECK", "Uri usato per l'immagine: $uri")
+
+        Log.d("URI-CHECK", "Percorso assoluto: ${file.absolutePath}")
+        Log.d("URI-CHECK", "Esiste il file? ${file.exists()}")
+
+
+        val permission = Manifest.permission.READ_EXTERNAL_STORAGE
+
+        val hasPermission = ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
+
+        Log.d("PERMISSION", "READ_EXTERNAL_STORAGE granted? $hasPermission")
+
+
+
+
+
+
         Box(
             modifier = Modifier
                 .align(Alignment.TopStart)
@@ -165,23 +146,36 @@ fun Hero() {
                 )
 
         ) {
-            Text(
-                text = romeTrip.destination +
-                        "\n" +
-                        romeTrip.tripTitle,
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(16.dp)
-            )
         }
     }
 }
 
-
-@Preview
 @Composable
-fun TravelProposalScreenPreview() {
-    OwnedTravelProposalScreen()
+fun RequestStoragePermission(onPermissionGranted: () -> Unit) {
+    val context = LocalContext.current
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            Log.d("PERM", "Permesso concesso.")
+            onPermissionGranted()
+        } else {
+            Log.e("PERM", "Permesso NEGATO.")
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.READ_MEDIA_IMAGES
+        } else {
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        }
+
+        if (ContextCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
+            permissionLauncher.launch(permission)
+        } else {
+            onPermissionGranted()
+        }
+    }
 }
+

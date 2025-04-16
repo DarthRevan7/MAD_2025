@@ -6,7 +6,7 @@ import java.util.Date
 
 data class Trip(
     val id: Int,
-    var photo: Int,
+    var photo: Uri,
     var title: String,
     var destination: String,
     var startDate: Calendar,
@@ -64,3 +64,12 @@ enum class TypeTravel {
     ADVENTURE,
     RELAX
 }
+
+/*
+barcelona.jpg
+
+"file:///storage/emulated/0/Images/CameraX-Image/barcelona.jpg"
+
+
+
+ */
