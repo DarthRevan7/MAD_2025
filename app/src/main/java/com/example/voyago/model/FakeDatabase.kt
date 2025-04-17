@@ -1,7 +1,9 @@
 package com.example.voyago.model
 
+import androidx.compose.runtime.mutableStateListOf
 import com.example.voyago.model.Trip.Activity
 import com.example.voyago.model.Trip.TripStatus
+import kotlinx.coroutines.flow.StateFlow
 import java.util.Calendar
 
 
@@ -400,7 +402,7 @@ class Model {
             reviews = emptyList()
         )
     )
-    var tripList: MutableList<Trip> = _tripList
+    var tripList: List<Trip> = _tripList
 
 
     //TripList Business Logic
