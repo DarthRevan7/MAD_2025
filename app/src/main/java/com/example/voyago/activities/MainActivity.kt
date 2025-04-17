@@ -68,10 +68,10 @@ class MainActivity : ComponentActivity() {
                     TravelProposalList()
                 }
                 composable("owned_travel_proposal_list") {
-                    OwnedTravelProposal()
+                    OwnedTravelProposalList()
                 }
                 composable("create_new_travel_proposal") {
-                    CreateNewTravelProposal(navController)
+                    NewTravelProposal(navController)
                 }
                 //to delete later
                 composable ("try_load_images"){

@@ -27,7 +27,7 @@ import com.example.voyago.activities.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateNewTravelProposal(navController: NavController) {
+fun NewTravelProposal(navController: NavController) {
 
     var tripName by rememberSaveable {mutableStateOf("")}
     var destination by rememberSaveable {mutableStateOf("")}

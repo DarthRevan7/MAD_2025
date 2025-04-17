@@ -1,8 +1,5 @@
 package com.example.voyago.model
 
-import android.net.Uri
-import androidx.core.net.*
-import com.example.voyago.R
 import com.example.voyago.model.Trip.Activity
 import com.example.voyago.model.Trip.TripStatus
 import java.util.Calendar
