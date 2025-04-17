@@ -6,7 +6,7 @@ import java.util.Date
 
 data class Trip(
     val id: Int,
-    var photo: Uri,
+    var photo: String,
     var title: String,
     var destination: String,
     var startDate: Calendar,
