@@ -69,7 +69,7 @@ import com.example.voyago.viewmodel.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TravelProposalListScreen() {
+fun TravelProposalList() {
 
     //Icons
     /*val painterLogout = painterResource(R.drawable.logout)

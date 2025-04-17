@@ -65,13 +65,17 @@ class MainActivity : ComponentActivity() {
                     MainPage(navController, context)
                 }
                 composable("travel_proposal_list") {
-                    TravelProposalListScreen()
+                    TravelProposalList()
                 }
                 composable("owned_travel_proposal_list") {
-                    OwnedTravelProposalScreen()
+                    OwnedTravelProposal()
                 }
                 composable("create_new_travel_proposal") {
-                    CreateNewTravelProposalScreen(navController)
+                    CreateNewTravelProposal(navController)
+                }
+                //to delete later
+                composable ("try_load_images"){
+                    LoadImages()
                 }
             })
         }
@@ -99,6 +103,13 @@ fun MainPage(navController: NavController, context: Context) {
             navController.navigate("create_new_travel_proposal")
         }) {
             Text("Create New Travel Proposal")
+        }
+
+        //to delete later
+        Button(onClick = {
+            navController.navigate("try_load_images")
+        }) {
+            Text("Try load images")
         }
     }
 }
