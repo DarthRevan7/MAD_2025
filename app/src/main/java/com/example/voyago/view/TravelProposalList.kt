@@ -622,9 +622,3 @@ fun UIReview(name:String, surname:String, rating:Float, strData:String) {
 }
 
  */
-
-@Preview
-@Composable
-fun TravelProposalListScreenPreview() {
-    TravelProposalListScreen()
-}
