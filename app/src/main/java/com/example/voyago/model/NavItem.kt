@@ -1,4 +1,4 @@
-package com.example.voyago
+package com.example.voyago.model
 
 import androidx.compose.ui.graphics.vector.ImageVector
 

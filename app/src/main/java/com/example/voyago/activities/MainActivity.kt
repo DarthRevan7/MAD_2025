@@ -48,7 +48,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
-import com.example.voyago.NavItem
+import com.example.voyago.model.NavItem
 import com.example.voyago.R
 import com.example.voyago.view.*
 

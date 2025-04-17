@@ -21,8 +21,7 @@ data class Trip(
     var appliedUsers: List<Int>,
     var published: Boolean,
     var reviews:List<Review>
-)
-{
+) {
     data class Activity(
         val id: Int,
         var date: Calendar,           //yyyy-mm-gg
@@ -37,13 +36,11 @@ data class Trip(
         COMPLETED
     }
 
-    fun canJoin():Boolean
-    {
+    fun canJoin():Boolean {
         return this.status == TripStatus.NOT_STARTED && hasAvailableSpots()
     }
 
-    fun hasAvailableSpots():Boolean
-    {
+    fun hasAvailableSpots():Boolean {
         return availableSpots() > 0
     }
 
@@ -51,8 +48,7 @@ data class Trip(
         return this.groupSize - this.participants.size
     }
 
-    fun tripDuration():Int
-    {
+    fun tripDuration():Int {
         return endDate.get(Calendar.DAY_OF_YEAR) - startDate.get(Calendar.DAY_OF_YEAR)
     }
 
@@ -64,12 +60,3 @@ enum class TypeTravel {
     ADVENTURE,
     RELAX
 }
-
-/*
-barcelona.jpg
-
-"file:///storage/emulated/0/Images/CameraX-Image/barcelona.jpg"
-
-
-
- */
