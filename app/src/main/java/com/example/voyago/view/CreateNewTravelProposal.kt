@@ -1,6 +1,8 @@
 package com.example.voyago.view
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,18 +12,24 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.voyago.activities.*
 
@@ -36,6 +44,18 @@ fun NewTravelProposal(navController: NavController) {
     var price by rememberSaveable {mutableStateOf("")}
     var priceError by rememberSaveable {mutableStateOf(false)}
     var priceErrorMessage by rememberSaveable {mutableStateOf("")}
+
+    val typeTravel = listOf("Party", "Adventure", "Culture", "Relax")
+    val selected = rememberSaveable(
+        saver = listSaver(
+            save = { it.toList() },
+            restore = { it.toMutableStateList() }
+        )
+    ) {
+        mutableStateListOf<String>()
+    }
+
+
 
     Scaffold(
         topBar = {
@@ -69,7 +89,7 @@ fun NewTravelProposal(navController: NavController) {
             }
 
             item{
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(10.dp))
             }
 
             item{
@@ -84,7 +104,7 @@ fun NewTravelProposal(navController: NavController) {
             }
 
             item{
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(10.dp))
             }
 
             item{
@@ -110,9 +130,6 @@ fun NewTravelProposal(navController: NavController) {
                 )
             }
 
-            item{
-                Spacer(modifier = Modifier.height(8.dp))
-            }
 
             item{
 
@@ -124,6 +141,49 @@ fun NewTravelProposal(navController: NavController) {
                     modifier = Modifier.fillMaxWidth(0.8f)
                 )
             }
+
+            item{
+                Spacer(modifier = Modifier.height(10.dp))
+            }
+
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 10.dp)
+                ) {
+                    Text(
+                        text = "Trip type",
+                        modifier = Modifier
+                            .align(Alignment.Center),
+                        fontSize = 14.sp
+                    )
+                }
+            }
+
+            item{
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier
+                        .padding(bottom = 10.dp)
+                ) {
+                    typeTravel.forEach { type ->
+                        FilterChip(
+                            selected = type in selected,
+                            onClick = {
+                                if (type in selected) {
+                                    selected.remove(type)
+                                } else {
+                                    selected.add(type)
+                                }
+                            },
+                            label = { Text(type.lowercase()) },
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                    }
+                }
+            }
+
 
             item {
                 Button(
