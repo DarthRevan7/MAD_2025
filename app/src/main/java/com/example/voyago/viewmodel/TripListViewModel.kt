@@ -1,23 +1,20 @@
 package com.example.voyago.viewmodel
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.voyago.model.Model
-import com.example.voyago.model.Trip
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 
-class TripListViewModel(private val model: Model) : ViewModel() {
 
-    private val _tripList = MutableStateFlow<List<Trip>>(model.tripList)
-    val tripList: StateFlow<List<Trip>> = _tripList.asStateFlow()
-
-    fun creatorPublishedFilter(id: Int) {
-        _tripList.value = model.filterPublishedByCreator(id)
-    }
+class TripListViewModel(val model: Model) : ViewModel() {
+    val publishedTrips = model.publishedTrips
+    val privateTrips = model.privateTrips
+    fun creatorPublicFilter(id: Int) = model.filterPublishedByCreator(id)
+    fun creatorPrivateFilter(id:Int) = model.filterPrivateByCreator(id)
 }
+
+
 
 object Factory : ViewModelProvider.Factory{
     private val model:Model = Model()
