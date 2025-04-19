@@ -46,10 +46,11 @@ import coil3.request.crossfade
 import androidx.compose.foundation.lazy.items
 
 
-
 @SuppressLint("DiscouragedApi")
 @Composable
 fun OwnedTravelProposalList(navController: NavController, vm: TripListViewModel = viewModel(factory = Factory)) {
+
+
 
     val publishedTrips by vm.publishedTrips.collectAsState()
     val privateTrips by vm.privateTrips.collectAsState()
@@ -82,7 +83,7 @@ fun OwnedTravelProposalList(navController: NavController, vm: TripListViewModel 
             item {
                 Text(
                     text = "Published Trips:",
-                    modifier = Modifier.padding(start = 16.dp, top = 16.dp),
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp),
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -94,7 +95,7 @@ fun OwnedTravelProposalList(navController: NavController, vm: TripListViewModel 
             item {
                 Text(
                     text = "Private Trips:",
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp),
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -113,7 +114,8 @@ fun TripCard(trip: Trip, navController: NavController) {
             .padding(start = 16.dp, end = 16.dp, top = 10.dp)
             .fillMaxWidth(),
         shape = CardDefaults.elevatedShape,
-        onClick = { navController.navigate("travel_proposal_details") }
+        onClick = {
+            navController.navigate("travel_proposal_details") }
     ) {
         Box {
             AsyncImage(
@@ -172,9 +174,9 @@ fun TripCard(trip: Trip, navController: NavController) {
                 Image(
                     painter = painterEdit, "edit", modifier = Modifier
                         .size(35.dp)
-                        .clickable { navController.navigate("edit_travel_proposal") }
+                        .clickable {
+                            navController.navigate("edit_travel_proposal") }
                 )
-
             }
         }
     }

@@ -1,9 +1,11 @@
 package com.example.voyago.viewmodel
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.voyago.model.Model
+
 
 class TripListViewModel(val model: Model) : ViewModel() {
     val publishedTrips = model.publishedTrips
@@ -11,6 +13,8 @@ class TripListViewModel(val model: Model) : ViewModel() {
     fun creatorPublicFilter(id: Int) = model.filterPublishedByCreator(id)
     fun creatorPrivateFilter(id:Int) = model.filterPrivateByCreator(id)
 }
+
+
 
 object Factory : ViewModelProvider.Factory{
     private val model:Model = Model()
