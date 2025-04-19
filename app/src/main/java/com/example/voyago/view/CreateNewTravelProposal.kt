@@ -1,7 +1,10 @@
 package com.example.voyago.view
 
+import android.app.DatePickerDialog
+import android.widget.DatePicker
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,6 +17,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -28,10 +32,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.voyago.activities.*
+import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -183,6 +189,78 @@ fun NewTravelProposal(navController: NavController) {
                     }
                 }
             }
+
+            item {
+                Spacer(modifier = Modifier.height(10.dp))
+            }
+
+            item {
+                val context = LocalContext.current
+                val calendar = Calendar.getInstance()
+                val year = calendar.get(Calendar.YEAR)
+                val month = calendar.get(Calendar.MONTH)
+                val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+                var startDate by rememberSaveable { mutableStateOf("") }
+                var endDate by rememberSaveable { mutableStateOf("") }
+
+                val startDatePickerDialog = remember {
+                    DatePickerDialog(
+                        context,
+                        { _: DatePicker, y: Int, m: Int, d: Int ->
+                            startDate = "$d/${m + 1}/$y"
+                        }, year, month, day
+                    )
+                }
+
+                val endDatePickerDialog = remember {
+                    DatePickerDialog(
+                        context,
+                        { _: DatePicker, y: Int, m: Int, d: Int ->
+                            endDate = "$d/${m + 1}/$y"
+                        }, year, month, day
+                    )
+                }
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.Start,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(vertical = 8.dp)
+                    ) {
+                        OutlinedButton(onClick = { startDatePickerDialog.show() }) {
+                            Text("Start Date")
+                        }
+
+                        if (startDate.isNotEmpty()) {
+                            Text("Start: $startDate", modifier = Modifier.padding(top = 4.dp))
+                        }
+                    }
+
+                    Column(
+                        horizontalAlignment = Alignment.End,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(vertical = 8.dp)
+                    ) {
+                        OutlinedButton(onClick = { endDatePickerDialog.show() }) {
+                            Text("End Date")
+                        }
+
+                        if (endDate.isNotEmpty()) {
+                            Text("End: $endDate", modifier = Modifier.padding(top = 4.dp))
+                        }
+                    }
+                }
+            }
+
+
 
 
             item {
