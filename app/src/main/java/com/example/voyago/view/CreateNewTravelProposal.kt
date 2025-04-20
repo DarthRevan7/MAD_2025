@@ -2,6 +2,7 @@ package com.example.voyago.view
 
 import android.app.DatePickerDialog
 import android.widget.DatePicker
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Button
@@ -21,6 +23,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -32,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -72,214 +76,253 @@ fun NewTravelProposal(navController: NavController) {
         }
     ) { innerPadding ->
 
-
-        val listState = rememberLazyListState()
-
-        LazyColumn(
-            state = listState,
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(innerPadding)
+                .background(Color(0xFFF3EDF7))
         ) {
-            item{
+            val listState = rememberLazyListState()
+
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+                item {
+                    Spacer(modifier = Modifier.height(40.dp))
+                }
+
+                item {
 
 
-                OutlinedTextField(
-                    value =  tripName,
-                    onValueChange = { tripName = it },
-                    label = { Text("Trip name") },
-                    modifier = Modifier.fillMaxWidth(0.8f)
-                )
-            }
-
-            item{
-                Spacer(modifier = Modifier.height(10.dp))
-            }
-
-            item{
-
-
-                OutlinedTextField(
-                    value =  destination,
-                    onValueChange = { destination = it },
-                    label = { Text("Destination") },
-                    modifier = Modifier.fillMaxWidth(0.8f)
-                )
-            }
-
-            item{
-                Spacer(modifier = Modifier.height(10.dp))
-            }
-
-            item{
-
-                OutlinedTextField(
-                    value = price,
-                    onValueChange = {
-                        price = it
-                        priceError = false
-                    },
-                    label = { Text("Price") },
-                    modifier = Modifier.fillMaxWidth(0.8f),
-                    isError = priceError,
-                    supportingText = {
-                        if (priceError) {
-                            Text(
-                                text = priceErrorMessage,
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                        }
-                    }
-                )
-            }
-
-
-            item{
-
-
-                OutlinedTextField(
-                    value =  groupSize,
-                    onValueChange = { groupSize = it },
-                    label = { Text("Group Size") },
-                    modifier = Modifier.fillMaxWidth(0.8f)
-                )
-            }
-
-            item{
-                Spacer(modifier = Modifier.height(10.dp))
-            }
-
-            item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 10.dp)
-                ) {
-                    Text(
-                        text = "Trip type",
-                        modifier = Modifier
-                            .align(Alignment.Center),
-                        fontSize = 14.sp
+                    TextField(
+                        value = tripName,
+                        onValueChange = { tripName = it },
+                        label = { Text("Trip name") },
+                        modifier = Modifier.fillMaxWidth(0.8f)
                     )
                 }
-            }
 
-            item{
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier
-                        .padding(bottom = 10.dp)
-                ) {
-                    typeTravel.forEach { type ->
-                        FilterChip(
-                            selected = type in selected,
-                            onClick = {
-                                if (type in selected) {
-                                    selected.remove(type)
-                                } else {
-                                    selected.add(type)
-                                }
-                            },
-                            label = { Text(type.lowercase()) },
-                            modifier = Modifier.padding(end = 8.dp)
+                item {
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
+
+                item {
+
+
+                    TextField(
+                        value = destination,
+                        onValueChange = { destination = it },
+                        label = { Text("Destination") },
+                        modifier = Modifier.fillMaxWidth(0.8f)
+                    )
+                }
+
+                item {
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
+
+                item {
+
+                    TextField(
+                        value = price,
+                        onValueChange = {
+                            price = it
+                            priceError = false
+                        },
+                        label = { Text("Price estimate") },
+                        modifier = Modifier.fillMaxWidth(0.8f),
+                        isError = priceError,
+                        supportingText = {
+                            if (priceError) {
+                                Text(
+                                    text = priceErrorMessage,
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                        }
+                    )
+                }
+
+
+                item {
+
+
+                    TextField(
+                        value = groupSize,
+                        onValueChange = { groupSize = it },
+                        label = { Text("Group Size") },
+                        modifier = Modifier.fillMaxWidth(0.8f)
+                    )
+                }
+
+                item {
+                    Spacer(modifier = Modifier.height(20.dp))
+                }
+
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 10.dp)
+                    ) {
+                        Text(
+                            text = "Trip type",
+                            modifier = Modifier
+                                .align(Alignment.Center),
+                            fontSize = 20.sp
                         )
                     }
                 }
-            }
 
-            item {
-                Spacer(modifier = Modifier.height(10.dp))
-            }
-
-            item {
-                val context = LocalContext.current
-                val calendar = Calendar.getInstance()
-                val year = calendar.get(Calendar.YEAR)
-                val month = calendar.get(Calendar.MONTH)
-                val day = calendar.get(Calendar.DAY_OF_MONTH)
-
-                var startDate by rememberSaveable { mutableStateOf("") }
-                var endDate by rememberSaveable { mutableStateOf("") }
-
-                val startDatePickerDialog = remember {
-                    DatePickerDialog(
-                        context,
-                        { _: DatePicker, y: Int, m: Int, d: Int ->
-                            startDate = "$d/${m + 1}/$y"
-                        }, year, month, day
-                    )
-                }
-
-                val endDatePickerDialog = remember {
-                    DatePickerDialog(
-                        context,
-                        { _: DatePicker, y: Int, m: Int, d: Int ->
-                            endDate = "$d/${m + 1}/$y"
-                        }, year, month, day
-                    )
-                }
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.Start,
+                item {
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
                         modifier = Modifier
-                            .weight(1f)
-                            .padding(vertical = 8.dp)
+                            .padding(bottom = 10.dp)
                     ) {
-                        OutlinedButton(onClick = { startDatePickerDialog.show() }) {
-                            Text("Start Date")
-                        }
-
-                        if (startDate.isNotEmpty()) {
-                            Text("Start: $startDate", modifier = Modifier.padding(top = 4.dp))
-                        }
-                    }
-
-                    Column(
-                        horizontalAlignment = Alignment.End,
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(vertical = 8.dp)
-                    ) {
-                        OutlinedButton(onClick = { endDatePickerDialog.show() }) {
-                            Text("End Date")
-                        }
-
-                        if (endDate.isNotEmpty()) {
-                            Text("End: $endDate", modifier = Modifier.padding(top = 4.dp))
+                        typeTravel.forEach { type ->
+                            FilterChip(
+                                selected = type in selected,
+                                onClick = {
+                                    if (type in selected) {
+                                        selected.remove(type)
+                                    } else {
+                                        selected.add(type)
+                                    }
+                                },
+                                label = { Text(type.lowercase()) },
+                                modifier = Modifier.padding(end = 8.dp)
+                            )
                         }
                     }
                 }
-            }
 
-
-
-
-            item {
-                Button(
-                    onClick = {
-                        if (!validatePrice(price)) {
-                            priceError = true
-                            priceErrorMessage = "Price must be a number greater than 1"
-                        } else {
-                            priceError = false
-                            priceErrorMessage = ""
-                            navController.navigate("main_page")
-
-                        }
-                    },
-                    modifier = Modifier.padding(top = 16.dp)
-                ) {
-                    Text("Next")
+                item {
+                    Spacer(modifier = Modifier.height(10.dp))
                 }
+
+                item {
+                    val context = LocalContext.current
+                    val calendar = Calendar.getInstance()
+                    val year = calendar.get(Calendar.YEAR)
+                    val month = calendar.get(Calendar.MONTH)
+                    val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+                    var startDate by rememberSaveable { mutableStateOf("") }
+                    var endDate by rememberSaveable { mutableStateOf("") }
+
+                    val startDatePickerDialog = remember {
+                        DatePickerDialog(
+                            context,
+                            { _: DatePicker, y: Int, m: Int, d: Int ->
+                                startDate = "$d/${m + 1}/$y"
+                            }, year, month, day
+                        )
+                    }
+
+                    val endDatePickerDialog = remember {
+                        DatePickerDialog(
+                            context,
+                            { _: DatePicker, y: Int, m: Int, d: Int ->
+                                endDate = "$d/${m + 1}/$y"
+                            }, year, month, day
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.Start,
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(vertical = 8.dp)
+                        ) {
+                            OutlinedButton(onClick = { startDatePickerDialog.show() }) {
+                                Text("Start Date")
+                            }
+
+                            if (startDate.isNotEmpty()) {
+                                Text("Start: $startDate", modifier = Modifier.padding(top = 4.dp))
+                            }
+                        }
+
+                        Column(
+                            horizontalAlignment = Alignment.End,
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(vertical = 8.dp)
+                        ) {
+                            OutlinedButton(onClick = { endDatePickerDialog.show() }) {
+                                Text("End Date")
+                            }
+
+                            if (endDate.isNotEmpty()) {
+                                Text("End: $endDate", modifier = Modifier.padding(top = 4.dp))
+                            }
+                        }
+                    }
+                }
+
+                item {
+                    Spacer(modifier = Modifier.height(40.dp))
+                }
+
+
+                item {
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp),
+                    ) {
+
+                        Button(
+                            onClick = {
+                                navController.navigate("main_page")
+                            },
+                            modifier = Modifier
+                                .width(160.dp)
+                                .height(60.dp)
+                                .padding(top = 16.dp)
+                        ) {
+                            Text("Cancel")
+                        }
+
+                        Spacer(modifier = Modifier.weight(1f))
+
+                        Button(
+                            onClick = {
+                                if (!validatePrice(price)) {
+                                    priceError = true
+                                    priceErrorMessage = "Price must be a number greater than 1"
+                                } else {
+                                    priceError = false
+                                    priceErrorMessage = ""
+                                    navController.navigate("main_page")
+
+                                }
+                            },
+                            modifier = Modifier
+                                .width(160.dp)
+                                .height(60.dp)
+                                .padding(top = 16.dp)
+                        ) {
+                            Text("Next")
+                        }
+                    }
+
+                }
+
             }
         }
     }
