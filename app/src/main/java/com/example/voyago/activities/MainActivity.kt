@@ -76,6 +76,12 @@ class MainActivity : ComponentActivity() {
                 composable("create_new_travel_proposal") {
                     NewTravelProposal(navController)
                 }
+                composable("activities_list") {
+                    ActivitiesList(navController)
+                }
+                composable("new_activity") {
+                    NewActivity(navController)
+                }
                 composable("travel_proposal_details") {
                     TravelProposalDetail()
                 }

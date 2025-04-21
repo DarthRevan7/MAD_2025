@@ -1,0 +1,146 @@
+package com.example.voyago.view
+
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.example.voyago.activities.*
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun NewActivity(navController: NavController) {
+
+
+
+
+
+    Scaffold(
+        topBar = {
+            TopBar()
+        },
+        bottomBar = {
+            BottomBar(1)
+        }
+    ) { innerPadding ->
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .background(Color(0xFFF3EDF7))
+        ) {
+            val listState = rememberLazyListState()
+
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+                item {
+                    Spacer(modifier = Modifier.height(40.dp))
+                }
+
+                item{
+                    Button(
+                        onClick = {
+                            navController.navigate("new_activity")
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.DarkGray,
+                            contentColor = Color.White
+                        ),
+                        modifier = Modifier
+                            .width(200.dp)
+                            .height(50.dp)
+                        //.padding(top = 16.dp)
+                    ) {
+                        Text(
+                            text = "+",
+                            fontSize = 30.sp
+                        )
+                    }
+                }
+
+                item {
+                    Spacer(modifier = Modifier.height(50.dp))
+                }
+
+
+                item {
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp),
+                    ) {
+
+                        Button(
+                            onClick = {
+                                navController.navigate("create_new_travel_proposal")
+                            },
+                            modifier = Modifier
+                                .width(160.dp)
+                                .height(60.dp)
+                                .padding(top = 16.dp)
+                        ) {
+                            Text("Back")
+                        }
+
+                        Spacer(modifier = Modifier.weight(1f))
+
+                        Button(
+                            onClick = {
+
+                                navController.navigate("main_page")
+
+
+                            },
+                            modifier = Modifier
+                                .width(160.dp)
+                                .height(60.dp)
+                                .padding(top = 16.dp)
+                        ) {
+                            Text("Next")
+                        }
+                    }
+
+                }
+
+            }
+        }
+    }
+}
+
+
+
+
+
+
+

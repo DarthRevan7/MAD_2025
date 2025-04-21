@@ -370,7 +370,7 @@ fun NewTravelProposal(navController: NavController) {
                                     priceError = false
                                     priceErrorMessage = ""
                                     dateError = ""
-                                    navController.navigate("main_page")
+                                    navController.navigate("activities_list")
 
                                 }
                             },
