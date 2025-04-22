@@ -28,6 +28,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
@@ -40,7 +41,7 @@ import java.util.Calendar
 import java.util.Locale
 
 @Composable
-fun TravelProposalDetail(vm: TripListViewModel) {
+fun TravelProposalDetail(navController: NavController, vm: TripListViewModel) {
     Scaffold(
         topBar = {
             TopBar()
@@ -112,7 +113,10 @@ fun TravelProposalDetail(vm: TripListViewModel) {
 
                             Spacer(Modifier.weight(1f))
 
-                            Button(onClick = {},
+                            Button(onClick = {
+                                vm.changePublishedStatus(trip.id)
+                                navController.navigate("owned_travel_proposal_list")
+                            },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(0x65, 0x55, 0x8f, 255)
                                 )
@@ -122,7 +126,10 @@ fun TravelProposalDetail(vm: TripListViewModel) {
 
                             Spacer(Modifier.padding(5.dp))
 
-                            Button(onClick = {},
+                            Button(onClick = {
+                                vm.deleteTrip(trip.id)
+                                navController.navigate("owned_travel_proposal_list")
+                            },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(0xd8, 0x1f, 0x1f, 255)
                                 )
@@ -141,7 +148,10 @@ fun TravelProposalDetail(vm: TripListViewModel) {
                                 .fillMaxWidth(),
                             horizontalArrangement = Arrangement.End
                         ) {
-                            Button(onClick = {},
+                            Button(onClick = {
+                                vm.changePublishedStatus(trip.id)
+                                navController.navigate("owned_travel_proposal_list")
+                            },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(0x14, 0xa1, 0x55, 255)
                                 )
@@ -151,7 +161,10 @@ fun TravelProposalDetail(vm: TripListViewModel) {
 
                             Spacer(Modifier.padding(5.dp))
 
-                            Button(onClick = {},
+                            Button(onClick = {
+                                vm.deleteTrip(trip.id)
+                                navController.navigate("owned_travel_proposal_list")
+                            },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(0xd8, 0x1f, 0x1f, 255)
                                 )

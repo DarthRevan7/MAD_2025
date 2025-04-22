@@ -424,5 +424,23 @@ class Model {
         _privateTrips.value = _tripList.value.filter { it.creatorId == id && !it.published }
         return _privateTrips.value
     }
+
+    fun changePublishedStatus(id: Int) {
+        _tripList.value = _tripList.value.map {
+            if (it.id == id) {
+                it.copy(published = !it.published)  // Toggle the published status
+            } else {
+                it
+            }
+        }
+    }
+
+    fun addTrip(newTrip: Trip) {
+        _tripList.value = _tripList.value + newTrip
+    }
+
+    fun deleteTrip(id: Int) {
+        _tripList.value = _tripList.value.filter { it.id != id }
+    }
 }
 
