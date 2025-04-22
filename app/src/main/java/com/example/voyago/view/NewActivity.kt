@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -14,12 +15,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,7 +42,8 @@ import com.example.voyago.activities.*
 fun NewActivity(navController: NavController) {
 
 
-
+    var activityTitle by rememberSaveable { mutableStateOf("") }
+    var activityDescription by rememberSaveable { mutableStateOf("") }
 
 
     Scaffold(
@@ -58,35 +66,44 @@ fun NewActivity(navController: NavController) {
             LazyColumn(
                 state = listState,
                 modifier = Modifier
-                    .fillMaxSize(),
+                    .fillMaxSize(.8f)
+                    .fillMaxHeight(0.9f)
+                    .align(Alignment.Center)
+                    .background(
+                        color = Color.Blue,
+                        shape = RoundedCornerShape(24.dp)
+                    ),
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
+                item{
+                    TextField(
+                        value = activityTitle,
+                        onValueChange = { activityTitle = it },
+                        label = { Text("Activity title") },
+                        modifier = Modifier
+                            .fillMaxWidth(0.8f)
+                            .padding(vertical = 20.dp)
+                    )
+                }
+
                 item {
-                    Spacer(modifier = Modifier.height(40.dp))
+                    Spacer(modifier = Modifier.height(50.dp))
                 }
 
                 item{
-                    Button(
-                        onClick = {
-                            navController.navigate("new_activity")
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.DarkGray,
-                            contentColor = Color.White
-                        ),
-                        modifier = Modifier
-                            .width(200.dp)
-                            .height(50.dp)
-                        //.padding(top = 16.dp)
-                    ) {
-                        Text(
-                            text = "+",
-                            fontSize = 30.sp
-                        )
-                    }
+                    TextField(
+                        value = activityDescription,
+                        onValueChange = { activityDescription = it },
+                        label = { Text("Activity description") },
+                        modifier = Modifier.fillMaxWidth(0.8f)
+                    )
                 }
+
+
+
+
 
                 item {
                     Spacer(modifier = Modifier.height(50.dp))
@@ -110,7 +127,7 @@ fun NewActivity(navController: NavController) {
                                 .height(60.dp)
                                 .padding(top = 16.dp)
                         ) {
-                            Text("Back")
+                            Text("Cancel")
                         }
 
                         Spacer(modifier = Modifier.weight(1f))
@@ -127,7 +144,7 @@ fun NewActivity(navController: NavController) {
                                 .height(60.dp)
                                 .padding(top = 16.dp)
                         ) {
-                            Text("Next")
+                            Text("Add")
                         }
                     }
 
