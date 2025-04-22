@@ -13,12 +13,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -103,7 +105,9 @@ fun TravelProposalDetail(navController: NavController, vm: TripListViewModel) {
                                 .fillMaxWidth(),
                             horizontalArrangement = Arrangement.End
                         ) {
-                            Button(onClick = {},
+                            Button(onClick = {
+                                navController.navigate("trip_applications")
+                            },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(0x14, 0xa1, 0x55, 255)
                                 )
@@ -126,16 +130,8 @@ fun TravelProposalDetail(navController: NavController, vm: TripListViewModel) {
 
                             Spacer(Modifier.padding(5.dp))
 
-                            Button(onClick = {
-                                vm.deleteTrip(trip.id)
-                                navController.navigate("owned_travel_proposal_list")
-                            },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xd8, 0x1f, 0x1f, 255)
-                                )
-                            ) {
-                                Text("Delete")
-                            }
+
+                            DeleteButtonWithConfirmation(trip, navController, vm)
                         }
                     }
                 }
@@ -161,16 +157,7 @@ fun TravelProposalDetail(navController: NavController, vm: TripListViewModel) {
 
                             Spacer(Modifier.padding(5.dp))
 
-                            Button(onClick = {
-                                vm.deleteTrip(trip.id)
-                                navController.navigate("owned_travel_proposal_list")
-                            },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xd8, 0x1f, 0x1f, 255)
-                                )
-                            ) {
-                                Text("Delete")
-                            }
+                            DeleteButtonWithConfirmation(trip, navController, vm)
                         }
                     }
                 }
@@ -180,7 +167,7 @@ fun TravelProposalDetail(navController: NavController, vm: TripListViewModel) {
                 }
 
                 item {
-                    ItineraryTitleBox()
+                    TitleBox("My Itinerary")
                 }
 
                 item {
@@ -193,8 +180,6 @@ fun TravelProposalDetail(navController: NavController, vm: TripListViewModel) {
                 item{
                     Spacer(modifier = Modifier.height(16.dp))
                 }
-
-                //if (trip.published)
             }
         }
     }
@@ -268,7 +253,7 @@ fun getDayOfMonthSuffix(day: Int): String {
 }
 
 @Composable
-fun ItineraryTitleBox() {
+fun TitleBox(title:String) {
     Box(
         modifier = Modifier
             .height(50.dp)
@@ -278,7 +263,7 @@ fun ItineraryTitleBox() {
                 color = Color(0xFFF4F4F4))
     ) {
         Text(
-            text = "My Itinerary",
+            text = title,
             modifier = Modifier
                 .align(Alignment.CenterStart)
                 .padding(start = 16.dp)
@@ -306,4 +291,54 @@ fun ItineraryText(trip: Trip, modifier: Modifier = Modifier) {
         modifier = modifier
 
     )
+}
+
+@Composable
+fun DeleteButtonWithConfirmation(trip: Trip, navController: NavController, vm: TripListViewModel) {
+    val showDialog = remember { mutableStateOf(false) }
+
+    Button(onClick = {
+        showDialog.value = true
+    },
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color(0xd8, 0x1f, 0x1f, 255)
+        )
+    ) {
+        Text("Delete")
+    }
+
+    if (showDialog.value) {
+        AlertDialog(
+            onDismissRequest = {
+                showDialog.value = false
+            },
+            title = {
+                Text(text = "Confirm Cancellation")
+            },
+            text = {
+                Text("Are you sure you want to delete this trip?")
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        vm.deleteTrip(trip.id)
+                        navController.navigate("owned_travel_proposal_list")
+                        showDialog.value = false
+                    }
+                ) {
+                    Text("Confirm")
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = {
+                        showDialog.value = false
+                    }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
 }

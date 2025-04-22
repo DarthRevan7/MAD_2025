@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.CreationExtras
+import com.example.voyago.model.LazyUser
 import com.example.voyago.model.Model
 import com.example.voyago.model.Trip
 
@@ -34,6 +35,10 @@ class TripListViewModel(val model: Model) : ViewModel() {
 
     fun deleteTrip(id: Int) {
         model.deleteTrip(id)
+    }
+
+    fun getUser(id: Int): LazyUser? {
+        return model.getUserById(id)
     }
 }
 

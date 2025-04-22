@@ -414,6 +414,11 @@ class Model {
     private val _privateTrips = MutableStateFlow<List<Trip>>(emptyList())
     val privateTrips: StateFlow<List<Trip>> = _privateTrips
 
+    //User Business Logic
+    fun getUserById(id: Int): LazyUser? {
+        return _users.find { it.id == id }
+    }
+
     //TripList Business Logic
     fun filterPublishedByCreator(id: Int): List<Trip> {
         _publishedTrips.value = _tripList.value.filter { it.creatorId == id && it.published }
