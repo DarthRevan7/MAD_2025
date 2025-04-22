@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -86,8 +87,19 @@ fun OwnedTravelProposalList(navController: NavController, vm: TripListViewModel)
                 )
             }
 
-            items(publishedTrips, key = { it.id }) { trip ->
-                TripCard(trip, navController, vm)
+            if (publishedTrips.isNotEmpty()) {
+                items(publishedTrips, key = { it.id }) { trip ->
+                    TripCard(trip, navController, vm)
+                }
+            } else {
+                item {
+                    Row (
+                        modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text("You haven't published any trip yet.")
+                    }
+                }
             }
 
             item {
@@ -98,13 +110,25 @@ fun OwnedTravelProposalList(navController: NavController, vm: TripListViewModel)
                 )
             }
 
-            items(privateTrips, key = { it.id }) { trip ->
-                TripCard(trip, navController, vm)
+            if(privateTrips.isNotEmpty()) {
+                items(privateTrips, key = { it.id }) { trip ->
+                    TripCard(trip, navController, vm)
+                }
+            } else {
+                item {
+                    Row (
+                        modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text("You don't have private trips yet.")
+                    }
+                }
             }
         }
     }
 }
 
+@SuppressLint("DiscouragedApi")
 @Composable
 fun TripCard(trip: Trip, navController: NavController, vm: TripListViewModel) {
     Card(

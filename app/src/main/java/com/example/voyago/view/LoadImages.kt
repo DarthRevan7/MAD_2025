@@ -70,7 +70,7 @@ fun LoadImages() {
             }
 
             item {
-                Hero()
+                Hero1()
             }
 
             item{
@@ -84,7 +84,7 @@ var hasPermission = false
 
 @SuppressLint("DiscouragedApi")
 @Composable
-fun Hero() {
+fun Hero1() {
 
     RequestStoragePermission { hasPermission = true }
 
