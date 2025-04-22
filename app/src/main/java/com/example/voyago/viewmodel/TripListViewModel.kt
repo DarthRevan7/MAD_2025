@@ -1,15 +1,26 @@
 package com.example.voyago.viewmodel
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.voyago.model.Model
+import com.example.voyago.model.Trip
 
 
 class TripListViewModel(val model: Model) : ViewModel() {
     val publishedTrips = model.publishedTrips
     val privateTrips = model.privateTrips
+
+    var selectedTrip: Trip? by mutableStateOf(null)
+        private set
+
+    fun selectTrip(trip: Trip) {
+        selectedTrip = trip
+    }
+
     fun creatorPublicFilter(id: Int) = model.filterPublishedByCreator(id)
     fun creatorPrivateFilter(id:Int) = model.filterPrivateByCreator(id)
 }

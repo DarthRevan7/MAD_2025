@@ -33,6 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,11 +49,14 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navigation
 import coil3.compose.AsyncImage
 import com.example.voyago.model.NavItem
 import com.example.voyago.R
 import com.example.voyago.model.Trip
 import com.example.voyago.view.*
+import com.example.voyago.viewmodel.Factory
+import com.example.voyago.viewmodel.TripListViewModel
 
 
 class MainActivity : ComponentActivity() {
@@ -62,43 +66,71 @@ class MainActivity : ComponentActivity() {
         setContent {
 
             val navController = rememberNavController()
-            NavHost(navController= navController, startDestination= "main_page", builder= {
-                composable("main_page"){
-                    val context = LocalContext.current
-                    MainPage(navController, context)
+
+            NavHost(
+                navController = navController,
+                startDestination = "main_page"
+            ) {
+                composable("main_page") {
+                    MainPage(navController)
                 }
+
                 composable("travel_proposal_list") {
                     TravelProposalList()
                 }
-                composable("owned_travel_proposal_list") {
-                    OwnedTravelProposalList(navController)
+
+                //Owned Trip Flow
+                navigation(
+                    startDestination = "owned_travel_proposal_list",
+                    route = "owned_trip_graph"
+                ) {
+                    composable("owned_travel_proposal_list") { navBackStackEntry ->
+                        val parentEntry = remember(navBackStackEntry) {
+                            navController.getBackStackEntry("owned_trip_graph")
+                        }
+                        val vm: TripListViewModel = viewModel(parentEntry, factory = Factory)
+                        OwnedTravelProposalList(navController, vm)
+                    }
+
+                    composable("travel_proposal_details") { navBackStackEntry ->
+                        val parentEntry = remember(navBackStackEntry) {
+                            navController.getBackStackEntry("owned_trip_graph")
+                        }
+                        val vm: TripListViewModel = viewModel(parentEntry, factory = Factory)
+                        TravelProposalDetail(vm)
+                    }
+
+                    composable("edit_travel_proposal") { navBackStackEntry ->
+                        val parentEntry = remember(navBackStackEntry) {
+                            navController.getBackStackEntry("owned_trip_graph")
+                        }
+                        val vm: TripListViewModel = viewModel(parentEntry, factory = Factory)
+                        EditTravelProposal(vm)
+                    }
                 }
+
                 composable("create_new_travel_proposal") {
                     NewTravelProposal(navController)
                 }
+
                 composable("activities_list") {
                     ActivitiesList(navController)
                 }
+
                 composable("new_activity") {
                     NewActivity(navController)
                 }
-                composable("travel_proposal_details") {
-                    TravelProposalDetail()
-                }
-                composable("edit_travel_proposal") {
-                    EditTravelProposal()
-                }
-                //to delete later
-                composable ("try_load_images"){
+
+                composable("try_load_images") {
                     LoadImages()
                 }
-            })
+            }
         }
     }
 }
 
 @Composable
-fun MainPage(navController: NavController, context: Context) {
+fun MainPage(navController: NavController) {
     Column (
         modifier = Modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.Center,

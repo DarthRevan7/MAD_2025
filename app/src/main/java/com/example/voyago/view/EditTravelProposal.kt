@@ -12,9 +12,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.example.voyago.activities.BottomBar
 import com.example.voyago.activities.TopBar
+import com.example.voyago.viewmodel.TripListViewModel
 
 @Composable
-fun EditTravelProposal() {
+fun EditTravelProposal(vm: TripListViewModel) {
     Scaffold(
         topBar = {
             TopBar()

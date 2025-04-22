@@ -48,9 +48,7 @@ import androidx.compose.foundation.lazy.items
 
 @SuppressLint("DiscouragedApi")
 @Composable
-fun OwnedTravelProposalList(navController: NavController, vm: TripListViewModel = viewModel(factory = Factory)) {
-
-
+fun OwnedTravelProposalList(navController: NavController, vm: TripListViewModel) {
 
     val publishedTrips by vm.publishedTrips.collectAsState()
     val privateTrips by vm.privateTrips.collectAsState()
@@ -89,7 +87,7 @@ fun OwnedTravelProposalList(navController: NavController, vm: TripListViewModel 
             }
 
             items(publishedTrips, key = { it.id }) { trip ->
-                TripCard(trip, navController)
+                TripCard(trip, navController, vm)
             }
 
             item {
@@ -101,21 +99,24 @@ fun OwnedTravelProposalList(navController: NavController, vm: TripListViewModel 
             }
 
             items(privateTrips, key = { it.id }) { trip ->
-                TripCard(trip, navController)
+                TripCard(trip, navController, vm)
             }
         }
     }
 }
 
 @Composable
-fun TripCard(trip: Trip, navController: NavController) {
+fun TripCard(trip: Trip, navController: NavController, vm: TripListViewModel) {
     Card(
         modifier = Modifier
             .padding(start = 16.dp, end = 16.dp, top = 10.dp)
             .fillMaxWidth(),
         shape = CardDefaults.elevatedShape,
         onClick = {
-            navController.navigate("travel_proposal_details") }
+            vm.selectTrip(trip)
+            navController.navigate("travel_proposal_details")
+
+        }
     ) {
         Box {
             AsyncImage(
@@ -175,7 +176,9 @@ fun TripCard(trip: Trip, navController: NavController) {
                     painter = painterEdit, "edit", modifier = Modifier
                         .size(35.dp)
                         .clickable {
-                            navController.navigate("edit_travel_proposal") }
+                            vm.selectTrip(trip)
+                            navController.navigate("edit_travel_proposal")
+                        }
                 )
             }
         }
