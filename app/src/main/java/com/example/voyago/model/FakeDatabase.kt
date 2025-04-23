@@ -1,6 +1,5 @@
 package com.example.voyago.model
 
-import androidx.compose.runtime.mutableStateListOf
 import com.example.voyago.model.Trip.Activity
 import com.example.voyago.model.Trip.TripStatus
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -414,13 +413,20 @@ class Model {
     private val _privateTrips = MutableStateFlow<List<Trip>>(emptyList())
     val privateTrips: StateFlow<List<Trip>> = _privateTrips
 
+    private val _allPublishedTrips = MutableStateFlow<List<Trip>>(emptyList())
+    val allPublishedTrips: StateFlow<List<Trip>> = _allPublishedTrips
+
     //User Business Logic
     fun getUsers(ids: List<Int>): List<LazyUser> {
         return _users.filter { it.id in ids }
     }
 
-
     //TripList Business Logic
+    fun getAllPublishedTrips(trips: List<Trip> = _tripList.value): List<Trip> {
+        _allPublishedTrips.value = _tripList.value.filter { it.published }
+        return _allPublishedTrips.value
+    }
+
     fun filterPublishedByCreator(id: Int): List<Trip> {
         _publishedTrips.value = _tripList.value.filter { it.creatorId == id && it.published }
         return _publishedTrips.value

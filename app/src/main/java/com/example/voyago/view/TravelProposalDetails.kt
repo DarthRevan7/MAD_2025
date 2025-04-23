@@ -46,7 +46,7 @@ import java.util.Calendar
 import java.util.Locale
 
 @Composable
-fun TravelProposalDetail(navController: NavController, vm: TripListViewModel) {
+fun TravelProposalDetail(navController: NavController, vm: TripListViewModel, owner: Boolean) {
     Scaffold(
         topBar = {
             TopBar()
@@ -100,58 +100,94 @@ fun TravelProposalDetail(navController: NavController, vm: TripListViewModel) {
                     }
                 }
 
-                if(trip.published) {
-                    item {
-                        Row(
-                            modifier = Modifier
-                                .padding(16.dp)
-                                .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.End
-                        ) {
-                            Box {
+                if(owner) {
+                    if (trip.published) {
+                        item {
+                            Row(
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End
+                            ) {
+                                Box {
+                                    Button(
+                                        onClick = {
+                                            navController.navigate("trip_applications")
+                                        },
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = Color(0x14, 0xa1, 0x55, 255)
+                                        )
+                                    ) {
+                                        Text("Applications")
+                                    }
+
+                                    if (trip.appliedUsers.isNotEmpty()) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(15.dp)
+                                                .background(Color.Red, CircleShape)
+                                                .align(Alignment.TopEnd)
+                                        )
+                                    }
+                                }
+
+                                Spacer(Modifier.weight(1f))
+
                                 Button(
                                     onClick = {
-                                        navController.navigate("trip_applications")
+                                        vm.changePublishedStatus(trip.id)
+                                        navController.navigate("owned_travel_proposal_list")
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0x65, 0x55, 0x8f, 255)
+                                    )
+                                ) {
+                                    Text("Private")
+                                }
+
+                                Spacer(Modifier.padding(5.dp))
+
+
+                                DeleteButtonWithConfirmation(trip, navController, vm)
+                            }
+                        }
+                    }
+
+                    if (!trip.published) {
+                        item {
+                            Row(
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End
+                            ) {
+                                Button(
+                                    onClick = {
+                                        vm.changePublishedStatus(trip.id)
+                                        navController.navigate("owned_travel_proposal_list")
                                     },
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = Color(0x14, 0xa1, 0x55, 255)
                                     )
                                 ) {
-                                    Text("Applications")
+                                    Text("Publish")
                                 }
 
-                                if (trip.appliedUsers.isNotEmpty()) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(15.dp)
-                                            .background(Color.Red, CircleShape)
-                                            .align(Alignment.TopEnd)
-                                    )
-                                }
+                                Spacer(Modifier.padding(5.dp))
+
+                                DeleteButtonWithConfirmation(trip, navController, vm)
                             }
-
-                            Spacer(Modifier.weight(1f))
-
-                            Button(onClick = {
-                                vm.changePublishedStatus(trip.id)
-                                navController.navigate("owned_travel_proposal_list")
-                            },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0x65, 0x55, 0x8f, 255)
-                                )
-                            ) {
-                                Text("Private")
-                            }
-
-                            Spacer(Modifier.padding(5.dp))
-
-
-                            DeleteButtonWithConfirmation(trip, navController, vm)
                         }
                     }
-                }
 
-                if (!trip.published) {
+                    item{
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+
+                    item {
+                        TitleBox("My Itinerary")
+                    }
+                } else {
                     item {
                         Row(
                             modifier = Modifier
@@ -159,30 +195,39 @@ fun TravelProposalDetail(navController: NavController, vm: TripListViewModel) {
                                 .fillMaxWidth(),
                             horizontalArrangement = Arrangement.End
                         ) {
-                            Button(onClick = {
-                                vm.changePublishedStatus(trip.id)
-                                navController.navigate("owned_travel_proposal_list")
-                            },
+                            Button(
+                                onClick = {
+
+                                },
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0x14, 0xa1, 0x55, 255)
+                                    containerColor = Color(0x65, 0x55, 0x8f, 255)
                                 )
                             ) {
-                                Text("Publish")
+                                Text("Create a Copy")
                             }
 
                             Spacer(Modifier.padding(5.dp))
 
-                            DeleteButtonWithConfirmation(trip, navController, vm)
+                            Button(
+                                onClick = {
+
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0x14, 0xa1, 0x55, 255)
+                                )
+                            ) {
+                                Text("Ask to Join")
+                            }
                         }
                     }
-                }
 
-                item{
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
+                    item{
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
 
-                item {
-                    TitleBox("My Itinerary")
+                    item {
+                        TitleBox("Itinerary")
+                    }
                 }
 
                 item {
@@ -194,6 +239,18 @@ fun TravelProposalDetail(navController: NavController, vm: TripListViewModel) {
 
                 item{
                     Spacer(modifier = Modifier.height(16.dp))
+                }
+
+                if (trip.reviews.isNotEmpty()) {
+                    item {
+                        TitleBox("Reviews")
+                    }
+                    item{
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+                    item{
+                        Text("Print Reviews")
+                    }
                 }
             }
         }

@@ -106,7 +106,7 @@ fun OwnedTravelProposalList(navController: NavController, vm: TripListViewModel)
 
             if (publishedTrips.isNotEmpty()) {
                 items(publishedTrips, key = { it.id }) { trip ->
-                    TripCard(trip, navController, vm)
+                    TripCard(trip, navController, vm, true)
                 }
             } else {
                 item {
@@ -129,7 +129,7 @@ fun OwnedTravelProposalList(navController: NavController, vm: TripListViewModel)
 
             if(privateTrips.isNotEmpty()) {
                 items(privateTrips, key = { it.id }) { trip ->
-                    TripCard(trip, navController, vm)
+                    TripCard(trip, navController, vm, true)
                 }
             } else {
                 item {
@@ -147,7 +147,7 @@ fun OwnedTravelProposalList(navController: NavController, vm: TripListViewModel)
 
 @SuppressLint("DiscouragedApi")
 @Composable
-fun TripCard(trip: Trip, navController: NavController, vm: TripListViewModel) {
+fun TripCard(trip: Trip, navController: NavController, vm: TripListViewModel, edit: Boolean) {
     Card(
         modifier = Modifier
             .padding(start = 16.dp, end = 16.dp, top = 10.dp)
@@ -202,25 +202,28 @@ fun TripCard(trip: Trip, navController: NavController, vm: TripListViewModel) {
                 }
 
             }
-            Box(
-                modifier = Modifier
-                    .padding(vertical = 10.dp, horizontal = 10.dp)
-                    .align(alignment = Alignment.TopEnd)
-                    .wrapContentSize()
-                    .background(
-                        color = Color(0xe6, 0xe0, 0xe9, 255),
-                        shape = MaterialTheme.shapes.small
+
+            if (edit) {
+                Box(
+                    modifier = Modifier
+                        .padding(vertical = 10.dp, horizontal = 10.dp)
+                        .align(alignment = Alignment.TopEnd)
+                        .wrapContentSize()
+                        .background(
+                            color = Color(0xe6, 0xe0, 0xe9, 255),
+                            shape = MaterialTheme.shapes.small
+                        )
+                ) {
+                    val painterEdit = painterResource(R.drawable.edit)
+                    Image(
+                        painter = painterEdit, "edit", modifier = Modifier
+                            .size(35.dp)
+                            .clickable {
+                                vm.selectTrip(trip)
+                                navController.navigate("edit_travel_proposal")
+                            }
                     )
-            ) {
-                val painterEdit = painterResource(R.drawable.edit)
-                Image(
-                    painter = painterEdit, "edit", modifier = Modifier
-                        .size(35.dp)
-                        .clickable {
-                            vm.selectTrip(trip)
-                            navController.navigate("edit_travel_proposal")
-                        }
-                )
+                }
             }
         }
     }
