@@ -27,10 +27,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.voyago.activities.BottomBar
 import com.example.voyago.activities.TopBar
-import com.example.voyago.viewmodel.Factory
 import com.example.voyago.viewmodel.TripListViewModel
 import androidx.compose.runtime.collectAsState
 import com.example.voyago.model.Trip
@@ -45,6 +43,9 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material3.*
 
 
 @SuppressLint("DiscouragedApi")
@@ -80,9 +81,19 @@ fun OwnedTravelProposalList(navController: NavController, vm: TripListViewModel)
             horizontalAlignment = Alignment.Start
         ) {
             item {
+                Row(
+                    modifier = Modifier.padding(16.dp)
+                ){
+                    Icon(Icons.Default.ArrowBackIosNew, "back", modifier = Modifier
+                        .clickable{ navController.navigate("main_page") }
+                    )
+                }
+            }
+
+            item {
                 Text(
                     text = "Published Trips:",
-                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp),
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp),
                     fontWeight = FontWeight.Bold
                 )
             }

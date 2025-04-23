@@ -10,12 +10,12 @@ import java.util.Calendar
 
 class Model {
     private val _users = listOf(
-        LazyUser(1, "Alice", "Johnson"),
-        LazyUser(2, "Bob", "Smith"),
-        LazyUser(3, "Charlie", "Lee"),
-        LazyUser(4, "Diana", "Martinez"),
-        LazyUser(5, "Ethan", "Brown"),
-        LazyUser(6, "Fiona", "White")
+        LazyUser(1, "Alice", "Johnson", 4.2f),
+        LazyUser(2, "Bob", "Smith", 4.5f),
+        LazyUser(3, "Charlie", "Lee", 4.3f),
+        LazyUser(4, "Diana", "Martinez", 3.9f),
+        LazyUser(5, "Ethan", "Brown", 4.7f),
+        LazyUser(6, "Fiona", "White", 4.6f)
     )
     val users: List<LazyUser> = _users
 
@@ -415,8 +415,12 @@ class Model {
     val privateTrips: StateFlow<List<Trip>> = _privateTrips
 
     //User Business Logic
-    fun getUserById(id: Int): LazyUser? {
+    /*fun getUserById(id: Int): LazyUser? {
         return _users.find { it.id == id }
+    }*/
+
+    fun getParticipants(ids: List<Int>): List<LazyUser> {
+        return _users.filter { it.id in ids }
     }
 
     //TripList Business Logic
