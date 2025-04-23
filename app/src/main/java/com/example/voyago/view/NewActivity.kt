@@ -30,6 +30,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -84,7 +85,7 @@ fun NewActivity(navController: NavController) {
                     .fillMaxHeight(0.9f)
                     .align(Alignment.Center)
                     .background(
-                        color = Color.Blue,
+                        color = (Color(0xFFE6E0E9)),
                         shape = RoundedCornerShape(24.dp)
                     ),
                 verticalArrangement = Arrangement.Top,
@@ -95,6 +96,9 @@ fun NewActivity(navController: NavController) {
                     TextField(
                         value = activityTitle,
                         onValueChange = { activityTitle = it },
+                        colors = TextFieldDefaults.textFieldColors(
+                            containerColor = Color(0xFFD6D0D9)
+                        ),
                         label = { Text("Activity title") },
                         modifier = Modifier
                             .fillMaxWidth(0.8f)
@@ -103,13 +107,14 @@ fun NewActivity(navController: NavController) {
                 }
 
                 item {
-                    Spacer(modifier = Modifier.height(50.dp))
+                    Spacer(modifier = Modifier.height(15.dp))
                 }
 
                 item {
                     Box(
                         modifier = Modifier
-                            .background(Color.Red)
+                            .fillMaxWidth(.8f)
+                            .background(Color(0xFFD6D0D9))
                     ) {
                         var isChecked by rememberSaveable { mutableStateOf(false) }
 
@@ -156,7 +161,12 @@ fun NewActivity(navController: NavController) {
                         modifier = Modifier
                             .padding(vertical = 8.dp)
                     ) {
-                        OutlinedButton(onClick = { startDatePickerDialog.show() }) {
+                        Button(
+                            onClick = { startDatePickerDialog.show() },
+                            colors = ButtonDefaults.buttonColors(
+                                contentColor = Color(0xFF6750A4),
+                                containerColor = Color(0xFFD6D0D9)),
+                        ) {
                             if (activityDate.isNotEmpty()){
                                 Text("Date: $activityDate")
                             } else {
@@ -203,6 +213,9 @@ fun NewActivity(navController: NavController) {
 
                     Button(
                         onClick = { showTimePicker.value = true },
+                        colors = ButtonDefaults.buttonColors(
+                            contentColor = Color.Black,
+                            containerColor = Color(0xFFD6D0D9)),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 24.dp, vertical = 8.dp)
