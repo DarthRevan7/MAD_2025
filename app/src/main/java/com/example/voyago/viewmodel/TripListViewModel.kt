@@ -31,9 +31,8 @@ class TripListViewModel(val model: Model) : ViewModel() {
 
     fun deleteTrip(id: Int) = model.deleteTrip(id)
 
-    /*fun getUser(id: Int): LazyUser? = model.getUserById(id)*/
-
-    fun getTripParticipants(trip: Trip): List<LazyUser> = model.getParticipants(trip.participants)
+    fun getTripParticipants(trip: Trip): List<LazyUser> = model.getUsers(trip.participants)
+    fun getTripApplicants(trip: Trip): List<LazyUser> = model.getUsers(trip.appliedUsers)
 }
 
 object Factory : ViewModelProvider.Factory{

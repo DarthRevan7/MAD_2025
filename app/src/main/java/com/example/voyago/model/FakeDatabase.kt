@@ -415,13 +415,10 @@ class Model {
     val privateTrips: StateFlow<List<Trip>> = _privateTrips
 
     //User Business Logic
-    /*fun getUserById(id: Int): LazyUser? {
-        return _users.find { it.id == id }
-    }*/
-
-    fun getParticipants(ids: List<Int>): List<LazyUser> {
+    fun getUsers(ids: List<Int>): List<LazyUser> {
         return _users.filter { it.id in ids }
     }
+
 
     //TripList Business Logic
     fun filterPublishedByCreator(id: Int): List<Trip> {
