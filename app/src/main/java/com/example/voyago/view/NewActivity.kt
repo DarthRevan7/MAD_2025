@@ -2,8 +2,11 @@ package com.example.voyago.view
 
 
 import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.widget.DatePicker
+import android.widget.TimePicker
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,6 +45,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.voyago.activities.*
 import java.util.Calendar
+import java.util.Locale
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -133,11 +138,52 @@ fun NewActivity(navController: NavController) {
 
                         }
 
-//                        if (activityDate.isNotEmpty()) {
-//                            Text("Start: $activityDate", modifier = Modifier.padding(top = 8.dp))
-//                        }
+//
                     }
                 }
+
+                item {
+                    val context = LocalContext.current
+
+                    val calendar = remember { Calendar.getInstance() }
+                    var selectedTime by rememberSaveable {
+                        val hour = calendar.get(Calendar.HOUR)
+                        val minute = calendar.get(Calendar.MINUTE)
+                        val amPm = if (calendar.get(Calendar.AM_PM) == Calendar.AM) "AM" else "PM"
+                        mutableStateOf(String.format(Locale.ITALY, "%02d:%02d %s", if (hour == 0) 12 else hour, minute, amPm))
+                    }
+
+                    val showTimePicker = remember { mutableStateOf(false) }
+
+                    if (showTimePicker.value) {
+                        TimePickerDialog(
+                            context,
+                            { _: TimePicker, hourOfDay: Int, minute: Int ->
+                                val cal = Calendar.getInstance().apply {
+                                    set(Calendar.HOUR_OF_DAY, hourOfDay)
+                                    set(Calendar.MINUTE, minute)
+                                }
+                                val hour = cal.get(Calendar.HOUR)
+                                val amPm = if (cal.get(Calendar.AM_PM) == Calendar.AM) "AM" else "PM"
+                                selectedTime = String.format(Locale.ITALY,"%02d:%02d %s", if (hour == 0) 12 else hour, minute, amPm)
+                                showTimePicker.value = false
+                            },
+                            calendar.get(Calendar.HOUR_OF_DAY),
+                            calendar.get(Calendar.MINUTE),
+                            false
+                        ).show()
+                    }
+
+                    Button(
+                        onClick = { showTimePicker.value = true },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp, vertical = 8.dp)
+                    ) {
+                        Text(text = "Select Time: $selectedTime")
+                    }
+                }
+
 
                 item{
                     TextField(
