@@ -75,9 +75,29 @@ class MainActivity : ComponentActivity() {
                     MainPage(navController)
                 }
 
-                composable("travel_proposal_list") {
-                    TravelProposalList()
+
+                //Travel Proposal Flow
+                navigation(
+                    startDestination = "travel_proposal_list",
+                    route = "all_trip_graph"
+                ) {
+                    composable("travel_proposal_list") { navBackStackEntry ->
+                        val parentEntry = remember(navBackStackEntry) {
+                            navController.getBackStackEntry("all_trip_graph")
+                        }
+                        val vm: TripListViewModel = viewModel(parentEntry, factory = Factory)
+                        TravelProposalList(navController, vm)
+                    }
+
+                    composable("travel_proposal_details") { navBackStackEntry ->
+                        val parentEntry = remember(navBackStackEntry) {
+                            navController.getBackStackEntry("all_trip_graph")
+                        }
+                        val vm: TripListViewModel = viewModel(parentEntry, factory = Factory)
+                        TravelProposalDetail(navController, vm, false)
+                    }
                 }
+
 
                 //Owned Trip Flow
                 navigation(
@@ -97,7 +117,7 @@ class MainActivity : ComponentActivity() {
                             navController.getBackStackEntry("owned_trip_graph")
                         }
                         val vm: TripListViewModel = viewModel(parentEntry, factory = Factory)
-                        TravelProposalDetail(navController, vm)
+                        TravelProposalDetail(navController, vm, true)
                     }
 
                     composable("trip_applications") { navBackStackEntry ->
@@ -129,6 +149,7 @@ class MainActivity : ComponentActivity() {
                     NewActivity(navController)
                 }
 
+                //To delete
                 composable("try_load_images") {
                     LoadImages()
                 }

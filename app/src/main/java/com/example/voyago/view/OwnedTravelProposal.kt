@@ -27,10 +27,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.voyago.activities.BottomBar
 import com.example.voyago.activities.TopBar
-import com.example.voyago.viewmodel.Factory
 import com.example.voyago.viewmodel.TripListViewModel
 import androidx.compose.runtime.collectAsState
 import com.example.voyago.model.Trip
@@ -45,6 +43,10 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material3.*
 
 
 @SuppressLint("DiscouragedApi")
@@ -66,6 +68,11 @@ fun OwnedTravelProposalList(navController: NavController, vm: TripListViewModel)
         },
         bottomBar = {
             BottomBar(1)
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = {navController.navigate("create_new_travel_proposal")}) {
+                Icon(Icons.Default.Add, "Add")
+            }
         }
     ) { innerPadding ->
 
@@ -80,16 +87,26 @@ fun OwnedTravelProposalList(navController: NavController, vm: TripListViewModel)
             horizontalAlignment = Alignment.Start
         ) {
             item {
+                Row(
+                    modifier = Modifier.padding(16.dp)
+                ){
+                    Icon(Icons.Default.ArrowBackIosNew, "back", modifier = Modifier
+                        .clickable{ navController.navigate("main_page") }
+                    )
+                }
+            }
+
+            item {
                 Text(
                     text = "Published Trips:",
-                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp),
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp),
                     fontWeight = FontWeight.Bold
                 )
             }
 
             if (publishedTrips.isNotEmpty()) {
                 items(publishedTrips, key = { it.id }) { trip ->
-                    TripCard(trip, navController, vm)
+                    TripCard(trip, navController, vm, true)
                 }
             } else {
                 item {
@@ -112,7 +129,7 @@ fun OwnedTravelProposalList(navController: NavController, vm: TripListViewModel)
 
             if(privateTrips.isNotEmpty()) {
                 items(privateTrips, key = { it.id }) { trip ->
-                    TripCard(trip, navController, vm)
+                    TripCard(trip, navController, vm, true)
                 }
             } else {
                 item {
@@ -130,7 +147,7 @@ fun OwnedTravelProposalList(navController: NavController, vm: TripListViewModel)
 
 @SuppressLint("DiscouragedApi")
 @Composable
-fun TripCard(trip: Trip, navController: NavController, vm: TripListViewModel) {
+fun TripCard(trip: Trip, navController: NavController, vm: TripListViewModel, edit: Boolean) {
     Card(
         modifier = Modifier
             .padding(start = 16.dp, end = 16.dp, top = 10.dp)
@@ -185,25 +202,28 @@ fun TripCard(trip: Trip, navController: NavController, vm: TripListViewModel) {
                 }
 
             }
-            Box(
-                modifier = Modifier
-                    .padding(vertical = 10.dp, horizontal = 10.dp)
-                    .align(alignment = Alignment.TopEnd)
-                    .wrapContentSize()
-                    .background(
-                        color = Color(0xe6, 0xe0, 0xe9, 255),
-                        shape = MaterialTheme.shapes.small
+
+            if (edit) {
+                Box(
+                    modifier = Modifier
+                        .padding(vertical = 10.dp, horizontal = 10.dp)
+                        .align(alignment = Alignment.TopEnd)
+                        .wrapContentSize()
+                        .background(
+                            color = Color(0xe6, 0xe0, 0xe9, 255),
+                            shape = MaterialTheme.shapes.small
+                        )
+                ) {
+                    val painterEdit = painterResource(R.drawable.edit)
+                    Image(
+                        painter = painterEdit, "edit", modifier = Modifier
+                            .size(35.dp)
+                            .clickable {
+                                vm.selectTrip(trip)
+                                navController.navigate("edit_travel_proposal")
+                            }
                     )
-            ) {
-                val painterEdit = painterResource(R.drawable.edit)
-                Image(
-                    painter = painterEdit, "edit", modifier = Modifier
-                        .size(35.dp)
-                        .clickable {
-                            vm.selectTrip(trip)
-                            navController.navigate("edit_travel_proposal")
-                        }
-                )
+                }
             }
         }
     }

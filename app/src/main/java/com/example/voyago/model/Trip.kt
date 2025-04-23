@@ -1,8 +1,6 @@
 package com.example.voyago.model
 
-import android.net.*
 import java.util.Calendar
-import java.util.Date
 
 data class Trip(
     val id: Int,

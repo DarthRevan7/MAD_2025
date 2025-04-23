@@ -14,6 +14,7 @@ import com.example.voyago.model.Trip
 class TripListViewModel(val model: Model) : ViewModel() {
     val publishedTrips = model.publishedTrips
     val privateTrips = model.privateTrips
+    val allPublishedTrips = model.allPublishedTrips
 
     var selectedTrip: Trip? by mutableStateOf(null)
         private set
@@ -24,25 +25,17 @@ class TripListViewModel(val model: Model) : ViewModel() {
 
     fun creatorPublicFilter(id: Int) = model.filterPublishedByCreator(id)
     fun creatorPrivateFilter(id:Int) = model.filterPrivateByCreator(id)
+    fun updatePublishedTrip() = model.getAllPublishedTrips()
 
-    fun changePublishedStatus(id: Int) {
-        model.changePublishedStatus(id)
-    }
+    fun changePublishedStatus(id: Int) = model.changePublishedStatus(id)
 
-    fun addNewTrip(newTrip: Trip) {
-        model.addTrip(newTrip)
-    }
+    fun addNewTrip(newTrip: Trip) = model.addTrip(newTrip)
 
-    fun deleteTrip(id: Int) {
-        model.deleteTrip(id)
-    }
+    fun deleteTrip(id: Int) = model.deleteTrip(id)
 
-    fun getUser(id: Int): LazyUser? {
-        return model.getUserById(id)
-    }
+    fun getTripParticipants(trip: Trip): List<LazyUser> = model.getUsers(trip.participants)
+    fun getTripApplicants(trip: Trip): List<LazyUser> = model.getUsers(trip.appliedUsers)
 }
-
-
 
 object Factory : ViewModelProvider.Factory{
     private val model:Model = Model()

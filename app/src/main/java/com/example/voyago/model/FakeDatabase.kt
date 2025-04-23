@@ -1,6 +1,5 @@
 package com.example.voyago.model
 
-import androidx.compose.runtime.mutableStateListOf
 import com.example.voyago.model.Trip.Activity
 import com.example.voyago.model.Trip.TripStatus
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -10,12 +9,12 @@ import java.util.Calendar
 
 class Model {
     private val _users = listOf(
-        LazyUser(1, "Alice", "Johnson"),
-        LazyUser(2, "Bob", "Smith"),
-        LazyUser(3, "Charlie", "Lee"),
-        LazyUser(4, "Diana", "Martinez"),
-        LazyUser(5, "Ethan", "Brown"),
-        LazyUser(6, "Fiona", "White")
+        LazyUser(1, "Alice", "Johnson", 4.2f),
+        LazyUser(2, "Bob", "Smith", 4.5f),
+        LazyUser(3, "Charlie", "Lee", 4.3f),
+        LazyUser(4, "Diana", "Martinez", 3.9f),
+        LazyUser(5, "Ethan", "Brown", 4.7f),
+        LazyUser(6, "Fiona", "White", 4.6f)
     )
     val users: List<LazyUser> = _users
 
@@ -414,12 +413,20 @@ class Model {
     private val _privateTrips = MutableStateFlow<List<Trip>>(emptyList())
     val privateTrips: StateFlow<List<Trip>> = _privateTrips
 
+    private val _allPublishedTrips = MutableStateFlow<List<Trip>>(emptyList())
+    val allPublishedTrips: StateFlow<List<Trip>> = _allPublishedTrips
+
     //User Business Logic
-    fun getUserById(id: Int): LazyUser? {
-        return _users.find { it.id == id }
+    fun getUsers(ids: List<Int>): List<LazyUser> {
+        return _users.filter { it.id in ids }
     }
 
     //TripList Business Logic
+    fun getAllPublishedTrips(trips: List<Trip> = _tripList.value): List<Trip> {
+        _allPublishedTrips.value = _tripList.value.filter { it.published }
+        return _allPublishedTrips.value
+    }
+
     fun filterPublishedByCreator(id: Int): List<Trip> {
         _publishedTrips.value = _tripList.value.filter { it.creatorId == id && it.published }
         return _publishedTrips.value
