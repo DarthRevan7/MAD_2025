@@ -2,6 +2,7 @@ package com.example.voyago.view
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -9,9 +10,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -44,6 +45,14 @@ import com.example.voyago.viewmodel.TripListViewModel
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarBorder
+import androidx.compose.material.icons.filled.StarHalf
+import androidx.compose.material3.Icon
+import com.example.voyago.activities.ProfilePhoto
+import com.example.voyago.model.Review
 
 @Composable
 fun TravelProposalDetail(navController: NavController, vm: TripListViewModel, owner: Boolean) {
@@ -208,15 +217,17 @@ fun TravelProposalDetail(navController: NavController, vm: TripListViewModel, ow
 
                             Spacer(Modifier.padding(5.dp))
 
-                            Button(
-                                onClick = {
+                            if (trip.status == Trip.TripStatus.NOT_STARTED) {
+                                Button(
+                                    onClick = {
 
-                                },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0x14, 0xa1, 0x55, 255)
-                                )
-                            ) {
-                                Text("Ask to Join")
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0x14, 0xa1, 0x55, 255)
+                                    )
+                                ) {
+                                    Text("Ask to Join")
+                                }
                             }
                         }
                     }
@@ -245,11 +256,13 @@ fun TravelProposalDetail(navController: NavController, vm: TripListViewModel, ow
                     item {
                         TitleBox("Reviews")
                     }
+
                     item{
                         Spacer(modifier = Modifier.height(16.dp))
                     }
-                    item{
-                        Text("Print Reviews")
+
+                    items(trip.reviews) { review ->
+                        ShowReview(review)
                     }
                 }
             }
@@ -411,5 +424,77 @@ fun DeleteButtonWithConfirmation(trip: Trip, navController: NavController, vm: T
                 }
             }
         )
+    }
+}
+
+@Composable
+fun ShowReview(review: Review) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
+        Box(
+            contentAlignment = Alignment.CenterStart,
+            modifier = Modifier
+                .size(30.dp)
+                .background(Color.Gray, shape = CircleShape)
+        ) {
+            ProfilePhoto(review.reviewer.name, review.reviewer.surname,true, null)
+        }
+        Text("${review.reviewer.name} ${review.reviewer.surname}",
+            modifier = Modifier.padding( start = 16.dp))
+
+        Row(
+            modifier = Modifier
+                .weight(1f),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically)
+        {
+            PrintStars(review.rating)
+        }
+    }
+
+    Row {
+        Text(
+            text = review.title,
+            modifier = Modifier.padding(start = 50.dp, end = 16.dp),
+            fontWeight = FontWeight.Bold)
+    }
+    Row {
+        Text(
+            text = review.text,
+            modifier = Modifier.padding(start = 50.dp, end = 16.dp)
+        )
+    }
+
+    Spacer(Modifier.padding(16.dp))
+}
+
+@Composable
+fun PrintStars(rating: Int) {
+    val full = rating/2
+    val half = rating - full*2
+    val empty = 5 - (full+half)
+    for(i in 1..full) {
+        Icon(
+            imageVector = Icons.Default.Star,
+            contentDescription = "filled star",
+            tint = Color(0xff, 0xb4, 0x00, 255))
+    }
+    if (half > 0 ) {
+        Icon(
+            imageVector = Icons.Default.StarHalf,
+            contentDescription = "half star",
+            tint = Color(0xff, 0xb4, 0x00, 255))
+    }
+    if (empty > 0) {
+        for (i in 1..empty) {
+            Icon(
+                imageVector = Icons.Default.StarBorder,
+                contentDescription = "empty star",
+                tint = Color(0xff, 0xb4, 0x00, 255))
+        }
     }
 }
