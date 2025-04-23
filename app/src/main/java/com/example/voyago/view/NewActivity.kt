@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -106,6 +107,32 @@ fun NewActivity(navController: NavController) {
                 }
 
                 item {
+                    Box(
+                        modifier = Modifier
+                            .background(Color.Red)
+                    ) {
+                        var isChecked by rememberSaveable { mutableStateOf(false) }
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp, horizontal = 16.dp)
+                        ) {
+                            Text(text = "Group activity")
+
+                            Spacer(modifier = Modifier.weight(1f))
+
+                            Checkbox(
+                                checked = isChecked,
+                                onCheckedChange = { isChecked = it }
+                            )
+                        }
+                    }
+                }
+
+
+                item {
                     val context = LocalContext.current
                     val calendar = Calendar.getInstance()
                     val year = calendar.get(Calendar.YEAR)
@@ -138,7 +165,7 @@ fun NewActivity(navController: NavController) {
 
                         }
 
-//
+
                     }
                 }
 
