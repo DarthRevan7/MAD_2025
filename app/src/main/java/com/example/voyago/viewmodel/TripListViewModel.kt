@@ -9,6 +9,9 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.voyago.model.LazyUser
 import com.example.voyago.model.Model
 import com.example.voyago.model.Trip
+import com.example.voyago.model.Trip.Activity
+import com.example.voyago.model.TypeTravel
+import java.util.Calendar
 
 
 class TripListViewModel(val model: Model) : ViewModel() {
@@ -29,12 +32,18 @@ class TripListViewModel(val model: Model) : ViewModel() {
 
     fun changePublishedStatus(id: Int) = model.changePublishedStatus(id)
 
-    fun addNewTrip(newTrip: Trip) = model.addTrip(newTrip)
-
     fun deleteTrip(id: Int) = model.deleteTrip(id)
 
     fun getTripParticipants(trip: Trip): List<LazyUser> = model.getUsers(trip.participants)
     fun getTripApplicants(trip: Trip): List<LazyUser> = model.getUsers(trip.appliedUsers)
+
+    fun addNewTrip(photo: String, title: String, destination: String, startDate: Calendar,
+                      endDate: Calendar, estimatedPrice: Double, groupSize: Int,
+                      activities: Map<Calendar, List<Activity>>,
+                      typeTravel: List<TypeTravel>, creatorId: Int,
+                      published: Boolean): List<Trip> =
+        model.createNewTrip(photo, title, destination, startDate, endDate, estimatedPrice,
+            groupSize, activities, typeTravel, creatorId, published)
 }
 
 object Factory : ViewModelProvider.Factory{

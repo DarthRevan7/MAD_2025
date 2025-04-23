@@ -217,7 +217,7 @@ fun TravelProposalDetail(navController: NavController, vm: TripListViewModel, ow
 
                             Spacer(Modifier.padding(5.dp))
 
-                            if (trip.status == Trip.TripStatus.NOT_STARTED) {
+                            if (trip.canJoin()) {
                                 Button(
                                     onClick = {
 

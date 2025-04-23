@@ -21,7 +21,7 @@ class Model {
     private var _tripList =  MutableStateFlow<List<Trip>>(
         listOf(
             Trip(
-                id = 101,
+                id = 1,
                 photo = "barcelona",
                 title = "Cultural Wonders of Spain",
                 destination = "Barcelona",
@@ -69,7 +69,7 @@ class Model {
             ),
 
             Trip(
-                id = 102,
+                id = 2,
                 photo = "phuket",
                 title = "Beach Escape in Thailand",
                 destination = "Phuket",
@@ -117,7 +117,7 @@ class Model {
             ),
 
             Trip(
-                id = 103,
+                id = 3,
                 photo = "peru",
                 title = "Adventures in Peru",
                 destination = "Cusco",
@@ -149,7 +149,7 @@ class Model {
             ),
 
             Trip(
-                id = 106,
+                id = 4,
                 photo = "japan",
                 title = "Japanese Autumn Journey",
                 destination = "Japan",
@@ -193,7 +193,7 @@ class Model {
             ),
 
             Trip(
-                id = 107,
+                id = 5,
                 photo = "kyoto",
                 title = "Kyoto Zen Retreat",
                 destination = "Kyoto",
@@ -237,7 +237,7 @@ class Model {
             ),
 
             Trip(
-                id = 108,
+                id = 6,
                 photo = "sydney",
                 title = "Sydney Coastal Explorer",
                 destination = "Sydney",
@@ -281,7 +281,7 @@ class Model {
             ),
 
             Trip(
-                id = 109,
+                id = 7,
                 photo = "rio",
                 title = "Rio Rhythms & Rainforests",
                 destination = "Rio de Janeiro, Brazil",
@@ -343,7 +343,7 @@ class Model {
             ),
 
             Trip(
-                id = 110,
+                id = 8,
                 photo = "monaco",
                 title = "Monaco Luxe Experience",
                 destination = "Monaco",
@@ -407,6 +407,8 @@ class Model {
     )
     var tripList: StateFlow<List<Trip>> = _tripList
 
+    private var nextId = 9
+
     private val _publishedTrips = MutableStateFlow<List<Trip>>(emptyList())
     val publishedTrips: StateFlow<List<Trip>> = _publishedTrips
 
@@ -447,12 +449,36 @@ class Model {
         }
     }
 
-    fun addTrip(newTrip: Trip) {
-        _tripList.value = _tripList.value + newTrip
-    }
-
     fun deleteTrip(id: Int) {
         _tripList.value = _tripList.value.filter { it.id != id }
+    }
+
+    fun createNewTrip(photo: String, title: String, destination: String, startDate: Calendar,
+                      endDate: Calendar, estimatedPrice: Double, groupSize: Int,
+                      activities: Map<Calendar, List<Activity>>,
+                      typeTravel: List<TypeTravel>, creatorId: Int,
+                      published: Boolean): List<Trip> {
+        val newTrip = Trip(
+            id = nextId++,
+            photo = photo,
+            title = title,
+            destination = destination,
+            startDate = startDate,
+            endDate = endDate,
+            estimatedPrice = estimatedPrice,
+            groupSize = groupSize,
+            participants = listOf(creatorId),
+            activities = activities,
+            status = TripStatus.NOT_STARTED,
+            typeTravel = typeTravel,
+            creatorId = creatorId,
+            appliedUsers = emptyList(),
+            published = published,
+            reviews = emptyList()
+        )
+        _tripList.value = _tripList.value + newTrip
+
+        return _tripList.value
     }
 }
 
