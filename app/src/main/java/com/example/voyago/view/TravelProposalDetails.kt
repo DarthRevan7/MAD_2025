@@ -9,9 +9,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -105,14 +108,26 @@ fun TravelProposalDetail(navController: NavController, vm: TripListViewModel) {
                                 .fillMaxWidth(),
                             horizontalArrangement = Arrangement.End
                         ) {
-                            Button(onClick = {
-                                navController.navigate("trip_applications")
-                            },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0x14, 0xa1, 0x55, 255)
-                                )
-                            ) {
-                                Text("Applications")
+                            Box {
+                                Button(
+                                    onClick = {
+                                        navController.navigate("trip_applications")
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0x14, 0xa1, 0x55, 255)
+                                    )
+                                ) {
+                                    Text("Applications")
+                                }
+
+                                if (trip.appliedUsers.isNotEmpty()) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(15.dp)
+                                            .background(Color.Red, CircleShape)
+                                            .align(Alignment.TopEnd)
+                                    )
+                                }
                             }
 
                             Spacer(Modifier.weight(1f))
@@ -236,8 +251,8 @@ fun Hero(trip: Trip) {
 fun formatTripDate(calendar: Calendar): String {
     val day = calendar.get(Calendar.DAY_OF_MONTH)
     val suffix = getDayOfMonthSuffix(day)
+    val dateFormat = SimpleDateFormat("MMMM d'$suffix', yyyy", Locale.ENGLISH)
 
-    val dateFormat = SimpleDateFormat("MMMM d'$suffix', yyyy", Locale.getDefault())
     return dateFormat.format(calendar.time)
 }
 
@@ -340,5 +355,4 @@ fun DeleteButtonWithConfirmation(trip: Trip, navController: NavController, vm: T
             }
         )
     }
-
 }

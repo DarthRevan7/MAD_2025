@@ -76,7 +76,7 @@ class MainActivity : ComponentActivity() {
                 }
 
                 composable("travel_proposal_list") {
-                    TravelProposalList()
+                    TravelProposalList(navController)
                 }
 
                 //Owned Trip Flow
@@ -129,6 +129,7 @@ class MainActivity : ComponentActivity() {
                     NewActivity(navController)
                 }
 
+                //To delete
                 composable("try_load_images") {
                     LoadImages()
                 }

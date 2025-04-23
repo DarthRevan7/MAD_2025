@@ -44,6 +44,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material3.*
 
@@ -67,6 +68,11 @@ fun OwnedTravelProposalList(navController: NavController, vm: TripListViewModel)
         },
         bottomBar = {
             BottomBar(1)
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = {navController.navigate("create_new_travel_proposal")}) {
+                Icon(Icons.Default.Add, "Add")
+            }
         }
     ) { innerPadding ->
 
