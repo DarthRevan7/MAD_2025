@@ -418,6 +418,9 @@ class Model {
     private val _allPublishedTrips = MutableStateFlow<List<Trip>>(emptyList())
     val allPublishedTrips: StateFlow<List<Trip>> = _allPublishedTrips
 
+    private val _askedTrips = MutableStateFlow<Set<Int>>(emptySet())
+    val askedTrips: StateFlow<Set<Int>> = _askedTrips
+
     //User Business Logic
     fun getUsers(ids: List<Int>): List<LazyUser> {
         return _users.filter { it.id in ids }
@@ -479,6 +482,18 @@ class Model {
         _tripList.value = _tripList.value + newTrip
 
         return _tripList.value
+    }
+
+    fun toggleAskToJoin(tripId: Int) {
+        _askedTrips.value = if (_askedTrips.value.contains(tripId)) {
+            _askedTrips.value - tripId
+        } else {
+            _askedTrips.value + tripId
+        }
+    }
+
+    fun hasAskedToJoin(tripId: Int): Boolean {
+        return _askedTrips.value.contains(tripId)
     }
 }
 

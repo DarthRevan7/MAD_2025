@@ -18,6 +18,7 @@ class TripListViewModel(val model: Model) : ViewModel() {
     val publishedTrips = model.publishedTrips
     val privateTrips = model.privateTrips
     val allPublishedTrips = model.allPublishedTrips
+    val askedTrips = model.askedTrips
 
     var selectedTrip: Trip? by mutableStateOf(null)
         private set
@@ -44,6 +45,9 @@ class TripListViewModel(val model: Model) : ViewModel() {
                       published: Boolean): List<Trip> =
         model.createNewTrip(photo, title, destination, startDate, endDate, estimatedPrice,
             groupSize, activities, typeTravel, creatorId, published)
+
+    fun toggleAskToJoin(tripId: Int) = model.toggleAskToJoin(tripId)
+    fun hasAskedToJoin(tripId: Int): Boolean = model.hasAskedToJoin(tripId)
 }
 
 object Factory : ViewModelProvider.Factory{

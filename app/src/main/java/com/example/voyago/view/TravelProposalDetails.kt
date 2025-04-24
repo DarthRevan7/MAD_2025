@@ -51,6 +51,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material.icons.filled.StarHalf
 import androidx.compose.material3.Icon
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.setValue
 import com.example.voyago.activities.ProfilePhoto
 import com.example.voyago.model.Review
@@ -63,26 +64,30 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun TravelProposalDetail(navController: NavController, vm: TripListViewModel, owner: Boolean) {
-    var showPopup by remember { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
+    val trip = vm.selectedTrip
 
-    Scaffold(
-        topBar = {
-            TopBar()
-        },
-        bottomBar = {
-            var id = 0
-            if (owner) {
-                id = 1
+    if (trip != null) {
+
+        var showPopup by remember { mutableStateOf(false) }
+        val coroutineScope = rememberCoroutineScope()
+        val askedTrips: Set<Int> by vm.askedTrips.collectAsState()
+        val hasAsked = askedTrips.contains(trip.id)
+
+        Scaffold(
+            topBar = {
+                TopBar()
+            },
+            bottomBar = {
+                var id = 0
+                if (owner) {
+                    id = 1
+                }
+                BottomBar(id)
             }
-            BottomBar(id)
-        }
-    ) { innerPadding ->
+        ) { innerPadding ->
 
-        val listState = rememberLazyListState()
-        val trip = vm.selectedTrip
+            val listState = rememberLazyListState()
 
-        if (trip != null) {
             Box(modifier = Modifier.fillMaxSize()) {
                 LazyColumn(
                     state = listState,
@@ -110,7 +115,9 @@ fun TravelProposalDetail(navController: NavController, vm: TripListViewModel, ow
                                         "${trip.groupSize} people" +
                                         if (trip.availableSpots() > 0) {
                                             " (${trip.availableSpots()} spots left)"
-                                        } else { "" },
+                                        } else {
+                                            ""
+                                        },
                                 modifier = Modifier.align(Alignment.CenterVertically)
                             )
                             Spacer(modifier = Modifier.weight(1f))
@@ -219,9 +226,19 @@ fun TravelProposalDetail(navController: NavController, vm: TripListViewModel, ow
                             ) {
                                 Button(
                                     onClick = {
-                                        vm.addNewTrip(trip.photo, trip.destination, trip.title,
-                                            trip.startDate, trip.endDate, trip.estimatedPrice,
-                                            trip.groupSize, trip.activities, trip.typeTravel, 1, false)
+                                        vm.addNewTrip(
+                                            trip.photo,
+                                            trip.destination,
+                                            trip.title,
+                                            trip.startDate,
+                                            trip.endDate,
+                                            trip.estimatedPrice,
+                                            trip.groupSize,
+                                            trip.activities,
+                                            trip.typeTravel,
+                                            1,
+                                            false
+                                        )
                                         vm.updatePublishedTrip()
 
                                         showPopup = true
@@ -240,18 +257,19 @@ fun TravelProposalDetail(navController: NavController, vm: TripListViewModel, ow
                                 Spacer(Modifier.padding(5.dp))
 
                                 if (trip.canJoin()) {
-                                    val isClicked = remember { mutableStateOf(false) }
-                                    val color = if (isClicked.value) Color(0x65, 0xa9, 0x8b, 255)
-                                        else Color(0x14, 0xa1, 0x55, 255)
                                     Button(
                                         onClick = {
-                                            isClicked.value = !isClicked.value
+                                            vm.toggleAskToJoin(trip.id)
                                         },
                                         colors = ButtonDefaults.buttonColors(
-                                            containerColor = color
+                                            containerColor =
+                                                if (hasAsked)
+                                                    Color(0x65, 0xa9, 0x8b, 255)
+                                                else
+                                                    Color(0x14, 0xa1, 0x55, 255)
                                         )
                                     ) {
-                                        if (isClicked.value) {
+                                        if (hasAsked) {
                                             Icon(Icons.Default.Check, "check")
                                             Text("Asked to Join")
                                         } else {
@@ -272,7 +290,8 @@ fun TravelProposalDetail(navController: NavController, vm: TripListViewModel, ow
                     }
 
                     item {
-                        ItineraryText(trip,
+                        ItineraryText(
+                            trip,
                             modifier = Modifier
                                 .padding(start = 24.dp, top = 16.dp, end = 20.dp)
                         )
@@ -313,7 +332,7 @@ fun TravelProposalDetail(navController: NavController, vm: TripListViewModel, ow
                         ) {
                             Row {
                                 Icon(
-                                    imageVector =  Icons.Default.CheckBox,
+                                    imageVector = Icons.Default.CheckBox,
                                     contentDescription = "check",
                                     tint = Color.Green
                                 )
@@ -329,6 +348,7 @@ fun TravelProposalDetail(navController: NavController, vm: TripListViewModel, ow
                     }
                 }
             }
+
         }
     }
 }
