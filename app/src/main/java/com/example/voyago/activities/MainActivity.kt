@@ -91,6 +91,14 @@ class MainActivity : ComponentActivity() {
                         val vm: TripListViewModel = viewModel(parentEntry, factory = Factory)
                         TravelProposalDetail(navController, vm, false)
                     }
+
+                    composable("filter_selection") { navBackStackEntry ->
+                        val parentEntry = remember(navBackStackEntry) {
+                            navController.getBackStackEntry("all_trips_graph")
+                        }
+                        val vm: TripListViewModel = viewModel(parentEntry, factory = Factory)
+                        FilterSelection(navController, vm)
+                    }
                 }
 
 

@@ -66,7 +66,7 @@ fun TravelProposalList(navController: NavController, vm: TripListViewModel = vie
                 ) {
                     Button(
                         onClick = {
-                            // Click functionality
+                            navController.navigate("filter_selection")
                         },
                         border = BorderStroke(1.dp, Color.Black),
                         shape = RoundedCornerShape(10.dp),// Border with rounded corne

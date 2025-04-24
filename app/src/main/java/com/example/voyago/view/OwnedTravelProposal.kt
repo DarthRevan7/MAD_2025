@@ -65,7 +65,6 @@ fun OwnedTravelProposalList(navController: NavController, vm: TripListViewModel)
         vm.creatorPrivateFilter()
     }
 
-
     Scaffold(
         topBar = {
             TopBar()
