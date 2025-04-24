@@ -61,8 +61,8 @@ fun OwnedTravelProposalList(navController: NavController, vm: TripListViewModel)
     val privateTrips by vm.privateTrips.collectAsState()
 
     LaunchedEffect(Unit) {
-        vm.creatorPublicFilter(1)
-        vm.creatorPrivateFilter(1)
+        vm.creatorPublicFilter()
+        vm.creatorPrivateFilter()
     }
 
 

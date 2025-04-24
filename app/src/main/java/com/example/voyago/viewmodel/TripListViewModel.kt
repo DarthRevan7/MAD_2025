@@ -27,8 +27,8 @@ class TripListViewModel(val model: Model) : ViewModel() {
         selectedTrip = trip
     }
 
-    fun creatorPublicFilter(id: Int) = model.filterPublishedByCreator(id)
-    fun creatorPrivateFilter(id:Int) = model.filterPrivateByCreator(id)
+    fun creatorPublicFilter() = model.filterPublishedByCreator(1)
+    fun creatorPrivateFilter() = model.filterPrivateByCreator(1)
     fun updatePublishedTrip() = model.getAllPublishedTrips()
 
     fun changePublishedStatus(id: Int) = model.changePublishedStatus(id)

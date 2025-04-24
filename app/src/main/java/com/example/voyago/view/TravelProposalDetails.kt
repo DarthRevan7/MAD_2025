@@ -45,11 +45,11 @@ import java.util.Calendar
 import java.util.Locale
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.StarHalf
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
-import androidx.compose.material.icons.filled.StarHalf
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.setValue
@@ -228,8 +228,8 @@ fun TravelProposalDetail(navController: NavController, vm: TripListViewModel, ow
                                     onClick = {
                                         vm.addNewTrip(
                                             trip.photo,
-                                            trip.destination,
                                             trip.title,
+                                            trip.destination,
                                             trip.startDate,
                                             trip.endDate,
                                             trip.estimatedPrice,
@@ -355,7 +355,7 @@ fun TravelProposalDetail(navController: NavController, vm: TripListViewModel, ow
 
 @SuppressLint("DiscouragedApi")
 @Composable
-fun Hero(trip: Trip, ) {
+fun Hero(trip: Trip) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -381,7 +381,7 @@ fun Hero(trip: Trip, ) {
                 .align(Alignment.TopStart)
                 .padding(vertical = 30.dp, horizontal = 10.dp)
                 .background(
-                    color = Color(0xAA444444), // semi-transparent dark grey
+                    color = Color(0xAA444444),
                     shape = MaterialTheme.shapes.small
                 )
 
@@ -573,7 +573,7 @@ fun PrintStars(rating: Int) {
     }
     if (half > 0 ) {
         Icon(
-            imageVector = Icons.Default.StarHalf,
+            imageVector = Icons.AutoMirrored.Filled.StarHalf,
             contentDescription = "half star",
             tint = Color(0xff, 0xb4, 0x00, 255))
     }

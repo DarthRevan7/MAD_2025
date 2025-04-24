@@ -71,15 +71,14 @@ class MainActivity : ComponentActivity() {
                     MainPage(navController)
                 }
 
-
                 //Travel Proposal Flow
                 navigation(
                     startDestination = "travel_proposal_list",
-                    route = "all_trip_graph"
+                    route = "all_trips_graph"
                 ) {
                     composable("travel_proposal_list") { navBackStackEntry ->
                         val parentEntry = remember(navBackStackEntry) {
-                            navController.getBackStackEntry("all_trip_graph")
+                            navController.getBackStackEntry("all_trips_graph")
                         }
                         val vm: TripListViewModel = viewModel(parentEntry, factory = Factory)
                         TravelProposalList(navController, vm)
@@ -87,7 +86,7 @@ class MainActivity : ComponentActivity() {
 
                     composable("travel_proposal_details") { navBackStackEntry ->
                         val parentEntry = remember(navBackStackEntry) {
-                            navController.getBackStackEntry("all_trip_graph")
+                            navController.getBackStackEntry("all_trips_graph")
                         }
                         val vm: TripListViewModel = viewModel(parentEntry, factory = Factory)
                         TravelProposalDetail(navController, vm, false)
@@ -98,11 +97,11 @@ class MainActivity : ComponentActivity() {
                 //Owned Trip Flow
                 navigation(
                     startDestination = "owned_travel_proposal_list",
-                    route = "owned_trip_graph"
+                    route = "owned_trips_graph"
                 ) {
                     composable("owned_travel_proposal_list") { navBackStackEntry ->
                         val parentEntry = remember(navBackStackEntry) {
-                            navController.getBackStackEntry("owned_trip_graph")
+                            navController.getBackStackEntry("owned_trips_graph")
                         }
                         val vm: TripListViewModel = viewModel(parentEntry, factory = Factory)
                         OwnedTravelProposalList(navController, vm)
@@ -110,7 +109,7 @@ class MainActivity : ComponentActivity() {
 
                     composable("travel_proposal_details") { navBackStackEntry ->
                         val parentEntry = remember(navBackStackEntry) {
-                            navController.getBackStackEntry("owned_trip_graph")
+                            navController.getBackStackEntry("owned_trips_graph")
                         }
                         val vm: TripListViewModel = viewModel(parentEntry, factory = Factory)
                         TravelProposalDetail(navController, vm, true)
@@ -118,7 +117,7 @@ class MainActivity : ComponentActivity() {
 
                     composable("trip_applications") { navBackStackEntry ->
                         val parentEntry = remember(navBackStackEntry) {
-                            navController.getBackStackEntry("owned_trip_graph")
+                            navController.getBackStackEntry("owned_trips_graph")
                         }
                         val vm: TripListViewModel = viewModel(parentEntry, factory = Factory)
                         TripApplications(vm)
