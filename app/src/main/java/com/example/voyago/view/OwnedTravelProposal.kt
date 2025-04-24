@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -43,10 +44,13 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.TaskAlt
 import androidx.compose.material3.*
+import androidx.compose.ui.draw.clip
 
 
 @SuppressLint("DiscouragedApi")
@@ -225,6 +229,39 @@ fun TripCard(trip: Trip, navController: NavController, vm: TripListViewModel, ed
                     )
                 }
             }
+
+            if (!trip.canJoin() && !edit) {
+                CompletedBanner(Modifier.align(Alignment.TopEnd))
+            }
+        }
+    }
+}
+
+@Composable
+fun CompletedBanner(modifier: Modifier) {
+    Box(
+        modifier = modifier
+            .padding(vertical = 10.dp, horizontal = 10.dp)
+            .wrapContentSize()
+            .clip(RoundedCornerShape(16.dp))
+            .background(
+                color = Color(0x32, 0xad, 0xe6, 255)
+            ),
+    ) {
+        Row(
+            modifier = Modifier.padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.TaskAlt,
+                contentDescription = "completed",
+                tint = Color.White
+            )
+            Spacer(Modifier.padding(3.dp))
+            Text(
+                text = "Completed",
+                color = Color.White
+            )
         }
     }
 }

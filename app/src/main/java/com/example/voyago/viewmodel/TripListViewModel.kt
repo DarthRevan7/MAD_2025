@@ -47,7 +47,6 @@ class TripListViewModel(val model: Model) : ViewModel() {
             groupSize, activities, typeTravel, creatorId, published)
 
     fun toggleAskToJoin(tripId: Int) = model.toggleAskToJoin(tripId)
-    fun hasAskedToJoin(tripId: Int): Boolean = model.hasAskedToJoin(tripId)
 }
 
 object Factory : ViewModelProvider.Factory{

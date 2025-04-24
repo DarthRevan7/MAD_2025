@@ -427,7 +427,7 @@ class Model {
     }
 
     //TripList Business Logic
-    fun getAllPublishedTrips(trips: List<Trip> = _tripList.value): List<Trip> {
+    fun getAllPublishedTrips(): List<Trip> {
         _allPublishedTrips.value = _tripList.value.filter { it.published }
         return _allPublishedTrips.value
     }
@@ -490,10 +490,6 @@ class Model {
         } else {
             _askedTrips.value + tripId
         }
-    }
-
-    fun hasAskedToJoin(tripId: Int): Boolean {
-        return _askedTrips.value.contains(tripId)
     }
 }
 

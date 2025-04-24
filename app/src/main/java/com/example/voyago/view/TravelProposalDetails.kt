@@ -397,6 +397,10 @@ fun Hero(trip: Trip, ) {
                     .padding(16.dp)
             )
         }
+
+        if (!trip.canJoin()) {
+            CompletedBanner(Modifier.align(Alignment.TopEnd))
+        }
     }
 }
 
