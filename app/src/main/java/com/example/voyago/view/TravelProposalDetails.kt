@@ -45,6 +45,7 @@ import java.util.Calendar
 import java.util.Locale
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
@@ -156,6 +157,7 @@ fun TravelProposalDetail(navController: NavController, vm: TripListViewModel, ow
                                     Button(
                                         onClick = {
                                             vm.changePublishedStatus(trip.id)
+                                            vm.updatePublishedTrip()
                                             navController.navigate("owned_travel_proposal_list")
                                         },
                                         colors = ButtonDefaults.buttonColors(
@@ -183,6 +185,7 @@ fun TravelProposalDetail(navController: NavController, vm: TripListViewModel, ow
                                     Button(
                                         onClick = {
                                             vm.changePublishedStatus(trip.id)
+                                            vm.updatePublishedTrip()
                                             navController.navigate("owned_travel_proposal_list")
                                         },
                                         colors = ButtonDefaults.buttonColors(
@@ -237,15 +240,23 @@ fun TravelProposalDetail(navController: NavController, vm: TripListViewModel, ow
                                 Spacer(Modifier.padding(5.dp))
 
                                 if (trip.canJoin()) {
+                                    val isClicked = remember { mutableStateOf(false) }
+                                    val color = if (isClicked.value) Color(0x65, 0xa9, 0x8b, 255)
+                                        else Color(0x14, 0xa1, 0x55, 255)
                                     Button(
                                         onClick = {
-
+                                            isClicked.value = !isClicked.value
                                         },
                                         colors = ButtonDefaults.buttonColors(
-                                            containerColor = Color(0x14, 0xa1, 0x55, 255)
+                                            containerColor = color
                                         )
                                     ) {
-                                        Text("Ask to Join")
+                                        if (isClicked.value) {
+                                            Icon(Icons.Default.Check, "check")
+                                            Text("Asked to Join")
+                                        } else {
+                                            Text("Ask to Join")
+                                        }
                                     }
                                 }
                             }
@@ -321,9 +332,6 @@ fun TravelProposalDetail(navController: NavController, vm: TripListViewModel, ow
         }
     }
 }
-
-
-
 
 @SuppressLint("DiscouragedApi")
 @Composable
@@ -462,6 +470,7 @@ fun DeleteButtonWithConfirmation(trip: Trip, navController: NavController, vm: T
                 Button(
                     onClick = {
                         vm.deleteTrip(trip.id)
+                        vm.updatePublishedTrip()
                         navController.navigate("owned_travel_proposal_list")
                         showDialog.value = false
                     }
