@@ -284,7 +284,7 @@ class Model {
                 id = 7,
                 photo = "rio",
                 title = "Rio Rhythms & Rainforests",
-                destination = "Rio de Janeiro, Brazil",
+                destination = "Rio de Janeiro",
                 startDate = Calendar.getInstance().apply { set(2026, 0, 10) },
                 endDate = Calendar.getInstance().apply { set(2026, 0, 16) },
                 estimatedPrice = 2100.0,
@@ -490,6 +490,15 @@ class Model {
         } else {
             _askedTrips.value + tripId
         }
+    }
+
+    fun getDestinations(): List<String> {
+        var destinations = emptyList<String>()
+        _tripList.value.forEach { trip ->
+            destinations = destinations + trip.destination
+        }
+
+        return destinations
     }
 }
 

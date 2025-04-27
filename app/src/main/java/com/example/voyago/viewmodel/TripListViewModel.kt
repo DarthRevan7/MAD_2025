@@ -47,6 +47,8 @@ class TripListViewModel(val model: Model) : ViewModel() {
             groupSize, activities, typeTravel, creatorId, published)
 
     fun toggleAskToJoin(tripId: Int) = model.toggleAskToJoin(tripId)
+
+    fun allDestinations() = model.getDestinations()
 }
 
 object Factory : ViewModelProvider.Factory{
