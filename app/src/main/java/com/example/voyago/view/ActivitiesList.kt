@@ -28,14 +28,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.voyago.activities.*
+import com.example.voyago.model.Trip
+import com.example.voyago.viewmodel.TripListViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ActivitiesList(navController: NavController) {
+fun ActivitiesList(navController: NavController, vm: TripListViewModel) {
 
 
+    val selectedTrip = vm.selectedTrip
 
+    val activities = selectedTrip?.let { vm.getActivities(it) } ?: emptyList()
 
 
     Scaffold(
@@ -62,6 +66,16 @@ fun ActivitiesList(navController: NavController) {
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+
+                item {
+                    Spacer(modifier = Modifier.height(40.dp))
+                }
+
+                // Displaying the activities
+                items(activities.size) { index ->
+                    val activity = activities[index]
+                    ActivityItem(activity = activity) // Custom composable to display an activity
+                }
 
                 item {
                     Spacer(modifier = Modifier.height(40.dp))
@@ -118,7 +132,7 @@ fun ActivitiesList(navController: NavController) {
                         Button(
                             onClick = {
 
-                                navController.navigate("new_activity")
+                                navController.navigate("main_page")
 
 
                             },
@@ -127,7 +141,7 @@ fun ActivitiesList(navController: NavController) {
                                 .height(60.dp)
                                 .padding(top = 16.dp)
                         ) {
-                            Text("Next")
+                            Text("Finish")
                         }
                     }
 
@@ -135,6 +149,19 @@ fun ActivitiesList(navController: NavController) {
 
             }
         }
+    }
+}
+
+@Composable
+fun ActivityItem(activity: Trip.Activity) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Text(text = "Activity on ${activity.date.time}", fontSize = 18.sp)
+        Text(text = activity.time, fontSize = 16.sp)
+        Text(text = activity.description, fontSize = 14.sp)
     }
 }
 

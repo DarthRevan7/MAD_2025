@@ -27,6 +27,7 @@ class TripListViewModel(val model: Model) : ViewModel() {
         selectedTrip = trip
     }
 
+
     fun creatorPublicFilter() = model.filterPublishedByCreator(1)
     fun creatorPrivateFilter() = model.filterPrivateByCreator(1)
     fun updatePublishedTrip() = model.getAllPublishedTrips()
@@ -49,6 +50,19 @@ class TripListViewModel(val model: Model) : ViewModel() {
     fun toggleAskToJoin(tripId: Int) = model.toggleAskToJoin(tripId)
 
     fun allDestinations() = model.getDestinations()
+
+    fun getActivities(trip: Trip): List<Activity> {
+        return trip.activities.values.flatten()
+    }
+
+    fun addActivityToTrip(trip: Trip, activity: Activity) {
+        val activitiesForDate = trip.activities[activity.date]?.toMutableList() ?: mutableListOf()
+        activitiesForDate.add(activity)
+        trip.activities = trip.activities.toMutableMap().apply {
+            put(activity.date, activitiesForDate)
+        }
+    }
+
 }
 
 object Factory : ViewModelProvider.Factory{
