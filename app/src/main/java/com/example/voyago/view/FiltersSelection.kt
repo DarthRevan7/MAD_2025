@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
@@ -302,7 +303,25 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                 }
             }
 
-            
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
+                        .offset(y = 140.dp)
+                ) {
+                    Button(
+                        onClick = {
+                            //filter functions
+                            navController.navigate("travel_proposal_list")
+                        },
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                    ) {
+                        Text(text = "Search")
+                    }
+                }
+            }
         }
 
     }
