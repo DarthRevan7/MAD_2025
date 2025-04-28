@@ -404,7 +404,7 @@ fun RangeSlider(vm: TripListViewModel = viewModel(factory = Factory)) {
                 // viewModel.updateSelectedSliderValue(sliderPosition)
             },
         )
-        Text(text = sliderPosition.toString())
+        Text(text = "%.0f € - %.0f €".format(sliderPosition.start, sliderPosition.endInclusive))
     }
 }
 
