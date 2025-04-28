@@ -155,13 +155,18 @@ class MainActivity : ComponentActivity() {
                         ActivitiesList(navController, vm)
                     }
 
+                    composable("new_activity") { navBackStackEntry ->
+                        val parentEntry = remember(navBackStackEntry) {
+                            navController.getBackStackEntry("owned_trips_graph")
+                        }
+                        val vm: TripListViewModel = viewModel(parentEntry, factory = Factory)
+                        NewActivity(navController, vm)
+                    }
+
                 }
 
 
 
-                composable("new_activity") {
-                    NewActivity(navController)
-                }
 
                 //To delete
                 composable("try_load_images") {

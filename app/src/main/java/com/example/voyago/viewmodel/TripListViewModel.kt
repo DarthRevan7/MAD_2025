@@ -59,13 +59,28 @@ class TripListViewModel(val model: Model) : ViewModel() {
     fun getMaxPrice() = model.maxPrice
     fun setMaxMinPrice() = model.setMaxMinPrice()
 
-    fun addActivityToTrip(trip: Trip, activity: Activity) {
-        val activitiesForDate = trip.activities[activity.date]?.toMutableList() ?: mutableListOf()
-        activitiesForDate.add(activity)
-        trip.activities = trip.activities.toMutableMap().apply {
-            put(activity.date, activitiesForDate)
+    fun addActivityToSelectedTrip(activity: Activity) {
+        selectedTrip?.let { oldTrip ->
+            val date = activity.date
+            val updatedActivities = oldTrip.activities.toMutableMap()
+
+            val existingActivities = updatedActivities[date]?.toMutableList() ?: mutableListOf()
+            existingActivities.add(activity)
+            updatedActivities[date] = existingActivities
+
+            selectedTrip = oldTrip.copy(
+                activities = updatedActivities
+            )
         }
     }
+
+
+
+
+
+
+
+
 
 }
 

@@ -46,20 +46,30 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.voyago.activities.*
+import com.example.voyago.model.Trip
+import com.example.voyago.viewmodel.TripListViewModel
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
 import java.util.Locale
 
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NewActivity(navController: NavController) {
+fun NewActivity(navController: NavController, vm: TripListViewModel) {
 
 
-    var activityTitle by rememberSaveable { mutableStateOf("") }
+    var isGroupActivityChecked by rememberSaveable { mutableStateOf(false) }
     var activityDescription by rememberSaveable { mutableStateOf("") }
-
     var activityDate by rememberSaveable { mutableStateOf("") }
+    var selectedTime by rememberSaveable {
+        val calendar = Calendar.getInstance()
+        val hour = calendar.get(Calendar.HOUR)
+        val minute = calendar.get(Calendar.MINUTE)
+        val amPm = if (calendar.get(Calendar.AM_PM) == Calendar.AM) "AM" else "PM"
+        mutableStateOf(String.format(Locale.ITALY, "%02d:%02d %s", if (hour == 0) 12 else hour, minute, amPm))
+    }
 
     Scaffold(
         topBar = {
@@ -92,23 +102,7 @@ fun NewActivity(navController: NavController) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-                item{
-                    TextField(
-                        value = activityTitle,
-                        onValueChange = { activityTitle = it },
-                        colors = TextFieldDefaults.textFieldColors(
-                            containerColor = Color(0xFFD6D0D9)
-                        ),
-                        label = { Text("Activity title") },
-                        modifier = Modifier
-                            .fillMaxWidth(0.8f)
-                            .padding(vertical = 20.dp)
-                    )
-                }
 
-                item {
-                    Spacer(modifier = Modifier.height(15.dp))
-                }
 
                 item {
                     Box(
@@ -116,7 +110,7 @@ fun NewActivity(navController: NavController) {
                             .fillMaxWidth(.8f)
                             .background(Color(0xFFD6D0D9))
                     ) {
-                        var isChecked by rememberSaveable { mutableStateOf(false) }
+
 
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -129,8 +123,8 @@ fun NewActivity(navController: NavController) {
                             Spacer(modifier = Modifier.weight(1f))
 
                             Checkbox(
-                                checked = isChecked,
-                                onCheckedChange = { isChecked = it }
+                                checked = isGroupActivityChecked,
+                                onCheckedChange = { isGroupActivityChecked = it }
                             )
                         }
                     }
@@ -183,12 +177,12 @@ fun NewActivity(navController: NavController) {
                     val context = LocalContext.current
 
                     val calendar = remember { Calendar.getInstance() }
-                    var selectedTime by rememberSaveable {
-                        val hour = calendar.get(Calendar.HOUR)
-                        val minute = calendar.get(Calendar.MINUTE)
-                        val amPm = if (calendar.get(Calendar.AM_PM) == Calendar.AM) "AM" else "PM"
-                        mutableStateOf(String.format(Locale.ITALY, "%02d:%02d %s", if (hour == 0) 12 else hour, minute, amPm))
-                    }
+//                    var selectedTime by rememberSaveable {
+//                        val hour = calendar.get(Calendar.HOUR)
+//                        val minute = calendar.get(Calendar.MINUTE)
+//                        val amPm = if (calendar.get(Calendar.AM_PM) == Calendar.AM) "AM" else "PM"
+//                        mutableStateOf(String.format(Locale.ITALY, "%02d:%02d %s", if (hour == 0) 12 else hour, minute, amPm))
+//                    }
 
                     val showTimePicker = remember { mutableStateOf(false) }
 
@@ -268,7 +262,29 @@ fun NewActivity(navController: NavController) {
                         Button(
                             onClick = {
 
-                                navController.navigate("main_page")
+                                val currentTrip = vm.selectedTrip
+                                val existingActivities = currentTrip?.activities?.values?.flatten()?.map { it.id } ?: listOf()
+                                val newId = if (existingActivities.isNotEmpty()) existingActivities.max()!! + 1 else 1
+
+                                val calendar = Calendar.getInstance()
+                                val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                                val parsedDate = dateFormat.parse(activityDate)
+
+                                if (parsedDate != null) {
+                                    calendar.time = parsedDate
+                                }
+
+                                val newActivity = Trip.Activity(
+                                    id = newId,
+                                    date = calendar,
+                                    time = selectedTime,
+                                    isGroupActivity = isGroupActivityChecked,
+                                    description = activityDescription
+                                )
+
+
+                                vm.addActivityToSelectedTrip(newActivity)
+                                navController.popBackStack()
 
 
                             },
