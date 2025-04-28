@@ -421,6 +421,12 @@ class Model {
     private val _askedTrips = MutableStateFlow<Set<Int>>(emptySet())
     val askedTrips: StateFlow<Set<Int>> = _askedTrips
 
+    private val _minPrice = Double.MAX_VALUE
+    var minPrice: Double = _minPrice
+
+    private val _maxPrice = Double.MIN_VALUE
+    var maxPrice: Double = _maxPrice
+
     //User Business Logic
     fun getUsers(ids: List<Int>): List<LazyUser> {
         return _users.filter { it.id in ids }
@@ -499,6 +505,17 @@ class Model {
         }
 
         return destinations
+    }
+
+    fun setMaxMinPrice() {
+        _tripList.value.forEach { trip ->
+            if (trip.estimatedPrice < minPrice) {
+                minPrice = trip.estimatedPrice
+            }
+            if (trip.estimatedPrice > maxPrice) {
+                maxPrice = trip.estimatedPrice
+            }
+        }
     }
 }
 

@@ -1,12 +1,15 @@
 package com.example.voyago.view
 
+import android.R
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -38,6 +41,15 @@ import com.example.voyago.activities.TopBar
 import com.example.voyago.viewmodel.Factory
 import com.example.voyago.viewmodel.TripListViewModel
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.RangeSlider
 import androidx.compose.ui.text.font.FontWeight
 
 
@@ -63,6 +75,8 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                 it.contains(query, ignoreCase = true)
             }
         }
+
+        vm.setMaxMinPrice()
 
         LazyColumn(
             state = listState,
@@ -92,6 +106,22 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                         }
                     )
                 }
+            }
+
+            item {
+                Text(
+                    text = "Price Range:",
+                    modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp),
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            item {
+                RangeSlider(vm)
+            }
+
+            item {
+                DropdownMenu()
             }
         }
 
@@ -155,6 +185,66 @@ fun DestinationSearchBar(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun RangeSlider(vm: TripListViewModel = viewModel(factory = Factory)) {
+    var sliderPosition by remember { mutableStateOf(vm.getMinPrice().toFloat()..vm.getMaxPrice().toFloat()) }
+
+    Column(
+        modifier = Modifier.padding(top = 10.dp, start = 25.dp, end = 25.dp)
+    ) {
+        RangeSlider(
+            value = sliderPosition,
+            //steps = ((vm.getMaxPrice()-vm.getMinPrice())/100).toInt(),
+            onValueChange = { range -> sliderPosition = range },
+            valueRange = vm.getMinPrice().toFloat()..vm.getMaxPrice().toFloat(),
+            onValueChangeFinished = {
+                // launch some business logic update with the state you hold
+                // viewModel.updateSelectedSliderValue(sliderPosition)
+            },
+        )
+        Text(text = sliderPosition.toString())
+    }
+}
+
+@Composable
+fun DropdownMenu() {
+    var expanded by remember { mutableStateOf(false) }
+    Box(
+        modifier = Modifier
+            .wrapContentSize()
+            .padding(16.dp)
+    ) {
+        /*IconButton(onClick = { expanded = !expanded }) {
+            Text("Duration")
+            Icon(Icons.Default.KeyboardArrowDown, contentDescription = "More options")
+        }*/
+
+        Button(
+            onClick = { expanded = !expanded },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xd9, 0xd9, 0xd9, 255)
+            )
+        ) {
+            Text(text = "Duration", color = Color.Black)
+            Icon(imageVector = Icons.Default.KeyboardArrowDown, contentDescription = "check", tint = Color.Gray)
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            DropdownMenuItem(
+                text = { Text("Option 1") },
+                onClick = { /* Do something... */ }
+            )
+            DropdownMenuItem(
+                text = { Text("Option 2") },
+                onClick = { /* Do something... */ }
+            )
         }
     }
 }

@@ -55,6 +55,10 @@ class TripListViewModel(val model: Model) : ViewModel() {
         return trip.activities.values.flatten()
     }
 
+    fun getMinPrice() = model.minPrice
+    fun getMaxPrice() = model.maxPrice
+    fun setMaxMinPrice() = model.setMaxMinPrice()
+
     fun addActivityToTrip(trip: Trip, activity: Activity) {
         val activitiesForDate = trip.activities[activity.date]?.toMutableList() ?: mutableListOf()
         activitiesForDate.add(activity)
