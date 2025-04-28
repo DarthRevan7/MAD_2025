@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -49,6 +50,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.RangeSlider
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.text.font.FontWeight
@@ -114,6 +116,8 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                 it.contains(query, ignoreCase = true)
             }
         }
+
+        var isSelected by remember { mutableStateOf(false) }
 
         vm.setMaxMinPrice()
 
@@ -202,6 +206,43 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                         tripTypeItems = updatedItems }
                     )
 
+                }
+            }
+
+            item {
+                Row(
+                    modifier = Modifier.padding(start = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        onClick = { isSelected = !isSelected }
+                    ) {
+                        Icon(
+                            imageVector = if (isSelected) {
+                                Icons.Default.CheckBox
+                            } else {
+                                Icons.Default.CheckBoxOutlineBlank
+                            },
+                            contentDescription = if (isSelected) {
+                                "Selected"
+                            } else {
+                                "NotSelected"
+                            },
+                            tint = if (isSelected) {
+                                Color(0x65, 0x55, 0x8f, 255)
+                            } else {
+                                Color.Black
+                            }
+                        )
+                    }
+                    Text("Search in completed trips")
+                }
+
+            }
+
+            if (!isSelected) {
+                item {
+                    
                 }
             }
         }
