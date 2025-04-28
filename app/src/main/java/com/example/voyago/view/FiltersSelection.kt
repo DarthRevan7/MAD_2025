@@ -46,6 +46,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.RangeSlider
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.text.font.FontWeight
 
 
@@ -209,6 +210,7 @@ fun RangeSlider(vm: TripListViewModel = viewModel(factory = Factory)) {
 @Composable
 fun DropdownMenu() {
     var expanded by remember { mutableStateOf(false) }
+    var strText by remember { mutableStateOf("Duration") }
     Box(
         modifier = Modifier
             .wrapContentSize()
@@ -218,8 +220,6 @@ fun DropdownMenu() {
             Text("Duration")
             Icon(Icons.Default.KeyboardArrowDown, contentDescription = "More options")
         }*/
-        var strText = "Duration"
-        var textField: Unit? = null
 
         Button(
             onClick = { expanded = !expanded },
@@ -228,7 +228,7 @@ fun DropdownMenu() {
             )
         ) {
 
-            textField = Text(text = strText, color = Color.Black)
+            Text(text = strText, color = Color.Black)
             Icon(imageVector = Icons.Default.KeyboardArrowDown, contentDescription = "check", tint = Color.Gray)
         }
 
@@ -238,31 +238,31 @@ fun DropdownMenu() {
         ) {
             DropdownMenuItem(
                 text = { Text("1-3 days") },
-                onClick = { strText = "1-3 days"; expanded = !expanded; textField.apply()}
+                onClick = { strText = "1-3 days"; expanded = !expanded }
             )
             DropdownMenuItem(
                 text = { Text("3-5 days") },
-                onClick = { /* Do something... */ }
+                onClick = { strText = "3-5 days"; expanded = !expanded }
             )
             DropdownMenuItem(
                 text = { Text("5-7 days") },
-                onClick = { /* Do something... */ }
+                onClick = { strText = "5-7 days"; expanded = !expanded }
             )
             DropdownMenuItem(
                 text = { Text("7-10 days") },
-                onClick = { /* Do something... */ }
+                onClick = { strText = "7-10 days"; expanded = !expanded }
             )
             DropdownMenuItem(
                 text = { Text("10-15 days") },
-                onClick = { /* Do something... */ }
+                onClick = { strText = "10-15 days"; expanded = !expanded }
             )
             DropdownMenuItem(
                 text = { Text("15-20 days") },
-                onClick = { /* Do something... */ }
+                onClick = { strText = "15-20 days"; expanded = !expanded }
             )
             DropdownMenuItem(
                 text = { Text("> 20 days") },
-                onClick = { /* Do something... */ }
+                onClick = { strText = "> 20 days"; expanded = !expanded }
             )
         }
     }
