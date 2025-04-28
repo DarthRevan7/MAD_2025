@@ -133,12 +133,11 @@ class MainActivity : ComponentActivity() {
 
                     composable("edit_travel_proposal") { navBackStackEntry ->
                         val parentEntry = remember(navBackStackEntry) {
-                            navController.getBackStackEntry("owned_trip_graph")
+                            navController.getBackStackEntry("owned_trips_graph")
                         }
                         val vm: TripListViewModel = viewModel(parentEntry, factory = Factory)
                         EditTravelProposal(vm)
                     }
-
 
                     composable("create_new_travel_proposal") { navBackStackEntry ->
                         val parentEntry = remember(navBackStackEntry) {
