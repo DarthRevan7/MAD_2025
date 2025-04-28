@@ -1,6 +1,5 @@
 package com.example.voyago.view
 
-import android.R
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,14 +40,11 @@ import com.example.voyago.activities.TopBar
 import com.example.voyago.viewmodel.Factory
 import com.example.voyago.viewmodel.TripListViewModel
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.RangeSlider
 import androidx.compose.ui.text.font.FontWeight
 
@@ -222,6 +218,8 @@ fun DropdownMenu() {
             Text("Duration")
             Icon(Icons.Default.KeyboardArrowDown, contentDescription = "More options")
         }*/
+        var strText = "Duration"
+        var textField: Unit? = null
 
         Button(
             onClick = { expanded = !expanded },
@@ -229,7 +227,8 @@ fun DropdownMenu() {
                 containerColor = Color(0xd9, 0xd9, 0xd9, 255)
             )
         ) {
-            Text(text = "Duration", color = Color.Black)
+
+            textField = Text(text = strText, color = Color.Black)
             Icon(imageVector = Icons.Default.KeyboardArrowDown, contentDescription = "check", tint = Color.Gray)
         }
 
@@ -238,11 +237,31 @@ fun DropdownMenu() {
             onDismissRequest = { expanded = false }
         ) {
             DropdownMenuItem(
-                text = { Text("Option 1") },
+                text = { Text("1-3 days") },
+                onClick = { strText = "1-3 days"; expanded = !expanded; textField.apply()}
+            )
+            DropdownMenuItem(
+                text = { Text("3-5 days") },
                 onClick = { /* Do something... */ }
             )
             DropdownMenuItem(
-                text = { Text("Option 2") },
+                text = { Text("5-7 days") },
+                onClick = { /* Do something... */ }
+            )
+            DropdownMenuItem(
+                text = { Text("7-10 days") },
+                onClick = { /* Do something... */ }
+            )
+            DropdownMenuItem(
+                text = { Text("10-15 days") },
+                onClick = { /* Do something... */ }
+            )
+            DropdownMenuItem(
+                text = { Text("15-20 days") },
+                onClick = { /* Do something... */ }
+            )
+            DropdownMenuItem(
+                text = { Text("> 20 days") },
                 onClick = { /* Do something... */ }
             )
         }
