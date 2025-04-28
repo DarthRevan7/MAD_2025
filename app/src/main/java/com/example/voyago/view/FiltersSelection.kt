@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -118,7 +119,19 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
             }
 
             item {
-                DropdownMenu()
+                Spacer(modifier = Modifier.padding(16.dp))
+            }
+
+            item {
+                DropdownMenu("Duration")
+            }
+
+            item {
+                DropdownMenu("Group Size")
+            }
+
+            item {
+                DropdownMenu("Trip Type")
             }
         }
 
@@ -208,18 +221,14 @@ fun RangeSlider(vm: TripListViewModel = viewModel(factory = Factory)) {
 }
 
 @Composable
-fun DropdownMenu() {
+fun DropdownMenu(filter: String) {
     var expanded by remember { mutableStateOf(false) }
-    var strText by remember { mutableStateOf("Duration") }
+    var strText by remember { mutableStateOf(filter) }
     Box(
         modifier = Modifier
             .wrapContentSize()
-            .padding(16.dp)
+            .padding(start = 16.dp, bottom = 8.dp)
     ) {
-        /*IconButton(onClick = { expanded = !expanded }) {
-            Text("Duration")
-            Icon(Icons.Default.KeyboardArrowDown, contentDescription = "More options")
-        }*/
 
         Button(
             onClick = { expanded = !expanded },
@@ -236,34 +245,90 @@ fun DropdownMenu() {
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            DropdownMenuItem(
-                text = { Text("1-3 days") },
-                onClick = { strText = "1-3 days"; expanded = !expanded }
-            )
-            DropdownMenuItem(
-                text = { Text("3-5 days") },
-                onClick = { strText = "3-5 days"; expanded = !expanded }
-            )
-            DropdownMenuItem(
-                text = { Text("5-7 days") },
-                onClick = { strText = "5-7 days"; expanded = !expanded }
-            )
-            DropdownMenuItem(
-                text = { Text("7-10 days") },
-                onClick = { strText = "7-10 days"; expanded = !expanded }
-            )
-            DropdownMenuItem(
-                text = { Text("10-15 days") },
-                onClick = { strText = "10-15 days"; expanded = !expanded }
-            )
-            DropdownMenuItem(
-                text = { Text("15-20 days") },
-                onClick = { strText = "15-20 days"; expanded = !expanded }
-            )
-            DropdownMenuItem(
-                text = { Text("> 20 days") },
-                onClick = { strText = "> 20 days"; expanded = !expanded }
-            )
+            if (filter == "Duration") {
+                DropdownMenuItem(
+                    text = { Text("No Filter") },
+                    onClick = { strText = "Duration"; expanded = !expanded }
+                )
+                DropdownMenuItem(
+                    text = { Text("1-3 days") },
+                    onClick = { strText = "1-3 days"; expanded = !expanded }
+                )
+                DropdownMenuItem(
+                    text = { Text("3-5 days") },
+                    onClick = { strText = "3-5 days"; expanded = !expanded }
+                )
+                DropdownMenuItem(
+                    text = { Text("5-7 days") },
+                    onClick = { strText = "5-7 days"; expanded = !expanded }
+                )
+                DropdownMenuItem(
+                    text = { Text("7-10 days") },
+                    onClick = { strText = "7-10 days"; expanded = !expanded }
+                )
+                DropdownMenuItem(
+                    text = { Text("10-15 days") },
+                    onClick = { strText = "10-15 days"; expanded = !expanded }
+                )
+                DropdownMenuItem(
+                    text = { Text("15-20 days") },
+                    onClick = { strText = "15-20 days"; expanded = !expanded }
+                )
+                DropdownMenuItem(
+                    text = { Text("> 20 days") },
+                    onClick = { strText = "> 20 days"; expanded = !expanded }
+                )
+            } else if (filter == "Group Size") {
+                DropdownMenuItem(
+                    text = { Text("No Filter") },
+                    onClick = { strText = "Group Size"; expanded = !expanded }
+                )
+                DropdownMenuItem(
+                    text = { Text("2-3 people") },
+                    onClick = { strText = "2-3 people"; expanded = !expanded }
+                )
+                DropdownMenuItem(
+                    text = { Text("3-5 people") },
+                    onClick = { strText = "3-5 people"; expanded = !expanded }
+                )
+                DropdownMenuItem(
+                    text = { Text("5-7 people") },
+                    onClick = { strText = "5-7 people"; expanded = !expanded }
+                )
+                DropdownMenuItem(
+                    text = { Text("7-10 people") },
+                    onClick = { strText = "7-10 people"; expanded = !expanded }
+                )
+                DropdownMenuItem(
+                    text = { Text("10-15 people") },
+                    onClick = { strText = "10-15 people"; expanded = !expanded }
+                )
+                DropdownMenuItem(
+                    text = { Text("> 15 people") },
+                    onClick = { strText = "> 15 people"; expanded = !expanded }
+                )
+            } else if (filter == "Trip Type") {
+                DropdownMenuItem(
+                    text = { Text("No Filter") },
+                    onClick = { strText = "Trip Type"; expanded = !expanded }
+                )
+                DropdownMenuItem(
+                    text = { Text("Adventure") },
+                    onClick = { strText = "Adventure"; expanded = !expanded }
+                )
+                DropdownMenuItem(
+                    text = { Text("Culture") },
+                    onClick = { strText = "Culture"; expanded = !expanded }
+                )
+                DropdownMenuItem(
+                    text = { Text("Party") },
+                    onClick = { strText = "Party"; expanded = !expanded }
+                )
+                DropdownMenuItem(
+                    text = { Text("Relax") },
+                    onClick = { strText = "Relax"; expanded = !expanded }
+                )
+            }
         }
     }
 }
