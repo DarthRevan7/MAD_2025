@@ -41,18 +41,59 @@ import com.example.voyago.activities.TopBar
 import com.example.voyago.viewmodel.Factory
 import com.example.voyago.viewmodel.TripListViewModel
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.filled.CheckBox
+import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.RangeSlider
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.window.PopupProperties
 
 
 @Composable
 fun FilterSelection(navController: NavController, vm: TripListViewModel = viewModel(factory = Factory)) {
+
+    var durationItems by remember {
+        mutableStateOf(
+            listOf(
+                SelectableItem("1-3 days"),
+                SelectableItem("3-5 days"),
+                SelectableItem("5-7 days"),
+                SelectableItem("7-10 days"),
+                SelectableItem("10-15 days"),
+                SelectableItem("15-20 days"),
+                SelectableItem("> 20 days")
+            )
+        )
+    }
+    var groupSizeItems by remember {
+        mutableStateOf(
+            listOf(
+                SelectableItem("2-3 people"),
+                SelectableItem("3-5 people"),
+                SelectableItem("5-7 people"),
+                SelectableItem("7-10 people"),
+                SelectableItem("10-15 people"),
+                SelectableItem(">15 people")
+            )
+        )
+    }
+    var tripTypeItems by remember {
+        mutableStateOf(
+            listOf(
+                SelectableItem("Adventure"),
+                SelectableItem("Culture"),
+                SelectableItem("Party"),
+                SelectableItem("Relax")
+            )
+        )
+    }
+
     Scaffold(
         topBar = {
             TopBar()
@@ -123,15 +164,45 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
             }
 
             item {
-                DropdownMenu("Duration")
+                Box(
+                    modifier = Modifier
+                        .wrapContentSize()
+                        .padding(start = 16.dp, bottom = 8.dp)
+                ) {
+
+                    MultiSelectDropdownMenu("Duration", durationItems, { updatedItems ->
+                        durationItems = updatedItems }
+                    )
+
+                }
             }
 
             item {
-                DropdownMenu("Group Size")
+                Box(
+                    modifier = Modifier
+                        .wrapContentSize()
+                        .padding(start = 16.dp, bottom = 8.dp)
+                ) {
+
+                    MultiSelectDropdownMenu("Group Size", groupSizeItems, { updatedItems ->
+                        groupSizeItems = updatedItems }
+                    )
+
+                }
             }
 
             item {
-                DropdownMenu("Trip Type")
+                Box(
+                    modifier = Modifier
+                        .wrapContentSize()
+                        .padding(start = 16.dp)
+                ) {
+
+                    MultiSelectDropdownMenu("Trip Type", tripTypeItems, { updatedItems ->
+                        tripTypeItems = updatedItems }
+                    )
+
+                }
             }
         }
 
@@ -220,115 +291,93 @@ fun RangeSlider(vm: TripListViewModel = viewModel(factory = Factory)) {
     }
 }
 
+data class SelectableItem(
+    val label: String,
+    var isSelected: Boolean = false
+)
+
 @Composable
 fun DropdownMenu(filter: String) {
+
     var expanded by remember { mutableStateOf(false) }
-    var strText by remember { mutableStateOf(filter) }
-    Box(
-        modifier = Modifier
-            .wrapContentSize()
-            .padding(start = 16.dp, bottom = 8.dp)
-    ) {
 
+
+
+
+}
+
+@Composable
+fun MultiSelectDropdownMenu(filter:String,
+    items: List<SelectableItem>,
+    onSelectionChange: (List<SelectableItem>) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val itemStates = remember {
+        items.map { mutableStateOf(it.isSelected) }
+    }
+
+    Column(modifier = Modifier.padding(4.dp)) {
         Button(
-            onClick = { expanded = !expanded },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xd9, 0xd9, 0xd9, 255)
-            )
-        ) {
-
-            Text(text = strText, color = Color.Black)
+            onClick = { expanded = true },
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xd9, 0xd9, 0xd9, 255))
+        ){
+            Text(filter, color = Color.Black)
             Icon(imageVector = Icons.Default.KeyboardArrowDown, contentDescription = "check", tint = Color.Gray)
         }
 
         DropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false }
+            onDismissRequest = { expanded = false },
+            properties = PopupProperties(focusable = true)
         ) {
-            if (filter == "Duration") {
+            items.forEachIndexed { index, item ->
                 DropdownMenuItem(
-                    text = { Text("No Filter") },
-                    onClick = { strText = "Duration"; expanded = !expanded }
-                )
-                DropdownMenuItem(
-                    text = { Text("1-3 days") },
-                    onClick = { strText = "1-3 days"; expanded = !expanded }
-                )
-                DropdownMenuItem(
-                    text = { Text("3-5 days") },
-                    onClick = { strText = "3-5 days"; expanded = !expanded }
-                )
-                DropdownMenuItem(
-                    text = { Text("5-7 days") },
-                    onClick = { strText = "5-7 days"; expanded = !expanded }
-                )
-                DropdownMenuItem(
-                    text = { Text("7-10 days") },
-                    onClick = { strText = "7-10 days"; expanded = !expanded }
-                )
-                DropdownMenuItem(
-                    text = { Text("10-15 days") },
-                    onClick = { strText = "10-15 days"; expanded = !expanded }
-                )
-                DropdownMenuItem(
-                    text = { Text("15-20 days") },
-                    onClick = { strText = "15-20 days"; expanded = !expanded }
-                )
-                DropdownMenuItem(
-                    text = { Text("> 20 days") },
-                    onClick = { strText = "> 20 days"; expanded = !expanded }
-                )
-            } else if (filter == "Group Size") {
-                DropdownMenuItem(
-                    text = { Text("No Filter") },
-                    onClick = { strText = "Group Size"; expanded = !expanded }
-                )
-                DropdownMenuItem(
-                    text = { Text("2-3 people") },
-                    onClick = { strText = "2-3 people"; expanded = !expanded }
-                )
-                DropdownMenuItem(
-                    text = { Text("3-5 people") },
-                    onClick = { strText = "3-5 people"; expanded = !expanded }
-                )
-                DropdownMenuItem(
-                    text = { Text("5-7 people") },
-                    onClick = { strText = "5-7 people"; expanded = !expanded }
-                )
-                DropdownMenuItem(
-                    text = { Text("7-10 people") },
-                    onClick = { strText = "7-10 people"; expanded = !expanded }
-                )
-                DropdownMenuItem(
-                    text = { Text("10-15 people") },
-                    onClick = { strText = "10-15 people"; expanded = !expanded }
-                )
-                DropdownMenuItem(
-                    text = { Text("> 15 people") },
-                    onClick = { strText = "> 15 people"; expanded = !expanded }
-                )
-            } else if (filter == "Trip Type") {
-                DropdownMenuItem(
-                    text = { Text("No Filter") },
-                    onClick = { strText = "Trip Type"; expanded = !expanded }
-                )
-                DropdownMenuItem(
-                    text = { Text("Adventure") },
-                    onClick = { strText = "Adventure"; expanded = !expanded }
-                )
-                DropdownMenuItem(
-                    text = { Text("Culture") },
-                    onClick = { strText = "Culture"; expanded = !expanded }
-                )
-                DropdownMenuItem(
-                    text = { Text("Party") },
-                    onClick = { strText = "Party"; expanded = !expanded }
-                )
-                DropdownMenuItem(
-                    text = { Text("Relax") },
-                    onClick = { strText = "Relax"; expanded = !expanded }
+                    text = { Text(item.label) },
+                    onClick = {
+                        itemStates[index].value = !itemStates[index].value
+                        onSelectionChange(
+                            items.mapIndexed { idx, it ->
+                                it.copy(isSelected = itemStates[idx].value)
+                            }
+                        )
+                    },
+                    leadingIcon = {
+                        Checkbox(
+                            checked = itemStates[index].value,
+                            onCheckedChange = { isChecked ->
+                                itemStates[index].value = isChecked
+                                onSelectionChange(
+                                    items.mapIndexed { idx, it ->
+                                        it.copy(isSelected = itemStates[idx].value)
+                                    }
+                                )
+                            }
+                        )
+                    }
                 )
             }
         }
     }
+}
+
+@Composable
+fun CustomDDMenuItem(text:String, strText: MutableState<String>, expanded: MutableState<Boolean>)
+{
+
+    var iconDDM by remember { mutableStateOf(false) }
+
+    DropdownMenuItem(
+        text = { Text(text) },
+        onClick = { strText.value = text; expanded.value = !expanded.value; iconDDM = !iconDDM},
+        leadingIcon = {
+            if(!iconDDM)
+            {
+                Icon(Icons.Default.CheckBoxOutlineBlank, "deselected")
+            }
+            else
+            {
+                Icon(Icons.Default.CheckBox, "selected")
+            }
+        }
+    )
 }
