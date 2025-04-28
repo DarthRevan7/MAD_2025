@@ -75,10 +75,10 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
     }
 
     var startDate by rememberSaveable { mutableStateOf("") }
-    var startCalendar by remember { mutableStateOf<Calendar?>(null) }
+    var startCalendar by rememberSaveable { mutableStateOf<Calendar?>(null) }
 
     var endDate by rememberSaveable { mutableStateOf("") }
-    var endCalendar by remember { mutableStateOf<Calendar?>(null) }
+    var endCalendar by rememberSaveable { mutableStateOf<Calendar?>(null) }
 
     var dateError by rememberSaveable { mutableStateOf("") }
 

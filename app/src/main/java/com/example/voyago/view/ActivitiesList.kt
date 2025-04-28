@@ -30,6 +30,7 @@ import androidx.navigation.NavController
 import com.example.voyago.activities.*
 import com.example.voyago.model.Trip
 import com.example.voyago.viewmodel.TripListViewModel
+import java.util.Calendar
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,7 +40,10 @@ fun ActivitiesList(navController: NavController, vm: TripListViewModel) {
 
     val selectedTrip = vm.selectedTrip
 
+
     val activities = selectedTrip?.let { vm.getActivities(it) } ?: emptyList()
+
+
 
 
     Scaffold(
@@ -71,10 +75,10 @@ fun ActivitiesList(navController: NavController, vm: TripListViewModel) {
                     Spacer(modifier = Modifier.height(40.dp))
                 }
 
-                // Displaying the activities
+
                 items(activities.size) { index ->
                     val activity = activities[index]
-                    ActivityItem(activity = activity) // Custom composable to display an activity
+                    ActivityItem(activity = activity)
                 }
 
                 item {
@@ -117,7 +121,7 @@ fun ActivitiesList(navController: NavController, vm: TripListViewModel) {
 
                         Button(
                             onClick = {
-                                navController.navigate("create_new_travel_proposal")
+                                navController.popBackStack()
                             },
                             modifier = Modifier
                                 .width(160.dp)
