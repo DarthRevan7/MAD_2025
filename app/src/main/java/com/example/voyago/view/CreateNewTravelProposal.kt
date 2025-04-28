@@ -75,7 +75,11 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
     }
 
     var startDate by rememberSaveable { mutableStateOf("") }
+    var startCalendar by remember { mutableStateOf<Calendar?>(null) }
+
     var endDate by rememberSaveable { mutableStateOf("") }
+    var endCalendar by remember { mutableStateOf<Calendar?>(null) }
+
     var dateError by rememberSaveable { mutableStateOf("") }
 
 
@@ -270,6 +274,10 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                             context,
                             { _: DatePicker, y: Int, m: Int, d: Int ->
                                 startDate = "$d/${m + 1}/$y"
+                                startCalendar = Calendar.getInstance().apply {
+                                    set(y, m, d, 0, 0, 0)
+                                    set(Calendar.MILLISECOND, 0)
+                                }
                             }, year, month, day
                         )
                     }
@@ -279,9 +287,14 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                             context,
                             { _: DatePicker, y: Int, m: Int, d: Int ->
                                 endDate = "$d/${m + 1}/$y"
+                                endCalendar = Calendar.getInstance().apply {
+                                    set(y, m, d, 0, 0, 0)
+                                    set(Calendar.MILLISECOND, 0)
+                                }
                             }, year, month, day
                         )
                     }
+
 
                     Row(
                         modifier = Modifier
@@ -365,7 +378,7 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                                 } else if (!validateGroupSize(groupSize)) {
                                     groupSizeError = true
                                     groupSizeErrorMessage = "Group size must be greater than 1"
-                                } else if (!validateDateOrder(startDate, endDate)) {
+                                } else if (!validateDateOrder(startCalendar, endCalendar)) {
                                     priceError = false
                                     priceErrorMessage = ""
                                     dateError = "End date must be after start date"
@@ -374,11 +387,6 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                                     priceErrorMessage = ""
                                     dateError = ""
 
-                                    val sdf = SimpleDateFormat("d/M/yyyy", Locale.getDefault())
-                                    val startCalendar = Calendar.getInstance()
-                                    val endCalendar = Calendar.getInstance()
-                                    startCalendar.time = sdf.parse(startDate)!!
-                                    endCalendar.time = sdf.parse(endDate)!!
 
                                     val activities = emptyMap<Calendar, List<Trip.Activity>>()
                                     val creatorId = 1
@@ -388,8 +396,8 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                                         photo = "",
                                         title = tripName,
                                         destination = destination,
-                                        startDate = startCalendar,
-                                        endDate = endCalendar,
+                                        startDate = startCalendar!!,
+                                        endDate = endCalendar!!,
                                         estimatedPrice = price.toDouble(),
                                         groupSize = groupSize.toInt(),
                                         activities = activities,
@@ -428,15 +436,9 @@ fun validateGroupSize(price: String): Boolean {
     return price.toDoubleOrNull()?.let { it > 1.0 } ?: false
 }
 
-fun validateDateOrder(start: String, end: String): Boolean {
-    return try {
-        val sdf = SimpleDateFormat("d/M/yyyy", Locale.getDefault())
-        val startDate = sdf.parse(start)
-        val endDate = sdf.parse(end)
-        startDate != null && endDate != null && endDate.after(startDate)
-    } catch (e: Exception) {
-        false
-    }
+fun validateDateOrder(start: Calendar?, end: Calendar?): Boolean {
+    return start != null && end != null && end.after(start)
 }
+
 
 
