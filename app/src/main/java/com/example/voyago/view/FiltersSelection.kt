@@ -1,5 +1,6 @@
 package com.example.voyago.view
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -42,9 +44,12 @@ import com.example.voyago.activities.TopBar
 import com.example.voyago.viewmodel.Factory
 import com.example.voyago.viewmodel.TripListViewModel
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
@@ -52,7 +57,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.RangeSlider
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.window.PopupProperties
 
@@ -118,6 +123,7 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
         }
 
         var isSelected by remember { mutableStateOf(false) }
+        var count by remember { mutableIntStateOf(1) }
 
         vm.setMaxMinPrice()
 
@@ -174,9 +180,10 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                         .padding(start = 16.dp, bottom = 8.dp)
                 ) {
 
-                    MultiSelectDropdownMenu("Duration", durationItems, { updatedItems ->
-                        durationItems = updatedItems }
-                    )
+                    MultiSelectDropdownMenu("Duration", durationItems
+                    ) { updatedItems ->
+                        durationItems = updatedItems
+                    }
 
                 }
             }
@@ -188,9 +195,10 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                         .padding(start = 16.dp, bottom = 8.dp)
                 ) {
 
-                    MultiSelectDropdownMenu("Group Size", groupSizeItems, { updatedItems ->
-                        groupSizeItems = updatedItems }
-                    )
+                    MultiSelectDropdownMenu("Group Size", groupSizeItems
+                    ) { updatedItems ->
+                        groupSizeItems = updatedItems
+                    }
 
                 }
             }
@@ -202,11 +210,16 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                         .padding(start = 16.dp)
                 ) {
 
-                    MultiSelectDropdownMenu("Trip Type", tripTypeItems, { updatedItems ->
-                        tripTypeItems = updatedItems }
-                    )
+                    MultiSelectDropdownMenu("Trip Type", tripTypeItems
+                    ) { updatedItems ->
+                        tripTypeItems = updatedItems
+                    }
 
                 }
+            }
+
+            item {
+                Spacer(Modifier.padding(2.dp))
             }
 
             item {
@@ -237,14 +250,59 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                     }
                     Text("Search in completed trips")
                 }
+            }
 
+            item {
+                Spacer(Modifier.padding(4.dp))
             }
 
             if (!isSelected) {
                 item {
-                    
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(start = 30.dp)
+                    ) {
+                        Text(text = "Min available seats: ", modifier = Modifier.padding(end = 8.dp))
+                        Box(
+                            modifier = Modifier
+                                .size(25.dp)
+                                .border(width = 1.dp, color = Color.Gray, shape = CircleShape)
+                        ) {
+                            IconButton(
+                                onClick = { if (count > 1) count-- },
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Remove,
+                                    contentDescription = "Decrease"
+                                )
+                            }
+                        }
+                        Text(
+                            text = count.toString(),
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            fontWeight = FontWeight.Bold
+                        )
+                        Box(
+                            modifier = Modifier
+                                .size(25.dp)
+                                .border(width = 1.dp, color = Color.Gray, shape = CircleShape)
+                        ) {
+                            IconButton(
+                                onClick = { count++ },
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = "Increase"
+                                )
+                            }
+                        }
+                    }
                 }
             }
+
+            
         }
 
     }
@@ -320,7 +378,6 @@ fun RangeSlider(vm: TripListViewModel = viewModel(factory = Factory)) {
     ) {
         RangeSlider(
             value = sliderPosition,
-            //steps = ((vm.getMaxPrice()-vm.getMinPrice())/100).toInt(),
             onValueChange = { range -> sliderPosition = range },
             valueRange = vm.getMinPrice().toFloat()..vm.getMaxPrice().toFloat(),
             onValueChangeFinished = {
@@ -336,16 +393,6 @@ data class SelectableItem(
     val label: String,
     var isSelected: Boolean = false
 )
-
-@Composable
-fun DropdownMenu(filter: String) {
-
-    var expanded by remember { mutableStateOf(false) }
-
-
-
-
-}
 
 @Composable
 fun MultiSelectDropdownMenu(filter:String,
@@ -399,26 +446,4 @@ fun MultiSelectDropdownMenu(filter:String,
             }
         }
     }
-}
-
-@Composable
-fun CustomDDMenuItem(text:String, strText: MutableState<String>, expanded: MutableState<Boolean>)
-{
-
-    var iconDDM by remember { mutableStateOf(false) }
-
-    DropdownMenuItem(
-        text = { Text(text) },
-        onClick = { strText.value = text; expanded.value = !expanded.value; iconDDM = !iconDDM},
-        leadingIcon = {
-            if(!iconDDM)
-            {
-                Icon(Icons.Default.CheckBoxOutlineBlank, "deselected")
-            }
-            else
-            {
-                Icon(Icons.Default.CheckBox, "selected")
-            }
-        }
-    )
 }
