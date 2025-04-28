@@ -499,12 +499,7 @@ class Model {
     }
 
     fun getDestinations(): List<String> {
-        var destinations = emptyList<String>()
-        _tripList.value.forEach { trip ->
-            destinations = destinations + trip.destination
-        }
-
-        return destinations
+        return _tripList.value.map { it.destination }.distinct()
     }
 
     fun setMaxMinPrice() {
