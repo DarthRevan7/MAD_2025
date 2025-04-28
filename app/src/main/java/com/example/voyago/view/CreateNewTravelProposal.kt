@@ -43,12 +43,15 @@ import androidx.navigation.NavController
 import com.example.voyago.activities.*
 import java.util.Calendar
 import androidx.compose.ui.text.font.FontStyle
+import com.example.voyago.model.Trip
+import com.example.voyago.model.TypeTravel
+import com.example.voyago.viewmodel.TripListViewModel
 import java.text.SimpleDateFormat
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NewTravelProposal(navController: NavController) {
+fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
 
     var tripName by rememberSaveable {mutableStateOf("")}
     var destination by rememberSaveable {mutableStateOf("")}
@@ -370,6 +373,32 @@ fun NewTravelProposal(navController: NavController) {
                                     priceError = false
                                     priceErrorMessage = ""
                                     dateError = ""
+
+                                    val sdf = SimpleDateFormat("d/M/yyyy", Locale.getDefault())
+                                    val startCalendar = Calendar.getInstance()
+                                    val endCalendar = Calendar.getInstance()
+                                    startCalendar.time = sdf.parse(startDate)!!
+                                    endCalendar.time = sdf.parse(endDate)!!
+
+                                    val activities = emptyMap<Calendar, List<Trip.Activity>>()
+                                    val creatorId = 1
+
+
+                                    vm.addNewTrip(
+                                        photo = "",
+                                        title = tripName,
+                                        destination = destination,
+                                        startDate = startCalendar,
+                                        endDate = endCalendar,
+                                        estimatedPrice = price.toDouble(),
+                                        groupSize = groupSize.toInt(),
+                                        activities = activities,
+                                        typeTravel = selected.map {TypeTravel.valueOf(it.uppercase())},
+                                        creatorId = creatorId,
+                                        published = false
+                                    )
+
+
                                     navController.navigate("activities_list")
 
                                 }

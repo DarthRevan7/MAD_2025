@@ -118,7 +118,7 @@ fun ActivitiesList(navController: NavController) {
                         Button(
                             onClick = {
 
-                                navController.navigate("main_page")
+                                navController.navigate("new_activity")
 
 
                             },
