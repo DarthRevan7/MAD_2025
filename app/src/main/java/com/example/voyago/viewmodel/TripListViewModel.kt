@@ -23,9 +23,13 @@ class TripListViewModel(val model: Model) : ViewModel() {
     var selectedTrip: Trip? by mutableStateOf(null)
         private set
 
+    var currentTrip: Trip? by mutableStateOf(null)
+        private set
+
     fun selectTrip(trip: Trip) {
-        selectedTrip = trip
+        currentTrip = trip
     }
+
 
 
     fun creatorPublicFilter() = model.filterPublishedByCreator(1)
@@ -39,13 +43,7 @@ class TripListViewModel(val model: Model) : ViewModel() {
     fun getTripParticipants(trip: Trip): List<LazyUser> = model.getUsers(trip.participants)
     fun getTripApplicants(trip: Trip): List<LazyUser> = model.getUsers(trip.appliedUsers)
 
-    fun addNewTrip(photo: String, title: String, destination: String, startDate: Calendar,
-                      endDate: Calendar, estimatedPrice: Double, groupSize: Int,
-                      activities: Map<Calendar, List<Activity>>,
-                      typeTravel: List<TypeTravel>, creatorId: Int,
-                      published: Boolean): List<Trip> =
-        model.createNewTrip(photo, title, destination, startDate, endDate, estimatedPrice,
-            groupSize, activities, typeTravel, creatorId, published)
+    fun addNewTrip(newTrip: Trip): List<Trip> = model.createNewTrip(newTrip)
 
     fun toggleAskToJoin(tripId: Int) = model.toggleAskToJoin(tripId)
 

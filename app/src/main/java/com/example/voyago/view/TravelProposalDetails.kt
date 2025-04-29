@@ -59,6 +59,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.window.Popup
+import com.example.voyago.model.TypeTravel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -226,19 +227,26 @@ fun TravelProposalDetail(navController: NavController, vm: TripListViewModel, ow
                             ) {
                                 Button(
                                     onClick = {
-                                        vm.addNewTrip(
-                                            trip.photo,
-                                            trip.title,
-                                            trip.destination,
-                                            trip.startDate,
-                                            trip.endDate,
-                                            trip.estimatedPrice,
-                                            trip.groupSize,
-                                            trip.activities,
-                                            trip.typeTravel,
-                                            1,
-                                            false
+                                        val newTrip = Trip(
+                                            photo = trip.photo,  // Empty string for now, replace with actual photo URI/path
+                                            title = trip.title,
+                                            destination = trip.destination,
+                                            startDate = trip.startDate,
+                                            endDate = trip.endDate,
+                                            estimatedPrice = trip.estimatedPrice,
+                                            groupSize = trip.groupSize,
+                                            activities = trip.activities,
+                                            typeTravel = trip.typeTravel,
+                                            creatorId = 1,
+                                            published = false,
+                                            id = trip.id,
+                                            participants = trip.participants,
+                                            status = trip.status,
+                                            appliedUsers = trip.appliedUsers,
+                                            reviews = trip.reviews
                                         )
+                                        vm.addNewTrip(newTrip)
+
                                         vm.updatePublishedTrip()
 
                                         showPopup = true
