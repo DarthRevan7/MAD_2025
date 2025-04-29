@@ -41,7 +41,7 @@ import java.util.Calendar
 fun ActivitiesList(navController: NavController, vm: TripListViewModel) {
 
 
-    val selectedTrip = vm.selectedTrip
+    val selectedTrip = vm.currentTrip
 
 
     //val activities = selectedTrip?.let { vm.getActivities(it) } ?: emptyList()
@@ -181,48 +181,61 @@ fun ActivityItem(activity: Trip.Activity) {
 fun ActivitiesListContent(trip: Trip) {
     val sortedDays = trip.activities.keys.sortedBy { it.timeInMillis }
 
+    // Check if all activity lists are empty
+    val hasNoActivities = trip.activities.values.all { it.isEmpty() }
+
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        sortedDays.forEach { day ->
-            val dayIndex = ((day.timeInMillis - trip.startDate.timeInMillis) / (1000 * 60 * 60 * 24)).toInt() + 1
-            val activitiesForDay = trip.activities[day] ?: emptyList()
+        if (hasNoActivities) {
+            Text(
+                text = "No activities for trip to ${trip.destination}.",
+                modifier = Modifier.padding(16.dp),
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.Gray
+            )
+        } else {
+            sortedDays.forEach { day ->
+                val dayIndex = ((day.timeInMillis - trip.startDate.timeInMillis) / (1000 * 60 * 60 * 24)).toInt() + 1
+                val activitiesForDay = trip.activities[day] ?: emptyList()
 
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "Day $dayIndex",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF555555)
-                )
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Day $dayIndex",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF555555)
+                    )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                activitiesForDay.forEach { activity ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    ) {
-                        androidx.compose.material3.Icon(
-                            imageVector = androidx.compose.material.icons.Icons.Default.Schedule,
-                            contentDescription = "activity time",
-                            tint = Color(0xFF4CAF50),
-                            modifier = Modifier
-                                .width(20.dp)
-                                .height(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "${activity.time} - ${activity.description}" +
-                                    if (activity.isGroupActivity) " (group activity)" else "",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+                    activitiesForDay.forEach { activity ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        ) {
+                            androidx.compose.material3.Icon(
+                                imageVector = androidx.compose.material.icons.Icons.Default.Schedule,
+                                contentDescription = "activity time",
+                                tint = Color(0xFF4CAF50),
+                                modifier = Modifier
+                                    .width(20.dp)
+                                    .height(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "${activity.time} - ${activity.description}" +
+                                        if (activity.isGroupActivity) " (group activity)" else "",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
                     }
                 }
             }
         }
     }
 }
+
 
 
 

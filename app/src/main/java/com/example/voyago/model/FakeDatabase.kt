@@ -462,33 +462,12 @@ class Model {
         _tripList.value = _tripList.value.filter { it.id != id }
     }
 
-    fun createNewTrip(photo: String, title: String, destination: String, startDate: Calendar,
-                      endDate: Calendar, estimatedPrice: Double, groupSize: Int,
-                      activities: Map<Calendar, List<Activity>>,
-                      typeTravel: List<TypeTravel>, creatorId: Int,
-                      published: Boolean): List<Trip> {
-        val newTrip = Trip(
-            id = nextId++,
-            photo = photo,
-            title = title,
-            destination = destination,
-            startDate = startDate,
-            endDate = endDate,
-            estimatedPrice = estimatedPrice,
-            groupSize = groupSize,
-            participants = listOf(creatorId),
-            activities = activities,
-            status = TripStatus.NOT_STARTED,
-            typeTravel = typeTravel,
-            creatorId = creatorId,
-            appliedUsers = emptyList(),
-            published = published,
-            reviews = emptyList()
-        )
-        _tripList.value = _tripList.value + newTrip
 
+    fun createNewTrip(newTrip: Trip): List<Trip> {
+        _tripList.value = _tripList.value + newTrip
         return _tripList.value
     }
+
 
     fun toggleAskToJoin(tripId: Int) {
         _askedTrips.value = if (_askedTrips.value.contains(tripId)) {
