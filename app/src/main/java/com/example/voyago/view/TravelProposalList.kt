@@ -2,6 +2,7 @@
 
 package com.example.voyago.view
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -35,24 +36,24 @@ import androidx.compose.foundation.lazy.grid.items
 @Composable
 fun TravelProposalList(navController: NavController, vm: TripListViewModel = viewModel(factory = Factory)) {
 
-    val allPublishedTrips by vm.filteredTrips.collectAsState()
+    val filteredTrips by vm.filteredList.collectAsState()
 
-    /*LaunchedEffect(Unit) {
-
+    LaunchedEffect(
+        vm.filterDestination,
+        vm.filterMinPrice,
+        vm.filterMaxPrice,
+        vm.filterDuration,
+        vm.filterGroupSize,
+        vm.filtersTripType,
+        vm.filterCompletedTrips,
+        vm.filterBySeats
+    ) {
+        vm.updatePublishedTrip()
+        vm.setMaxMinPrice()
+        vm.applyFilters()
+        Log.d("FilteredTrips", "Filtered trips: $filteredTrips")
     }
 
-     */
-
-    /*
-    vm.searchWithFilter(vm.updatePublishedTrip(), vm.filterDestination,
-        vm.filterMinPrice.toFloat(), vm.filterMaxPrice.toFloat(),
-        vm.filterDuration.first, vm.filterDuration.second,
-        vm.filterGroupSize.first, vm.filterGroupSize.second,
-        vm.filterCompletedTrips, vm.filterBySeats)
-    println("SOno qui")
-
-
-     */
     Scaffold(
         topBar = {
             TopBar()
@@ -92,7 +93,7 @@ fun TravelProposalList(navController: NavController, vm: TripListViewModel = vie
                 }
             }
 
-            items(allPublishedTrips) { trip ->
+            items(filteredTrips) { trip ->
                 TripCard(trip, navController, vm, false)
             }
         }

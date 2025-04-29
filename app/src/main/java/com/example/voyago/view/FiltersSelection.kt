@@ -129,7 +129,7 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
             }
         }
 
-        var isSelected by remember { mutableStateOf(false) }
+        var isSelected = vm.filterCompletedTrips
         var count by remember { mutableIntStateOf(1) }
 
         vm.setMaxMinPrice()
@@ -149,18 +149,16 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                         .heightIn(max = 400.dp)
                 ) {
                     DestinationSearchBar(
-                        query = query,
-                        onQueryChange = { query = it },
+                        query = vm.filterDestination,
+                        onQueryChange = { vm.updateFilterDestination(it) },
                         onSearch = { result ->
                             selectedDestination = result
                             query = result
                         },
                         searchResults = filteredSuggestions,
                         onResultClick = { result ->
-                            selectedDestination = result
-                            query = result
-                        },
-                        vm = viewModel(factory = Factory)
+                            vm.updateFilterDestination(result)
+                        }
                     )
                 }
             }
@@ -322,17 +320,8 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                 ) {
                     Button(
                         onClick = {
-                            /*
-                            vm.searchWithFilter(vm.tripList.value.filter { it.published == true }, vm.filterDestination,
-                                vm.filterMinPrice.toFloat(), vm.filterMaxPrice.toFloat(),
-                                vm.filterDuration.first, vm.filterDuration.second,
-                                vm.filterGroupSize.first, vm.filterGroupSize.second,
-                                vm.filterCompletedTrips, vm.filterBySeats)
-
-                             */
-
-                            vm.filterByCompletionVM()
-                            navController.navigate("travel_proposal_list")
+                            vm.applyFilters()
+                            navController.popBackStack()
                         },
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
@@ -359,8 +348,7 @@ fun DestinationSearchBar(
     leadingIcon: @Composable (() -> Unit)? = { Icon(Icons.Default.Search, contentDescription = "Search") },
     trailingIcon: @Composable (() -> Unit)? = null,
     supportingContent: (@Composable (String) -> Unit)? = null,
-    leadingContent: (@Composable () -> Unit)? = null,
-    vm: TripListViewModel
+    leadingContent: (@Composable () -> Unit)? = null
 ) {
     var active by rememberSaveable { mutableStateOf(false) }
 
@@ -380,7 +368,7 @@ fun DestinationSearchBar(
                 active = false
             },
             active = active,
-            onActiveChange = { active = it;  vm.updateFilterDestination(query)},
+            onActiveChange = { active = it },
             placeholder = placeholder,
             leadingIcon = leadingIcon,
             trailingIcon = trailingIcon,

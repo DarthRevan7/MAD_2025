@@ -14,9 +14,7 @@ import com.example.voyago.model.Trip
 import com.example.voyago.model.Trip.Activity
 import com.example.voyago.model.TypeTravel
 import com.example.voyago.view.SelectableItem
-import kotlinx.coroutines.flow.MutableStateFlow
 import java.util.Calendar
-import kotlin.math.max
 
 
 class TripListViewModel(val model: Model) : ViewModel() {
@@ -24,16 +22,7 @@ class TripListViewModel(val model: Model) : ViewModel() {
     val privateTrips = model.privateTrips
     val allPublishedTrips = model.allPublishedTrips
     val askedTrips = model.askedTrips
-
-    val tripList = model.tripList
-
-    val filteredTrips = MutableStateFlow<List<Trip>>(emptyList())
-
-    fun filterByCompletionVM() {
-        filteredTrips.value = model.filterByCompletion(updatePublishedTrip())
-        filteredTrips.value.forEach { it.printTrip() }
-        println("Size of filtered trips: " + filteredTrips.value.size.toString())
-    }
+    val filteredList = model.filteredList
 
     var selectedTrip: Trip? by mutableStateOf(null)
         private set
@@ -66,12 +55,12 @@ class TripListViewModel(val model: Model) : ViewModel() {
     var filterDuration: Pair<Int,Int> by mutableStateOf(Pair(-1,-1))
         private set
 
-    var filterGroupSize: Pair<Int,Int> by mutableStateOf(Pair(-1,-1))
-        private set
-
     fun updateFilterDuration(list: List<SelectableItem>) {
         filterDuration = model.setRange(list)
     }
+
+    var filterGroupSize: Pair<Int,Int> by mutableStateOf(Pair(-1,-1))
+        private set
 
     fun updateFilterGroupSize(list: List<SelectableItem>) {
         filterGroupSize = model.setRange(list)
@@ -91,22 +80,23 @@ class TripListViewModel(val model: Model) : ViewModel() {
         filterCompletedTrips = isSelected
     }
 
-    var filterBySeats: Int by mutableIntStateOf(1)
+    var filterBySeats: Int by mutableIntStateOf(0)
         private set
 
     fun updateFilterBySeats(seats: Int) {
         filterBySeats = seats
     }
 
-    fun getAllTrips():List<Trip> {
-        model.tripList.value.forEach { it.printTrip() }
-        println("Size of all trips: ${model.tripList.value.size} ")
-        return model.tripList.value
-    }
-
     fun creatorPublicFilter() = model.filterPublishedByCreator(1)
     fun creatorPrivateFilter() = model.filterPrivateByCreator(1)
-    fun updatePublishedTrip() = model.getAllPublishedTrips()
+
+    var tripList: List<Trip> = emptyList()
+        private set
+
+    fun updatePublishedTrip() {
+        tripList = model.getAllPublishedTrips()
+        applyFilters()
+    }
 
     fun changePublishedStatus(id: Int) = model.changePublishedStatus(id)
 
@@ -149,12 +139,8 @@ class TripListViewModel(val model: Model) : ViewModel() {
         )
     }
 
-    fun searchWithFilter(dbList: List<Trip>, destination: String, minPrice:Float, maxPrice:Float,
-                         minDays:Int, maxDays:Int, minSize:Int, maxSize:Int,
-                         searchForCompleted:Boolean, minAvailableSeats:Int,
-                         vararg typesTravel:TypeTravel):List<Trip> =
-        model.tripFilter(dbList, destination, minPrice, maxPrice, minDays, maxDays, minSize,
-            maxSize, searchForCompleted, minAvailableSeats, *typesTravel)
+    fun applyFilters() = model.filterFunction(tripList, filterDestination, filterMinPrice, filterMaxPrice,
+        filterDuration, filterGroupSize, filtersTripType, filterCompletedTrips, filterBySeats)
 }
 
 object Factory : ViewModelProvider.Factory{
