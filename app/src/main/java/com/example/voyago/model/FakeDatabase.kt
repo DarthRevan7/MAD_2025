@@ -496,6 +496,29 @@ class Model {
         return _tripList.value
     }
 
+    fun addActivityToTrip(activity: Trip.Activity, trip: Trip?): Trip? {
+        if (trip == null) return null
+
+        val updatedTrip = trip.copy(
+            activities = trip.activities.orEmpty()
+                .toMutableMap()
+                .apply {
+                    val dateKey = activity.date
+                    val updatedList = getOrDefault(dateKey, emptyList()) + activity
+                    put(dateKey, updatedList)
+                }
+        )
+
+        _tripList.value = _tripList.value.map {
+            if (it.id == updatedTrip.id) updatedTrip else it
+        }
+
+        return updatedTrip
+    }
+
+
+
+
 
     fun toggleAskToJoin(tripId: Int) {
         _askedTrips.value = if (_askedTrips.value.contains(tripId)) {
