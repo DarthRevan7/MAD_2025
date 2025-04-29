@@ -35,7 +35,7 @@ import androidx.compose.foundation.lazy.grid.items
 @Composable
 fun TravelProposalList(navController: NavController, vm: TripListViewModel = viewModel(factory = Factory)) {
 
-    val allPublishedTrips by vm.allPublishedTrips.collectAsState()
+    val allPublishedTrips by vm.filteredTrips.collectAsState()
 
     /*LaunchedEffect(Unit) {
 
@@ -43,6 +43,7 @@ fun TravelProposalList(navController: NavController, vm: TripListViewModel = vie
 
      */
 
+    /*
     vm.searchWithFilter(vm.updatePublishedTrip(), vm.filterDestination,
         vm.filterMinPrice.toFloat(), vm.filterMaxPrice.toFloat(),
         vm.filterDuration.first, vm.filterDuration.second,
@@ -50,6 +51,8 @@ fun TravelProposalList(navController: NavController, vm: TripListViewModel = vie
         vm.filterCompletedTrips, vm.filterBySeats)
     println("SOno qui")
 
+
+     */
     Scaffold(
         topBar = {
             TopBar()

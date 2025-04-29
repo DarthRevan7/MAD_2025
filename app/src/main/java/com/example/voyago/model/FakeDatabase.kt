@@ -673,9 +673,8 @@ class Model {
 
     fun filterByCompletion(dbList:List<Trip>): List<Trip> {
         var filteredList:List<Trip> = emptyList<Trip>()
-        println("Siamo dentrooo")
 
-        println()
+
 
         /*
         dbList.forEach {

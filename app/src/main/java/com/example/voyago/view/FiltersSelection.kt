@@ -322,11 +322,16 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                 ) {
                     Button(
                         onClick = {
+                            /*
                             vm.searchWithFilter(vm.tripList.value.filter { it.published == true }, vm.filterDestination,
                                 vm.filterMinPrice.toFloat(), vm.filterMaxPrice.toFloat(),
                                 vm.filterDuration.first, vm.filterDuration.second,
                                 vm.filterGroupSize.first, vm.filterGroupSize.second,
                                 vm.filterCompletedTrips, vm.filterBySeats)
+
+                             */
+
+                            vm.filterByCompletionVM()
                             navController.navigate("travel_proposal_list")
                         },
                         modifier = Modifier

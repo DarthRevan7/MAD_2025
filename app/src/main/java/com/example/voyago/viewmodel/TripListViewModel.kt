@@ -14,6 +14,7 @@ import com.example.voyago.model.Trip
 import com.example.voyago.model.Trip.Activity
 import com.example.voyago.model.TypeTravel
 import com.example.voyago.view.SelectableItem
+import kotlinx.coroutines.flow.MutableStateFlow
 import java.util.Calendar
 import kotlin.math.max
 
@@ -25,6 +26,15 @@ class TripListViewModel(val model: Model) : ViewModel() {
     val askedTrips = model.askedTrips
 
     val tripList = model.tripList
+
+    val filteredTrips = MutableStateFlow<List<Trip>>(emptyList())
+
+    fun filterByCompletionVM()
+    {
+        filteredTrips.value = model.filterByCompletion(publishedTrips.value)
+        filteredTrips.value.forEach { it.printTrip() }
+        println("Size of filtered trips: " + filteredTrips.value.size.toString())
+    }
 
     var selectedTrip: Trip? by mutableStateOf(null)
         private set
