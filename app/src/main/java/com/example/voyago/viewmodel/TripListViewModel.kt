@@ -29,9 +29,8 @@ class TripListViewModel(val model: Model) : ViewModel() {
 
     val filteredTrips = MutableStateFlow<List<Trip>>(emptyList())
 
-    fun filterByCompletionVM()
-    {
-        filteredTrips.value = model.filterByCompletion(publishedTrips.value)
+    fun filterByCompletionVM() {
+        filteredTrips.value = model.filterByCompletion(updatePublishedTrip())
         filteredTrips.value.forEach { it.printTrip() }
         println("Size of filtered trips: " + filteredTrips.value.size.toString())
     }
