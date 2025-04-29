@@ -237,7 +237,7 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(
-                        onClick = { isSelected = !isSelected }
+                        onClick = { isSelected = !isSelected; vm.updateFullTripsFilter(isSelected) }
                     ) {
                         Icon(
                             imageVector = if (isSelected) {
@@ -278,7 +278,7 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                                 .border(width = 1.dp, color = Color.Gray, shape = CircleShape)
                         ) {
                             IconButton(
-                                onClick = { if (count > 1) count-- },
+                                onClick = { if (count > 1) count--; vm.updateFilterBySeats(count) },
                                 modifier = Modifier.fillMaxSize()
                             ) {
                                 Icon(
@@ -298,7 +298,7 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                                 .border(width = 1.dp, color = Color.Gray, shape = CircleShape)
                         ) {
                             IconButton(
-                                onClick = { count++ },
+                                onClick = { count++; vm.updateFilterBySeats(count) },
                                 modifier = Modifier.fillMaxSize()
                             ) {
                                 Icon(
@@ -369,7 +369,7 @@ fun DestinationSearchBar(
                 active = false
             },
             active = active,
-            onActiveChange = { active = it;  vm.setFilterDestination(query)},
+            onActiveChange = { active = it;  vm.updateFilterDestination(query)},
             placeholder = placeholder,
             leadingIcon = leadingIcon,
             trailingIcon = trailingIcon,
@@ -409,7 +409,7 @@ fun RangeSlider(vm: TripListViewModel = viewModel(factory = Factory)) {
             onValueChange = { range -> sliderPosition = range },
             valueRange = vm.getMinPrice().toFloat()..vm.getMaxPrice().toFloat(),
             onValueChangeFinished = {
-                vm.setFilterPriceRange(sliderPosition.start.toDouble(), sliderPosition.endInclusive.toDouble())
+                vm.updateFilterPriceRange(sliderPosition.start.toDouble(), sliderPosition.endInclusive.toDouble())
             },
         )
         Text(text = "%.0f € - %.0f €".format(sliderPosition.start, sliderPosition.endInclusive))
@@ -441,11 +441,11 @@ fun MultiSelectDropdownMenu(filter:String, vm: TripListViewModel,
             expanded = expanded,
             onDismissRequest = { expanded = false;
                 if (filter == "Duration") {
-                    vm.setFilterDuration(items)
+                    vm.updateFilterDuration(items)
                 } else if (filter == "Group Size") {
-                    vm.setFilterGroupSize(items)
+                    vm.updateFilterGroupSize(items)
                 } else if (filter == "Trip Type") {
-                    vm.setFilterTripType(items)
+                    vm.updateFiltersTripType(items)
                 }
                                },
             properties = PopupProperties(focusable = true)

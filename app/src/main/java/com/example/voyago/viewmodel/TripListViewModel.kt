@@ -38,7 +38,7 @@ class TripListViewModel(val model: Model) : ViewModel() {
     var filterDestination: String by mutableStateOf("")
         private set
 
-    fun setFilterDestination(str:String) {
+    fun updateFilterDestination(str:String) {
         filterDestination = str
     }
 
@@ -47,7 +47,7 @@ class TripListViewModel(val model: Model) : ViewModel() {
     var filterMaxPrice:Double by mutableDoubleStateOf(getMaxPrice())
         private set
 
-    fun setFilterPriceRange(minPrice:Double, maxPrice:Double) {
+    fun updateFilterPriceRange(minPrice:Double, maxPrice:Double) {
         filterMaxPrice = maxPrice
         filterMinPrice = minPrice
     }
@@ -58,19 +58,33 @@ class TripListViewModel(val model: Model) : ViewModel() {
     var filterGroupSize: Pair<Int,Int> by mutableStateOf(Pair(-1,-1))
         private set
 
-    fun setFilterDuration(list: List<SelectableItem>) {
+    fun updateFilterDuration(list: List<SelectableItem>) {
         filterDuration = model.setRange(list)
     }
 
-    fun setFilterGroupSize(list: List<SelectableItem>) {
+    fun updateFilterGroupSize(list: List<SelectableItem>) {
         filterGroupSize = model.setRange(list)
     }
 
-    var filterTripType: List<SelectableItem> by mutableStateOf(emptyList())
+    var filtersTripType: List<SelectableItem> by mutableStateOf(emptyList())
         private set
 
-    fun setFilterTripType(list: List<SelectableItem>) {
-        filterTripType = list
+    fun updateFiltersTripType(list: List<SelectableItem>) {
+        filtersTripType = list
+    }
+
+    var filterFullTrips: Boolean by mutableStateOf(false)
+        private set
+
+    fun updateFullTripsFilter(isSelected: Boolean) {
+        filterFullTrips = isSelected
+    }
+
+    var filterBySeats: Int by mutableIntStateOf(1)
+        private set
+
+    fun updateFilterBySeats(seats: Int) {
+        filterBySeats = seats
     }
 
     fun creatorPublicFilter() = model.filterPublishedByCreator(1)
@@ -117,15 +131,6 @@ class TripListViewModel(val model: Model) : ViewModel() {
                 }
         )
     }
-
-
-
-
-
-
-
-
-
 }
 
 object Factory : ViewModelProvider.Factory{
