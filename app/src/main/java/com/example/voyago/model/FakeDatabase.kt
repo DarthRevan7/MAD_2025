@@ -2,6 +2,7 @@ package com.example.voyago.model
 
 import com.example.voyago.model.Trip.Activity
 import com.example.voyago.model.Trip.TripStatus
+import com.example.voyago.view.SelectableItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.util.Calendar
@@ -517,6 +518,26 @@ class Model {
                 maxPrice = trip.estimatedPrice
             }
         }
+    }
+
+    fun setRange(list: List<SelectableItem>): Pair<Int,Int> {
+        var min = Int.MAX_VALUE
+        var max = Int.MIN_VALUE
+
+        list.forEach { item ->
+            if(item.isSelected) {
+
+                if(item.min < min) {
+                    min = item.min
+                }
+
+                if(item.max > max) {
+                    max = item.max
+                }
+            }
+        }
+
+        return Pair(min,max)
     }
 }
 

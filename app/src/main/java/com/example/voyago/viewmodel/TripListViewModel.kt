@@ -1,6 +1,8 @@
 package com.example.voyago.viewmodel
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -11,7 +13,9 @@ import com.example.voyago.model.Model
 import com.example.voyago.model.Trip
 import com.example.voyago.model.Trip.Activity
 import com.example.voyago.model.TypeTravel
+import com.example.voyago.view.SelectableItem
 import java.util.Calendar
+import kotlin.math.max
 
 
 class TripListViewModel(val model: Model) : ViewModel() {
@@ -31,6 +35,43 @@ class TripListViewModel(val model: Model) : ViewModel() {
         selectedTrip = trip
     }
 
+    var filterDestination: String by mutableStateOf("")
+        private set
+
+    fun setFilterDestination(str:String) {
+        filterDestination = str
+    }
+
+    var filterMinPrice:Double by mutableDoubleStateOf(getMinPrice())
+        private set
+    var filterMaxPrice:Double by mutableDoubleStateOf(getMaxPrice())
+        private set
+
+    fun setFilterPriceRange(minPrice:Double, maxPrice:Double) {
+        filterMaxPrice = maxPrice
+        filterMinPrice = minPrice
+    }
+
+    var filterDuration: Pair<Int,Int> by mutableStateOf(Pair(-1,-1))
+        private set
+
+    var filterGroupSize: Pair<Int,Int> by mutableStateOf(Pair(-1,-1))
+        private set
+
+    fun setFilterDuration(list: List<SelectableItem>) {
+        filterDuration = model.setRange(list)
+    }
+
+    fun setFilterGroupSize(list: List<SelectableItem>) {
+        filterGroupSize = model.setRange(list)
+    }
+
+    var filterTripType: List<SelectableItem> by mutableStateOf(emptyList())
+        private set
+
+    fun setFilterTripType(list: List<SelectableItem>) {
+        filterTripType = list
+    }
 
     fun creatorPublicFilter() = model.filterPublishedByCreator(1)
     fun creatorPrivateFilter() = model.filterPrivateByCreator(1)
@@ -91,6 +132,7 @@ object Factory : ViewModelProvider.Factory{
     private val model:Model = Model()
 
     override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
+        @Suppress("UNCHECKED_CAST")
         return when{
             modelClass.isAssignableFrom(TripListViewModel::class.java)->
                 TripListViewModel(model) as T

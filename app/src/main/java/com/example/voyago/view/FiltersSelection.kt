@@ -61,7 +61,14 @@ import androidx.compose.material3.RangeSlider
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.window.PopupProperties
+import androidx.lifecycle.ViewModel
 
+data class SelectableItem(
+    val label: String,
+    val min: Int,
+    val max: Int,
+    var isSelected: Boolean = false
+)
 
 @Composable
 fun FilterSelection(navController: NavController, vm: TripListViewModel = viewModel(factory = Factory)) {
@@ -69,35 +76,35 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
     var durationItems by remember {
         mutableStateOf(
             listOf(
-                SelectableItem("1-3 days"),
-                SelectableItem("3-5 days"),
-                SelectableItem("5-7 days"),
-                SelectableItem("7-10 days"),
-                SelectableItem("10-15 days"),
-                SelectableItem("15-20 days"),
-                SelectableItem("> 20 days")
+                SelectableItem("1-3 days", 1, 3),
+                SelectableItem("3-5 days", 3, 5),
+                SelectableItem("5-7 days", 5, 7),
+                SelectableItem("7-10 days", 7, 10),
+                SelectableItem("10-15 days", 10, 15),
+                SelectableItem("15-20 days", 15, 20),
+                SelectableItem("> 20 days", 20, Int.MAX_VALUE)
             )
         )
     }
     var groupSizeItems by remember {
         mutableStateOf(
             listOf(
-                SelectableItem("2-3 people"),
-                SelectableItem("3-5 people"),
-                SelectableItem("5-7 people"),
-                SelectableItem("7-10 people"),
-                SelectableItem("10-15 people"),
-                SelectableItem(">15 people")
+                SelectableItem("2-3 people", 2, 3),
+                SelectableItem("3-5 people", 3, 5),
+                SelectableItem("5-7 people", 5, 7),
+                SelectableItem("7-10 people", 7, 10),
+                SelectableItem("10-15 people", 10, 15),
+                SelectableItem("> 15 people", 15, Int.MAX_VALUE)
             )
         )
     }
     var tripTypeItems by remember {
         mutableStateOf(
             listOf(
-                SelectableItem("Adventure"),
-                SelectableItem("Culture"),
-                SelectableItem("Party"),
-                SelectableItem("Relax")
+                SelectableItem("Adventure", -1, -1),
+                SelectableItem("Culture", -1, -1),
+                SelectableItem("Party", -1, -1),
+                SelectableItem("Relax", -1, -1)
             )
         )
     }
@@ -153,7 +160,8 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                         onResultClick = { result ->
                             selectedDestination = result
                             query = result
-                        }
+                        },
+                        vm = viewModel(factory = Factory)
                     )
                 }
             }
@@ -181,7 +189,7 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                         .padding(start = 16.dp, bottom = 8.dp)
                 ) {
 
-                    MultiSelectDropdownMenu("Duration", durationItems
+                    MultiSelectDropdownMenu("Duration", vm = viewModel(factory = Factory), durationItems
                     ) { updatedItems ->
                         durationItems = updatedItems
                     }
@@ -196,7 +204,7 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                         .padding(start = 16.dp, bottom = 8.dp)
                 ) {
 
-                    MultiSelectDropdownMenu("Group Size", groupSizeItems
+                    MultiSelectDropdownMenu("Group Size", vm = viewModel(factory = Factory), groupSizeItems
                     ) { updatedItems ->
                         groupSizeItems = updatedItems
                     }
@@ -211,7 +219,7 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                         .padding(start = 16.dp)
                 ) {
 
-                    MultiSelectDropdownMenu("Trip Type", tripTypeItems
+                    MultiSelectDropdownMenu("Trip Type", vm = viewModel(factory = Factory), tripTypeItems
                     ) { updatedItems ->
                         tripTypeItems = updatedItems
                     }
@@ -340,7 +348,8 @@ fun DestinationSearchBar(
     leadingIcon: @Composable (() -> Unit)? = { Icon(Icons.Default.Search, contentDescription = "Search") },
     trailingIcon: @Composable (() -> Unit)? = null,
     supportingContent: (@Composable (String) -> Unit)? = null,
-    leadingContent: (@Composable () -> Unit)? = null
+    leadingContent: (@Composable () -> Unit)? = null,
+    vm: TripListViewModel
 ) {
     var active by rememberSaveable { mutableStateOf(false) }
 
@@ -360,7 +369,7 @@ fun DestinationSearchBar(
                 active = false
             },
             active = active,
-            onActiveChange = { active = it },
+            onActiveChange = { active = it;  vm.setFilterDestination(query)},
             placeholder = placeholder,
             leadingIcon = leadingIcon,
             trailingIcon = trailingIcon,
@@ -400,23 +409,19 @@ fun RangeSlider(vm: TripListViewModel = viewModel(factory = Factory)) {
             onValueChange = { range -> sliderPosition = range },
             valueRange = vm.getMinPrice().toFloat()..vm.getMaxPrice().toFloat(),
             onValueChangeFinished = {
-                // launch some business logic update with the state you hold
-                // viewModel.updateSelectedSliderValue(sliderPosition)
+                vm.setFilterPriceRange(sliderPosition.start.toDouble(), sliderPosition.endInclusive.toDouble())
             },
         )
         Text(text = "%.0f € - %.0f €".format(sliderPosition.start, sliderPosition.endInclusive))
     }
 }
 
-data class SelectableItem(
-    val label: String,
-    var isSelected: Boolean = false
-)
+
 
 @Composable
-fun MultiSelectDropdownMenu(filter:String,
+fun MultiSelectDropdownMenu(filter:String, vm: TripListViewModel,
     items: List<SelectableItem>,
-    onSelectionChange: (List<SelectableItem>) -> Unit
+    onSelectionChange: (List<SelectableItem>) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
     val itemStates = remember {
@@ -434,7 +439,15 @@ fun MultiSelectDropdownMenu(filter:String,
 
         DropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false },
+            onDismissRequest = { expanded = false;
+                if (filter == "Duration") {
+                    vm.setFilterDuration(items)
+                } else if (filter == "Group Size") {
+                    vm.setFilterGroupSize(items)
+                } else if (filter == "Trip Type") {
+                    vm.setFilterTripType(items)
+                }
+                               },
             properties = PopupProperties(focusable = true)
         ) {
             items.forEachIndexed { index, item ->
