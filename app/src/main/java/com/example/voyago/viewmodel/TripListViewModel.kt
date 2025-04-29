@@ -24,6 +24,8 @@ class TripListViewModel(val model: Model) : ViewModel() {
     val allPublishedTrips = model.allPublishedTrips
     val askedTrips = model.askedTrips
 
+    val tripList = model.tripList
+
     var selectedTrip: Trip? by mutableStateOf(null)
         private set
 
@@ -73,11 +75,11 @@ class TripListViewModel(val model: Model) : ViewModel() {
         filtersTripType = list
     }
 
-    var filterFullTrips: Boolean by mutableStateOf(false)
+    var filterCompletedTrips: Boolean by mutableStateOf(false)
         private set
 
-    fun updateFullTripsFilter(isSelected: Boolean) {
-        filterFullTrips = isSelected
+    fun updateCompletedTripsFilter(isSelected: Boolean) {
+        filterCompletedTrips = isSelected
     }
 
     var filterBySeats: Int by mutableIntStateOf(1)
@@ -85,6 +87,12 @@ class TripListViewModel(val model: Model) : ViewModel() {
 
     fun updateFilterBySeats(seats: Int) {
         filterBySeats = seats
+    }
+
+    fun getAllTrips():List<Trip> {
+        model.tripList.value.forEach { it.printTrip() }
+        println("Size of all trips: ${model.tripList.value.size} ")
+        return model.tripList.value
     }
 
     fun creatorPublicFilter() = model.filterPublishedByCreator(1)
@@ -131,6 +139,13 @@ class TripListViewModel(val model: Model) : ViewModel() {
                 }
         )
     }
+
+    fun searchWithFilter(dbList: List<Trip>, destination: String, minPrice:Float, maxPrice:Float,
+                         minDays:Int, maxDays:Int, minSize:Int, maxSize:Int,
+                         searchForCompleted:Boolean, minAvailableSeats:Int,
+                         vararg typesTravel:TypeTravel):List<Trip> =
+        model.tripFilter(dbList, destination, minPrice, maxPrice, minDays, maxDays, minSize,
+            maxSize, searchForCompleted, minAvailableSeats, *typesTravel)
 }
 
 object Factory : ViewModelProvider.Factory{

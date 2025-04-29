@@ -50,6 +50,23 @@ data class Trip(
         return endDate.get(Calendar.DAY_OF_YEAR) - startDate.get(Calendar.DAY_OF_YEAR)
     }
 
+    fun printTrip()
+    {
+        println("Trip data: ")
+        println(destination)
+        println(id)
+        println(title)
+        println(estimatedPrice)
+        println(groupSize)
+        println("Status: $status")
+        println("Published? $published")
+        println("Available spots: " + availableSpots().toString())
+        println("Can join? " + canJoin().toString())
+        println("Has available spots? " + hasAvailableSpots().toString())
+
+
+    }
+
 }
 
 enum class TypeTravel {

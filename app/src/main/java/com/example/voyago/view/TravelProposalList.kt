@@ -37,9 +37,18 @@ fun TravelProposalList(navController: NavController, vm: TripListViewModel = vie
 
     val allPublishedTrips by vm.allPublishedTrips.collectAsState()
 
-    LaunchedEffect(Unit) {
-        vm.updatePublishedTrip()
+    /*LaunchedEffect(Unit) {
+
     }
+
+     */
+
+    vm.searchWithFilter(vm.updatePublishedTrip(), vm.filterDestination,
+        vm.filterMinPrice.toFloat(), vm.filterMaxPrice.toFloat(),
+        vm.filterDuration.first, vm.filterDuration.second,
+        vm.filterGroupSize.first, vm.filterGroupSize.second,
+        vm.filterCompletedTrips, vm.filterBySeats)
+    println("SOno qui")
 
     Scaffold(
         topBar = {

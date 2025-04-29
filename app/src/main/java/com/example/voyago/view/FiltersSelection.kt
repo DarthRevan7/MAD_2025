@@ -61,7 +61,6 @@ import androidx.compose.material3.RangeSlider
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.window.PopupProperties
-import androidx.lifecycle.ViewModel
 
 data class SelectableItem(
     val label: String,
@@ -237,7 +236,10 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(
-                        onClick = { isSelected = !isSelected; vm.updateFullTripsFilter(isSelected) }
+                        onClick = {
+                            isSelected = !isSelected;
+                            vm.updateCompletedTripsFilter(isSelected)
+                        }
                     ) {
                         Icon(
                             imageVector = if (isSelected) {
@@ -320,7 +322,11 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                 ) {
                     Button(
                         onClick = {
-                            //filter functions
+                            vm.searchWithFilter(vm.tripList.value.filter { it.published == true }, vm.filterDestination,
+                                vm.filterMinPrice.toFloat(), vm.filterMaxPrice.toFloat(),
+                                vm.filterDuration.first, vm.filterDuration.second,
+                                vm.filterGroupSize.first, vm.filterGroupSize.second,
+                                vm.filterCompletedTrips, vm.filterBySeats)
                             navController.navigate("travel_proposal_list")
                         },
                         modifier = Modifier
