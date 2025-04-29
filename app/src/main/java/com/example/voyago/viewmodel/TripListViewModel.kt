@@ -23,7 +23,11 @@ class TripListViewModel(val model: Model) : ViewModel() {
     var selectedTrip: Trip? by mutableStateOf(null)
         private set
 
+    var currentTrip: Trip? by mutableStateOf(null)
+        private set
+
     fun selectTrip(trip: Trip) {
+        currentTrip = trip
         selectedTrip = trip
     }
 
@@ -39,13 +43,15 @@ class TripListViewModel(val model: Model) : ViewModel() {
     fun getTripParticipants(trip: Trip): List<LazyUser> = model.getUsers(trip.participants)
     fun getTripApplicants(trip: Trip): List<LazyUser> = model.getUsers(trip.appliedUsers)
 
-    fun addNewTrip(photo: String, title: String, destination: String, startDate: Calendar,
+    fun addImportedTrip(photo: String, title: String, destination: String, startDate: Calendar,
                       endDate: Calendar, estimatedPrice: Double, groupSize: Int,
                       activities: Map<Calendar, List<Activity>>,
                       typeTravel: List<TypeTravel>, creatorId: Int,
                       published: Boolean): List<Trip> =
-        model.createNewTrip(photo, title, destination, startDate, endDate, estimatedPrice,
+        model.importTrip(photo, title, destination, startDate, endDate, estimatedPrice,
             groupSize, activities, typeTravel, creatorId, published)
+
+    fun addNewTrip(newTrip: Trip): List<Trip> = model.createNewTrip(newTrip)
 
     fun toggleAskToJoin(tripId: Int) = model.toggleAskToJoin(tripId)
 
@@ -59,19 +65,16 @@ class TripListViewModel(val model: Model) : ViewModel() {
     fun getMaxPrice() = model.maxPrice
     fun setMaxMinPrice() = model.setMaxMinPrice()
 
-    fun addActivityToSelectedTrip(activity: Activity) {
-        selectedTrip?.let { oldTrip ->
-            val date = activity.date
-            val updatedActivities = oldTrip.activities.toMutableMap()
-
-            val existingActivities = updatedActivities[date]?.toMutableList() ?: mutableListOf()
-            existingActivities.add(activity)
-            updatedActivities[date] = existingActivities
-
-            selectedTrip = oldTrip.copy(
-                activities = updatedActivities
-            )
-        }
+    fun addActivityToSelectedTrip(activity: Trip.Activity) {
+        currentTrip = currentTrip?.copy(
+            activities = currentTrip?.activities.orEmpty()
+                .toMutableMap()
+                .apply {
+                    val dateKey = activity.date
+                    val updatedList = getOrDefault(dateKey, emptyList()) + activity
+                    put(dateKey, updatedList)
+                }
+        )
     }
 
 

@@ -462,7 +462,7 @@ class Model {
         _tripList.value = _tripList.value.filter { it.id != id }
     }
 
-    fun createNewTrip(photo: String, title: String, destination: String, startDate: Calendar,
+    fun importTrip(photo: String, title: String, destination: String, startDate: Calendar,
                       endDate: Calendar, estimatedPrice: Double, groupSize: Int,
                       activities: Map<Calendar, List<Activity>>,
                       typeTravel: List<TypeTravel>, creatorId: Int,
@@ -489,6 +489,12 @@ class Model {
 
         return _tripList.value
     }
+
+    fun createNewTrip(newTrip: Trip): List<Trip> {
+        _tripList.value = _tripList.value + newTrip
+        return _tripList.value
+    }
+
 
     fun toggleAskToJoin(tripId: Int) {
         _askedTrips.value = if (_askedTrips.value.contains(tripId)) {

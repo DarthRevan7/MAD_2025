@@ -388,12 +388,13 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                                     dateError = ""
 
 
-                                    val activities = emptyMap<Calendar, List<Trip.Activity>>()
+                                    val activities = mutableMapOf<Calendar, MutableList<Trip.Activity>>()
+
                                     val creatorId = 1
 
 
-                                    vm.addNewTrip(
-                                        photo = "",
+                                    val newTrip = Trip(
+                                        photo = "",  // Empty string for now, replace with actual photo URI/path
                                         title = tripName,
                                         destination = destination,
                                         startDate = startCalendar!!,
@@ -401,10 +402,21 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                                         estimatedPrice = price.toDouble(),
                                         groupSize = groupSize.toInt(),
                                         activities = activities,
-                                        typeTravel = selected.map {TypeTravel.valueOf(it.uppercase())},
+                                        typeTravel = selected.map { TypeTravel.valueOf(it.uppercase()) },
                                         creatorId = creatorId,
-                                        published = false
+                                        published = false,
+                                        id = 10,
+                                        participants = emptyList(),
+                                        status = Trip.TripStatus.NOT_STARTED,
+                                        appliedUsers = emptyList(),
+                                        reviews = emptyList()
                                     )
+
+
+                                    vm.addNewTrip(newTrip)
+
+
+                                    vm.selectTrip(newTrip)
 
 
                                     navController.navigate("activities_list")
@@ -439,6 +451,5 @@ fun validateGroupSize(price: String): Boolean {
 fun validateDateOrder(start: Calendar?, end: Calendar?): Boolean {
     return start != null && end != null && end.after(start)
 }
-
 
 

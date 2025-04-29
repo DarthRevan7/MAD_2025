@@ -262,7 +262,7 @@ fun NewActivity(navController: NavController, vm: TripListViewModel) {
                         Button(
                             onClick = {
 
-                                val currentTrip = vm.selectedTrip
+                                val currentTrip = vm.currentTrip
                                 val existingActivities = currentTrip?.activities?.values?.flatten()?.map { it.id } ?: listOf()
                                 val newId = if (existingActivities.isNotEmpty()) existingActivities.max()!! + 1 else 1
 
@@ -303,7 +303,6 @@ fun NewActivity(navController: NavController, vm: TripListViewModel) {
         }
     }
 }
-
 
 
 

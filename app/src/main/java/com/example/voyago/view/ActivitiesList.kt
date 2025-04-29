@@ -14,15 +14,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -38,11 +41,12 @@ import java.util.Calendar
 fun ActivitiesList(navController: NavController, vm: TripListViewModel) {
 
 
-    val selectedTrip = vm.selectedTrip
+    val selectedTrip = vm.currentTrip
 
 
-    val activities = selectedTrip?.let { vm.getActivities(it) } ?: emptyList()
+    //val activities = selectedTrip?.let { vm.getActivities(it) } ?: emptyList()
 
+    //val sortedDays = selectedTrip?.activities?.keys?.sortedBy { it.timeInMillis } ?: emptyList()
 
 
 
@@ -76,10 +80,14 @@ fun ActivitiesList(navController: NavController, vm: TripListViewModel) {
                 }
 
 
-                items(activities.size) { index ->
-                    val activity = activities[index]
-                    ActivityItem(activity = activity)
+                item {
+                    selectedTrip?.let {
+                        ActivitiesListContent(it)
+                    } ?: run {
+                        Text("No trip selected.", modifier = Modifier.padding(16.dp))
+                    }
                 }
+
 
                 item {
                     Spacer(modifier = Modifier.height(40.dp))
@@ -97,7 +105,7 @@ fun ActivitiesList(navController: NavController, vm: TripListViewModel) {
                         modifier = Modifier
                             .width(200.dp)
                             .height(50.dp)
-                            //.padding(top = 16.dp)
+                        //.padding(top = 16.dp)
                     ) {
                         Text(
                             text = "+",
@@ -168,6 +176,66 @@ fun ActivityItem(activity: Trip.Activity) {
         Text(text = activity.description, fontSize = 14.sp)
     }
 }
+
+@Composable
+fun ActivitiesListContent(trip: Trip) {
+    val sortedDays = trip.activities.keys.sortedBy { it.timeInMillis }
+
+    // Check if all activity lists are empty
+    val hasNoActivities = trip.activities.values.all { it.isEmpty() }
+
+    Column(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        if (hasNoActivities) {
+            Text(
+                text = "No activities for trip to ${trip.destination}.",
+                modifier = Modifier.padding(16.dp),
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.Gray
+            )
+        } else {
+            sortedDays.forEach { day ->
+                val dayIndex = ((day.timeInMillis - trip.startDate.timeInMillis) / (1000 * 60 * 60 * 24)).toInt() + 1
+                val activitiesForDay = trip.activities[day] ?: emptyList()
+
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Day $dayIndex",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF555555)
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    activitiesForDay.forEach { activity ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        ) {
+                            androidx.compose.material3.Icon(
+                                imageVector = androidx.compose.material.icons.Icons.Default.Schedule,
+                                contentDescription = "activity time",
+                                tint = Color(0xFF4CAF50),
+                                modifier = Modifier
+                                    .width(20.dp)
+                                    .height(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "${activity.time} - ${activity.description}" +
+                                        if (activity.isGroupActivity) " (group activity)" else "",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 
 

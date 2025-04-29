@@ -226,7 +226,7 @@ fun TravelProposalDetail(navController: NavController, vm: TripListViewModel, ow
                             ) {
                                 Button(
                                     onClick = {
-                                        vm.addNewTrip(
+                                        vm.addImportedTrip(
                                             trip.photo,
                                             trip.title,
                                             trip.destination,
