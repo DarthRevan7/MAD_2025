@@ -61,11 +61,13 @@ import androidx.compose.material3.RangeSlider
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.window.PopupProperties
+import com.example.voyago.model.TypeTravel
 
 data class SelectableItem(
     val label: String,
     val min: Int,
     val max: Int,
+    val typeTravel: TypeTravel? = null,
     var isSelected: Boolean = false
 )
 
@@ -100,13 +102,20 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
     var tripTypeItems by remember {
         mutableStateOf(
             listOf(
-                SelectableItem("Adventure", -1, -1),
-                SelectableItem("Culture", -1, -1),
-                SelectableItem("Party", -1, -1),
-                SelectableItem("Relax", -1, -1)
+                SelectableItem("Adventure", -1, -1, typeTravel = TypeTravel.ADVENTURE),
+                SelectableItem("Culture", -1, -1, typeTravel = TypeTravel.CULTURE),
+                SelectableItem("Party", -1, -1, typeTravel = TypeTravel.PARTY),
+                SelectableItem("Relax", -1, -1, typeTravel = TypeTravel.RELAX)
             )
         )
     }
+
+    vm.updatePublishedTrip()
+    vm.setMaxMinPrice()
+    vm.updateFilterDuration(durationItems)
+    vm.updateFilterGroupSize(groupSizeItems)
+    vm.updateFiltersTripType(tripTypeItems)
+    vm.updateFilterDestination(vm.filterDestination)
 
     Scaffold(
         topBar = {
@@ -441,6 +450,7 @@ fun MultiSelectDropdownMenu(filter:String, vm: TripListViewModel,
             onDismissRequest = { expanded = false;
                 if (filter == "Duration") {
                     vm.updateFilterDuration(items)
+                    println("Dropdown update: ${vm.filterDuration.first} - ${vm.filterDuration.second}")
                 } else if (filter == "Group Size") {
                     vm.updateFilterGroupSize(items)
                 } else if (filter == "Trip Type") {
