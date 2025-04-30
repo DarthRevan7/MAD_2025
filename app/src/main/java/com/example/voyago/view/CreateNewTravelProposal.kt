@@ -55,6 +55,9 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
 
     var tripName by rememberSaveable {mutableStateOf("")}
     var destination by rememberSaveable {mutableStateOf("")}
+    var tripNameError by rememberSaveable {mutableStateOf(false)}
+    var destinationError by rememberSaveable {mutableStateOf(false)}
+    var stringErrorMessage by rememberSaveable {mutableStateOf("")}
 
     var price by rememberSaveable {mutableStateOf("")}
     var priceError by rememberSaveable {mutableStateOf(false)}
@@ -121,7 +124,16 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                         value = tripName,
                         onValueChange = { tripName = it },
                         label = { Text("Trip name") },
-                        modifier = Modifier.fillMaxWidth(0.8f)
+                        modifier = Modifier.fillMaxWidth(0.8f),
+                        supportingText = {
+                            if (tripNameError) {
+                                Text(
+                                    text = stringErrorMessage,
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                        }
                     )
                 }
 
@@ -130,13 +142,20 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                 }
 
                 item {
-
-
                     TextField(
                         value = destination,
                         onValueChange = { destination = it },
                         label = { Text("Destination") },
-                        modifier = Modifier.fillMaxWidth(0.8f)
+                        modifier = Modifier.fillMaxWidth(0.8f),
+                        supportingText = {
+                            if (destinationError) {
+                                Text(
+                                    text = stringErrorMessage,
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                        }
                     )
                 }
 
@@ -169,8 +188,6 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
 
 
                 item {
-
-
                     TextField(
                         value = groupSize,
                         onValueChange = {
@@ -372,7 +389,13 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
 
                         Button(
                             onClick = {
-                                if (!validatePrice(price)) {
+                                if (!validateStringField(tripName)) {
+                                    tripNameError = true
+                                    stringErrorMessage = "This field cannot be empty"
+                                } else if (!validateStringField(destination)) {
+                                    destinationError = true
+                                    stringErrorMessage = "This field cannot be empty"
+                                } else if (!validatePrice(price)) {
                                     priceError = true
                                     priceErrorMessage = "Price must be greater than zero"
                                 } else if (!validateGroupSize(groupSize)) {
@@ -464,6 +487,9 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
     }
 }
 
+fun validateStringField(str: String): Boolean {
+    return str != ""
+}
 
 fun validatePrice(price: String): Boolean {
     return price.toDoubleOrNull()?.let { it > 0 } == true
