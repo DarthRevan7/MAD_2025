@@ -35,6 +35,10 @@ class TripListViewModel(val model: Model) : ViewModel() {
         selectedTrip = trip
     }
 
+//    fun resetCurrentTrip() {
+//        currentTrip = null
+//    }
+
     var filterDestination: String by mutableStateOf("")
         private set
 
@@ -113,7 +117,20 @@ class TripListViewModel(val model: Model) : ViewModel() {
         model.importTrip(photo, title, destination, startDate, endDate, estimatedPrice,
             groupSize, activities, typeTravel, creatorId, published)
 
-    fun addNewTrip(newTrip: Trip): List<Trip> = model.createNewTrip(newTrip)
+    fun addNewTrip(newTrip: Trip): Trip {
+        val createdTrip = model.createNewTrip(newTrip)
+        currentTrip = createdTrip
+        selectedTrip = createdTrip
+        return createdTrip
+    }
+
+    fun editNewTrip(newTrip: Trip): List<Trip> {
+        val updatedList = model.editTrip(newTrip)
+        currentTrip = updatedList.find { it.id == newTrip.id }
+        selectedTrip = currentTrip
+        return updatedList
+    }
+
 
     fun toggleAskToJoin(tripId: Int) = model.toggleAskToJoin(tripId)
 

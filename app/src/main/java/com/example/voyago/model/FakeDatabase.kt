@@ -1266,10 +1266,24 @@ class Model {
         return _tripList.value
     }
 
-    fun createNewTrip(newTrip: Trip): List<Trip> {
-        _tripList.value = _tripList.value + newTrip
+    fun createNewTrip(newTrip: Trip): Trip {
+        val tripWithId = newTrip.copy(
+            id = nextId++,
+        )
+        _tripList.value = _tripList.value + tripWithId
+        return tripWithId
+    }
+
+    fun editTrip(updatedTrip: Trip): List<Trip> {
+        _tripList.value = _tripList.value.map {
+            if (it.id == updatedTrip.id) updatedTrip else it
+        }
         return _tripList.value
     }
+
+
+
+
 
     fun addActivityToTrip(activity: Trip.Activity, trip: Trip?): Trip? {
         if (trip == null) return null

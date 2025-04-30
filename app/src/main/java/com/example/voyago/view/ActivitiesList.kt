@@ -144,6 +144,7 @@ fun ActivitiesList(navController: NavController, vm: TripListViewModel) {
                         Button(
                             onClick = {
 
+                                //vm.resetCurrentTrip()
                                 navController.navigate("main_page")
 
 
