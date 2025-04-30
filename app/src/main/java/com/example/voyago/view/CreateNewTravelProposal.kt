@@ -138,7 +138,7 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                 }
 
                 item {
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
 
                 item {
@@ -160,7 +160,7 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                 }
 
                 item {
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
 
                 item {

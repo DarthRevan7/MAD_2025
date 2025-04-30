@@ -102,6 +102,9 @@ fun NewActivity(navController: NavController, vm: TripListViewModel) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
+                item {
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
 
 
                 item {

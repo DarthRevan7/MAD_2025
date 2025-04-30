@@ -228,6 +228,11 @@ class TripListViewModel(val model: Model) : ViewModel() {
         }
     }
 
+    fun deleteActivity(activity: Trip.Activity) {
+        currentTrip = model.removeActivityFromTrip(activity, currentTrip)
+    }
+
+
 
 
     fun applyFilters() = model.filterFunction(tripList, filterDestination, filterMinPrice, filterMaxPrice,

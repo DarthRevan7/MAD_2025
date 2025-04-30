@@ -1281,6 +1281,31 @@ class Model {
         return _tripList.value
     }
 
+    fun removeActivityFromTrip(activity: Trip.Activity, trip: Trip?): Trip? {
+        if (trip == null) return null
+
+        val dateKey = activity.date
+        val updatedActivities = trip.activities.orEmpty()
+            .toMutableMap()
+            .apply {
+                val updatedList = getOrDefault(dateKey, emptyList()) - activity
+                if (updatedList.isEmpty()) {
+                    remove(dateKey)
+                } else {
+                    put(dateKey, updatedList)
+                }
+            }
+
+        val updatedTrip = trip.copy(activities = updatedActivities)
+
+        _tripList.value = _tripList.value.map {
+            if (it.id == updatedTrip.id) updatedTrip else it
+        }
+
+        return updatedTrip
+    }
+
+
 
 
 

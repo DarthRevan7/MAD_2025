@@ -22,6 +22,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,6 +38,8 @@ import androidx.navigation.NavController
 import com.example.voyago.activities.*
 import com.example.voyago.model.Trip
 import com.example.voyago.viewmodel.TripListViewModel
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import java.util.Calendar
 
 
@@ -82,7 +89,7 @@ fun ActivitiesList(navController: NavController, vm: TripListViewModel) {
 
                 item {
                     selectedTrip?.let {
-                        ActivitiesListContent(it)
+                        ActivitiesListContent(it, vm)
                     } ?: run {
                         Text("No trip selected.", modifier = Modifier.padding(16.dp))
                     }
@@ -179,7 +186,7 @@ fun ActivityItem(activity: Trip.Activity) {
 }
 
 @Composable
-fun ActivitiesListContent(trip: Trip) {
+fun ActivitiesListContent(trip: Trip, vm: TripListViewModel) {
     val sortedDays = trip.activities.keys.sortedBy { it.timeInMillis }
 
     // Check if all activity lists are empty
@@ -210,10 +217,14 @@ fun ActivitiesListContent(trip: Trip) {
 
                     Spacer(modifier = Modifier.height(8.dp))
 
+                    var activityToDelete by rememberSaveable { mutableStateOf<Trip.Activity?>(null) }
+
                     activitiesForDay.forEach { activity ->
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(bottom = 8.dp)
+                            modifier = Modifier
+                                .padding(bottom = 8.dp)
+                                .fillMaxWidth()
                         ) {
                             androidx.compose.material3.Icon(
                                 imageVector = androidx.compose.material.icons.Icons.Default.Schedule,
@@ -224,12 +235,43 @@ fun ActivitiesListContent(trip: Trip) {
                                     .height(20.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "${activity.time} - ${activity.description}" +
-                                        if (activity.isGroupActivity) " (group activity)" else "",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "${activity.time} - ${activity.description}" +
+                                            if (activity.isGroupActivity) " (group activity)" else "",
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+
+
+                            OutlinedButton(
+                                onClick = { activityToDelete = activity },
+                                modifier = Modifier.height(36.dp)
+                            ) {
+                                Text("Delete", color = Color.Red)
+                            }
                         }
+                    }
+
+                    activityToDelete?.let { activity ->
+                        AlertDialog(
+                            onDismissRequest = { activityToDelete = null },
+                            title = { Text("Delete Activity") },
+                            text = { Text("Are you sure you want to delete this activity?") },
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    vm.deleteActivity(activity)
+                                    activityToDelete = null
+                                }) {
+                                    Text("Delete")
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { activityToDelete = null }) {
+                                    Text("Cancel")
+                                }
+                            }
+                        )
                     }
                 }
             }
