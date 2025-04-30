@@ -20,7 +20,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -46,8 +45,6 @@ import androidx.compose.ui.text.font.FontStyle
 import com.example.voyago.model.Trip
 import com.example.voyago.model.TypeTravel
 import com.example.voyago.viewmodel.TripListViewModel
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -85,9 +82,6 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
 
     var dateError by rememberSaveable { mutableStateOf("") }
 
-
-
-
     Scaffold(
         topBar = {
             TopBar()
@@ -118,8 +112,6 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                 }
 
                 item {
-
-
                     TextField(
                         value = tripName,
                         onValueChange = { tripName = it },
@@ -185,7 +177,6 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                         }
                     )
                 }
-
 
                 item {
                     TextField(
@@ -462,13 +453,8 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
 
                                             vm.editNewTrip(newTrip)
                                         }
-
-
                                     }
-
-
                                     navController.navigate("activities_list")
-
                                 }
                             },
                             modifier = Modifier

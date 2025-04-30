@@ -55,8 +55,8 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
     val trip = vm.selectedTrip
 
     if(trip!=null) {
-        var tripName by rememberSaveable {mutableStateOf("")}
-        var destination by rememberSaveable {mutableStateOf("")}
+        var tripName by rememberSaveable {mutableStateOf(trip.title)}
+        var destination by rememberSaveable {mutableStateOf(trip.destination)}
         var tripNameError by rememberSaveable {mutableStateOf(false)}
         var destinationError by rememberSaveable {mutableStateOf(false)}
         var stringErrorMessage by rememberSaveable {mutableStateOf("")}
@@ -86,9 +86,6 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
         var endCalendar by rememberSaveable { mutableStateOf<Calendar?>(trip.endDate) }
 
         var dateError by rememberSaveable { mutableStateOf("") }
-
-
-
 
         Scaffold(
             topBar = {
@@ -185,7 +182,6 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
                             }
                         )
                     }
-
 
                     item {
                         TextField(
@@ -365,7 +361,6 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
                         Spacer(modifier = Modifier.height(50.dp))
                     }
 
-
                     item {
 
                         Row(
@@ -485,7 +480,6 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
                                 Text("Next")
                             }
                         }
-
                     }
 
                 }
