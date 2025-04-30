@@ -70,6 +70,9 @@ fun NewActivity(navController: NavController, vm: TripListViewModel) {
         val amPm = if (calendar.get(Calendar.AM_PM) == Calendar.AM) "AM" else "PM"
         mutableStateOf(String.format(Locale.ITALY, "%02d:%02d %s", if (hour == 0) 12 else hour, minute, amPm))
     }
+    var showDateError by rememberSaveable { mutableStateOf(false) }
+    var dateErrorMessage by rememberSaveable { mutableStateOf("") }
+
 
     Scaffold(
         topBar = {
@@ -154,7 +157,7 @@ fun NewActivity(navController: NavController, vm: TripListViewModel) {
 
 
                     Column(
-                        horizontalAlignment = Alignment.Start,
+                        horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
                             .padding(vertical = 8.dp)
                     ) {
@@ -162,18 +165,32 @@ fun NewActivity(navController: NavController, vm: TripListViewModel) {
                             onClick = { startDatePickerDialog.show() },
                             colors = ButtonDefaults.buttonColors(
                                 contentColor = Color(0xFF6750A4),
-                                containerColor = Color(0xFFD6D0D9)),
+                                containerColor = Color(0xFFD6D0D9)
+                            )
                         ) {
-                            if (activityDate.isNotEmpty()){
+                            if (activityDate.isNotEmpty()) {
                                 Text("Date: $activityDate")
                             } else {
                                 Text("Select date")
                             }
-
                         }
 
 
+                        Box(modifier = Modifier
+                            .fillMaxWidth()
+                            .height(20.dp)
+                        ) {
+                            if (showDateError) {
+                                Text(
+                                    text = dateErrorMessage,
+                                    color = Color.Red,
+                                    fontSize = 12.sp,
+                                    modifier = Modifier.padding(horizontal = 24.dp)
+                                )
+                            }
+                        }
                     }
+
                 }
 
                 item {
@@ -264,31 +281,45 @@ fun NewActivity(navController: NavController, vm: TripListViewModel) {
 
                         Button(
                             onClick = {
-
                                 val currentTrip = vm.currentTrip
                                 val existingActivities = currentTrip?.activities?.values?.flatten()?.map { it.id } ?: listOf()
                                 val newId = if (existingActivities.isNotEmpty()) existingActivities.max()!! + 1 else 1
 
-                                val calendar = Calendar.getInstance()
                                 val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                                val parsedDate = dateFormat.parse(activityDate)
-
-                                if (parsedDate != null) {
-                                    calendar.time = parsedDate
+                                val parsedDate = try {
+                                    dateFormat.parse(activityDate)
+                                } catch (e: Exception) {
+                                    null
                                 }
 
+                                // Validation
+                                if (parsedDate == null) {
+                                    showDateError = true
+                                    dateErrorMessage = "Invalid date format. Please select a date."
+                                    return@Button
+                                }
+
+                                val activityCalendar = Calendar.getInstance().apply {
+                                    time = parsedDate
+                                }
+
+                                if (currentTrip != null && (activityCalendar.before(currentTrip.startDate) || activityCalendar.after(currentTrip.endDate))) {
+                                    showDateError = true
+                                    dateErrorMessage = "Activity date must be within the trip period (${dateFormat.format(currentTrip.startDate.time)} - ${dateFormat.format(currentTrip.endDate.time)})."
+                                    return@Button
+                                }
+
+                                // All good – add activity
                                 val newActivity = Trip.Activity(
                                     id = newId,
-                                    date = calendar,
+                                    date = activityCalendar,
                                     time = selectedTime,
                                     isGroupActivity = isGroupActivityChecked,
                                     description = activityDescription
                                 )
 
-
                                 vm.addActivityToSelectedTrip(newActivity)
                                 navController.popBackStack()
-
 
                             },
                             modifier = Modifier
@@ -298,6 +329,7 @@ fun NewActivity(navController: NavController, vm: TripListViewModel) {
                         ) {
                             Text("Add")
                         }
+
                     }
 
                 }
