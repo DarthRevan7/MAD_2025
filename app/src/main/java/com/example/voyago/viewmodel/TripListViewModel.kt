@@ -107,8 +107,8 @@ class TripListViewModel(val model: Model) : ViewModel() {
 
     fun setMaxMinPrice() {
         model.setMaxMinPrice()
-        filterMinPrice = model.minPrice // Modificato: Aggiunta questa linea
-        filterMaxPrice = model.maxPrice // Modificato: Aggiunta questa linea
+        filterMinPrice = model.minPrice
+        filterMaxPrice = model.maxPrice
     }
 
 
@@ -222,18 +222,15 @@ class TripListViewModel(val model: Model) : ViewModel() {
     fun getMaxPrice() = model.maxPrice
     //fun setMaxMinPrice() = model.setMaxMinPrice()
 
-    fun addActivityToSelectedTrip(activity: Trip.Activity) {
+    fun addActivityToSelectedTrip(activity: Activity) {
         model.addActivityToTrip(activity, currentTrip)?.let { updatedTrip ->
             currentTrip = updatedTrip
         }
     }
 
-    fun deleteActivity(activity: Trip.Activity) {
+    fun deleteActivity(activity: Activity) {
         currentTrip = model.removeActivityFromTrip(activity, currentTrip)
     }
-
-
-
 
     fun applyFilters() = model.filterFunction(tripList, filterDestination, filterMinPrice, filterMaxPrice,
         filterDuration, filterGroupSize, filtersTripType, filterCompletedTrips, filterBySeats)
