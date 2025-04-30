@@ -232,6 +232,11 @@ class TripListViewModel(val model: Model) : ViewModel() {
         currentTrip = model.removeActivityFromTrip(activity, currentTrip)
     }
 
+    fun editActivity(activityId: Int, updatedActivity: Trip.Activity) {
+        currentTrip = model.editActivityInSelectedTrip(activityId, updatedActivity, currentTrip)
+    }
+
+
 
 
 

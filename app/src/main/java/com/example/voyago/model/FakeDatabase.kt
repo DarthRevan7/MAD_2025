@@ -1307,6 +1307,29 @@ class Model {
 
 
 
+    fun editActivityInSelectedTrip(
+        activityId: Int,
+        updatedActivity: Trip.Activity,
+        trip: Trip?
+    ): Trip? {
+        if (trip == null) return null
+
+        val updatedActivities = trip.activities.mapValues { (date, activities) ->
+            activities.map { activity ->
+                if (activity.id == activityId) updatedActivity else activity
+            }
+        }
+
+        val updatedTrip = trip.copy(activities = updatedActivities)
+
+        _tripList.value = _tripList.value.map {
+            if (it.id == updatedTrip.id) updatedTrip else it
+        }
+
+        return updatedTrip
+    }
+
+
 
 
 

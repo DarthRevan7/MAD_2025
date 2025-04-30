@@ -43,9 +43,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import coil3.compose.AsyncImage
 import com.example.voyago.model.NavItem
@@ -162,6 +164,20 @@ class MainActivity : ComponentActivity() {
                         val vm: TripListViewModel = viewModel(parentEntry, factory = Factory)
                         NewActivity(navController, vm)
                     }
+
+                    composable(
+                        "edit_activity/{activityId}",
+                        arguments = listOf(navArgument("activityId") { type = NavType.IntType })
+                    ) { navBackStackEntry ->
+                        val parentEntry = remember(navBackStackEntry) {
+                            navController.getBackStackEntry("owned_trips_graph")
+                        }
+                        val vm: TripListViewModel = viewModel(parentEntry, factory = Factory)
+
+                        val activityId = navBackStackEntry.arguments?.getInt("activityId") ?: -1
+                        EditActivity(navController, vm, activityId)
+                    }
+
 
                 }
 
