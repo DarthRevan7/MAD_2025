@@ -278,7 +278,7 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                                 .border(width = 1.dp, color = Color.Gray, shape = CircleShape)
                         ) {
                             IconButton(
-                                onClick = { if (count > 1) count--; vm.updateFilterBySeats(count) },
+                                onClick = { if (count > 0) count--; vm.updateFilterBySeats(count) },
                                 modifier = Modifier.fillMaxSize()
                             ) {
                                 Icon(
