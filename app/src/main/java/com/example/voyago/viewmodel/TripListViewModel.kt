@@ -18,6 +18,100 @@ import java.util.Calendar
 
 
 class TripListViewModel(val model: Model) : ViewModel() {
+
+    //Editing viewModel
+
+    /*
+    OLD
+    var filterMinPrice:Double by mutableDoubleStateOf(getMinPrice())
+        private set
+    var filterMaxPrice:Double by mutableDoubleStateOf(getMaxPrice())
+        private set
+
+
+     */
+
+    var filterMinPrice:Double by mutableDoubleStateOf(0.0)
+        private set
+    var filterMaxPrice:Double by mutableDoubleStateOf(0.0)
+        private set
+
+    var durationItems: List<SelectableItem> by mutableStateOf(
+        listOf(
+            SelectableItem("1-3 days", 1, 3),
+            SelectableItem("3-5 days", 3, 5),
+            SelectableItem("5-7 days", 5, 7),
+            SelectableItem("7-10 days", 7, 10),
+            SelectableItem("10-15 days", 10, 15),
+            SelectableItem("15-20 days", 15, 20),
+            SelectableItem("> 20 days", 20, Int.MAX_VALUE)
+        )
+    )
+    var groupSizeItems: List<SelectableItem> by mutableStateOf(
+        listOf(
+            SelectableItem("2-3 people", 2, 3),
+            SelectableItem("3-5 people", 3, 5),
+            SelectableItem("5-7 people", 5, 7),
+            SelectableItem("7-10 people", 7, 10),
+            SelectableItem("10-15 people", 10, 15),
+            SelectableItem("> 15 people", 15, Int.MAX_VALUE)
+        )
+    )
+    /*
+    OLD
+    var filtersTripType: List<SelectableItem> by mutableStateOf(emptyList())
+        private set
+
+
+     */
+    var filtersTripType: List<SelectableItem> by mutableStateOf(
+        listOf(
+            SelectableItem("Adventure", -1, -1, typeTravel = TypeTravel.ADVENTURE),
+            SelectableItem("Culture", -1, -1, typeTravel = TypeTravel.CULTURE),
+            SelectableItem("Party", -1, -1, typeTravel = TypeTravel.PARTY),
+            SelectableItem("Relax", -1, -1, typeTravel = TypeTravel.RELAX)
+        )
+    )
+        private set
+
+    /*
+    OLD
+    fun updateFilterDuration(list: List<SelectableItem>) {
+        filterDuration = model.setRange(list)
+        println("FilterDuration Pair: (${filterDuration.first}, ${filterDuration.second})")
+    }
+
+    fun updateFilterGroupSize(list: List<SelectableItem>) {
+        filterGroupSize = model.setRange(list)
+    }
+
+    fun updateFiltersTripType(list: List<SelectableItem>) {
+        filtersTripType = list
+    }
+    */
+
+    fun updateFilterDuration(list: List<SelectableItem>) {
+        durationItems = list
+        filterDuration = model.setRange(list)
+        println("FilterDuration Pair: (${filterDuration.first}, ${filterDuration.second})")
+    }
+
+    fun updateFilterGroupSize(list: List<SelectableItem>) {
+        groupSizeItems = list
+        filterGroupSize = model.setRange(list)
+    }
+
+    fun updateFiltersTripType(list: List<SelectableItem>) {
+        filtersTripType = list
+    }
+
+    fun setMaxMinPrice() {
+        model.setMaxMinPrice()
+        filterMinPrice = model.minPrice // Modificato: Aggiunta questa linea
+        filterMaxPrice = model.maxPrice // Modificato: Aggiunta questa linea
+    }
+
+
     val publishedTrips = model.publishedTrips
     val privateTrips = model.privateTrips
     val allPublishedTrips = model.allPublishedTrips
@@ -46,10 +140,7 @@ class TripListViewModel(val model: Model) : ViewModel() {
         filterDestination = str
     }
 
-    var filterMinPrice:Double by mutableDoubleStateOf(getMinPrice())
-        private set
-    var filterMaxPrice:Double by mutableDoubleStateOf(getMaxPrice())
-        private set
+
 
     fun updateFilterPriceRange(minPrice:Double, maxPrice:Double) {
         filterMaxPrice = maxPrice
@@ -59,24 +150,10 @@ class TripListViewModel(val model: Model) : ViewModel() {
     var filterDuration: Pair<Int,Int> by mutableStateOf(Pair(-1,-1))
         private set
 
-    fun updateFilterDuration(list: List<SelectableItem>) {
-        filterDuration = model.setRange(list)
-        println("FilterDuration Pair: (${filterDuration.first}, ${filterDuration.second})")
-    }
 
     var filterGroupSize: Pair<Int,Int> by mutableStateOf(Pair(-1,-1))
         private set
 
-    fun updateFilterGroupSize(list: List<SelectableItem>) {
-        filterGroupSize = model.setRange(list)
-    }
-
-    var filtersTripType: List<SelectableItem> by mutableStateOf(emptyList())
-        private set
-
-    fun updateFiltersTripType(list: List<SelectableItem>) {
-        filtersTripType = list
-    }
 
     var filterCompletedTrips: Boolean by mutableStateOf(false)
         private set
@@ -143,7 +220,7 @@ class TripListViewModel(val model: Model) : ViewModel() {
 
     fun getMinPrice() = model.minPrice
     fun getMaxPrice() = model.maxPrice
-    fun setMaxMinPrice() = model.setMaxMinPrice()
+    //fun setMaxMinPrice() = model.setMaxMinPrice()
 
     fun addActivityToSelectedTrip(activity: Trip.Activity) {
         model.addActivityToTrip(activity, currentTrip)?.let { updatedTrip ->

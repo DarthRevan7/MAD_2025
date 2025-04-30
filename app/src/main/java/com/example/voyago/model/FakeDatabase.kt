@@ -1368,13 +1368,21 @@ class Model {
         var filtered = list.filter { trip ->
             Log.d("FilterFunction", "Checking trip: ${trip.title}")
             val destination = filterDestination.isBlank() || trip.destination.contains(filterDestination, ignoreCase = true)
-            val price = (filterMinPrice == Double.MAX_VALUE && filterMaxPrice == Double.MIN_VALUE) || trip.estimatedPrice in filterMinPrice..filterMaxPrice
+            //val price = (filterMinPrice == Double.MAX_VALUE && filterMaxPrice == Double.MIN_VALUE) || trip.estimatedPrice in filterMinPrice..filterMaxPrice
 
             val duration = (filterDuration.first == -1 && filterDuration.second == -1) ||
                     (trip.tripDuration() in filterDuration.first..filterDuration.second)
 
             val groupSize = (filterGroupSize.first == -1 && filterGroupSize.second == -1) ||
                     (trip.groupSize in filterGroupSize.first..filterGroupSize.second)
+
+            // 0-0 => No filter for price
+            val price = if (filterMinPrice == 0.0 && filterMaxPrice == 0.0) {
+                true
+            } else {
+                trip.estimatedPrice in filterMinPrice..filterMaxPrice // Aplly filter with given interval
+            }
+            Log.d("FilterFunction", "Checking price for trip ${trip.title}: estimatedPrice=${trip.estimatedPrice}, filterMinPrice=$filterMinPrice, filterMaxPrice=$filterMaxPrice, priceCondition=$price")
 
 
             /*

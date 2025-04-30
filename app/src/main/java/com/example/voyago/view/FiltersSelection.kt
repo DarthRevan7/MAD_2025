@@ -58,6 +58,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.RangeSlider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.window.PopupProperties
@@ -74,47 +75,13 @@ data class SelectableItem(
 @Composable
 fun FilterSelection(navController: NavController, vm: TripListViewModel = viewModel(factory = Factory)) {
 
-    var durationItems by remember {
-        mutableStateOf(
-            listOf(
-                SelectableItem("1-3 days", 1, 3),
-                SelectableItem("3-5 days", 3, 5),
-                SelectableItem("5-7 days", 5, 7),
-                SelectableItem("7-10 days", 7, 10),
-                SelectableItem("10-15 days", 10, 15),
-                SelectableItem("15-20 days", 15, 20),
-                SelectableItem("> 20 days", 20, Int.MAX_VALUE)
-            )
-        )
-    }
-    var groupSizeItems by remember {
-        mutableStateOf(
-            listOf(
-                SelectableItem("2-3 people", 2, 3),
-                SelectableItem("3-5 people", 3, 5),
-                SelectableItem("5-7 people", 5, 7),
-                SelectableItem("7-10 people", 7, 10),
-                SelectableItem("10-15 people", 10, 15),
-                SelectableItem("> 15 people", 15, Int.MAX_VALUE)
-            )
-        )
-    }
-    var tripTypeItems by remember {
-        mutableStateOf(
-            listOf(
-                SelectableItem("Adventure", -1, -1, typeTravel = TypeTravel.ADVENTURE),
-                SelectableItem("Culture", -1, -1, typeTravel = TypeTravel.CULTURE),
-                SelectableItem("Party", -1, -1, typeTravel = TypeTravel.PARTY),
-                SelectableItem("Relax", -1, -1, typeTravel = TypeTravel.RELAX)
-            )
-        )
-    }
-
+    /*
     vm.updatePublishedTrip()
     vm.setMaxMinPrice()
     vm.updateFilterDuration(durationItems)
     vm.updateFilterGroupSize(groupSizeItems)
     vm.updateFiltersTripType(tripTypeItems)
+    */
 
     Scaffold(
         topBar = {
@@ -137,8 +104,8 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
             }
         }
 
-        var isSelected = vm.filterCompletedTrips
-        var count = vm.filterBySeats
+        val isSelected = vm.filterCompletedTrips
+        val count = vm.filterBySeats
 
         vm.setMaxMinPrice()
 
@@ -194,9 +161,9 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                         .padding(start = 16.dp, bottom = 8.dp)
                 ) {
 
-                    MultiSelectDropdownMenu("Duration", vm = viewModel(factory = Factory), durationItems
+                    MultiSelectDropdownMenu("Duration", vm = vm, items = vm.durationItems
                     ) { updatedItems ->
-                        durationItems = updatedItems
+                        vm.updateFilterDuration(updatedItems)
                     }
 
                 }
@@ -209,9 +176,9 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                         .padding(start = 16.dp, bottom = 8.dp)
                 ) {
 
-                    MultiSelectDropdownMenu("Group Size", vm = viewModel(factory = Factory), groupSizeItems
+                    MultiSelectDropdownMenu("Group Size", vm = vm, items = vm.groupSizeItems
                     ) { updatedItems ->
-                        groupSizeItems = updatedItems
+                        vm.updateFilterGroupSize(updatedItems)
                     }
 
                 }
@@ -224,9 +191,9 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                         .padding(start = 16.dp)
                 ) {
 
-                    MultiSelectDropdownMenu("Trip Type", vm = viewModel(factory = Factory), tripTypeItems
+                    MultiSelectDropdownMenu("Trip Type", vm = vm, items = vm.filtersTripType
                     ) { updatedItems ->
-                        tripTypeItems = updatedItems
+                        vm.updateFiltersTripType(updatedItems)
                     }
 
                 }
@@ -243,8 +210,7 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                 ) {
                     IconButton(
                         onClick = {
-                            isSelected = !isSelected;
-                            vm.updateCompletedTripsFilter(isSelected)
+                            vm.updateCompletedTripsFilter(!vm.filterCompletedTrips)
                         }
                     ) {
                         Icon(
@@ -286,7 +252,7 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                                 .border(width = 1.dp, color = Color.Gray, shape = CircleShape)
                         ) {
                             IconButton(
-                                onClick = { if (count > 0) count--; vm.updateFilterBySeats(count) },
+                                onClick = { if (vm.filterBySeats > 0) vm.updateFilterBySeats(vm.filterBySeats - 1) },
                                 modifier = Modifier.fillMaxSize()
                             ) {
                                 Icon(
@@ -296,7 +262,7 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                             }
                         }
                         Text(
-                            text = count.toString(),
+                            text = vm.filterBySeats.toString(),
                             modifier = Modifier.padding(horizontal = 16.dp),
                             fontWeight = FontWeight.Bold
                         )
@@ -306,7 +272,7 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                                 .border(width = 1.dp, color = Color.Gray, shape = CircleShape)
                         ) {
                             IconButton(
-                                onClick = { count++; vm.updateFilterBySeats(count) },
+                                onClick = { vm.updateFilterBySeats(vm.filterBySeats + 1) },
                                 modifier = Modifier.fillMaxSize()
                             ) {
                                 Icon(
@@ -404,6 +370,44 @@ fun DestinationSearchBar(
     }
 }
 
+
+@Composable
+fun RangeSlider(vm: TripListViewModel = viewModel(factory = Factory)) {
+    // Stato locale per la posizione visiva dello slider durante il trascinamento.
+    // Inizializzato con i valori attuali del ViewModel (che sono 0.0 inizialmente, o i valori reali se aggiornati in setMaxMinPrice).
+    var sliderPosition by remember { mutableStateOf(vm.filterMinPrice.toFloat()..vm.filterMaxPrice.toFloat()) }
+
+    // Aggiorna lo stato locale dello slider ogni volta che i valori del ViewModel cambiano
+    // (ad esempio, quando si torna alla schermata dei filtri dopo aver selezionato un range,
+    // o dopo che setMaxMinPrice viene chiamata e aggiorna il ViewModel se hai scelto quell'opzione).
+    LaunchedEffect(vm.filterMinPrice, vm.filterMaxPrice) {
+        sliderPosition = vm.filterMinPrice.toFloat()..vm.filterMaxPrice.toFloat()
+    }
+
+
+    Column(
+        modifier = Modifier.padding(top = 10.dp, start = 25.dp, end = 25.dp)
+    ) {
+        RangeSlider(
+            value = sliderPosition,
+            onValueChange = { range ->
+                // Aggiorna lo stato locale durante il trascinamento per far muovere visivamente lo slider.
+                sliderPosition = range
+            },
+            // Usa i valori min/max reali ottenuti dal Model tramite il ViewModel per il range consentito dello slider.
+            valueRange = vm.getMinPrice().toFloat()..vm.getMaxPrice().toFloat(),
+            onValueChangeFinished = {
+                // Quando l'utente rilascia lo slider, aggiorna il ViewModel con il valore finale dallo stato locale.
+                vm.updateFilterPriceRange(sliderPosition.start.toDouble(), sliderPosition.endInclusive.toDouble())
+            },
+        )
+        // Usa i valori del ViewModel per visualizzare l'intervallo di prezzo selezionato (stato persistente).
+        Text(text = "%.0f € - %.0f €".format(vm.filterMinPrice, vm.filterMaxPrice))
+    }
+}
+
+/*
+
 @Composable
 fun RangeSlider(vm: TripListViewModel = viewModel(factory = Factory)) {
     var sliderPosition by remember { mutableStateOf(vm.getMinPrice().toFloat()..vm.getMaxPrice().toFloat()) }
@@ -426,6 +430,8 @@ fun RangeSlider(vm: TripListViewModel = viewModel(factory = Factory)) {
 }
 
 
+
+ */
 
 @Composable
 fun MultiSelectDropdownMenu(filter:String, vm: TripListViewModel,
