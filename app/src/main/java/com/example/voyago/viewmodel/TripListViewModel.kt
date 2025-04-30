@@ -61,6 +61,7 @@ class TripListViewModel(val model: Model) : ViewModel() {
 
     fun updateFilterDuration(list: List<SelectableItem>) {
         filterDuration = model.setRange(list)
+        println("FilterDuration Pair: (${filterDuration.first}, ${filterDuration.second})")
     }
 
     var filterGroupSize: Pair<Int,Int> by mutableStateOf(Pair(-1,-1))

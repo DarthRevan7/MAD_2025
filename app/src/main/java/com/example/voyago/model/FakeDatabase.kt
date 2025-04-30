@@ -1338,16 +1338,24 @@ class Model {
 
         list.forEach { item ->
             if (item.isSelected) {
-
                 if (item.min < min) {
                     min = item.min
                 }
-
                 if (item.max > max) {
                     max = item.max
                 }
             }
         }
+
+        if(min == Int.MAX_VALUE && max == Int.MIN_VALUE) {
+            min = -1
+            max = -1
+        }
+
+        println("SetRange min = $min")
+        println("SetRange max = $max")
+
+
 
         return Pair(min, max)
     }
@@ -1357,25 +1365,51 @@ class Model {
                        filterGroupSize: Pair<Int,Int>, filtersTripType: List<SelectableItem>,
                        filterCompletedTrips: Boolean, filterBySeats: Int) {
         Log.d("FilterFunction", "Filtering with destination: $filterDestination, minPrice: $filterMinPrice, maxPrice: $filterMaxPrice, filterDuration: $filterDuration, filterGroupSize: $filterGroupSize, filterTripType: $filtersTripType")
-        val filtered = list.filter { trip ->
+        var filtered = list.filter { trip ->
             Log.d("FilterFunction", "Checking trip: ${trip.title}")
             val destination = filterDestination.isBlank() || trip.destination.contains(filterDestination, ignoreCase = true)
             val price = (filterMinPrice == Double.MAX_VALUE && filterMaxPrice == Double.MIN_VALUE) || trip.estimatedPrice in filterMinPrice..filterMaxPrice
+
             val duration = (filterDuration.first == -1 && filterDuration.second == -1) ||
                     (trip.tripDuration() in filterDuration.first..filterDuration.second)
+
             val groupSize = (filterGroupSize.first == -1 && filterGroupSize.second == -1) ||
                     (trip.groupSize in filterGroupSize.first..filterGroupSize.second)
-            val selectedTypes = filtersTripType.filter { it.isSelected }.map { it.label }
-            val tripType = selectedTypes.isEmpty() || trip.typeTravel.any { it.name in selectedTypes }
+
+
+            /*
+            val selectedTripTypes = filtersTripType.filter { it.isSelected }
+
+            var tripType:Boolean = selectedTripTypes.any { trip.typeTravel.toString() == it.label }
+            if(tripType == false)
+            {
+
+            }
+             */
+
             val completed = !filterCompletedTrips || !trip.canJoin()
             val spots = trip.availableSpots() >= filterBySeats
 
-            Log.d("FilterFunction", "Conditions: destination=$destination, price=$price, duration=$duration, groupSize=$groupSize, tripType=$tripType, completed=$completed, spots=$spots")
+            Log.d("FilterFunction", "Conditions: destination=$destination, price=$price, duration=$duration, groupSize=$groupSize, completed=$completed, spots=$spots")
 
-            trip.published && destination && price && duration && groupSize && tripType && completed
+            trip.published && destination && price && duration && groupSize && completed
                     && spots
         }
         Log.d("FilterFunction", "Filtered trips: $filtered")
+
+        if(!filtersTripType.any{ it.isSelected }) {
+            _filteredList.value = filtered
+            return
+        } else {
+            var filteredAgain = filtered.filter { trip ->
+                filtersTripType.any {
+                    trip.typeTravel.contains(it.typeTravel) && it.isSelected
+                }
+
+            }
+            _filteredList.value = filteredAgain
+            return
+        }
         _filteredList.value = filtered
     }
 }
