@@ -15,25 +15,49 @@ import com.example.voyago.model.Trip.Activity
 import com.example.voyago.model.TypeTravel
 import com.example.voyago.view.SelectableItem
 import java.util.Calendar
+import androidx.compose.runtime.*
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 
 
 class TripListViewModel(val model: Model) : ViewModel() {
 
-    //Editing viewModel
+    private val _priceBounds = mutableStateOf(0f..1000f)
+    val priceBounds: State<ClosedFloatingPointRange<Float>> = _priceBounds
 
-    /*
-    OLD
-    var filterMinPrice:Double by mutableDoubleStateOf(getMinPrice())
+    private val _selectedPriceRange = mutableStateOf(0f..1000f)
+    val selectedPriceRange: State<ClosedFloatingPointRange<Float>> = _selectedPriceRange
+
+    // Initialize ViewModel, fetching min and max price from model
+    init {
+        viewModelScope.launch {
+            model.setMaxMinPrice()
+
+            val minPrice = model.minPrice.toFloat()
+            val maxPrice = model.maxPrice.toFloat()
+
+            if (minPrice.isFinite() && maxPrice.isFinite() && maxPrice >= minPrice) {
+                val bounds = minPrice..maxPrice
+                _priceBounds.value = bounds
+                _selectedPriceRange.value = bounds
+            } else {
+                _priceBounds.value = 0f..1000f
+                _selectedPriceRange.value = 0f..1000f
+            }
+        }
+    }
+
+
+
+    // Update user selection for price range
+    fun updateUserSelection(newRange: ClosedFloatingPointRange<Float>) {
+        _selectedPriceRange.value = newRange
+    }
+
+    // Other properties and functions
+    var filterMinPrice: Double by mutableDoubleStateOf(0.0)
         private set
-    var filterMaxPrice:Double by mutableDoubleStateOf(getMaxPrice())
-        private set
-
-
-     */
-
-    var filterMinPrice:Double by mutableDoubleStateOf(0.0)
-        private set
-    var filterMaxPrice:Double by mutableDoubleStateOf(0.0)
+    var filterMaxPrice: Double by mutableDoubleStateOf(0.0)
         private set
 
     var durationItems: List<SelectableItem> by mutableStateOf(
@@ -57,13 +81,7 @@ class TripListViewModel(val model: Model) : ViewModel() {
             SelectableItem("> 15 people", 15, Int.MAX_VALUE)
         )
     )
-    /*
-    OLD
-    var filtersTripType: List<SelectableItem> by mutableStateOf(emptyList())
-        private set
 
-
-     */
     var filtersTripType: List<SelectableItem> by mutableStateOf(
         listOf(
             SelectableItem("Adventure", -1, -1, typeTravel = TypeTravel.ADVENTURE),
@@ -73,22 +91,6 @@ class TripListViewModel(val model: Model) : ViewModel() {
         )
     )
         private set
-
-    /*
-    OLD
-    fun updateFilterDuration(list: List<SelectableItem>) {
-        filterDuration = model.setRange(list)
-        println("FilterDuration Pair: (${filterDuration.first}, ${filterDuration.second})")
-    }
-
-    fun updateFilterGroupSize(list: List<SelectableItem>) {
-        filterGroupSize = model.setRange(list)
-    }
-
-    fun updateFiltersTripType(list: List<SelectableItem>) {
-        filtersTripType = list
-    }
-    */
 
     fun updateFilterDuration(list: List<SelectableItem>) {
         durationItems = list
@@ -111,7 +113,6 @@ class TripListViewModel(val model: Model) : ViewModel() {
         filterMaxPrice = model.maxPrice
     }
 
-
     val publishedTrips = model.publishedTrips
     val privateTrips = model.privateTrips
     val allPublishedTrips = model.allPublishedTrips
@@ -129,31 +130,23 @@ class TripListViewModel(val model: Model) : ViewModel() {
         selectedTrip = trip
     }
 
-//    fun resetCurrentTrip() {
-//        currentTrip = null
-//    }
-
     var filterDestination: String by mutableStateOf("")
         private set
 
-    fun updateFilterDestination(str:String) {
+    fun updateFilterDestination(str: String) {
         filterDestination = str
     }
 
-
-
-    fun updateFilterPriceRange(minPrice:Double, maxPrice:Double) {
+    fun updateFilterPriceRange(minPrice: Double, maxPrice: Double) {
         filterMaxPrice = maxPrice
         filterMinPrice = minPrice
     }
 
-    var filterDuration: Pair<Int,Int> by mutableStateOf(Pair(-1,-1))
+    var filterDuration: Pair<Int, Int> by mutableStateOf(Pair(-1, -1))
         private set
 
-
-    var filterGroupSize: Pair<Int,Int> by mutableStateOf(Pair(-1,-1))
+    var filterGroupSize: Pair<Int, Int> by mutableStateOf(Pair(-1, -1))
         private set
-
 
     var filterCompletedTrips: Boolean by mutableStateOf(false)
         private set
@@ -188,10 +181,10 @@ class TripListViewModel(val model: Model) : ViewModel() {
     fun getTripApplicants(trip: Trip): List<LazyUser> = model.getUsers(trip.appliedUsers)
 
     fun addImportedTrip(photo: String, title: String, destination: String, startDate: Calendar,
-                      endDate: Calendar, estimatedPrice: Double, groupSize: Int,
-                      activities: Map<Calendar, List<Activity>>,
-                      typeTravel: List<TypeTravel>, creatorId: Int,
-                      published: Boolean): List<Trip> =
+                        endDate: Calendar, estimatedPrice: Double, groupSize: Int,
+                        activities: Map<Calendar, List<Activity>>,
+                        typeTravel: List<TypeTravel>, creatorId: Int,
+                        published: Boolean): List<Trip> =
         model.importTrip(photo, title, destination, startDate, endDate, estimatedPrice,
             groupSize, activities, typeTravel, creatorId, published)
 
@@ -209,7 +202,6 @@ class TripListViewModel(val model: Model) : ViewModel() {
         return updatedList
     }
 
-
     fun toggleAskToJoin(tripId: Int) = model.toggleAskToJoin(tripId)
 
     fun allDestinations() = model.getDestinations()
@@ -220,7 +212,6 @@ class TripListViewModel(val model: Model) : ViewModel() {
 
     fun getMinPrice() = model.minPrice
     fun getMaxPrice() = model.maxPrice
-    //fun setMaxMinPrice() = model.setMaxMinPrice()
 
     fun addActivityToSelectedTrip(activity: Trip.Activity) {
         model.addActivityToTrip(activity, currentTrip)?.let { updatedTrip ->
@@ -236,13 +227,10 @@ class TripListViewModel(val model: Model) : ViewModel() {
         currentTrip = model.editActivityInSelectedTrip(activityId, updatedActivity, currentTrip)
     }
 
-
-
-
-
     fun applyFilters() = model.filterFunction(tripList, filterDestination, filterMinPrice, filterMaxPrice,
         filterDuration, filterGroupSize, filtersTripType, filterCompletedTrips, filterBySeats)
 }
+
 
 object Factory : ViewModelProvider.Factory{
     private val model:Model = Model()

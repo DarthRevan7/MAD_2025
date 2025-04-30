@@ -372,39 +372,42 @@ fun DestinationSearchBar(
 
 
 @Composable
-fun RangeSlider(vm: TripListViewModel = viewModel(factory = Factory)) {
-    // Stato locale per la posizione visiva dello slider durante il trascinamento.
-    // Inizializzato con i valori attuali del ViewModel (che sono 0.0 inizialmente, o i valori reali se aggiornati in setMaxMinPrice).
-    var sliderPosition by remember { mutableStateOf(vm.filterMinPrice.toFloat()..vm.filterMaxPrice.toFloat()) }
+fun RangeSlider(vm: TripListViewModel) {
+    // Get the price range bounds and selected range from the ViewModel
+    val priceBounds = vm.priceBounds.value
+    val selectedPriceRange = vm.selectedPriceRange.value
 
-    // Aggiorna lo stato locale dello slider ogni volta che i valori del ViewModel cambiano
-    // (ad esempio, quando si torna alla schermata dei filtri dopo aver selezionato un range,
-    // o dopo che setMaxMinPrice viene chiamata e aggiorna il ViewModel se hai scelto quell'opzione).
-    LaunchedEffect(vm.filterMinPrice, vm.filterMaxPrice) {
-        sliderPosition = vm.filterMinPrice.toFloat()..vm.filterMaxPrice.toFloat()
-    }
+    // Get the min and max values for the slider
+    val minPrice = priceBounds.start
+    val maxPrice = priceBounds.endInclusive
 
+    // Slider value range
+    val valueRange = minPrice..maxPrice
 
     Column(
         modifier = Modifier.padding(top = 10.dp, start = 25.dp, end = 25.dp)
     ) {
+        // Create a RangeSlider
         RangeSlider(
-            value = sliderPosition,
-            onValueChange = { range ->
-                // Aggiorna lo stato locale durante il trascinamento per far muovere visivamente lo slider.
-                sliderPosition = range
+            value = selectedPriceRange,
+            onValueChange = { newRange ->
+                // Update the selected price range in the ViewModel
+                vm.updateUserSelection(newRange)
             },
-            // Usa i valori min/max reali ottenuti dal Model tramite il ViewModel per il range consentito dello slider.
-            valueRange = vm.getMinPrice().toFloat()..vm.getMaxPrice().toFloat(),
+            valueRange = valueRange, // The full range of values (from min to max price)
             onValueChangeFinished = {
-                // Quando l'utente rilascia lo slider, aggiorna il ViewModel con il valore finale dallo stato locale.
-                vm.updateFilterPriceRange(sliderPosition.start.toDouble(), sliderPosition.endInclusive.toDouble())
-            },
+                vm.updateFilterPriceRange(
+                    minPrice = vm.selectedPriceRange.value.start.toDouble(),
+                    maxPrice = vm.selectedPriceRange.value.endInclusive.toDouble()
+                )
+            }
         )
-        // Usa i valori del ViewModel per visualizzare l'intervallo di prezzo selezionato (stato persistente).
-        Text(text = "%.0f € - %.0f €".format(vm.filterMinPrice, vm.filterMaxPrice))
+
+        // Optionally display the selected range for the user
+        Text(text = "%.0f € - %.0f €".format(selectedPriceRange.start, selectedPriceRange.endInclusive))
     }
 }
+
 
 /*
 
