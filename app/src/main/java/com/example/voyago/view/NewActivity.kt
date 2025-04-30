@@ -267,10 +267,10 @@ fun NewActivity(navController: NavController, vm: TripListViewModel) {
 
                         Button(
                             onClick = {
-                                navController.navigate("create_new_travel_proposal")
+                                navController.popBackStack()
                             },
                             modifier = Modifier
-                                .width(160.dp)
+                                .width(140.dp)
                                 .height(60.dp)
                                 .padding(top = 16.dp)
                         ) {
@@ -292,7 +292,7 @@ fun NewActivity(navController: NavController, vm: TripListViewModel) {
                                     null
                                 }
 
-                                // Validation
+
                                 if (parsedDate == null) {
                                     showDateError = true
                                     dateErrorMessage = "Invalid date format. Please select a date."
@@ -309,7 +309,7 @@ fun NewActivity(navController: NavController, vm: TripListViewModel) {
                                     return@Button
                                 }
 
-                                // All good – add activity
+
                                 val newActivity = Trip.Activity(
                                     id = newId,
                                     date = activityCalendar,
@@ -323,7 +323,7 @@ fun NewActivity(navController: NavController, vm: TripListViewModel) {
 
                             },
                             modifier = Modifier
-                                .width(160.dp)
+                                .width(140.dp)
                                 .height(60.dp)
                                 .padding(top = 16.dp)
                         ) {
