@@ -96,48 +96,33 @@ fun EditActivity(navController: NavController, vm: TripListViewModel, activityId
             LazyColumn(
                 state = listState,
                 modifier = Modifier
-                    .fillMaxSize(.8f)
-                    .fillMaxHeight(0.9f)
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp, vertical = 16.dp)
                     .align(Alignment.Center)
                     .background(
-                        color = (Color(0xFFE6E0E9)),
+                        color = Color(0xFFE6E0E9),
                         shape = RoundedCornerShape(24.dp)
                     ),
-                verticalArrangement = Arrangement.Top,
+                verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
                 item {
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
-
-
-                item {
-                    Box(
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth(.8f)
                             .background(Color(0xFFD6D0D9))
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp, horizontal = 16.dp)
-                        ) {
-                            Text(text = "Group activity")
-
-                            Spacer(modifier = Modifier.weight(1f))
-
-                            Checkbox(
-                                checked = isGroupActivityChecked,
-                                onCheckedChange = { isGroupActivityChecked = it }
-                            )
-                        }
+                        Text(text = "Group activity")
+                        Spacer(modifier = Modifier.weight(1f))
+                        Checkbox(
+                            checked = isGroupActivityChecked,
+                            onCheckedChange = { isGroupActivityChecked = it }
+                        )
                     }
                 }
-
 
                 item {
                     val context = LocalContext.current
@@ -145,8 +130,6 @@ fun EditActivity(navController: NavController, vm: TripListViewModel, activityId
                     val year = calendar.get(Calendar.YEAR)
                     val month = calendar.get(Calendar.MONTH)
                     val day = calendar.get(Calendar.DAY_OF_MONTH)
-
-
 
                     val startDatePickerDialog = remember {
                         DatePickerDialog(
@@ -157,50 +140,33 @@ fun EditActivity(navController: NavController, vm: TripListViewModel, activityId
                         )
                     }
 
-
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
+                    Button(
+                        onClick = { startDatePickerDialog.show() },
                         modifier = Modifier
-                            .padding(vertical = 10.dp)
+                            .fillMaxWidth(.8f)
+                            .height(56.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            contentColor = Color.Black,
+                            containerColor = Color(0xFFD6D0D9)
+                        )
                     ) {
-                        Button(
-                            onClick = { startDatePickerDialog.show() },
-                            colors = ButtonDefaults.buttonColors(
-                                contentColor = Color(0xFF6750A4),
-                                containerColor = Color(0xFFD6D0D9)
-                            )
-                        ) {
-                            if (activityDate.isNotEmpty()) {
-                                Text("Date: $activityDate")
-                            } else {
-                                Text("Select date")
-                            }
-                        }
-
-
-                        Box(modifier = Modifier
-                            .fillMaxWidth()
-                            .height(20.dp)
-                        ) {
-                            if (showDateError) {
-                                Text(
-                                    text = dateErrorMessage,
-                                    color = Color.Red,
-                                    fontSize = 12.sp,
-                                    modifier = Modifier.padding(horizontal = 24.dp)
-                                )
-                            }
-                        }
+                        Text(if (activityDate.isNotEmpty()) "Date: $activityDate" else "Select date")
                     }
 
+                    if (showDateError) {
+                        Text(
+                            text = dateErrorMessage,
+                            color = Color.Red,
+                            fontSize = 12.sp,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
                 }
+
 
                 item {
                     val context = LocalContext.current
-
                     val calendar = remember { Calendar.getInstance() }
-//
-
                     val showTimePicker = remember { mutableStateOf(false) }
 
                     if (showTimePicker.value) {
@@ -213,7 +179,13 @@ fun EditActivity(navController: NavController, vm: TripListViewModel, activityId
                                 }
                                 val hour = cal.get(Calendar.HOUR)
                                 val amPm = if (cal.get(Calendar.AM_PM) == Calendar.AM) "AM" else "PM"
-                                selectedTime = String.format(Locale.ITALY,"%02d:%02d %s", if (hour == 0) 12 else hour, minute, amPm)
+                                selectedTime = String.format(
+                                    Locale.ITALY,
+                                    "%02d:%02d %s",
+                                    if (hour == 0) 12 else hour,
+                                    minute,
+                                    amPm
+                                )
                                 showTimePicker.value = false
                             },
                             calendar.get(Calendar.HOUR_OF_DAY),
@@ -224,57 +196,49 @@ fun EditActivity(navController: NavController, vm: TripListViewModel, activityId
 
                     Button(
                         onClick = { showTimePicker.value = true },
+                        modifier = Modifier
+                            .fillMaxWidth(0.8f)
+                            .height(56.dp),
                         colors = ButtonDefaults.buttonColors(
                             contentColor = Color.Black,
-                            containerColor = Color(0xFFD6D0D9)),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 24.dp, vertical = 8.dp)
+                            containerColor = Color(0xFFD6D0D9)
+                        )
                     ) {
-                        Text(text = "Select Time: $selectedTime")
+                        Text("Select Time: $selectedTime")
                     }
                 }
 
 
-                item{
+                item {
                     TextField(
                         value = activityDescription,
                         onValueChange = { activityDescription = it },
                         label = { Text("Activity description") },
-                        modifier = Modifier.fillMaxWidth(0.8f)
+                        modifier = Modifier
+                            .fillMaxWidth(0.8f),
+                        colors = TextFieldDefaults.textFieldColors(
+                            containerColor = Color(0xFFCBC2DB)
+                        )
                     )
                 }
 
-
-
-
-
                 item {
-                    Spacer(modifier = Modifier.height(50.dp))
-                }
-
-
-                item {
-
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 24.dp),
+                            .padding(vertical = 24.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-
                         Button(
-                            onClick = {
-                                navController.popBackStack()
-                            },
+                            onClick = { navController.popBackStack() },
                             modifier = Modifier
-                                .width(140.dp)
-                                .height(60.dp)
-                                .padding(top = 16.dp)
+                                .weight(1f)
+                                .height(50.dp)
                         ) {
                             Text("Cancel")
                         }
 
-                        Spacer(modifier = Modifier.weight(1f))
+                        Spacer(modifier = Modifier.width(16.dp))
 
                         Button(
                             onClick = {
@@ -315,9 +279,8 @@ fun EditActivity(navController: NavController, vm: TripListViewModel, activityId
                                 navController.popBackStack()
                             },
                             modifier = Modifier
-                                .width(140.dp)
-                                .height(60.dp)
-                                .padding(top = 16.dp)
+                                .weight(1f)
+                                .height(50.dp)
                         ) {
                             Text("Update")
                         }
