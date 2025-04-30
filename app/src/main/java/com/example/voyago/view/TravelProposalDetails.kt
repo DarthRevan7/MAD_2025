@@ -165,7 +165,7 @@ fun TravelProposalDetail(navController: NavController, vm: TripListViewModel, ow
                                         onClick = {
                                             vm.changePublishedStatus(trip.id)
                                             vm.updatePublishedTrip()
-                                            navController.navigate("owned_travel_proposal_list")
+                                            navController.popBackStack()
                                         },
                                         colors = ButtonDefaults.buttonColors(
                                             containerColor = Color(0x65, 0x55, 0x8f, 255)
@@ -193,7 +193,7 @@ fun TravelProposalDetail(navController: NavController, vm: TripListViewModel, ow
                                         onClick = {
                                             vm.changePublishedStatus(trip.id)
                                             vm.updatePublishedTrip()
-                                            navController.navigate("owned_travel_proposal_list")
+                                            navController.popBackStack()
                                         },
                                         colors = ButtonDefaults.buttonColors(
                                             containerColor = Color(0x14, 0xa1, 0x55, 255)
@@ -495,7 +495,7 @@ fun DeleteButtonWithConfirmation(trip: Trip, navController: NavController, vm: T
                     onClick = {
                         vm.deleteTrip(trip.id)
                         vm.updatePublishedTrip()
-                        navController.navigate("owned_travel_proposal_list")
+                        navController.popBackStack()
                         showDialog.value = false
                     }
                 ) {

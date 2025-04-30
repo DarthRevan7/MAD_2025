@@ -466,11 +466,11 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
 
 
 fun validatePrice(price: String): Boolean {
-    return price.toDoubleOrNull()?.let { it > 0 } ?: false
+    return price.toDoubleOrNull()?.let { it > 0 } == true
 }
 
-fun validateGroupSize(price: String): Boolean {
-    return price.toDoubleOrNull()?.let { it > 1.0 } ?: false
+fun validateGroupSize(groupSize: String): Boolean {
+    return groupSize.toIntOrNull()?.let { it > 1.0 } == true
 }
 
 fun validateDateOrder(start: Calendar?, end: Calendar?): Boolean {
