@@ -53,6 +53,27 @@ fun ActivitiesList(navController: NavController, vm: TripListViewModel) {
 
     val selectedTrip = vm.currentTrip
 
+    var showIncompleteDialog by rememberSaveable { mutableStateOf(false) }
+
+    val allDaysHaveActivities = remember(selectedTrip) {
+        selectedTrip?.let { trip ->
+            val numDays = ((trip.endDate.timeInMillis - trip.startDate.timeInMillis) / (1000 * 60 * 60 * 24)).toInt() + 1
+            (0 until numDays).all { dayOffset ->
+                val dayCalendar = java.util.Calendar.getInstance().apply {
+                    timeInMillis = trip.startDate.timeInMillis
+                    add(java.util.Calendar.DAY_OF_YEAR, dayOffset)
+                    set(java.util.Calendar.HOUR_OF_DAY, 0)
+                    set(java.util.Calendar.MINUTE, 0)
+                    set(java.util.Calendar.SECOND, 0)
+                    set(java.util.Calendar.MILLISECOND, 0)
+                }
+                trip.activities[dayCalendar]?.isNotEmpty() == true
+            }
+        } == true
+    }
+
+
+
 
 
     Scaffold(
@@ -98,10 +119,11 @@ fun ActivitiesList(navController: NavController, vm: TripListViewModel) {
                     Spacer(modifier = Modifier.height(40.dp))
                 }
 
-                item{
+                item {
                     Button(
                         onClick = {
                             navController.navigate("new_activity")
+                            showIncompleteDialog = false
                         },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color.DarkGray,
@@ -125,45 +147,57 @@ fun ActivitiesList(navController: NavController, vm: TripListViewModel) {
 
 
                 item {
-
-                    Row(
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 24.dp),
+                            .padding(horizontal = 24.dp)
                     ) {
-
-                        Button(
-                            onClick = {
-                                navController.popBackStack()
-                            },
-                            modifier = Modifier
-                                .width(160.dp)
-                                .height(60.dp)
-                                .padding(top = 16.dp)
+                        Row(
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("Back")
+                            Button(
+                                onClick = {
+                                    navController.popBackStack()
+                                },
+                                modifier = Modifier
+                                    .width(160.dp)
+                                    .height(60.dp)
+                                    .padding(top = 16.dp)
+                            ) {
+                                Text("Back")
+                            }
+
+                            Spacer(modifier = Modifier.weight(1f))
+
+                            Button(
+                                onClick = {
+                                    if (allDaysHaveActivities) {
+                                        navController.navigate("main_page")
+                                    } else {
+                                        showIncompleteDialog = true
+                                    }
+                                },
+                                modifier = Modifier
+                                    .width(160.dp)
+                                    .height(60.dp)
+                                    .padding(top = 16.dp)
+                            ) {
+                                Text("Finish")
+                            }
                         }
 
-                        Spacer(modifier = Modifier.weight(1f))
-
-                        Button(
-                            onClick = {
-
-
-                                navController.navigate("main_page")
-
-
-                            },
-                            modifier = Modifier
-                                .width(160.dp)
-                                .height(60.dp)
-                                .padding(top = 16.dp)
-                        ) {
-                            Text("Finish")
+                        if (showIncompleteDialog) {
+                            Text(
+                                text = "Each day of the trip must have at least one activity.",
+                                color = Color.Red,
+                                fontSize = 14.sp,
+                                modifier = Modifier
+                                    .padding(top = 8.dp)
+                            )
                         }
                     }
-
                 }
+
 
             }
         }

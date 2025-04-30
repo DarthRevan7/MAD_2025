@@ -154,7 +154,7 @@ fun NewActivity(navController: NavController, vm: TripListViewModel) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
-                            .padding(vertical = 8.dp)
+                            .padding(vertical = 10.dp)
                     ) {
                         Button(
                             onClick = { startDatePickerDialog.show() },

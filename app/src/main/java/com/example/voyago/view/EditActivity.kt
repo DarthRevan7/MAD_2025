@@ -161,7 +161,7 @@ fun EditActivity(navController: NavController, vm: TripListViewModel, activityId
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
-                            .padding(vertical = 8.dp)
+                            .padding(vertical = 10.dp)
                     ) {
                         Button(
                             onClick = { startDatePickerDialog.show() },
