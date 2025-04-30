@@ -115,7 +115,6 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
     vm.updateFilterDuration(durationItems)
     vm.updateFilterGroupSize(groupSizeItems)
     vm.updateFiltersTripType(tripTypeItems)
-    vm.updateFilterDestination(vm.filterDestination)
 
     Scaffold(
         topBar = {
@@ -139,7 +138,7 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
         }
 
         var isSelected = vm.filterCompletedTrips
-        var count by remember { mutableIntStateOf(1) }
+        var count = vm.filterBySeats
 
         vm.setMaxMinPrice()
 
@@ -408,6 +407,8 @@ fun DestinationSearchBar(
 @Composable
 fun RangeSlider(vm: TripListViewModel = viewModel(factory = Factory)) {
     var sliderPosition by remember { mutableStateOf(vm.getMinPrice().toFloat()..vm.getMaxPrice().toFloat()) }
+    //var sliderPosition = vm.filterMinPrice.toFloat()..vm.filterMaxPrice.toFloat()
+
 
     Column(
         modifier = Modifier.padding(top = 10.dp, start = 25.dp, end = 25.dp)
@@ -450,7 +451,7 @@ fun MultiSelectDropdownMenu(filter:String, vm: TripListViewModel,
             onDismissRequest = { expanded = false;
                 if (filter == "Duration") {
                     vm.updateFilterDuration(items)
-                    println("Dropdown update: ${vm.filterDuration.first} - ${vm.filterDuration.second}")
+                    //println("Dropdown update: ${vm.filterDuration.first} - ${vm.filterDuration.second}")
                 } else if (filter == "Group Size") {
                     vm.updateFilterGroupSize(items)
                 } else if (filter == "Trip Type") {
