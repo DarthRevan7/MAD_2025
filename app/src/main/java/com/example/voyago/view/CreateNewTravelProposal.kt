@@ -2,8 +2,17 @@ package com.example.voyago.view
 
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.util.Log
 import android.widget.DatePicker
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,13 +22,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddPhotoAlternate
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -40,6 +53,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.layout.ContentScale
@@ -52,6 +66,9 @@ import java.util.Calendar
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.isPopupLayout
+import androidx.core.net.toUri
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
@@ -121,7 +138,7 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
             ) {
 
                 item {
-                    TripImage(null)
+                    TripImage(strPhoto)
                 }
 
                 item {
@@ -506,11 +523,27 @@ fun validateDateOrder(start: Calendar?, end: Calendar?): Boolean {
     return start != null && end != null && end.after(start)
 }
 
+var strPhoto: String? = null
+
 @SuppressLint("DiscouragedApi")
 @Composable
 fun TripImage(photo: String?) {
 
-    var strPhoto = photo
+    //var strPhoto = photo
+
+    val pickMedia = rememberLauncherForActivityResult(
+        contract = PickVisualMedia()
+    ) { uri ->
+        if (uri != null) {
+            Log.d("PhotoPicker", "Selected URI: $uri")
+            strPhoto = uri.toString()
+            newImageUri = strPhoto!!.toUri()
+        } else {
+            Log.d("PhotoPicker", "No media selected")
+        }
+    }
+
+    var contentDesc = strPhoto
 
     Box(
         modifier = Modifier
@@ -519,25 +552,43 @@ fun TripImage(photo: String?) {
     ) {
         if (photo == null) {
             strPhoto = "placeholder_photo"
+            contentDesc = strPhoto
+        }
+        else
+        {
+            contentDesc = newImageUri.toString()
         }
 
         val context = LocalContext.current
         val drawableId = remember(strPhoto) {
             context.resources.getIdentifier(strPhoto, "drawable", context.packageName)
         }
-        AsyncImage(
-            model = ImageRequest.Builder(context)
-                .data(drawableId)
-                .crossfade(true)
-                .build(),
-            contentDescription = strPhoto,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxSize()
-        )
+
+        if(photo != null) {
+            AsyncImage(
+                newImageUri,"newTripPicture",
+                modifier = Modifier
+                    .fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+        }
+        else {
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(drawableId)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = contentDesc,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxSize()
+            )
+        }
+
+
 
         IconButton(
-            onClick = {},
+            onClick = { pickMedia.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly)); },
             modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)
         ) {
             Icon(
@@ -547,6 +598,61 @@ fun TripImage(photo: String?) {
                     .background(color = Color(Color.Gray.red,Color.Gray.green,Color.Gray.blue, 0.5f), shape = RoundedCornerShape(4.dp))
                     .padding(8.dp)
             )
+        }
+    }
+}
+var newImageUri: Uri? = null
+
+@Composable
+fun ProfilePhotoEditing(firstname: String, surname: String, modifier: Modifier = Modifier, context:Context) {
+    val initials = "${firstname.first()}"+"${surname.first()}"
+
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .size(130.dp)
+            .background(Color.Blue, shape = CircleShape)
+    ) {
+        if(newImageUri != null) {
+            AsyncImage(
+                newImageUri,"newProfilePic",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip( shape = CircleShape)
+                    .border(0.dp, Color.White, CircleShape),
+                contentScale = ContentScale.Crop
+            )
+        } else {
+            Text(
+                text = initials,
+                color = Color.White,
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Icon(Icons.Default.CameraAlt,
+            "camera",
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+        )
+    }
+}
+
+@Composable
+fun CameraPopup(onDismissRequest: () -> Unit, context:Context)
+{
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
+    val pickMedia = rememberLauncherForActivityResult(
+        contract = PickVisualMedia()
+    ) { uri ->
+        if (uri != null) {
+            Log.d("PhotoPicker", "Selected URI: $uri")
+            selectedImageUri = uri
+            newImageUri = selectedImageUri
+        } else {
+            Log.d("PhotoPicker", "No media selected")
         }
     }
 }
