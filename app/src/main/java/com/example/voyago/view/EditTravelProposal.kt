@@ -35,6 +35,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -63,12 +64,37 @@ import com.example.voyago.viewmodel.TripListViewModel
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import kotlin.math.log
+
+fun initUri(vm:TripListViewModel): String {
+    if(vm.selectedTrip != null) {
+        return vm.selectedTrip!!.photo
+    }
+    return "placeholder_photo"
+}
+
+
+/*
+
+CONDITION TO INSERT
+
+if (tripImageError) {
+    Text(
+        text = photoErrorMessage,
+        color = MaterialTheme.colorScheme.error,
+        style = MaterialTheme.typography.bodySmall
+    )
+}
+
+*/
 
 @Composable
 fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
     val trip = vm.selectedTrip
 
     if(trip!=null) {
+
+
 
         var imageUri by rememberSaveable {
             mutableStateOf<Uri?>(
@@ -81,11 +107,22 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
         }
 
 
+
+        Log.d("foto_trip", "trip.photo = " + trip.photo.toString())
+        LaunchedEffect(
+            Unit
+        ) { initUri(vm = vm) }
+
         var tripName by rememberSaveable {mutableStateOf(trip.title)}
         var destination by rememberSaveable {mutableStateOf(trip.destination)}
         var tripNameError by rememberSaveable {mutableStateOf(false)}
         var destinationError by rememberSaveable {mutableStateOf(false)}
         var stringErrorMessage by rememberSaveable {mutableStateOf("")}
+
+        //Trip Image Error Handling
+        var tripImageError by rememberSaveable {mutableStateOf(false)}
+        var photoErrorMessage by rememberSaveable { mutableStateOf("") }
+
 
         var price by rememberSaveable { mutableStateOf(trip.estimatedPrice.toString()) }
         var priceError by rememberSaveable { mutableStateOf(false) }
@@ -112,6 +149,8 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
         var endCalendar by rememberSaveable { mutableStateOf<Calendar?>(trip.endDate) }
 
         var dateError by rememberSaveable { mutableStateOf("") }
+
+
 
         Scaffold(
             topBar = {
@@ -420,7 +459,11 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
 
                             Button(
                                 onClick = {
-                                    if (!validateStringField(tripName)) {
+                                    if(!imageUri.toString().isUriString()) {
+                                        tripImageError = true
+                                        photoErrorMessage = "Upload Trip Photo"
+                                    }
+                                    else if (!validateStringField(tripName)) {
                                         tripNameError = true
                                         stringErrorMessage = "This field cannot be empty"
                                     } else if (!validateStringField(destination)) {
@@ -448,7 +491,7 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
                                                 mutableMapOf<Calendar, MutableList<Trip.Activity>>()
 
                                             val newTrip = Trip(
-                                                photo = "",
+                                                photo = imageUri.toString(),
                                                 title = tripName,
                                                 destination = destination,
                                                 startDate = startCalendar!!,
@@ -474,7 +517,7 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
 
                                             if (currentTrip != null) {
                                                 val updatedTrip = Trip(
-                                                    photo = imageUri?.toString() ?: "",
+                                                    photo = currentTrip.photo,
                                                     title = tripName,
                                                     destination = destination,
                                                     startDate = startCalendar!!,
@@ -497,10 +540,7 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
 
 
                                         }
-
-
                                         navController.navigate("activities_list")
-
                                     }
                                 },
                                 modifier = Modifier
