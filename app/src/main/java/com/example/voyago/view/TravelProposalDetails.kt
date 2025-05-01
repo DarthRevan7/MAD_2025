@@ -59,6 +59,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.window.Popup
+import androidx.core.net.toUri
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -365,16 +366,29 @@ fun Hero(trip: Trip) {
         val drawableId = remember(trip.photo) {
             context.resources.getIdentifier(trip.photo, "drawable", context.packageName)
         }
-        AsyncImage(
-            model = ImageRequest.Builder(context)
-                .data(drawableId)
-                .crossfade(true)
-                .build(),
-            contentDescription = trip.photo,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxSize()
-        )
+
+        if(trip.photo.isUriString()) {
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(trip.photo.toUri())
+                    .crossfade(true)
+                    .build(),
+                contentDescription = "Selected Trip Photo",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+        } else {
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(drawableId)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = trip.photo,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxSize()
+            )
+        }
 
         Box(
             modifier = Modifier

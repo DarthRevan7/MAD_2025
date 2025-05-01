@@ -22,6 +22,14 @@ import kotlinx.coroutines.launch
 
 class TripListViewModel(val model: Model) : ViewModel() {
 
+
+    //NEW VIEW MODEL
+
+
+
+
+
+
     private val _priceBounds = mutableStateOf(0f..1000f)
     val priceBounds: State<ClosedFloatingPointRange<Float>> = _priceBounds
 
