@@ -186,6 +186,16 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
                         )
                     }
 
+                    if (tripImageError) {
+                        item {
+                            Text(
+                                text = photoErrorMessage,
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                    }
+
                     item {
                         Spacer(modifier = Modifier.height(40.dp))
                     }
