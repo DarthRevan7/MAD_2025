@@ -289,8 +289,8 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(16.dp)
-                        .offset(y = 120.dp)
+                        .padding(16.dp),
+                    contentAlignment = Alignment.BottomEnd
                 ) {
                     Button(
                         onClick = {
