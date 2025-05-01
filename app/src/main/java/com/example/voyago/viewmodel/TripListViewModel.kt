@@ -131,13 +131,16 @@ class TripListViewModel(val model: Model) : ViewModel() {
     var selectedTrip: Trip? by mutableStateOf(null)
         private set
 
-    //THERE IS NOT A COMMENT OF WHAT USE I MAKE OF THIS!
     var currentTrip: Trip? by mutableStateOf(null)
         private set
 
     fun selectTrip(trip: Trip?) {
         currentTrip = trip
         selectedTrip = trip
+    }
+
+    fun resetCurrentTrip(){
+        currentTrip = null
     }
 
     var filterDestination: String by mutableStateOf("")

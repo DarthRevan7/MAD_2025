@@ -74,7 +74,10 @@ fun OwnedTravelProposalList(navController: NavController, vm: TripListViewModel)
             BottomBar(1)
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = {navController.navigate("create_new_travel_proposal")}) {
+            FloatingActionButton(onClick = {
+                vm.resetCurrentTrip()
+                navController.navigate("create_new_travel_proposal")
+            }) {
                 Icon(Icons.Default.Add, "Add")
             }
         }
