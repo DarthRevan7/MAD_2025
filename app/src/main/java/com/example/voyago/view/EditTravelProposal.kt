@@ -406,7 +406,7 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
 
                             Button(
                                 onClick = {
-                                    navController.navigate("main_page")
+                                    navController.popBackStack()
                                 },
                                 modifier = Modifier
                                     .width(160.dp)
