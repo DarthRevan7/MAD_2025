@@ -26,6 +26,9 @@ class TripListViewModel(val model: Model) : ViewModel() {
     //NEW VIEW MODEL
 
 
+    private var _searching = false
+    var isSearching = _searching
+
 
 
 
@@ -239,6 +242,16 @@ class TripListViewModel(val model: Model) : ViewModel() {
 
     fun applyFilters() = model.filterFunction(tripList, filterDestination, filterMinPrice, filterMaxPrice,
         filterDuration, filterGroupSize, filtersTripType, filterCompletedTrips, filterBySeats)
+
+    fun resetFilters() {
+        filterDestination = ""
+        updateFilterPriceRange(0.0,0.0)
+        filterDuration = Pair(-1,-1)
+        filterGroupSize = Pair(-1,-1)
+        filtersTripType.forEach { it.isSelected = false }
+        filterCompletedTrips = false
+        filterBySeats = 0
+    }
 }
 
 
