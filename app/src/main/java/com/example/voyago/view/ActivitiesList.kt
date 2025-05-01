@@ -44,7 +44,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.clickable
+import java.util.Calendar
 
+
+fun allDaysHaveActivities(trip: Trip?): Boolean {
+
+    if(trip != null) {
+
+        return trip.activities.values.all { list -> list.isNotEmpty() }
+    }
+
+    return false
+
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,22 +67,6 @@ fun ActivitiesList(navController: NavController, vm: TripListViewModel) {
 
     var showIncompleteDialog by rememberSaveable { mutableStateOf(false) }
 
-    val allDaysHaveActivities = remember(selectedTrip) {
-        selectedTrip?.let { trip ->
-            val numDays = ((trip.endDate.timeInMillis - trip.startDate.timeInMillis) / (1000 * 60 * 60 * 24)).toInt() + 1
-            (0 until numDays).all { dayOffset ->
-                val dayCalendar = java.util.Calendar.getInstance().apply {
-                    timeInMillis = trip.startDate.timeInMillis
-                    add(java.util.Calendar.DAY_OF_YEAR, dayOffset)
-                    set(java.util.Calendar.HOUR_OF_DAY, 0)
-                    set(java.util.Calendar.MINUTE, 0)
-                    set(java.util.Calendar.SECOND, 0)
-                    set(java.util.Calendar.MILLISECOND, 0)
-                }
-                trip.activities[dayCalendar]?.isNotEmpty() == true
-            }
-        } == true
-    }
 
 
 
@@ -171,8 +167,11 @@ fun ActivitiesList(navController: NavController, vm: TripListViewModel) {
 
                             Button(
                                 onClick = {
-                                    if (allDaysHaveActivities) {
-                                        navController.navigate("main_page")
+                                    if (allDaysHaveActivities(selectedTrip)) {
+                                        //Save the editing
+                                        //Editing is saved already (!)
+                                        //Go to the owned travel proposal
+                                        navController.navigate("owned_travel_proposal_list")
                                     } else {
                                         showIncompleteDialog = true
                                     }
