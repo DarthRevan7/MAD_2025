@@ -171,7 +171,11 @@ fun ActivitiesList(navController: NavController, vm: TripListViewModel) {
                                         //Save the editing
                                         //Editing is saved already (!)
                                         //Go to the owned travel proposal
-                                        navController.navigate("owned_travel_proposal_list")
+                                        //navController.navigate("owned_travel_proposal_list")
+                                        navController.popBackStack("owned_travel_proposal_list",
+                                            inclusive = true,
+                                            saveState = true
+                                            )
                                     } else {
                                         showIncompleteDialog = true
                                     }
