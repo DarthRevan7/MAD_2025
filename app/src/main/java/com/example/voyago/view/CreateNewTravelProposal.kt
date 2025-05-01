@@ -1,5 +1,6 @@
 package com.example.voyago.view
 
+import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.widget.DatePicker
 import androidx.compose.foundation.background
@@ -15,9 +16,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -35,6 +41,8 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,6 +50,11 @@ import androidx.navigation.NavController
 import com.example.voyago.activities.*
 import java.util.Calendar
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineHeightStyle
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.example.voyago.model.Trip
 import com.example.voyago.model.TypeTravel
 import com.example.voyago.viewmodel.TripListViewModel
@@ -106,6 +119,10 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+
+                item {
+                    TripImage(null)
+                }
 
                 item {
                     Spacer(modifier = Modifier.height(40.dp))
@@ -489,4 +506,47 @@ fun validateDateOrder(start: Calendar?, end: Calendar?): Boolean {
     return start != null && end != null && end.after(start)
 }
 
+@SuppressLint("DiscouragedApi")
+@Composable
+fun TripImage(photo: String?) {
 
+    var strPhoto = photo
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(250.dp)
+    ) {
+        if (photo == null) {
+            strPhoto = "placeholder_photo"
+        }
+
+        val context = LocalContext.current
+        val drawableId = remember(strPhoto) {
+            context.resources.getIdentifier(strPhoto, "drawable", context.packageName)
+        }
+        AsyncImage(
+            model = ImageRequest.Builder(context)
+                .data(drawableId)
+                .crossfade(true)
+                .build(),
+            contentDescription = strPhoto,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxSize()
+        )
+
+        IconButton(
+            onClick = {},
+            modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.AddPhotoAlternate,
+                contentDescription = "add photo",
+                modifier = Modifier
+                    .background(color = Color(Color.Gray.red,Color.Gray.green,Color.Gray.blue, 0.5f), shape = RoundedCornerShape(4.dp))
+                    .padding(8.dp)
+            )
+        }
+    }
+}

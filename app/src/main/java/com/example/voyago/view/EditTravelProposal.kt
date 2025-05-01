@@ -113,6 +113,10 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
                 ) {
 
                     item {
+                        TripImage(trip.photo)
+                    }
+
+                    item {
                         Spacer(modifier = Modifier.height(40.dp))
                     }
 
