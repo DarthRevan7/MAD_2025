@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil3.toUri
 import com.example.voyago.activities.BottomBar
 import com.example.voyago.activities.TopBar
 import com.example.voyago.model.Trip
@@ -113,7 +114,7 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
                 ) {
 
                     item {
-                        TripImage(trip.photo)
+                        //TripImage(trip.photo.toUri())
                     }
 
                     item {

@@ -51,6 +51,7 @@ import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.TaskAlt
 import androidx.compose.material3.*
 import androidx.compose.ui.draw.clip
+import androidx.core.net.toUri
 
 
 @SuppressLint("DiscouragedApi")
@@ -148,6 +149,19 @@ fun OwnedTravelProposalList(navController: NavController, vm: TripListViewModel)
     }
 }
 
+
+fun String.isUriString(): Boolean {
+    return try {
+        val uri = this.toUri()
+        uri.scheme != null
+
+    } catch (e: Exception) {
+        e.printStackTrace()
+        false
+    }
+}
+
+
 @SuppressLint("DiscouragedApi")
 @Composable
 fun TripCard(trip: Trip, navController: NavController, vm: TripListViewModel, edit: Boolean) {
@@ -163,23 +177,41 @@ fun TripCard(trip: Trip, navController: NavController, vm: TripListViewModel, ed
         }
     ) {
         Box {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(
-                        LocalContext.current.resources.getIdentifier(
-                            trip.photo,
-                            "drawable",
-                            LocalContext.current.packageName
+
+            if(!trip.photo.isUriString()) {
+
+                //AsyncImage with resources.Drawable
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(
+                            LocalContext.current.resources.getIdentifier(
+                                trip.photo,
+                                "drawable",
+                                LocalContext.current.packageName
+                            )
                         )
-                    )
-                    .crossfade(true)
-                    .build(),
-                contentDescription = trip.destination,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-            )
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = trip.destination,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                )
+            } else {
+                //Asyncimage with uri
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(trip.photo)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "Selected Trip Photo",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+
+
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomStart)

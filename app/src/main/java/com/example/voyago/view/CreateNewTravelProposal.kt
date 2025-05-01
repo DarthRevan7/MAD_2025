@@ -1,9 +1,6 @@
 package com.example.voyago.view
 
-import android.annotation.SuppressLint
 import android.app.DatePickerDialog
-import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import android.widget.DatePicker
@@ -11,8 +8,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,12 +22,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddPhotoAlternate
-import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -53,9 +45,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -64,11 +54,6 @@ import androidx.navigation.NavController
 import com.example.voyago.activities.*
 import java.util.Calendar
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.LineHeightStyle
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.isPopupLayout
-import androidx.core.net.toUri
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
@@ -112,6 +97,8 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
 
     var dateError by rememberSaveable { mutableStateOf("") }
 
+    var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
+
     Scaffold(
         topBar = {
             TopBar()
@@ -138,7 +125,7 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
             ) {
 
                 item {
-                    TripImage(strPhoto)
+                    TripImage(imageUri = imageUri, onUriSelected = { uri -> imageUri = uri })
                 }
 
                 item {
@@ -441,7 +428,7 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                                         val activities = mutableMapOf<Calendar, MutableList<Trip.Activity>>()
 
                                         val newTrip = Trip(
-                                            photo = "",
+                                            photo = imageUri?.toString() ?: "",
                                             title = tripName,
                                             destination = destination,
                                             startDate = startCalendar!!,
@@ -467,7 +454,7 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
 
                                         if (currentTrip != null){
                                             val newTrip = Trip(
-                                                photo = "",
+                                                photo = imageUri?.toString() ?: "",
                                                 title = tripName,
                                                 destination = destination,
                                                 startDate = startCalendar!!,
@@ -516,143 +503,86 @@ fun validatePrice(price: String): Boolean {
 }
 
 fun validateGroupSize(groupSize: String): Boolean {
-    return groupSize.toIntOrNull()?.let { it > 1.0 } == true
+    return groupSize.toIntOrNull()?.let { it > 1 } == true
 }
 
 fun validateDateOrder(start: Calendar?, end: Calendar?): Boolean {
     return start != null && end != null && end.after(start)
 }
 
-var strPhoto: String? = null
-
-@SuppressLint("DiscouragedApi")
 @Composable
-fun TripImage(photo: String?) {
-
-    //var strPhoto = photo
+fun TripImage(imageUri: Uri?, onUriSelected: (Uri?) -> Unit) {
+    val context = LocalContext.current
 
     val pickMedia = rememberLauncherForActivityResult(
         contract = PickVisualMedia()
     ) { uri ->
+
+        onUriSelected(uri)
         if (uri != null) {
             Log.d("PhotoPicker", "Selected URI: $uri")
-            strPhoto = uri.toString()
-            newImageUri = strPhoto!!.toUri()
         } else {
             Log.d("PhotoPicker", "No media selected")
         }
     }
-
-    var contentDesc = strPhoto
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(250.dp)
+            .height(250.dp),
+        contentAlignment = Alignment.Center
     ) {
-        if (photo == null) {
-            strPhoto = "placeholder_photo"
-            contentDesc = strPhoto
-        }
-        else
-        {
-            contentDesc = newImageUri.toString()
-        }
 
-        val context = LocalContext.current
-        val drawableId = remember(strPhoto) {
-            context.resources.getIdentifier(strPhoto, "drawable", context.packageName)
-        }
-
-        if(photo != null) {
-            AsyncImage(
-                newImageUri,"newTripPicture",
-                modifier = Modifier
-                    .fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-        }
-        else {
+        if (imageUri != null) {
             AsyncImage(
                 model = ImageRequest.Builder(context)
-                    .data(drawableId)
+                    .data(imageUri)
                     .crossfade(true)
                     .build(),
-                contentDescription = contentDesc,
+                contentDescription = "Selected Trip Photo",
                 contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxSize()
+                modifier = Modifier.fillMaxSize()
             )
+        } else {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.AddPhotoAlternate,
+                    contentDescription = "Placeholder Add Photo Icon",
+                    modifier = Modifier.size(80.dp),
+                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Tap icon to add photo",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                )
+            }
         }
 
-
-
         IconButton(
-            onClick = { pickMedia.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly)); },
-            modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)
+            onClick = {
+                pickMedia.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
+            },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+                .background(
+                    color = Color.Black.copy(alpha = 0.3f),
+                    shape = CircleShape
+                )
         ) {
             Icon(
                 imageVector = Icons.Default.AddPhotoAlternate,
-                contentDescription = "add photo",
-                modifier = Modifier
-                    .background(color = Color(Color.Gray.red,Color.Gray.green,Color.Gray.blue, 0.5f), shape = RoundedCornerShape(4.dp))
-                    .padding(8.dp)
+                contentDescription = "Select photo from gallery",
+                tint = Color.White,
+                modifier = Modifier.padding(4.dp)
             )
         }
     }
 }
-var newImageUri: Uri? = null
 
-@Composable
-fun ProfilePhotoEditing(firstname: String, surname: String, modifier: Modifier = Modifier, context:Context) {
-    val initials = "${firstname.first()}"+"${surname.first()}"
-
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = modifier
-            .size(130.dp)
-            .background(Color.Blue, shape = CircleShape)
-    ) {
-        if(newImageUri != null) {
-            AsyncImage(
-                newImageUri,"newProfilePic",
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip( shape = CircleShape)
-                    .border(0.dp, Color.White, CircleShape),
-                contentScale = ContentScale.Crop
-            )
-        } else {
-            Text(
-                text = initials,
-                color = Color.White,
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Bold
-            )
-        }
-
-        Icon(Icons.Default.CameraAlt,
-            "camera",
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-        )
-    }
-}
-
-@Composable
-fun CameraPopup(onDismissRequest: () -> Unit, context:Context)
-{
-    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
-
-    val pickMedia = rememberLauncherForActivityResult(
-        contract = PickVisualMedia()
-    ) { uri ->
-        if (uri != null) {
-            Log.d("PhotoPicker", "Selected URI: $uri")
-            selectedImageUri = uri
-            newImageUri = selectedImageUri
-        } else {
-            Log.d("PhotoPicker", "No media selected")
-        }
-    }
-}
