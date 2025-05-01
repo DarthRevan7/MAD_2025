@@ -334,6 +334,7 @@ fun DestinationSearchBar(
         SearchBar(
             modifier = Modifier
                 .align(Alignment.TopCenter)
+                .fillMaxWidth()
                 .semantics { traversalIndex = 0f },
             query = query,
             onQueryChange = onQueryChange,
