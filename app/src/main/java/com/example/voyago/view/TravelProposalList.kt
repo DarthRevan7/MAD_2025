@@ -52,8 +52,14 @@ fun TravelProposalList(navController: NavController, vm: TripListViewModel = vie
     ) {
         vm.updatePublishedTrip()
         vm.setMaxMinPrice()
+
+        println("IsSearching = " + vm.isSearching)
+
+        if(!vm.isSearching) {
+            vm.resetFilters()
+        }
         vm.applyFilters()
-        Log.d("FilteredTrips", "Filtered trips: $filteredTrips")
+        //Log.d("FilteredTrips", "Filtered trips: $filteredTrips")
     }
 
     Scaffold(
@@ -81,6 +87,7 @@ fun TravelProposalList(navController: NavController, vm: TripListViewModel = vie
                 ) {
                     Button(
                         onClick = {
+                            vm.isSearching = false
                             navController.navigate("filter_selection")
                         },
                         border = BorderStroke(1.dp, Color.Black),

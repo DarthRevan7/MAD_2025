@@ -83,6 +83,8 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
     vm.updateFiltersTripType(tripTypeItems)
     */
 
+
+
     Scaffold(
         topBar = {
             TopBar()
@@ -294,6 +296,7 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                 ) {
                     Button(
                         onClick = {
+                            vm.isSearching = true
                             vm.applyFilters()
                             navController.popBackStack()
                         },
