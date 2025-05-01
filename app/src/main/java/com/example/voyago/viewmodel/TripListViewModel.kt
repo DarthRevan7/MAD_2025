@@ -109,8 +109,8 @@ class TripListViewModel(val model: Model) : ViewModel() {
 
     fun setMaxMinPrice() {
         model.setMaxMinPrice()
-        filterMinPrice = model.minPrice
-        filterMaxPrice = model.maxPrice
+        //filterMinPrice = model.minPrice
+        //filterMaxPrice = model.maxPrice
     }
 
     val publishedTrips = model.publishedTrips
