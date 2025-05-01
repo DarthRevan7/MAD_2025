@@ -30,9 +30,6 @@ class TripListViewModel(val model: Model) : ViewModel() {
     var isSearching = _searching
 
 
-
-
-
     private val _priceBounds = mutableStateOf(0f..1000f)
     val priceBounds: State<ClosedFloatingPointRange<Float>> = _priceBounds
 
@@ -248,9 +245,18 @@ class TripListViewModel(val model: Model) : ViewModel() {
 
     fun resetFilters() {
         filterDestination = ""
+
         updateFilterPriceRange(0.0,0.0)
+        model.setMaxMinPrice()
+        val minPrice = model.minPrice.toFloat()
+        val maxPrice = model.maxPrice.toFloat()
+        val bounds = minPrice..maxPrice
+        _selectedPriceRange.value = bounds
+
         filterDuration = Pair(-1,-1)
         filterGroupSize = Pair(-1,-1)
+        durationItems.forEach { it.isSelected = false }
+        groupSizeItems.forEach { it.isSelected = false }
         filtersTripType.forEach { it.isSelected = false }
         filterCompletedTrips = false
         filterBySeats = 0
