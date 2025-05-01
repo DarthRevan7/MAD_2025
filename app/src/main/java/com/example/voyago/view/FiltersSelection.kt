@@ -466,7 +466,7 @@ fun MultiSelectDropdownMenu(filter:String, vm: TripListViewModel,
                 } else if (filter == "Trip Type") {
                     vm.updateFiltersTripType(items)
                 }
-                               },
+           },
             properties = PopupProperties(focusable = true)
         ) {
             items.forEachIndexed { index, item ->

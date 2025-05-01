@@ -5,6 +5,7 @@ package com.example.voyago.view
 import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,6 +31,7 @@ import androidx.navigation.NavController
 import com.example.voyago.activities.*
 import com.example.voyago.viewmodel.*
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.ui.Alignment
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -93,8 +95,19 @@ fun TravelProposalList(navController: NavController, vm: TripListViewModel = vie
                 }
             }
 
-            items(filteredTrips) { trip ->
-                TripCard(trip, navController, vm, false)
+            if (filteredTrips.isEmpty()) {
+                item {
+                    Box(
+                        contentAlignment = Alignment.TopCenter,
+                        modifier = Modifier.padding(16.dp).fillMaxWidth()
+                    ) {
+                        Text("No trips for the selected filters.")
+                    }
+                }
+            } else {
+                items(filteredTrips) { trip ->
+                    TripCard(trip, navController, vm, false)
+                }
             }
         }
     }
