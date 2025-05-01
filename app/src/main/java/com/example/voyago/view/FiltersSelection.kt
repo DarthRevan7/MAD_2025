@@ -290,7 +290,7 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(16.dp)
-                        .offset(y = 140.dp)
+                        .offset(y = 120.dp)
                 ) {
                     Button(
                         onClick = {
