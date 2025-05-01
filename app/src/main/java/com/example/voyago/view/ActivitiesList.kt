@@ -67,11 +67,6 @@ fun ActivitiesList(navController: NavController, vm: TripListViewModel) {
 
     var showIncompleteDialog by rememberSaveable { mutableStateOf(false) }
 
-
-
-
-
-
     Scaffold(
         topBar = {
             TopBar()

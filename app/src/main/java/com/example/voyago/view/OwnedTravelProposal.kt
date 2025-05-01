@@ -200,7 +200,7 @@ fun TripCard(trip: Trip, navController: NavController, vm: TripListViewModel, ed
                         .height(200.dp)
                 )
             } else {
-                //Asyncimage with uri
+                //Async Image with uri
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(trip.photo)

@@ -35,6 +35,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -64,6 +65,8 @@ import com.example.voyago.viewmodel.TripListViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
+
+    //vm.selectTrip(null)
 
     var tripName by rememberSaveable {mutableStateOf("")}
     var destination by rememberSaveable {mutableStateOf("")}
@@ -127,6 +130,7 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
+                //Image Trip with Error check
                 item {
                     TripImage(imageUri = imageUri, onUriSelected = { uri -> imageUri = uri })
                 }
@@ -146,6 +150,7 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                     Spacer(modifier = Modifier.height(40.dp))
                 }
 
+                //Trip Name field with Error Check
                 item {
                     TextField(
                         value = tripName,
@@ -168,6 +173,7 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
+                //Destination field with Error Check
                 item {
                     TextField(
                         value = destination,
@@ -190,8 +196,8 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
+                //Price Field with Error Check
                 item {
-
                     TextField(
                         value = price,
                         onValueChange = {
@@ -213,6 +219,7 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                     )
                 }
 
+                //Group Size field with Error Check
                 item {
                     TextField(
                         value = groupSize,
@@ -239,6 +246,7 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                     Spacer(modifier = Modifier.height(24.dp))
                 }
 
+                //Trip Type with Error Check
                 item {
                     Box(
                         modifier = Modifier
@@ -251,9 +259,6 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                                 .align(Alignment.Center),
                             fontSize = 17.sp
                         )
-
-
-
                     }
                 }
 
@@ -264,7 +269,6 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                             .padding(bottom = 3.dp)
                     ) {
 
-
                         Text(
                             text = "Select one or more options",
                             modifier = Modifier
@@ -274,6 +278,8 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                             //fontSize = 10.sp
                         )
                     }
+
+                    //ERROR CHECK TO BE IMPLEMENTED
                 }
 
                 item {
@@ -303,14 +309,14 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                     Spacer(modifier = Modifier.height(10.dp))
                 }
 
+
+                //Data Selection with Error Check
                 item {
                     val context = LocalContext.current
                     val calendar = Calendar.getInstance()
                     val year = calendar.get(Calendar.YEAR)
                     val month = calendar.get(Calendar.MONTH)
                     val day = calendar.get(Calendar.DAY_OF_MONTH)
-
-
 
                     val startDatePickerDialog = remember {
                         DatePickerDialog(
@@ -391,6 +397,7 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                 }
 
 
+                //Cancel Button
                 item {
 
                     Row(
@@ -401,7 +408,7 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
 
                         Button(
                             onClick = {
-                                navController.navigate("main_page")
+                                navController.popBackStack()
                             },
                             modifier = Modifier
                                 .width(160.dp)
@@ -413,8 +420,11 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
 
                         Spacer(modifier = Modifier.weight(1f))
 
+
+                        //Next Button
                         Button(
                             onClick = {
+                                //ADD TYPE TRAVEL SELECTION CHECK
                                 if(!imageUri.toString().isUriString()) {
                                     tripImageError = true
                                     photoErrorMessage = "Upload Trip Photo"
@@ -441,11 +451,12 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
 
                                     val creatorId = 1
 
+                                    println("currentTrip = ${vm.currentTrip}")
                                     if (vm.currentTrip == null) {
                                         val activities = mutableMapOf<Calendar, MutableList<Trip.Activity>>()
 
                                         val newTrip = Trip(
-                                            photo = imageUri?.toString() ?: "",
+                                            photo = imageUri.toString(),
                                             title = tripName,
                                             destination = destination,
                                             startDate = startCalendar!!,
@@ -471,7 +482,7 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
 
                                         if (currentTrip != null){
                                             val newTrip = Trip(
-                                                photo = imageUri?.toString() ?: "",
+                                                photo = currentTrip.photo,
                                                 title = tripName,
                                                 destination = destination,
                                                 startDate = startCalendar!!,

@@ -119,6 +119,7 @@ class TripListViewModel(val model: Model) : ViewModel() {
     val askedTrips = model.askedTrips
     val filteredList = model.filteredList
 
+    //Selected when I click on a Card
     var selectedTrip: Trip? by mutableStateOf(null)
         private set
 
@@ -126,7 +127,7 @@ class TripListViewModel(val model: Model) : ViewModel() {
     var currentTrip: Trip? by mutableStateOf(null)
         private set
 
-    fun selectTrip(trip: Trip) {
+    fun selectTrip(trip: Trip?) {
         currentTrip = trip
         selectedTrip = trip
     }
