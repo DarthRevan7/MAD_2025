@@ -105,6 +105,10 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
 
     var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
+    var typeTravelError by rememberSaveable { mutableStateOf(false) }
+    var typeTravelErrorMessage by rememberSaveable { mutableStateOf("") }
+
+
     Scaffold(
         topBar = {
             TopBar()
@@ -279,7 +283,15 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                         )
                     }
 
-                    //ERROR CHECK TO BE IMPLEMENTED
+                    if (typeTravelError) {
+                        Text(
+                            text = typeTravelErrorMessage,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
+
                 }
 
                 item {
@@ -444,6 +456,9 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                                     priceError = false
                                     priceErrorMessage = ""
                                     dateError = "End date must be after start date"
+                                } else if (selected.isEmpty()) {
+                                    typeTravelError = true
+                                    typeTravelErrorMessage = "Select at least one travel type"
                                 } else {
                                     priceError = false
                                     priceErrorMessage = ""
