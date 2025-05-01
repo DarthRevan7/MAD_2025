@@ -171,11 +171,19 @@ fun ActivitiesList(navController: NavController, vm: TripListViewModel) {
                                         //Save the editing
                                         //Editing is saved already (!)
                                         //Go to the owned travel proposal
-                                        //navController.navigate("owned_travel_proposal_list")
+                                        navController.navigate("owned_travel_proposal_list") {
+                                            popUpTo("owned_travel_proposal_list") {
+                                                inclusive = false // don't remove page1
+                                            }
+                                            launchSingleTop = true // avoid multiple copies of page1 on top
+                                        }
+                                        /*
                                         navController.popBackStack("owned_travel_proposal_list",
-                                            inclusive = true,
+                                            inclusive = false,
                                             saveState = true
                                             )
+
+                                         */
                                     } else {
                                         showIncompleteDialog = true
                                     }

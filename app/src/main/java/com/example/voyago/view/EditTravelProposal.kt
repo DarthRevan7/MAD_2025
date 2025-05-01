@@ -64,7 +64,6 @@ import com.example.voyago.viewmodel.TripListViewModel
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
-import kotlin.math.log
 
 fun initUri(vm:TripListViewModel): String {
     if(vm.selectedTrip != null) {
@@ -113,25 +112,24 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
             Unit
         ) { initUri(vm = vm) }
 
+        //TripName and Destination Error handling
         var tripName by rememberSaveable {mutableStateOf(trip.title)}
         var destination by rememberSaveable {mutableStateOf(trip.destination)}
         var tripNameError by rememberSaveable {mutableStateOf(false)}
         var destinationError by rememberSaveable {mutableStateOf(false)}
         var stringErrorMessage by rememberSaveable {mutableStateOf("")}
 
-        //Trip Image Error Handling
-        var tripImageError by rememberSaveable {mutableStateOf(false)}
-        var photoErrorMessage by rememberSaveable { mutableStateOf("") }
-
-
+        //Price Error Handling
         var price by rememberSaveable { mutableStateOf(trip.estimatedPrice.toString()) }
         var priceError by rememberSaveable { mutableStateOf(false) }
         var priceErrorMessage by rememberSaveable { mutableStateOf("") }
 
+        //Group Size Error Handling
         var groupSize by rememberSaveable { mutableStateOf(trip.groupSize.toString()) }
         var groupSizeError by rememberSaveable { mutableStateOf(false) }
         var groupSizeErrorMessage by rememberSaveable { mutableStateOf("") }
 
+        //Handling selected Trip Type
         val typeTravel = listOf("party", "adventure", "culture", "relax")
         val selected = rememberSaveable(
             saver = listSaver(
@@ -142,6 +140,8 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
             trip.typeTravel.map { it.toString().lowercase() }.toMutableStateList()
         }
 
+
+        //Date Handling
         var startDate by rememberSaveable { mutableStateOf(trip.startDate.toStringDate()) }
         var startCalendar by rememberSaveable { mutableStateOf<Calendar?>(trip.startDate) }
 
@@ -177,6 +177,7 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
 
+                    //Trip Image
                     item {
                         TripImageEdit(trip,
                             imageUri = imageUri,
@@ -184,16 +185,6 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
                                 imageUri = uri
                             }
                         )
-                    }
-
-                    if (tripImageError) {
-                        item {
-                            Text(
-                                text = photoErrorMessage,
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                        }
                     }
 
                     item {
@@ -469,11 +460,7 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
 
                             Button(
                                 onClick = {
-                                    if(!imageUri.toString().isUriString()) {
-                                        tripImageError = true
-                                        photoErrorMessage = "Upload Trip Photo"
-                                    }
-                                    else if (!validateStringField(tripName)) {
+                                    if (!validateStringField(tripName)) {
                                         tripNameError = true
                                         stringErrorMessage = "This field cannot be empty"
                                     } else if (!validateStringField(destination)) {

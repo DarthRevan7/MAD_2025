@@ -168,7 +168,8 @@ fun TripCard(trip: Trip, navController: NavController, vm: TripListViewModel, ed
     Card(
         modifier = Modifier
             .padding(start = 16.dp, end = 16.dp, top = 10.dp)
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .height(200.dp),
         shape = CardDefaults.elevatedShape,
         onClick = {
             vm.selectTrip(trip)

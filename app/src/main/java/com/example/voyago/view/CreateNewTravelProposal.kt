@@ -71,6 +71,9 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
     var destinationError by rememberSaveable {mutableStateOf(false)}
     var stringErrorMessage by rememberSaveable {mutableStateOf("")}
 
+    var tripImageError by rememberSaveable {mutableStateOf(false)}
+    var photoErrorMessage by rememberSaveable { mutableStateOf("") }
+
     var price by rememberSaveable {mutableStateOf("")}
     var priceError by rememberSaveable {mutableStateOf(false)}
     var priceErrorMessage by rememberSaveable {mutableStateOf("")}
@@ -126,6 +129,17 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
 
                 item {
                     TripImage(imageUri = imageUri, onUriSelected = { uri -> imageUri = uri })
+                }
+
+                if (tripImageError) {
+                    item {
+                        Text(
+                            text = photoErrorMessage,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
                 }
 
                 item {
@@ -401,7 +415,10 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
 
                         Button(
                             onClick = {
-                                if (!validateStringField(tripName)) {
+                                if(!imageUri.toString().isUriString()) {
+                                    tripImageError = true
+                                    photoErrorMessage = "Upload Trip Photo"
+                                } else if (!validateStringField(tripName)) {
                                     tripNameError = true
                                     stringErrorMessage = "This field cannot be empty"
                                 } else if (!validateStringField(destination)) {

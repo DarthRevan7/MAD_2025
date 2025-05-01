@@ -177,8 +177,6 @@ class MainActivity : ComponentActivity() {
                         val activityId = navBackStackEntry.arguments?.getInt("activityId") ?: -1
                         EditActivity(navController, vm, activityId)
                     }
-
-
                 }
 
 
