@@ -1,5 +1,6 @@
 package com.example.voyago.view
 
+import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.net.Uri
 
@@ -18,7 +19,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -55,7 +55,6 @@ import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import coil3.toUri
 import com.example.voyago.activities.BottomBar
 import com.example.voyago.activities.TopBar
 import com.example.voyago.model.Trip
@@ -74,9 +73,9 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
         var imageUri by rememberSaveable {
             mutableStateOf<Uri?>(
                 if (trip.photo.isUriString()) {
-                    trip.photo.toUri() // Converti la stringa URI in un oggetto Uri se è valida
+                    trip.photo.toUri()
                 } else {
-                    null // Se la stringa non è un URI valido (es. nome drawable o vuota), inizia con null
+                    null
                 }
             )
         }
@@ -141,9 +140,11 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
 
                     item {
                         TripImageEdit(trip,
-                            imageUri = imageUri, onUriSelected = { uri ->
-                            imageUri = uri // Quando una nuova immagine viene selezionata, aggiorna LO STATO imageUri
-                        })
+                            imageUri = imageUri,
+                            onUriSelected = { uri ->
+                                imageUri = uri
+                            }
+                        )
                     }
 
                     item {
@@ -472,10 +473,7 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
                                             val currentTrip = vm.currentTrip
 
                                             if (currentTrip != null) {
-                                                val updatedTrip = Trip( // Rinominato per chiarezza
-                                                    // >>>>>>>>>>>> MODIFICA QUI: Salva l'URI dallo STATO imageUri <<<<<<<<<<<<<<<
-                                                    // Prendi l'URI attualmente selezionato o inizializzato dallo stato.
-                                                    // Se è null, salva una stringa vuota.
+                                                val updatedTrip = Trip(
                                                     photo = imageUri?.toString() ?: "",
                                                     title = tripName,
                                                     destination = destination,
@@ -483,15 +481,15 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
                                                     endDate = endCalendar!!,
                                                     estimatedPrice = price.toDouble(),
                                                     groupSize = groupSize.toInt(),
-                                                    activities = currentTrip.activities, // Mantieni le attività esistenti
+                                                    activities = currentTrip.activities,
                                                     typeTravel = selected.map { TypeTravel.valueOf(it.uppercase()) },
-                                                    creatorId = currentTrip.creatorId, // Mantieni l'ID del creatore originale
-                                                    published = currentTrip.published, // Mantieni lo stato di pubblicazione originale
-                                                    id = currentTrip.id, // Mantieni l'ID del trip originale
-                                                    participants = currentTrip.participants, // Mantieni i partecipanti originali
-                                                    status = currentTrip.status, // Mantieni lo stato originale
-                                                    appliedUsers = currentTrip.appliedUsers, // Mantieni gli applied users originali
-                                                    reviews = currentTrip.reviews // Mantieni le review originali
+                                                    creatorId = currentTrip.creatorId,
+                                                    published = currentTrip.published,
+                                                    id = currentTrip.id,
+                                                    participants = currentTrip.participants,
+                                                    status = currentTrip.status,
+                                                    appliedUsers = currentTrip.appliedUsers,
+                                                    reviews = currentTrip.reviews
                                                 )
 
                                                 vm.editNewTrip(updatedTrip)
@@ -527,46 +525,21 @@ fun Calendar.toStringDate(): String {
     return format.format(this.time)
 }
 
-/*
-
-AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(
-                            LocalContext.current.resources.getIdentifier(
-                                trip.photo,
-                                "drawable",
-                                LocalContext.current.packageName
-                            )
-                        )
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = trip.destination,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                )
 
 
-* */
 
-
+@SuppressLint("DiscouragedApi")
 @Composable
-fun TripImageEdit(trip:Trip, imageUri: Uri?, onUriSelected: (Uri?) -> Unit) { // Ha cambiato firma: prende solo l'URI e il callback
+fun TripImageEdit(trip:Trip, imageUri: Uri?, onUriSelected: (Uri?) -> Unit) {
     val context = LocalContext.current
 
     // Questo launcher gestisce il risultato del selettore di media
     val pickMedia = rememberLauncherForActivityResult(
         contract = PickVisualMedia()
     ) { uri ->
-        // Quando l'utente seleziona un'immagine, chiama il callback.
-        // Questo aggiorna LO STATO imageUri NEL PARENT (EditTravelProposal).
-        // NON MODIFICARE DIRETTAMENTE trip.photo QUI! La modifica avviene nel parent.
         onUriSelected(uri)
         if (uri != null) {
             Log.d("PhotoPicker", "Selected URI: $uri")
-            // >>>>>>>>>>>> RIMOSSA QUESTA RIGA: NON MODIFICARE trip.photo QUI! <<<<<<<<<<<<<<<
-            // trip.photo = uri.toString()
         } else {
             Log.d("PhotoPicker", "No media selected")
         }
@@ -578,26 +551,17 @@ fun TripImageEdit(trip:Trip, imageUri: Uri?, onUriSelected: (Uri?) -> Unit) { //
             .height(250.dp),
         contentAlignment = Alignment.Center // Centra il contenuto
     ) {
-        // >>>>>>>>>>>> MODIFICA QUI: Logica di visualizzazione basata SOLO sull'URI ricevuto <<<<<<<<<<<<<<<
-        // Mostra l'AsyncImage se c'è un URI valido nello stato, altrimenti mostra il placeholder.
-        // Non usiamo più trip.photo.isUriString() qui per decidere cosa mostrare.
-        // La decisione avviene a monte, nell'inizializzazione dello stato imageUri nel parent.
         if (imageUri.toString().isUriString()) {
-            // Se c'è un URI nello stato (iniziale dall'oggetto trip o selezionato ora), mostralo.
             AsyncImage(
                 model = ImageRequest.Builder(context)
-                    .data(imageUri) // Usa l'URI dello stato
-                    .crossfade(true) // Aggiunge animazione
+                    .data(imageUri)
+                    .crossfade(true)
                     .build(),
-                contentDescription = "Selected Trip Photo", // Descrizione per accessibilità
-                contentScale = ContentScale.Crop, // Scala per coprire
+                contentDescription = "Selected Trip Photo",
+                contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
         } else {
-            // Se l'URI è null (il trip originale non aveva un URI valido salvato, o è stato "rimosso"?),
-            // mostra il placeholder generico con l'icona.
-            // La logica per caricare un drawable specifico basato su trip.photo è stata rimossa
-            // per coerenza e semplificazione nella gestione via stato URI/placeholder.
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
@@ -617,22 +581,20 @@ fun TripImageEdit(trip:Trip, imageUri: Uri?, onUriSelected: (Uri?) -> Unit) { //
                     contentDescription = trip.destination,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
+                        .fillMaxSize()
                 )
             }
         }
 
-        // L'IconButton per selezionare la foto rimane sempre visibile in basso a destra.
+        // L'IconButton per selezionare la foto
         IconButton(
             onClick = {
                 // Avvia il selettore quando l'icona viene cliccata
                 pickMedia.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
             },
             modifier = Modifier
-                .align(Alignment.BottomEnd) // Posiziona nel Box
-                .padding(16.dp) // Margine
-                // Sfondo per migliorare la visibilità dell'icona
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
                 .background(
                     color = Color.Black.copy(alpha = 0.3f),
                     shape = CircleShape
@@ -640,9 +602,9 @@ fun TripImageEdit(trip:Trip, imageUri: Uri?, onUriSelected: (Uri?) -> Unit) { //
         ) {
             Icon(
                 imageVector = Icons.Default.AddPhotoAlternate,
-                contentDescription = "Select photo from gallery", // Descrizione per accessibilità
-                tint = Color.White, // Colore icona
-                modifier = Modifier.padding(4.dp) // Padding interno
+                contentDescription = "Select photo from gallery",
+                tint = Color.White,
+                modifier = Modifier.padding(4.dp)
             )
         }
     }
