@@ -44,7 +44,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.clickable
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
+import java.util.Locale
 
 
 fun allDaysHaveActivities(trip: Trip?): Boolean {
@@ -231,9 +234,11 @@ fun ActivitiesListContent(trip: Trip, vm: TripListViewModel, navController: NavC
             )
         } else {
             sortedDays.forEach { day ->
-                val dayIndex =
-                    ((day.timeInMillis - trip.startDate.timeInMillis) / (1000 * 60 * 60 * 24)).toInt() + 1
-                val activitiesForDay = trip.activities[day] ?: emptyList()
+                val dayIndex = ((day.timeInMillis - trip.startDate.timeInMillis) / (1000 * 60 * 60 * 24)).toInt() + 1
+                val formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.ITALY)
+                val activitiesForDay = (trip.activities[day] ?: emptyList())
+                    .sortedBy { LocalTime.parse(it.time, formatter) }
+
 
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
