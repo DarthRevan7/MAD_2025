@@ -496,6 +496,35 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
                                         priceErrorMessage = ""
                                         dateError = ""
 
+                                        val creatorId = 1
+
+                                        if (vm.currentTrip == null) {
+                                            val activities =
+                                                mutableMapOf<Calendar, MutableList<Trip.Activity>>()
+
+                                            val newTrip = Trip(
+                                                photo = imageUri.toString(),
+                                                title = tripName,
+                                                destination = destination,
+                                                startDate = startCalendar!!,
+                                                endDate = endCalendar!!,
+                                                estimatedPrice = price.toDouble(),
+                                                groupSize = groupSize.toInt(),
+                                                activities = activities,
+                                                typeTravel = selected.map { TypeTravel.valueOf(it.uppercase()) },
+                                                creatorId = creatorId,
+                                                published = false,
+                                                id = 99,
+                                                participants = emptyList(),
+                                                status = Trip.TripStatus.NOT_STARTED,
+                                                appliedUsers = emptyList(),
+                                                reviews = emptyList()
+                                            )
+
+                                            vm.newTrip = newTrip
+                                            //vm.addNewTrip(newTrip)
+
+                                        } else {
 
                                         val currentTrip = vm.currentTrip
 
@@ -519,9 +548,9 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
                                                 reviews = currentTrip.reviews
                                             )
 
-                                            vm.editNewTrip(updatedTrip)
-
-
+                                                vm.editTrip = updatedTrip
+                                                //vm.editNewTrip(updatedTrip)
+                                            }
 
 
                                         }

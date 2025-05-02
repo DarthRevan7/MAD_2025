@@ -11,8 +11,8 @@ data class Trip(
     var endDate: Calendar,
     var estimatedPrice: Double,
     var groupSize: Int,
-    var participants: List<Int>,               //user id - is this useful?
-    var activities: Map<Calendar, List<Activity>>,            //Map<Date,Activity> to filter by day
+    var participants: List<Int>,                            //user id - is this useful?
+    var activities: Map<Calendar, List<Activity>>,          //Map<Date,Activity> to filter by day
     var status: TripStatus,
     var typeTravel: List<TypeTravel>,
     var creatorId: Int,
@@ -32,6 +32,48 @@ data class Trip(
         NOT_STARTED,
         IN_PROGRESS,
         COMPLETED
+    }
+
+    constructor() : this (
+        id = -1,
+        photo = "",
+        title = "",
+        destination = "",
+        startDate = Calendar.getInstance(),
+        endDate = Calendar.getInstance(),
+        estimatedPrice = -1.0,
+        groupSize = -1,
+        participants = emptyList(),
+        activities = emptyMap(),
+        status = TripStatus.NOT_STARTED,
+        typeTravel = emptyList(),
+        creatorId = -1,
+        appliedUsers = emptyList(),
+        published = false,
+        reviews = emptyList()
+    ) {
+        var yesterday = Calendar.getInstance()
+        yesterday.add(Calendar.DATE, -1)
+
+        startDate = yesterday
+        endDate = yesterday
+
+    }
+
+    fun IsValid():Boolean {
+        var condition: Boolean = true
+        var yesterday = Calendar.getInstance()
+        yesterday.add(Calendar.DATE, -1)
+
+        condition = photo != "" && title != "" && destination != ""
+
+        condition = condition && startDate != yesterday && endDate != yesterday
+
+        condition = condition && estimatedPrice > 0.0 && groupSize > 0
+
+        condition = condition && activities.isNotEmpty() && typeTravel.isNotEmpty()
+
+        return condition
     }
 
     fun canJoin():Boolean {

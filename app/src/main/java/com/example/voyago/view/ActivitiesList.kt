@@ -168,6 +168,16 @@ fun ActivitiesList(navController: NavController, vm: TripListViewModel) {
                                     if (allDaysHaveActivities(selectedTrip)) {
                                         //Save the editing
                                         //Editing is saved already (!)
+                                        if(vm.newTrip.IsValid()) {
+                                            vm.addNewTrip(vm.newTrip)
+                                            vm.newTrip = Trip()
+                                        } else if (vm.editTrip.IsValid()) {
+                                            vm.editNewTrip(vm.editTrip)
+                                            vm.editTrip = Trip()
+                                        }
+                                        //Remember to add Edit Trip.
+
+
                                         //Go to the owned travel proposal
                                         navController.navigate("owned_travel_proposal_list") {
                                             popUpTo("owned_travel_proposal_list") {
