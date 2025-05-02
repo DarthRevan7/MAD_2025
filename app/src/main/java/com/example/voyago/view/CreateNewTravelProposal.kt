@@ -490,6 +490,7 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                                         )
 
                                         vm.newTrip = newTrip
+                                        vm.selectTrip(newTrip)
 
                                     } else {
 
@@ -497,7 +498,7 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
 
                                         if (currentTrip != null){
                                             val newTrip = Trip(
-                                                photo = imageUri.toString(),
+                                                photo = currentTrip.photo,
                                                 title = tripName,
                                                 destination = destination,
                                                 startDate = startCalendar!!,

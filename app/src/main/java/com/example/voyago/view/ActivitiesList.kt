@@ -168,15 +168,41 @@ fun ActivitiesList(navController: NavController, vm: TripListViewModel) {
                                     if (allDaysHaveActivities(selectedTrip)) {
                                         //Save the editing
                                         //Editing is saved already (!)
-                                        if(vm.newTrip.IsValid()) {
-                                            vm.addNewTrip(vm.newTrip)
-                                            vm.newTrip = Trip()
-                                        } else if (vm.editTrip.IsValid()) {
-                                            vm.editNewTrip(vm.editTrip)
-                                            vm.editTrip = Trip()
-                                        }
+//                                        if(vm.newTrip.IsValid()) {
+//                                            vm.addNewTrip(vm.newTrip)
+//                                            vm.newTrip = Trip()
+//                                        } else if (vm.editTrip.IsValid()) {
+//                                            vm.editNewTrip(vm.editTrip)
+//                                            vm.editTrip = Trip()
+//                                        }
                                         //Remember to add Edit Trip.
+                                        val activities =
+                                            mutableMapOf<Calendar, MutableList<Trip.Activity>>()
 
+                                        val updatedTrip = Trip(
+                                            photo = vm.newTrip.photo,
+                                            title = vm.newTrip.title,
+                                            destination = vm.newTrip.destination,
+                                            startDate = vm.newTrip.startDate,
+                                            endDate = vm.newTrip.endDate,
+                                            estimatedPrice = vm.newTrip.estimatedPrice,
+                                            groupSize = vm.newTrip.groupSize,
+                                            activities = activities,
+                                            //activities = currentTrip.activities,
+                                            typeTravel = vm.newTrip.typeTravel,
+                                            creatorId = vm.newTrip.creatorId,
+                                            published = false,
+                                            id = vm.newTrip.id,
+                                            participants = emptyList(),
+                                            status = Trip.TripStatus.NOT_STARTED,
+                                            appliedUsers = emptyList(),
+                                            reviews = emptyList()
+
+                                        )
+
+                                        //vm.addNewTrip(newTrip)
+
+                                        vm.addNewTrip(updatedTrip)
 
                                         //Go to the owned travel proposal
                                         navController.navigate("owned_travel_proposal_list") {
