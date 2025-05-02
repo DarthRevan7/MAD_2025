@@ -548,8 +548,8 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
                                                 reviews = currentTrip.reviews
                                             )
 
-                                                vm.editTrip = updatedTrip
-                                                //vm.editNewTrip(updatedTrip)
+                                                //vm.editTrip = updatedTrip
+                                                vm.editNewTrip(updatedTrip)
                                             }
 
 
