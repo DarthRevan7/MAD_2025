@@ -150,6 +150,9 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
 
         var dateError by rememberSaveable { mutableStateOf("") }
 
+        var typeTravelError by rememberSaveable { mutableStateOf(false) }
+        var typeTravelErrorMessage by rememberSaveable { mutableStateOf("") }
+
 
 
         Scaffold(
@@ -308,7 +311,6 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
                                 .padding(bottom = 3.dp)
                         ) {
 
-
                             Text(
                                 text = "Select one or more options",
                                 modifier = Modifier
@@ -318,6 +320,16 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
                                 //fontSize = 10.sp
                             )
                         }
+
+                        if (typeTravelError) {
+                            Text(
+                                text = typeTravelErrorMessage,
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                        }
+
                     }
 
                     item {
@@ -476,6 +488,9 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
                                         priceError = false
                                         priceErrorMessage = ""
                                         dateError = "End date must be after start date"
+                                    } else if (selected.isEmpty()) {
+                                        typeTravelError = true
+                                        typeTravelErrorMessage = "Select at least one travel type"
                                     } else {
                                         priceError = false
                                         priceErrorMessage = ""

@@ -436,7 +436,7 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                         //Next Button
                         Button(
                             onClick = {
-                                //ADD TYPE TRAVEL SELECTION CHECK
+
                                 if(!imageUri.toString().isUriString()) {
                                     tripImageError = true
                                     photoErrorMessage = "Upload Trip Photo"
