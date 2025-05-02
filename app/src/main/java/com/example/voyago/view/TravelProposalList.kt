@@ -36,7 +36,7 @@ import androidx.compose.ui.Alignment
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TravelProposalList(navController: NavController, vm: TripListViewModel = viewModel(factory = Factory)) {
+fun TravelProposalList(navController: NavController, vm: TripViewModel = viewModel(factory = Factory)) {
 
     val filteredTrips by vm.filteredList.collectAsState()
 
@@ -53,9 +53,9 @@ fun TravelProposalList(navController: NavController, vm: TripListViewModel = vie
         vm.updatePublishedTrip()
         vm.setMaxMinPrice()
 
-        println("IsSearching = " + vm.isSearching)
+        println("User Action = " + vm.userAction)
 
-        if(!vm.isSearching) {
+        if(vm.userAction != TripViewModel.UserAction.SEARCHING) {
             vm.resetFilters()
         }
         vm.applyFilters()
@@ -87,7 +87,7 @@ fun TravelProposalList(navController: NavController, vm: TripListViewModel = vie
                 ) {
                     Button(
                         onClick = {
-                            vm.isSearching = false
+                            vm.userAction = TripViewModel.UserAction.FILTER_SELECTION
                             navController.navigate("filter_selection")
                         },
                         border = BorderStroke(1.dp, Color.Black),

@@ -31,7 +31,7 @@ class TripViewModel(val model:Model): ViewModel() {
 
 
     public enum class UserAction {
-        EDIT_TRIP, CREATE_TRIP, VIEW_TRIP, NOTHING
+        EDIT_TRIP, CREATE_TRIP, VIEW_TRIP, NOTHING, SEARCHING, FILTER_SELECTION
     }
 
     private val _priceBounds = mutableStateOf(0f..1000f)
@@ -79,6 +79,7 @@ class TripViewModel(val model:Model): ViewModel() {
         filterMaxPrice = maxPrice
         filterMinPrice = minPrice
     }
+
 
 
 
@@ -156,6 +157,8 @@ class TripViewModel(val model:Model): ViewModel() {
 
     fun getMinPrice() = model.minPrice
     fun getMaxPrice() = model.maxPrice
+
+    fun setMaxMinPrice() = model.setMaxMinPrice()
 
     fun addActivityToSelectedTrip(activity: Trip.Activity) {
         model.addActivityToTrip(activity, selectedTrip)?.let { updatedTrip ->
@@ -250,5 +253,18 @@ class TripViewModel(val model:Model): ViewModel() {
         private set
 
 
+}
+
+object NewFactory : ViewModelProvider.Factory{
+    private val model:Model = Model()
+
+    override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
+        @Suppress("UNCHECKED_CAST")
+        return when{
+            modelClass.isAssignableFrom(TripViewModel::class.java)->
+                TripViewModel(model) as T
+            else -> throw IllegalArgumentException("Unknown ViewModel")
+        }
+    }
 }
 

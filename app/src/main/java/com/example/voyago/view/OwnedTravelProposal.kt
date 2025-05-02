@@ -52,11 +52,12 @@ import androidx.compose.material.icons.filled.TaskAlt
 import androidx.compose.material3.*
 import androidx.compose.ui.draw.clip
 import androidx.core.net.toUri
+import com.example.voyago.viewmodel.TripViewModel
 
 
 @SuppressLint("DiscouragedApi")
 @Composable
-fun OwnedTravelProposalList(navController: NavController, vm: TripListViewModel) {
+fun OwnedTravelProposalList(navController: NavController, vm: TripViewModel) {
 
     val publishedTrips by vm.publishedTrips.collectAsState()
     val privateTrips by vm.privateTrips.collectAsState()
@@ -75,7 +76,7 @@ fun OwnedTravelProposalList(navController: NavController, vm: TripListViewModel)
         },
         floatingActionButton = {
             FloatingActionButton(onClick = {
-                vm.resetCurrentTrip()
+                vm.newTrip = Trip()
                 navController.navigate("create_new_travel_proposal")
             }) {
                 Icon(Icons.Default.Add, "Add")
@@ -113,7 +114,8 @@ fun OwnedTravelProposalList(navController: NavController, vm: TripListViewModel)
 
             if (publishedTrips.isNotEmpty()) {
                 items(publishedTrips, key = { it.id }) { trip ->
-                    TripCard(trip, navController, vm, true)
+                    vm.userAction = TripViewModel.UserAction.EDIT_TRIP
+                    TripCard(trip, navController, vm, vm.userAction == TripViewModel.UserAction.EDIT_TRIP)
                 }
             } else {
                 item {
@@ -136,7 +138,8 @@ fun OwnedTravelProposalList(navController: NavController, vm: TripListViewModel)
 
             if(privateTrips.isNotEmpty()) {
                 items(privateTrips, key = { it.id }) { trip ->
-                    TripCard(trip, navController, vm, true)
+                    vm.userAction = TripViewModel.UserAction.EDIT_TRIP
+                    TripCard(trip, navController, vm, vm.userAction == TripViewModel.UserAction.EDIT_TRIP)
                 }
             } else {
                 item {
@@ -167,7 +170,7 @@ fun String.isUriString(): Boolean {
 
 @SuppressLint("DiscouragedApi")
 @Composable
-fun TripCard(trip: Trip, navController: NavController, vm: TripListViewModel, edit: Boolean) {
+fun TripCard(trip: Trip, navController: NavController, vm: TripViewModel, edit: Boolean) {
     Card(
         modifier = Modifier
             .padding(start = 16.dp, end = 16.dp, top = 10.dp)
@@ -175,7 +178,8 @@ fun TripCard(trip: Trip, navController: NavController, vm: TripListViewModel, ed
             .height(200.dp),
         shape = CardDefaults.elevatedShape,
         onClick = {
-            vm.selectTrip(trip)
+            vm.selectedTrip = trip
+            vm.userAction = TripViewModel.UserAction.VIEW_TRIP
             navController.navigate("travel_proposal_details")
 
         }
@@ -258,14 +262,15 @@ fun TripCard(trip: Trip, navController: NavController, vm: TripListViewModel, ed
                         painter = painterEdit, "edit", modifier = Modifier
                             .size(35.dp)
                             .clickable {
-                                vm.selectTrip(trip)
+                                vm.editTrip = trip
+                                vm.userAction = TripViewModel.UserAction.EDIT_TRIP
                                 navController.navigate("edit_travel_proposal")
                             }
                     )
                 }
             }
 
-            if (!trip.canJoin() && !edit) {
+            if (!trip.canJoin() && edit) {
                 CompletedBanner(Modifier.align(Alignment.TopEnd))
             }
         }

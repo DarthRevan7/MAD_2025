@@ -61,13 +61,14 @@ import com.example.voyago.activities.TopBar
 import com.example.voyago.model.Trip
 import com.example.voyago.model.TypeTravel
 import com.example.voyago.viewmodel.TripListViewModel
+import com.example.voyago.viewmodel.TripViewModel
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-fun initUri(vm:TripListViewModel): String {
-    if(vm.selectedTrip != null) {
-        return vm.selectedTrip!!.photo
+fun initUri(vm:TripViewModel): String {
+    if(vm.editTrip.IsValid()) {
+        return vm.selectedTrip.photo
     }
     return "placeholder_photo"
 }
@@ -88,12 +89,11 @@ if (tripImageError) {
 */
 
 @Composable
-fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
-    val trip = vm.selectedTrip
+fun EditTravelProposal(navController: NavController, vm: TripViewModel) {
+    val trip = vm.editTrip
 
+    //Can delete this if
     if(trip!=null) {
-
-
 
         var imageUri by rememberSaveable {
             mutableStateOf<Uri?>(
@@ -105,9 +105,6 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
             )
         }
 
-
-
-        Log.d("foto_trip", "trip.photo = " + trip.photo.toString())
         LaunchedEffect(
             Unit
         ) { initUri(vm = vm) }
@@ -498,7 +495,8 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
 
                                         val creatorId = 1
 
-                                        if (vm.currentTrip == null) {
+                                        // Create new Trip
+                                        if (vm.userAction == TripViewModel.UserAction.CREATE_TRIP) {
                                             val activities =
                                                 mutableMapOf<Calendar, MutableList<Trip.Activity>>()
 
@@ -514,7 +512,7 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
                                                 typeTravel = selected.map { TypeTravel.valueOf(it.uppercase()) },
                                                 creatorId = creatorId,
                                                 published = false,
-                                                id = 99,
+                                                id = -1,
                                                 participants = emptyList(),
                                                 status = Trip.TripStatus.NOT_STARTED,
                                                 appliedUsers = emptyList(),
@@ -522,13 +520,13 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
                                             )
 
                                             vm.newTrip = newTrip
-                                            //vm.addNewTrip(newTrip)
+                                            println("Trip making")
 
-                                        } else {
+                                        } else if(vm.userAction == TripViewModel.UserAction.EDIT_TRIP) {
 
-                                        val currentTrip = vm.currentTrip
+                                        val currentTrip = vm.editTrip
 
-                                        if (currentTrip != null) {
+                                        if (currentTrip.IsValid()) {
                                             val updatedTrip = Trip(
                                                 photo = imageUri.toString(),
                                                 title = tripName,
@@ -548,11 +546,9 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
                                                 reviews = currentTrip.reviews
                                             )
 
-                                                //vm.editTrip = updatedTrip
-                                                vm.editNewTrip(updatedTrip)
+                                            vm.editTrip = updatedTrip
+                                            println("Trip editing")
                                             }
-
-
                                         }
                                         navController.navigate("activities_list")
                                     }
@@ -587,7 +583,7 @@ fun Calendar.toStringDate(): String {
 fun TripImageEdit(trip:Trip, imageUri: Uri?, onUriSelected: (Uri?) -> Unit) {
     val context = LocalContext.current
 
-    // Questo launcher gestisce il risultato del selettore di media
+    //Returns result of media loader
     val pickMedia = rememberLauncherForActivityResult(
         contract = PickVisualMedia()
     ) { uri ->
@@ -603,7 +599,7 @@ fun TripImageEdit(trip:Trip, imageUri: Uri?, onUriSelected: (Uri?) -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .height(250.dp),
-        contentAlignment = Alignment.Center // Centra il contenuto
+        contentAlignment = Alignment.Center
     ) {
         if (imageUri.toString().isUriString()) {
             AsyncImage(
@@ -640,10 +636,9 @@ fun TripImageEdit(trip:Trip, imageUri: Uri?, onUriSelected: (Uri?) -> Unit) {
             }
         }
 
-        // L'IconButton per selezionare la foto
+        //Iconbutton select photo
         IconButton(
             onClick = {
-                // Avvia il selettore quando l'icona viene cliccata
                 pickMedia.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
             },
             modifier = Modifier

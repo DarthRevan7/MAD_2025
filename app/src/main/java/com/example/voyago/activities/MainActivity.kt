@@ -53,8 +53,7 @@ import coil3.compose.AsyncImage
 import com.example.voyago.model.NavItem
 import com.example.voyago.R
 import com.example.voyago.view.*
-import com.example.voyago.viewmodel.Factory
-import com.example.voyago.viewmodel.TripListViewModel
+import com.example.voyago.viewmodel.*
 
 
 class MainActivity : ComponentActivity() {
@@ -82,7 +81,7 @@ class MainActivity : ComponentActivity() {
                         val parentEntry = remember(navBackStackEntry) {
                             navController.getBackStackEntry("all_trips_graph")
                         }
-                        val vm: TripListViewModel = viewModel(parentEntry, factory = Factory)
+                        val vm: TripViewModel = viewModel(parentEntry, factory = NewFactory)
                         TravelProposalList(navController, vm)
                     }
 
@@ -113,7 +112,7 @@ class MainActivity : ComponentActivity() {
                         val parentEntry = remember(navBackStackEntry) {
                             navController.getBackStackEntry("owned_trips_graph")
                         }
-                        val vm: TripListViewModel = viewModel(parentEntry, factory = Factory)
+                        val vm: TripViewModel = viewModel(parentEntry, factory = NewFactory)
                         OwnedTravelProposalList(navController, vm)
                     }
 
@@ -137,7 +136,7 @@ class MainActivity : ComponentActivity() {
                         val parentEntry = remember(navBackStackEntry) {
                             navController.getBackStackEntry("owned_trips_graph")
                         }
-                        val vm: TripListViewModel = viewModel(parentEntry, factory = Factory)
+                        val vm: TripViewModel = viewModel(parentEntry, factory = NewFactory)
                         EditTravelProposal(navController, vm)
                     }
 
@@ -145,7 +144,7 @@ class MainActivity : ComponentActivity() {
                         val parentEntry = remember(navBackStackEntry) {
                             navController.getBackStackEntry("owned_trips_graph")
                         }
-                        val vm: TripListViewModel = viewModel(parentEntry, factory = Factory)
+                        val vm: TripListViewModel = viewModel(parentEntry, factory = NewFactory)
                         NewTravelProposal(navController, vm)
                     }
 

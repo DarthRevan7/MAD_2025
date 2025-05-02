@@ -61,12 +61,15 @@ import coil3.request.crossfade
 import com.example.voyago.model.Trip
 import com.example.voyago.model.TypeTravel
 import com.example.voyago.viewmodel.TripListViewModel
+import com.example.voyago.viewmodel.TripViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
+fun NewTravelProposal(navController: NavController, vm: TripViewModel) {
 
     //vm.selectTrip(null)
+
+    vm.userAction = TripViewModel.UserAction.CREATE_TRIP
 
     var tripName by rememberSaveable {mutableStateOf("")}
     var destination by rememberSaveable {mutableStateOf("")}
@@ -279,7 +282,6 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                                 .padding(vertical = 10.dp)
                                 .align(Alignment.Center),
                             fontStyle = FontStyle.Italic
-                            //fontSize = 10.sp
                         )
                     }
 
@@ -420,6 +422,7 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
 
                         Button(
                             onClick = {
+                                vm.userAction = TripViewModel.UserAction.NOTHING
                                 navController.popBackStack()
                             },
                             modifier = Modifier
@@ -466,8 +469,8 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
 
                                     val creatorId = 1
 
-                                    println("currentTrip = ${vm.currentTrip}")
-                                    if (vm.currentTrip == null) {
+                                    //println("currentTrip = ${vm.currentTrip}")
+                                    if (vm.newTrip == null) {
                                         val activities = mutableMapOf<Calendar, MutableList<Trip.Activity>>()
 
                                         var newTrip = Trip(
@@ -490,36 +493,8 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                                         )
 
                                         vm.newTrip = newTrip
-                                        vm.selectTrip(newTrip)
-
-                                    } else {
-
-                                        val currentTrip = vm.currentTrip
-
-                                        if (currentTrip != null){
-                                            val newTrip = Trip(
-                                                photo = imageUri.toString(),
-                                                title = tripName,
-                                                destination = destination,
-                                                startDate = startCalendar!!,
-                                                endDate = endCalendar!!,
-                                                estimatedPrice = price.toDouble(),
-                                                groupSize = groupSize.toInt(),
-                                                activities = currentTrip.activities,
-                                                typeTravel = selected.map { TypeTravel.valueOf(it.uppercase()) },
-                                                creatorId = currentTrip.creatorId,
-                                                published = currentTrip.published,
-                                                id = currentTrip.id,
-                                                participants = currentTrip.participants,
-                                                status = Trip.TripStatus.NOT_STARTED,
-                                                appliedUsers = currentTrip.appliedUsers,
-                                                reviews = currentTrip.reviews
-                                            )
-
-                                            vm.editTrip = newTrip
-                                            //vm.editNewTrip(newTrip)
-                                        }
                                     }
+                                    vm.userAction = TripViewModel.UserAction.CREATE_TRIP
                                     navController.navigate("activities_list")
                                 }
                             },
