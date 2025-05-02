@@ -470,7 +470,7 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                                     if (vm.currentTrip == null) {
                                         val activities = mutableMapOf<Calendar, MutableList<Trip.Activity>>()
 
-                                        val newTrip = Trip(
+                                        var newTrip = Trip(
                                             photo = imageUri.toString(),
                                             title = tripName,
                                             destination = destination,
@@ -489,7 +489,7 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                                             reviews = emptyList()
                                         )
 
-                                        vm.addNewTrip(newTrip)
+                                        vm.newTrip = newTrip
 
                                     } else {
 
