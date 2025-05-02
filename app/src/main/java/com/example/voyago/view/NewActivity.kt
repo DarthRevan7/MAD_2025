@@ -69,6 +69,8 @@ fun NewActivity(navController: NavController, vm: TripListViewModel) {
     var showDateError by rememberSaveable { mutableStateOf(false) }
     var dateErrorMessage by rememberSaveable { mutableStateOf("") }
 
+    //delete
+    var activities:MutableMap<Calendar,List<Trip.Activity>> by rememberSaveable { mutableMapOf() }
 
     Scaffold(
         topBar = {
@@ -272,7 +274,27 @@ fun NewActivity(navController: NavController, vm: TripListViewModel) {
                                     description = activityDescription
                                 )
 
-                                vm.addActivityToSelectedTrip(newActivity)
+                                //Check for test
+
+                                vm.addActivityToTrip(newActivity, editing = vm.editTrip.IsValid())
+
+                                /*
+                                if (activities[newActivity.date] != null) {
+                                    var listActivities: List<Trip.Activity>? = activities[newActivity.date]
+                                    if (listActivities != null) {
+                                        listActivities = listActivities + newActivity
+                                        activities[newActivity.date] = listActivities
+                                    }
+                                }
+
+                                 */
+
+                                //vm.setTripActivitiesMap(activities, vm.editTrip.IsValid())
+
+                                //vm.addActivityToTrip(newActivity, )
+
+                                //vm.addActivityToSelectedTrip(newActivity)
+
                                 navController.popBackStack()
 
                             },

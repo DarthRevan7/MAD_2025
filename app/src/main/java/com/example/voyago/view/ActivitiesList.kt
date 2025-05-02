@@ -65,8 +65,13 @@ fun allDaysHaveActivities(trip: Trip?): Boolean {
 @Composable
 fun ActivitiesList(navController: NavController, vm: TripListViewModel) {
 
+    var selectedTrip = Trip()
 
-    val selectedTrip = vm.currentTrip
+    if(vm.newTrip.IsValid()) {
+        selectedTrip = vm.newTrip
+    } else {
+        selectedTrip = vm.editTrip
+    }
 
     var showIncompleteDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -187,8 +192,8 @@ fun ActivitiesList(navController: NavController, vm: TripListViewModel) {
                                             endDate = vm.newTrip.endDate,
                                             estimatedPrice = vm.newTrip.estimatedPrice,
                                             groupSize = vm.newTrip.groupSize,
-                                            activities = activities,
-                                            //activities = currentTrip.activities,
+                                            //activities = activities,
+                                            activities = vm.newTrip.activities,
                                             typeTravel = vm.newTrip.typeTravel,
                                             creatorId = vm.newTrip.creatorId,
                                             published = false,

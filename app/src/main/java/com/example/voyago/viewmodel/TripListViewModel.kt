@@ -25,6 +25,29 @@ class TripListViewModel(val model: Model) : ViewModel() {
 
     //NEW VIEW MODEL
 
+    fun setTripActivitiesMap(actMap:Map<Calendar,List<Trip.Activity>>, editing: Boolean) {
+        if(!editing) {
+            newTrip.activities = actMap
+        } else {
+            editTrip.activities = actMap
+        }
+    }
+
+    //Add an activity on a trip. Passed boolean for editing or creating mode
+    fun addActivityToTrip(activity: Trip.Activity, editing:Boolean) {
+        //Creating a new trip
+        if(!editing) {
+            model.addActivityToTrip(activity, newTrip)?.let { updatedTrip ->
+                newTrip = updatedTrip
+            }
+        } else {
+            //I am editing an existing trip
+            model.addActivityToTrip(activity, editTrip)?.let { updatedTrip ->
+                editTrip = updatedTrip
+            }
+        }
+    }
+
     private var _newTrip = Trip()
     var newTrip = _newTrip
 
@@ -139,6 +162,8 @@ class TripListViewModel(val model: Model) : ViewModel() {
 
     var currentTrip: Trip? by mutableStateOf(null)
         private set
+
+
 
     fun selectTrip(trip: Trip?) {
         currentTrip = trip
