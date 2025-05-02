@@ -521,7 +521,8 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
                                                 reviews = emptyList()
                                             )
 
-                                            vm.addNewTrip(newTrip)
+                                            vm.newTrip = newTrip
+                                            //vm.addNewTrip(newTrip)
 
                                         } else {
 
@@ -547,7 +548,8 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
                                                     reviews = currentTrip.reviews
                                                 )
 
-                                                vm.editNewTrip(updatedTrip)
+                                                vm.editTrip = updatedTrip
+                                                //vm.editNewTrip(updatedTrip)
                                             }
 
 

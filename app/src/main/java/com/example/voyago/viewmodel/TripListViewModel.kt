@@ -28,6 +28,9 @@ class TripListViewModel(val model: Model) : ViewModel() {
     private var _newTrip = Trip()
     var newTrip = _newTrip
 
+    private var _editTrip = Trip()
+    var editTrip = _editTrip
+
 
     private var _searching = false
     var isSearching = _searching

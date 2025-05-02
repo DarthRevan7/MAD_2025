@@ -515,7 +515,8 @@ fun NewTravelProposal(navController: NavController, vm: TripListViewModel) {
                                                 reviews = currentTrip.reviews
                                             )
 
-                                            vm.editNewTrip(newTrip)
+                                            vm.editTrip = newTrip
+                                            //vm.editNewTrip(newTrip)
                                         }
                                     }
                                     navController.navigate("activities_list")
