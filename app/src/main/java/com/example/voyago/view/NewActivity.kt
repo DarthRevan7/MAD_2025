@@ -64,7 +64,7 @@ fun NewActivity(navController: NavController, vm: TripListViewModel) {
         val hour = calendar.get(Calendar.HOUR)
         val minute = calendar.get(Calendar.MINUTE)
         val amPm = if (calendar.get(Calendar.AM_PM) == Calendar.AM) "AM" else "PM"
-        mutableStateOf(String.format(Locale.ITALY, "%02d:%02d %s", if (hour == 0) 12 else hour, minute, amPm))
+        mutableStateOf(String.format(Locale.US, "%02d:%02d %s", if (hour == 0) 12 else hour, minute, amPm))
     }
     var showDateError by rememberSaveable { mutableStateOf(false) }
     var dateErrorMessage by rememberSaveable { mutableStateOf("") }

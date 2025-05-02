@@ -496,13 +496,11 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
                                         priceErrorMessage = ""
                                         dateError = ""
 
-                                        val creatorId = 1
 
-                                        if (vm.currentTrip == null) {
-                                            val activities =
-                                                mutableMapOf<Calendar, MutableList<Trip.Activity>>()
+                                        val currentTrip = vm.currentTrip
 
-                                            val newTrip = Trip(
+                                        if (currentTrip != null) {
+                                            val updatedTrip = Trip(
                                                 photo = imageUri.toString(),
                                                 title = tripName,
                                                 destination = destination,
@@ -510,45 +508,20 @@ fun EditTravelProposal(navController: NavController, vm: TripListViewModel) {
                                                 endDate = endCalendar!!,
                                                 estimatedPrice = price.toDouble(),
                                                 groupSize = groupSize.toInt(),
-                                                activities = activities,
+                                                activities = currentTrip.activities,
                                                 typeTravel = selected.map { TypeTravel.valueOf(it.uppercase()) },
-                                                creatorId = creatorId,
-                                                published = false,
-                                                id = 99,
-                                                participants = emptyList(),
-                                                status = Trip.TripStatus.NOT_STARTED,
-                                                appliedUsers = emptyList(),
-                                                reviews = emptyList()
+                                                creatorId = currentTrip.creatorId,
+                                                published = currentTrip.published,
+                                                id = currentTrip.id,
+                                                participants = currentTrip.participants,
+                                                status = currentTrip.status,
+                                                appliedUsers = currentTrip.appliedUsers,
+                                                reviews = currentTrip.reviews
                                             )
 
-                                            vm.addNewTrip(newTrip)
+                                            vm.editNewTrip(updatedTrip)
 
-                                        } else {
 
-                                            val currentTrip = vm.currentTrip
-
-                                            if (currentTrip != null) {
-                                                val updatedTrip = Trip(
-                                                    photo = currentTrip.photo,
-                                                    title = tripName,
-                                                    destination = destination,
-                                                    startDate = startCalendar!!,
-                                                    endDate = endCalendar!!,
-                                                    estimatedPrice = price.toDouble(),
-                                                    groupSize = groupSize.toInt(),
-                                                    activities = currentTrip.activities,
-                                                    typeTravel = selected.map { TypeTravel.valueOf(it.uppercase()) },
-                                                    creatorId = currentTrip.creatorId,
-                                                    published = currentTrip.published,
-                                                    id = currentTrip.id,
-                                                    participants = currentTrip.participants,
-                                                    status = currentTrip.status,
-                                                    appliedUsers = currentTrip.appliedUsers,
-                                                    reviews = currentTrip.reviews
-                                                )
-
-                                                vm.editNewTrip(updatedTrip)
-                                            }
 
 
                                         }

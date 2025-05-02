@@ -235,7 +235,7 @@ fun ActivitiesListContent(trip: Trip, vm: TripListViewModel, navController: NavC
         } else {
             sortedDays.forEach { day ->
                 val dayIndex = ((day.timeInMillis - trip.startDate.timeInMillis) / (1000 * 60 * 60 * 24)).toInt() + 1
-                val formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.ITALY)
+                val formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.US)
                 val activitiesForDay = (trip.activities[day] ?: emptyList())
                     .sortedBy { LocalTime.parse(it.time, formatter) }
 
