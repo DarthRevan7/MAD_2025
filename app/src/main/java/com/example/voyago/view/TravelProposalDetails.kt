@@ -60,164 +60,130 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.window.Popup
 import androidx.core.net.toUri
+import com.example.voyago.viewmodel.TripViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun TravelProposalDetail(navController: NavController, vm: TripListViewModel, owner: Boolean) {
+fun TravelProposalDetail(navController: NavController, vm: TripViewModel, owner: Boolean) {
     val trip = vm.selectedTrip
 
-    if (trip != null) {
 
-        var showPopup by remember { mutableStateOf(false) }
-        val coroutineScope = rememberCoroutineScope()
-        val askedTrips: Set<Int> by vm.askedTrips.collectAsState()
-        val hasAsked = askedTrips.contains(trip.id)
 
-        Scaffold(
-            topBar = {
-                TopBar()
-            },
-            bottomBar = {
-                var id = 0
-                if (owner) {
-                    id = 1
-                }
-                BottomBar(id)
+    var showPopup by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+    val askedTrips: Set<Int> by vm.askedTrips.collectAsState()
+    val hasAsked = askedTrips.contains(trip.id)
+
+    Scaffold(
+        topBar = {
+            TopBar()
+        },
+        bottomBar = {
+            var id = 0
+            if (owner) {
+                id = 1
             }
-        ) { innerPadding ->
+            BottomBar(id)
+        }
+    ) { innerPadding ->
 
-            val listState = rememberLazyListState()
+        val listState = rememberLazyListState()
 
-            Box(modifier = Modifier.fillMaxSize()) {
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                ) {
-                    item {
-                        Hero(trip)
+        Box(modifier = Modifier.fillMaxSize()) {
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) {
+                item {
+                    Hero(trip)
+                }
+
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 24.dp, end = 24.dp)
+                    ) {
+                        Text(
+                            text = formatTripDate(trip.startDate) + " - " +
+                                    formatTripDate(trip.endDate) + "\n " +
+                                    "${trip.groupSize} people" +
+                                    if (trip.availableSpots() > 0) {
+                                        " (${trip.availableSpots()} spots left)"
+                                    } else {
+                                        ""
+                                    },
+                            modifier = Modifier.align(Alignment.CenterVertically)
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        Text(
+                            text = "${trip.estimatedPrice} €",
+                            modifier = Modifier.align(Alignment.CenterVertically)
+                        )
                     }
+                }
 
-                    item {
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
-
-                    item {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 24.dp, end = 24.dp)
-                        ) {
-                            Text(
-                                text = formatTripDate(trip.startDate) + " - " +
-                                        formatTripDate(trip.endDate) + "\n " +
-                                        "${trip.groupSize} people" +
-                                        if (trip.availableSpots() > 0) {
-                                            " (${trip.availableSpots()} spots left)"
-                                        } else {
-                                            ""
-                                        },
-                                modifier = Modifier.align(Alignment.CenterVertically)
-                            )
-                            Spacer(modifier = Modifier.weight(1f))
-                            Text(
-                                text = "${trip.estimatedPrice} €",
-                                modifier = Modifier.align(Alignment.CenterVertically)
-                            )
-                        }
-                    }
-
-                    if (owner) {
-                        if (trip.published) {
-                            item {
-                                Row(
-                                    modifier = Modifier
-                                        .padding(16.dp)
-                                        .fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.End
-                                ) {
-                                    Box {
-                                        Button(
-                                            onClick = {
-                                                navController.navigate("trip_applications")
-                                            },
-                                            colors = ButtonDefaults.buttonColors(
-                                                containerColor = Color(0x14, 0xa1, 0x55, 255)
-                                            )
-                                        ) {
-                                            Text("Applications")
-                                        }
-
-                                        if (trip.appliedUsers.isNotEmpty()) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(15.dp)
-                                                    .background(Color.Red, CircleShape)
-                                                    .align(Alignment.TopEnd)
-                                            )
-                                        }
-                                    }
-
-                                    Spacer(Modifier.weight(1f))
-
+                if (owner) {
+                    if (trip.published) {
+                        item {
+                            Row(
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End
+                            ) {
+                                Box {
                                     Button(
                                         onClick = {
-                                            vm.changePublishedStatus(trip.id)
-                                            vm.updatePublishedTrip()
-                                            navController.popBackStack()
-                                        },
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = Color(0x65, 0x55, 0x8f, 255)
-                                        )
-                                    ) {
-                                        Text("Private")
-                                    }
-
-                                    Spacer(Modifier.padding(5.dp))
-
-                                    DeleteButtonWithConfirmation(trip, navController, vm)
-                                }
-                            }
-                        }
-
-                        if (!trip.published) {
-                            item {
-                                Row(
-                                    modifier = Modifier
-                                        .padding(16.dp)
-                                        .fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.End
-                                ) {
-                                    Button(
-                                        onClick = {
-                                            vm.changePublishedStatus(trip.id)
-                                            vm.updatePublishedTrip()
-                                            navController.popBackStack()
+                                            navController.navigate("trip_applications")
                                         },
                                         colors = ButtonDefaults.buttonColors(
                                             containerColor = Color(0x14, 0xa1, 0x55, 255)
                                         )
                                     ) {
-                                        Text("Publish")
+                                        Text("Applications")
                                     }
 
-                                    Spacer(Modifier.padding(5.dp))
-
-                                    DeleteButtonWithConfirmation(trip, navController, vm)
+                                    if (trip.appliedUsers.isNotEmpty()) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(15.dp)
+                                                .background(Color.Red, CircleShape)
+                                                .align(Alignment.TopEnd)
+                                        )
+                                    }
                                 }
+
+                                Spacer(Modifier.weight(1f))
+
+                                Button(
+                                    onClick = {
+                                        vm.changePublishedStatus(trip.id)
+                                        vm.updatePublishedTrip()
+                                        navController.popBackStack()
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0x65, 0x55, 0x8f, 255)
+                                    )
+                                ) {
+                                    Text("Private")
+                                }
+
+                                Spacer(Modifier.padding(5.dp))
+
+                                DeleteButtonWithConfirmation(trip, navController, vm)
                             }
                         }
+                    }
 
-                        item {
-                            Spacer(modifier = Modifier.height(16.dp))
-                        }
-
-                        item {
-                            TitleBox("My Itinerary")
-                        }
-                    } else {
+                    if (!trip.published) {
                         item {
                             Row(
                                 modifier = Modifier
@@ -227,131 +193,166 @@ fun TravelProposalDetail(navController: NavController, vm: TripListViewModel, ow
                             ) {
                                 Button(
                                     onClick = {
-                                        vm.addImportedTrip(
-                                            trip.photo,
-                                            trip.title,
-                                            trip.destination,
-                                            trip.startDate,
-                                            trip.endDate,
-                                            trip.estimatedPrice,
-                                            trip.groupSize,
-                                            trip.activities,
-                                            trip.typeTravel,
-                                            1,
-                                            false
-                                        )
+                                        vm.changePublishedStatus(trip.id)
                                         vm.updatePublishedTrip()
-
-                                        showPopup = true
-                                        coroutineScope.launch {
-                                            delay(2000)
-                                            showPopup = false
-                                        }
+                                        navController.popBackStack()
                                     },
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(0x65, 0x55, 0x8f, 255)
+                                        containerColor = Color(0x14, 0xa1, 0x55, 255)
                                     )
                                 ) {
-                                    Text("Create a Copy")
+                                    Text("Publish")
                                 }
 
                                 Spacer(Modifier.padding(5.dp))
 
-                                if (trip.canJoin()) {
-                                    Button(
-                                        onClick = {
-                                            vm.toggleAskToJoin(trip.id)
-                                        },
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor =
-                                                if (hasAsked)
-                                                    Color(0x65, 0xa9, 0x8b, 255)
-                                                else
-                                                    Color(0x14, 0xa1, 0x55, 255)
-                                        )
-                                    ) {
-                                        if (hasAsked) {
-                                            Icon(Icons.Default.Check, "check")
-                                            Text("Asked to Join")
-                                        } else {
-                                            Text("Ask to Join")
-                                        }
-                                    }
-                                }
+                                DeleteButtonWithConfirmation(trip, navController, vm)
                             }
                         }
-
-                        item {
-                            Spacer(modifier = Modifier.height(16.dp))
-                        }
-
-                        item {
-                            TitleBox("Itinerary")
-                        }
-                    }
-
-                    item {
-                        ItineraryText(
-                            trip,
-                            modifier = Modifier
-                                .padding(start = 24.dp, top = 16.dp, end = 20.dp)
-                        )
                     }
 
                     item {
                         Spacer(modifier = Modifier.height(16.dp))
                     }
 
-                    if (trip.reviews.isNotEmpty()) {
-                        item {
-                            TitleBox("Reviews")
-                        }
+                    item {
+                        TitleBox("My Itinerary")
+                    }
+                } else {
+                    item {
+                        Row(
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            Button(
+                                onClick = {
+                                    vm.addImportedTrip(
+                                        trip.photo,
+                                        trip.title,
+                                        trip.destination,
+                                        trip.startDate,
+                                        trip.endDate,
+                                        trip.estimatedPrice,
+                                        trip.groupSize,
+                                        trip.activities,
+                                        trip.typeTravel,
+                                        1,
+                                        false
+                                    )
+                                    vm.updatePublishedTrip()
 
-                        item {
-                            Spacer(modifier = Modifier.height(16.dp))
-                        }
+                                    showPopup = true
+                                    coroutineScope.launch {
+                                        delay(2000)
+                                        showPopup = false
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0x65, 0x55, 0x8f, 255)
+                                )
+                            ) {
+                                Text("Create a Copy")
+                            }
 
-                        items(trip.reviews) { review ->
-                            ShowReview(review)
+                            Spacer(Modifier.padding(5.dp))
+
+                            if (trip.canJoin()) {
+                                Button(
+                                    onClick = {
+                                        vm.toggleAskToJoin(trip.id)
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor =
+                                            if (hasAsked)
+                                                Color(0x65, 0xa9, 0x8b, 255)
+                                            else
+                                                Color(0x14, 0xa1, 0x55, 255)
+                                    )
+                                ) {
+                                    if (hasAsked) {
+                                        Icon(Icons.Default.Check, "check")
+                                        Text("Asked to Join")
+                                    } else {
+                                        Text("Ask to Join")
+                                    }
+                                }
+                            }
                         }
+                    }
+
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+
+                    item {
+                        TitleBox("Itinerary")
                     }
                 }
 
-                if (showPopup) {
-                    Popup(
-                        alignment = Alignment.TopCenter,
-                        onDismissRequest = {
-                            showPopup = false
-                        }
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .wrapContentSize()
-                                .padding(top = 80.dp)
-                                .background(Color.White, shape = RoundedCornerShape(8.dp))
-                                .padding(16.dp)
-                        ) {
-                            Row {
-                                Icon(
-                                    imageVector = Icons.Default.CheckBox,
-                                    contentDescription = "check",
-                                    tint = Color.Green
-                                )
-                                Spacer(Modifier.padding(5.dp))
-                                Text(
-                                    text = "Copy created in 'My Trips'",
-                                    color = Color.Black,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    modifier = Modifier.align(Alignment.CenterVertically)
-                                )
-                            }
-                        }
+                item {
+                    ItineraryText(
+                        trip,
+                        modifier = Modifier
+                            .padding(start = 24.dp, top = 16.dp, end = 20.dp)
+                    )
+                }
+
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
+                if (trip.reviews.isNotEmpty()) {
+                    item {
+                        TitleBox("Reviews")
+                    }
+
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+
+                    items(trip.reviews) { review ->
+                        ShowReview(review)
                     }
                 }
             }
 
+            if (showPopup) {
+                Popup(
+                    alignment = Alignment.TopCenter,
+                    onDismissRequest = {
+                        showPopup = false
+                    }
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .wrapContentSize()
+                            .padding(top = 80.dp)
+                            .background(Color.White, shape = RoundedCornerShape(8.dp))
+                            .padding(16.dp)
+                    ) {
+                        Row {
+                            Icon(
+                                imageVector = Icons.Default.CheckBox,
+                                contentDescription = "check",
+                                tint = Color.Green
+                            )
+                            Spacer(Modifier.padding(5.dp))
+                            Text(
+                                text = "Copy created in 'My Trips'",
+                                color = Color.Black,
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.align(Alignment.CenterVertically)
+                            )
+                        }
+                    }
+                }
+            }
         }
+
     }
+
 }
 
 @SuppressLint("DiscouragedApi")
@@ -480,7 +481,7 @@ fun ItineraryText(trip: Trip, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun DeleteButtonWithConfirmation(trip: Trip, navController: NavController, vm: TripListViewModel) {
+fun DeleteButtonWithConfirmation(trip: Trip, navController: NavController, vm: TripViewModel) {
     val showDialog = remember { mutableStateOf(false) }
 
     Button(onClick = {

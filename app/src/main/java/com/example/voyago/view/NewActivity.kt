@@ -48,12 +48,12 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 import androidx.compose.material3.TextFieldDefaults
-
+import com.example.voyago.viewmodel.TripViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NewActivity(navController: NavController, vm: TripListViewModel) {
+fun NewActivity(navController: NavController, vm: TripViewModel) {
 
 
     var isGroupActivityChecked by rememberSaveable { mutableStateOf(false) }
@@ -69,8 +69,6 @@ fun NewActivity(navController: NavController, vm: TripListViewModel) {
     var showDateError by rememberSaveable { mutableStateOf(false) }
     var dateErrorMessage by rememberSaveable { mutableStateOf("") }
 
-    //delete
-    var activities:MutableMap<Calendar,List<Trip.Activity>> by rememberSaveable { mutableMapOf() }
 
     Scaffold(
         topBar = {
@@ -237,9 +235,16 @@ fun NewActivity(navController: NavController, vm: TripListViewModel) {
 
                         Button(
                             onClick = {
-                                val currentTrip = vm.currentTrip
-                                val existingActivities = currentTrip?.activities?.values?.flatten()?.map { it.id } ?: listOf()
-                                val newId = if (existingActivities.isNotEmpty()) existingActivities.max()!! + 1 else 1
+                                var currentTrip = Trip()
+
+                                if(vm.userAction == TripViewModel.UserAction.CREATE_TRIP) {
+                                    currentTrip = vm.newTrip
+                                } else if(vm.userAction == TripViewModel.UserAction.EDIT_TRIP) {
+                                    currentTrip = vm.editTrip
+                                }
+
+                                val existingActivities = currentTrip.activities.values.flatten().map { it.id }
+                                val newId = if (existingActivities.isNotEmpty()) existingActivities.max() + 1 else 1
 
                                 val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
                                 val parsedDate = try {
@@ -259,7 +264,7 @@ fun NewActivity(navController: NavController, vm: TripListViewModel) {
                                     time = parsedDate
                                 }
 
-                                if (currentTrip != null && (activityCalendar.before(currentTrip.startDate) || activityCalendar.after(currentTrip.endDate))) {
+                                if ((activityCalendar.before(currentTrip.startDate) || activityCalendar.after(currentTrip.endDate))) {
                                     showDateError = true
                                     dateErrorMessage = "Activity date must be within the trip period (${dateFormat.format(currentTrip.startDate.time)} - ${dateFormat.format(currentTrip.endDate.time)})."
                                     return@Button
@@ -274,26 +279,7 @@ fun NewActivity(navController: NavController, vm: TripListViewModel) {
                                     description = activityDescription
                                 )
 
-                                //Check for test
-
-                                vm.addActivityToTrip(newActivity, editing = vm.editTrip.IsValid())
-
-                                /*
-                                if (activities[newActivity.date] != null) {
-                                    var listActivities: List<Trip.Activity>? = activities[newActivity.date]
-                                    if (listActivities != null) {
-                                        listActivities = listActivities + newActivity
-                                        activities[newActivity.date] = listActivities
-                                    }
-                                }
-
-                                 */
-
-                                //vm.setTripActivitiesMap(activities, vm.editTrip.IsValid())
-
-                                //vm.addActivityToTrip(newActivity, )
-
-                                //vm.addActivityToSelectedTrip(newActivity)
+                                vm.addActivityToTrip(newActivity)
 
                                 navController.popBackStack()
 

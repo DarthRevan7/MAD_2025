@@ -89,7 +89,7 @@ class MainActivity : ComponentActivity() {
                         val parentEntry = remember(navBackStackEntry) {
                             navController.getBackStackEntry("all_trips_graph")
                         }
-                        val vm: TripListViewModel = viewModel(parentEntry, factory = Factory)
+                        val vm: TripViewModel = viewModel(parentEntry, factory = NewFactory)
                         TravelProposalDetail(navController, vm, false)
                     }
 
@@ -97,7 +97,7 @@ class MainActivity : ComponentActivity() {
                         val parentEntry = remember(navBackStackEntry) {
                             navController.getBackStackEntry("all_trips_graph")
                         }
-                        val vm: TripListViewModel = viewModel(parentEntry, factory = Factory)
+                        val vm: TripViewModel = viewModel(parentEntry, factory = NewFactory)
                         FilterSelection(navController, vm)
                     }
                 }
@@ -120,7 +120,7 @@ class MainActivity : ComponentActivity() {
                         val parentEntry = remember(navBackStackEntry) {
                             navController.getBackStackEntry("owned_trips_graph")
                         }
-                        val vm: TripListViewModel = viewModel(parentEntry, factory = Factory)
+                        val vm: TripViewModel = viewModel(parentEntry, factory = NewFactory)
                         TravelProposalDetail(navController, vm, true)
                     }
 
@@ -128,7 +128,7 @@ class MainActivity : ComponentActivity() {
                         val parentEntry = remember(navBackStackEntry) {
                             navController.getBackStackEntry("owned_trips_graph")
                         }
-                        val vm: TripListViewModel = viewModel(parentEntry, factory = Factory)
+                        val vm: TripViewModel = viewModel(parentEntry, factory = NewFactory)
                         TripApplications(vm)
                     }
 
@@ -144,7 +144,7 @@ class MainActivity : ComponentActivity() {
                         val parentEntry = remember(navBackStackEntry) {
                             navController.getBackStackEntry("owned_trips_graph")
                         }
-                        val vm: TripListViewModel = viewModel(parentEntry, factory = NewFactory)
+                        val vm: TripViewModel = viewModel(parentEntry, factory = NewFactory)
                         NewTravelProposal(navController, vm)
                     }
 
@@ -152,7 +152,7 @@ class MainActivity : ComponentActivity() {
                         val parentEntry = remember(navBackStackEntry) {
                             navController.getBackStackEntry("owned_trips_graph")
                         }
-                        val vm: TripListViewModel = viewModel(parentEntry, factory = Factory)
+                        val vm: TripViewModel = viewModel(parentEntry, factory = NewFactory)
                         ActivitiesList(navController, vm)
                     }
 
@@ -160,7 +160,7 @@ class MainActivity : ComponentActivity() {
                         val parentEntry = remember(navBackStackEntry) {
                             navController.getBackStackEntry("owned_trips_graph")
                         }
-                        val vm: TripListViewModel = viewModel(parentEntry, factory = Factory)
+                        val vm: TripViewModel = viewModel(parentEntry, factory = NewFactory)
                         NewActivity(navController, vm)
                     }
 
@@ -171,7 +171,7 @@ class MainActivity : ComponentActivity() {
                         val parentEntry = remember(navBackStackEntry) {
                             navController.getBackStackEntry("owned_trips_graph")
                         }
-                        val vm: TripListViewModel = viewModel(parentEntry, factory = Factory)
+                        val vm: TripViewModel = viewModel(parentEntry, factory = NewFactory)
 
                         val activityId = navBackStackEntry.arguments?.getInt("activityId") ?: -1
                         EditActivity(navController, vm, activityId)

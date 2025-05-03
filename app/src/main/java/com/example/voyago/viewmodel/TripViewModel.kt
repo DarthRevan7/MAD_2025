@@ -166,6 +166,24 @@ class TripViewModel(val model:Model): ViewModel() {
         }
     }
 
+    fun addActivityToTrip(activity: Trip.Activity) {
+        //Creating a new trip
+        if(userAction == UserAction.CREATE_TRIP) {
+            model.addActivityToTrip(activity, newTrip)?.let { updatedTrip ->
+                newTrip = updatedTrip
+            }
+        } else if(userAction == UserAction.EDIT_TRIP) {
+            //I am editing an existing trip
+            model.addActivityToTrip(activity, editTrip)?.let { updatedTrip ->
+                editTrip = updatedTrip
+            }
+        }
+    }
+
+    fun updateUserSelection(newRange: ClosedFloatingPointRange<Float>) {
+        _selectedPriceRange.value = newRange
+    }
+
     fun deleteActivity(activity: Trip.Activity) {
         selectedTrip = model.removeActivityFromTrip(activity, selectedTrip)!!
     }

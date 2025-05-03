@@ -469,31 +469,29 @@ fun NewTravelProposal(navController: NavController, vm: TripViewModel) {
 
                                     val creatorId = 1
 
-                                    //println("currentTrip = ${vm.currentTrip}")
-                                    if (vm.newTrip == null) {
-                                        val activities = mutableMapOf<Calendar, MutableList<Trip.Activity>>()
 
-                                        var newTrip = Trip(
-                                            photo = imageUri.toString(),
-                                            title = tripName,
-                                            destination = destination,
-                                            startDate = startCalendar!!,
-                                            endDate = endCalendar!!,
-                                            estimatedPrice = price.toDouble(),
-                                            groupSize = groupSize.toInt(),
-                                            activities = activities,
-                                            typeTravel = selected.map { TypeTravel.valueOf(it.uppercase()) },
-                                            creatorId = creatorId,
-                                            published = false,
-                                            id = 99,
-                                            participants = emptyList(),
-                                            status = Trip.TripStatus.NOT_STARTED,
-                                            appliedUsers = emptyList(),
-                                            reviews = emptyList()
-                                        )
+                                    val activities = mutableMapOf<Calendar, MutableList<Trip.Activity>>()
 
-                                        vm.newTrip = newTrip
-                                    }
+                                    val newTrip = Trip(
+                                        photo = imageUri.toString(),
+                                        title = tripName,
+                                        destination = destination,
+                                        startDate = startCalendar!!,
+                                        endDate = endCalendar!!,
+                                        estimatedPrice = price.toDouble(),
+                                        groupSize = groupSize.toInt(),
+                                        activities = activities,
+                                        typeTravel = selected.map { TypeTravel.valueOf(it.uppercase()) },
+                                        creatorId = creatorId,
+                                        published = false,
+                                        id = -1,
+                                        participants = emptyList(),
+                                        status = Trip.TripStatus.NOT_STARTED,
+                                        appliedUsers = emptyList(),
+                                        reviews = emptyList()
+                                    )
+
+                                    vm.newTrip = newTrip
                                     vm.userAction = TripViewModel.UserAction.CREATE_TRIP
                                     navController.navigate("activities_list")
                                 }

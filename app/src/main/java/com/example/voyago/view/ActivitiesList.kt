@@ -24,7 +24,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.TextButton
 import androidx.compose.ui.Alignment
@@ -36,17 +35,15 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.voyago.activities.*
 import com.example.voyago.model.Trip
-import com.example.voyago.viewmodel.TripListViewModel
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.clickable
+import com.example.voyago.viewmodel.TripViewModel
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import java.util.Calendar
 import java.util.Locale
 
 
@@ -63,15 +60,18 @@ fun allDaysHaveActivities(trip: Trip?): Boolean {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ActivitiesList(navController: NavController, vm: TripListViewModel) {
+fun ActivitiesList(navController: NavController, vm: TripViewModel) {
 
     var selectedTrip = Trip()
 
-    if(vm.newTrip.IsValid()) {
+    if(vm.userAction == TripViewModel.UserAction.CREATE_TRIP) {
         selectedTrip = vm.newTrip
-    } else {
+    } else if(vm.userAction == TripViewModel.UserAction.EDIT_TRIP){
         selectedTrip = vm.editTrip
     }
+
+    println("Vm.UserAction = " + vm.userAction.toString())
+    println("selected trip to: ${selectedTrip.destination}")
 
     var showIncompleteDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -106,11 +106,7 @@ fun ActivitiesList(navController: NavController, vm: TripListViewModel) {
 
 
                 item {
-                    selectedTrip?.let {
-                        ActivitiesListContent(it, vm, navController)
-                    } ?: run {
-                        Text("No trip selected.", modifier = Modifier.padding(16.dp))
-                    }
+                    ActivitiesListContent(selectedTrip, vm, navController)
                 }
 
 
@@ -131,7 +127,6 @@ fun ActivitiesList(navController: NavController, vm: TripListViewModel) {
                         modifier = Modifier
                             .width(200.dp)
                             .height(50.dp)
-                        //.padding(top = 16.dp)
                     ) {
                         Text(
                             text = "+",
@@ -171,18 +166,6 @@ fun ActivitiesList(navController: NavController, vm: TripListViewModel) {
                             Button(
                                 onClick = {
                                     if (allDaysHaveActivities(selectedTrip)) {
-                                        //Save the editing
-                                        //Editing is saved already (!)
-//                                        if(vm.newTrip.IsValid()) {
-//                                            vm.addNewTrip(vm.newTrip)
-//                                            vm.newTrip = Trip()
-//                                        } else if (vm.editTrip.IsValid()) {
-//                                            vm.editNewTrip(vm.editTrip)
-//                                            vm.editTrip = Trip()
-//                                        }
-                                        //Remember to add Edit Trip.
-                                        val activities =
-                                            mutableMapOf<Calendar, MutableList<Trip.Activity>>()
 
                                         val updatedTrip = Trip(
                                             photo = vm.newTrip.photo,
@@ -257,7 +240,7 @@ fun ActivitiesList(navController: NavController, vm: TripListViewModel) {
 
 
 @Composable
-fun ActivitiesListContent(trip: Trip, vm: TripListViewModel, navController: NavController){
+fun ActivitiesListContent(trip: Trip, vm: TripViewModel, navController: NavController){
     val sortedDays = trip.activities.keys.sortedBy { it.timeInMillis }
 
     // Check if all activity lists are empty

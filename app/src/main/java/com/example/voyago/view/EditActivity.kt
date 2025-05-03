@@ -46,6 +46,7 @@ import androidx.navigation.NavController
 import com.example.voyago.activities.*
 import com.example.voyago.model.Trip
 import com.example.voyago.viewmodel.TripListViewModel
+import com.example.voyago.viewmodel.TripViewModel
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -55,9 +56,14 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditActivity(navController: NavController, vm: TripListViewModel, activityId: Int) {
+fun EditActivity(navController: NavController, vm: TripViewModel, activityId: Int) {
 
-    val currentTrip = vm.currentTrip
+    var currentTrip = Trip()
+    if(vm.userAction == TripViewModel.UserAction.EDIT_TRIP) {
+        currentTrip = vm.editTrip
+    } else if(vm.userAction == TripViewModel.UserAction.CREATE_TRIP) {
+        currentTrip = vm.newTrip
+    }
     val activityToEdit = currentTrip?.activities?.values?.flatten()?.find { it.id == activityId }
 
     if (activityToEdit == null) {
@@ -242,7 +248,15 @@ fun EditActivity(navController: NavController, vm: TripListViewModel, activityId
 
                         Button(
                             onClick = {
-                                val currentTrip = vm.currentTrip
+                                /*
+                                var currentTrip = Trip()
+                                if(vm.userAction == TripViewModel.UserAction.EDIT_TRIP) {
+                                    currentTrip = vm.editTrip
+                                } else if(vm.userAction == TripViewModel.UserAction.CREATE_TRIP) {
+                                    currentTrip = vm.newTrip
+                                }
+
+                                 */
 
                                 val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
                                 val parsedDate = try {
@@ -261,7 +275,7 @@ fun EditActivity(navController: NavController, vm: TripListViewModel, activityId
                                     time = parsedDate
                                 }
 
-                                if (currentTrip != null && (activityCalendar.before(currentTrip.startDate) || activityCalendar.after(currentTrip.endDate))) {
+                                if ((activityCalendar.before(currentTrip.startDate) || activityCalendar.after(currentTrip.endDate))) {
                                     showDateError = true
                                     dateErrorMessage = "Activity date must be within the trip period (${dateFormat.format(currentTrip.startDate.time)} - ${dateFormat.format(currentTrip.endDate.time)})."
                                     return@Button

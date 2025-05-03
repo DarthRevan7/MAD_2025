@@ -63,6 +63,8 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.window.PopupProperties
 import com.example.voyago.model.TypeTravel
+import com.example.voyago.viewmodel.NewFactory
+import com.example.voyago.viewmodel.TripViewModel
 
 data class SelectableItem(
     val label: String,
@@ -73,15 +75,9 @@ data class SelectableItem(
 )
 
 @Composable
-fun FilterSelection(navController: NavController, vm: TripListViewModel = viewModel(factory = Factory)) {
+fun FilterSelection(navController: NavController, vm: TripViewModel = viewModel(factory = NewFactory)) {
 
-    /*
-    vm.updatePublishedTrip()
-    vm.setMaxMinPrice()
-    vm.updateFilterDuration(durationItems)
-    vm.updateFilterGroupSize(groupSizeItems)
-    vm.updateFiltersTripType(tripTypeItems)
-    */
+
 
 
 
@@ -296,7 +292,7 @@ fun FilterSelection(navController: NavController, vm: TripListViewModel = viewMo
                 ) {
                     Button(
                         onClick = {
-                            vm.isSearching = true
+                            vm.userAction = TripViewModel.UserAction.SEARCHING
                             vm.applyFilters()
                             navController.popBackStack()
                         },
@@ -376,7 +372,7 @@ fun DestinationSearchBar(
 
 
 @Composable
-fun RangeSlider(vm: TripListViewModel) {
+fun RangeSlider(vm: TripViewModel) {
     // Get the price range bounds and selected range from the ViewModel
     val priceBounds = vm.priceBounds.value
     val selectedPriceRange = vm.selectedPriceRange.value
@@ -412,36 +408,8 @@ fun RangeSlider(vm: TripListViewModel) {
     }
 }
 
-
-/*
-
 @Composable
-fun RangeSlider(vm: TripListViewModel = viewModel(factory = Factory)) {
-    var sliderPosition by remember { mutableStateOf(vm.getMinPrice().toFloat()..vm.getMaxPrice().toFloat()) }
-    //var sliderPosition = vm.filterMinPrice.toFloat()..vm.filterMaxPrice.toFloat()
-
-
-    Column(
-        modifier = Modifier.padding(top = 10.dp, start = 25.dp, end = 25.dp)
-    ) {
-        RangeSlider(
-            value = sliderPosition,
-            onValueChange = { range -> sliderPosition = range },
-            valueRange = vm.getMinPrice().toFloat()..vm.getMaxPrice().toFloat(),
-            onValueChangeFinished = {
-                vm.updateFilterPriceRange(sliderPosition.start.toDouble(), sliderPosition.endInclusive.toDouble())
-            },
-        )
-        Text(text = "%.0f € - %.0f €".format(sliderPosition.start, sliderPosition.endInclusive))
-    }
-}
-
-
-
- */
-
-@Composable
-fun MultiSelectDropdownMenu(filter:String, vm: TripListViewModel,
+fun MultiSelectDropdownMenu(filter:String, vm: TripViewModel,
     items: List<SelectableItem>,
     onSelectionChange: (List<SelectableItem>) -> Unit,
 ) {
