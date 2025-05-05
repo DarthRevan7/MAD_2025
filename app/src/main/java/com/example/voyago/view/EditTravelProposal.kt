@@ -73,510 +73,491 @@ fun initUri(vm:TripViewModel): String {
     return "placeholder_photo"
 }
 
-
-/*
-
-CONDITION TO INSERT
-
-if (tripImageError) {
-    Text(
-        text = photoErrorMessage,
-        color = MaterialTheme.colorScheme.error,
-        style = MaterialTheme.typography.bodySmall
-    )
-}
-
-*/
-
 @Composable
 fun EditTravelProposal(navController: NavController, vm: TripViewModel) {
     val trip = vm.editTrip
 
     //Can delete this if
-    if(trip!=null) {
 
-        var imageUri by rememberSaveable {
-            mutableStateOf<Uri?>(
-                if (trip.photo.isUriString()) {
-                    trip.photo.toUri()
-                } else {
-                    null
-                }
-            )
-        }
-
-        LaunchedEffect(
-            Unit
-        ) { initUri(vm = vm) }
-
-        //TripName and Destination Error handling
-        var tripName by rememberSaveable {mutableStateOf(trip.title)}
-        var destination by rememberSaveable {mutableStateOf(trip.destination)}
-        var tripNameError by rememberSaveable {mutableStateOf(false)}
-        var destinationError by rememberSaveable {mutableStateOf(false)}
-        var stringErrorMessage by rememberSaveable {mutableStateOf("")}
-
-        //Price Error Handling
-        var price by rememberSaveable { mutableStateOf(trip.estimatedPrice.toString()) }
-        var priceError by rememberSaveable { mutableStateOf(false) }
-        var priceErrorMessage by rememberSaveable { mutableStateOf("") }
-
-        //Group Size Error Handling
-        var groupSize by rememberSaveable { mutableStateOf(trip.groupSize.toString()) }
-        var groupSizeError by rememberSaveable { mutableStateOf(false) }
-        var groupSizeErrorMessage by rememberSaveable { mutableStateOf("") }
-
-        //Handling selected Trip Type
-        val typeTravel = listOf("party", "adventure", "culture", "relax")
-        val selected = rememberSaveable(
-            saver = listSaver(
-                save = { it.toList() },
-                restore = { it.toMutableStateList() }
-            )
-        ) {
-            trip.typeTravel.map { it.toString().lowercase() }.toMutableStateList()
-        }
-
-
-        //Date Handling
-        var startDate by rememberSaveable { mutableStateOf(trip.startDate.toStringDate()) }
-        var startCalendar by rememberSaveable { mutableStateOf<Calendar?>(trip.startDate) }
-
-        var endDate by rememberSaveable { mutableStateOf(trip.endDate.toStringDate()) }
-        var endCalendar by rememberSaveable { mutableStateOf<Calendar?>(trip.endDate) }
-
-        var dateError by rememberSaveable { mutableStateOf("") }
-
-        var typeTravelError by rememberSaveable { mutableStateOf(false) }
-        var typeTravelErrorMessage by rememberSaveable { mutableStateOf("") }
-
-
-
-        Scaffold(
-            topBar = {
-                TopBar()
-            },
-            bottomBar = {
-                BottomBar(1)
+    var imageUri by rememberSaveable {
+        mutableStateOf<Uri?>(
+            if (trip.photo.isUriString()) {
+                trip.photo.toUri()
+            } else {
+                null
             }
-        ) { innerPadding ->
+        )
+    }
 
-            Box(
+    LaunchedEffect(
+        Unit
+    ) { initUri(vm = vm) }
+
+    //TripName and Destination Error handling
+    var tripName by rememberSaveable {mutableStateOf(trip.title)}
+    var destination by rememberSaveable {mutableStateOf(trip.destination)}
+    var tripNameError by rememberSaveable {mutableStateOf(false)}
+    var destinationError by rememberSaveable {mutableStateOf(false)}
+    var stringErrorMessage by rememberSaveable {mutableStateOf("")}
+
+    //Price Error Handling
+    var price by rememberSaveable { mutableStateOf(trip.estimatedPrice.toString()) }
+    var priceError by rememberSaveable { mutableStateOf(false) }
+    var priceErrorMessage by rememberSaveable { mutableStateOf("") }
+
+    //Group Size Error Handling
+    var groupSize by rememberSaveable { mutableStateOf(trip.groupSize.toString()) }
+    var groupSizeError by rememberSaveable { mutableStateOf(false) }
+    var groupSizeErrorMessage by rememberSaveable { mutableStateOf("") }
+
+    //Handling selected Trip Type
+    val typeTravel = listOf("party", "adventure", "culture", "relax")
+    val selected = rememberSaveable(
+        saver = listSaver(
+            save = { it.toList() },
+            restore = { it.toMutableStateList() }
+        )
+    ) {
+        trip.typeTravel.map { it.toString().lowercase() }.toMutableStateList()
+    }
+
+
+    //Date Handling
+    var startDate by rememberSaveable { mutableStateOf(trip.startDate.toStringDate()) }
+    var startCalendar by rememberSaveable { mutableStateOf<Calendar?>(trip.startDate) }
+
+    var endDate by rememberSaveable { mutableStateOf(trip.endDate.toStringDate()) }
+    var endCalendar by rememberSaveable { mutableStateOf<Calendar?>(trip.endDate) }
+
+    var dateError by rememberSaveable { mutableStateOf("") }
+
+    var typeTravelError by rememberSaveable { mutableStateOf(false) }
+    var typeTravelErrorMessage by rememberSaveable { mutableStateOf("") }
+
+
+
+    Scaffold(
+        topBar = {
+            TopBar()
+        },
+        bottomBar = {
+            BottomBar(1)
+        }
+    ) { innerPadding ->
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .background(Color(0xFFF3EDF7))
+        ) {
+            val listState = rememberLazyListState()
+
+            LazyColumn(
+                state = listState,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .background(Color(0xFFF3EDF7))
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                val listState = rememberLazyListState()
 
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    verticalArrangement = Arrangement.Top,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-
-                    //Trip Image
-                    item {
-                        TripImageEdit(trip,
-                            imageUri = imageUri,
-                            onUriSelected = { uri ->
-                                imageUri = uri
-                            }
-                        )
-                    }
-
-                    item {
-                        Spacer(modifier = Modifier.height(40.dp))
-                    }
-
-                    item {
-                        TextField(
-                            value = tripName,
-                            onValueChange = { tripName = it },
-                            label = { Text("Trip name") },
-                            modifier = Modifier.fillMaxWidth(0.8f),
-                            supportingText = {
-                                if (tripNameError) {
-                                    Text(
-                                        text = stringErrorMessage,
-                                        color = MaterialTheme.colorScheme.error,
-                                        style = MaterialTheme.typography.bodySmall
-                                    )
-                                }
-                            }
-                        )
-                    }
-
-                    item {
-                        Spacer(modifier = Modifier.height(12.dp))
-                    }
-
-                    item {
-                        TextField(
-                            value = destination,
-                            onValueChange = { destination = it },
-                            label = { Text("Destination") },
-                            modifier = Modifier.fillMaxWidth(0.8f),
-                            supportingText = {
-                                if (destinationError) {
-                                    Text(
-                                        text = stringErrorMessage,
-                                        color = MaterialTheme.colorScheme.error,
-                                        style = MaterialTheme.typography.bodySmall
-                                    )
-                                }
-                            }
-                        )
-                    }
-
-                    item {
-                        Spacer(modifier = Modifier.height(12.dp))
-                    }
-
-                    item {
-
-                        TextField(
-                            value = price,
-                            onValueChange = {
-                                price = it
-                                priceError = false
-                            },
-                            label = { Text("Price estimate") },
-                            modifier = Modifier.fillMaxWidth(0.8f),
-                            isError = priceError,
-                            supportingText = {
-                                if (priceError) {
-                                    Text(
-                                        text = priceErrorMessage,
-                                        color = MaterialTheme.colorScheme.error,
-                                        style = MaterialTheme.typography.bodySmall
-                                    )
-                                }
-                            }
-                        )
-                    }
-
-                    item {
-                        TextField(
-                            value = groupSize,
-                            onValueChange = {
-                                groupSize = it
-                                groupSizeError = false
-                            },
-                            label = { Text("Group Size") },
-                            modifier = Modifier.fillMaxWidth(0.8f),
-                            isError = groupSizeError,
-                            supportingText = {
-                                if (groupSizeError) {
-                                    Text(
-                                        text = groupSizeErrorMessage,
-                                        color = MaterialTheme.colorScheme.error,
-                                        style = MaterialTheme.typography.bodySmall
-                                    )
-                                }
-                            }
-                        )
-                    }
-
-                    item {
-                        Spacer(modifier = Modifier.height(24.dp))
-                    }
-
-                    item {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-
-                        ) {
-                            Text(
-                                text = "Trip type",
-                                modifier = Modifier
-                                    .align(Alignment.Center),
-                                fontSize = 17.sp
-                            )
-
-
+                //Trip Image
+                item {
+                    TripImageEdit(trip,
+                        imageUri = imageUri,
+                        onUriSelected = { uri ->
+                            imageUri = uri
                         }
-                    }
+                    )
+                }
 
-                    item {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 3.dp)
-                        ) {
+                item {
+                    Spacer(modifier = Modifier.height(40.dp))
+                }
 
-                            Text(
-                                text = "Select one or more options",
-                                modifier = Modifier
-                                    .padding(vertical = 10.dp)
-                                    .align(Alignment.Center),
-                                fontStyle = FontStyle.Italic
-                                //fontSize = 10.sp
-                            )
-                        }
-
-                        if (typeTravelError) {
-                            Text(
-                                text = typeTravelErrorMessage,
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.bodySmall,
-                                modifier = Modifier.padding(top = 4.dp)
-                            )
-                        }
-
-                    }
-
-                    item {
-                        Row(
-                            horizontalArrangement = Arrangement.Center,
-                            modifier = Modifier
-                                .padding(bottom = 10.dp)
-                        ) {
-                            typeTravel.forEach { type ->
-                                FilterChip(
-                                    selected = type in selected,
-                                    onClick = {
-                                        if (type in selected) {
-                                            selected.remove(type)
-                                        } else {
-                                            selected.add(type)
-                                        }
-                                    },
-                                    label = { Text(type.lowercase()) },
-                                    modifier = Modifier.padding(end = 8.dp)
+                item {
+                    TextField(
+                        value = tripName,
+                        onValueChange = { tripName = it },
+                        label = { Text("Trip name") },
+                        modifier = Modifier.fillMaxWidth(0.8f),
+                        supportingText = {
+                            if (tripNameError) {
+                                Text(
+                                    text = stringErrorMessage,
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodySmall
                                 )
                             }
                         }
-                    }
+                    )
+                }
 
-                    item {
-                        Spacer(modifier = Modifier.height(10.dp))
-                    }
+                item {
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
 
-                    item {
-                        val context = LocalContext.current
-                        val calendar = Calendar.getInstance()
-                        val year = calendar.get(Calendar.YEAR)
-                        val month = calendar.get(Calendar.MONTH)
-                        val day = calendar.get(Calendar.DAY_OF_MONTH)
-
-
-                        val startDatePickerDialog = remember {
-                            DatePickerDialog(
-                                context,
-                                { _: DatePicker, y: Int, m: Int, d: Int ->
-                                    startDate = "$d/${m + 1}/$y"
-                                    startCalendar = Calendar.getInstance().apply {
-                                        set(y, m, d, 0, 0, 0)
-                                        set(Calendar.MILLISECOND, 0)
-                                    }
-                                }, year, month, day
-                            )
+                item {
+                    TextField(
+                        value = destination,
+                        onValueChange = { destination = it },
+                        label = { Text("Destination") },
+                        modifier = Modifier.fillMaxWidth(0.8f),
+                        supportingText = {
+                            if (destinationError) {
+                                Text(
+                                    text = stringErrorMessage,
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
                         }
+                    )
+                }
 
-                        val endDatePickerDialog = remember {
-                            DatePickerDialog(
-                                context,
-                                { _: DatePicker, y: Int, m: Int, d: Int ->
-                                    endDate = "$d/${m + 1}/$y"
-                                    endCalendar = Calendar.getInstance().apply {
-                                        set(y, m, d, 0, 0, 0)
-                                        set(Calendar.MILLISECOND, 0)
-                                    }
-                                }, year, month, day
-                            )
+                item {
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+
+                item {
+
+                    TextField(
+                        value = price,
+                        onValueChange = {
+                            price = it
+                            priceError = false
+                        },
+                        label = { Text("Price estimate") },
+                        modifier = Modifier.fillMaxWidth(0.8f),
+                        isError = priceError,
+                        supportingText = {
+                            if (priceError) {
+                                Text(
+                                    text = priceErrorMessage,
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
                         }
+                    )
+                }
 
+                item {
+                    TextField(
+                        value = groupSize,
+                        onValueChange = {
+                            groupSize = it
+                            groupSizeError = false
+                        },
+                        label = { Text("Group Size") },
+                        modifier = Modifier.fillMaxWidth(0.8f),
+                        isError = groupSizeError,
+                        supportingText = {
+                            if (groupSizeError) {
+                                Text(
+                                    text = groupSizeErrorMessage,
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                        }
+                    )
+                }
 
-                        Row(
+                item {
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+
+                    ) {
+                        Text(
+                            text = "Trip type",
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 35.dp),
-                            horizontalArrangement = Arrangement.spacedBy(5.dp)
-                        ) {
-                            Column(
-                                horizontalAlignment = Alignment.Start,
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .padding(vertical = 8.dp)
-                            ) {
-                                OutlinedButton(onClick = { startDatePickerDialog.show() }) {
-                                    Text("Start Date")
-                                }
+                                .align(Alignment.Center),
+                            fontSize = 17.sp
+                        )
 
-                                if (startDate.isNotEmpty()) {
-                                    Text(
-                                        "Start: $startDate",
-                                        modifier = Modifier.padding(top = 8.dp)
-                                    )
-                                }
-                            }
 
-                            Column(
-                                horizontalAlignment = Alignment.End,
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .padding(vertical = 8.dp)
-                            ) {
-                                OutlinedButton(onClick = { endDatePickerDialog.show() }) {
-                                    Text("End Date")
-                                }
-
-                                if (endDate.isNotEmpty()) {
-                                    Text("End: $endDate", modifier = Modifier.padding(top = 8.dp))
-                                }
-                            }
-                        }
-
-                        if (dateError.isNotEmpty()) {
-                            Text(
-                                text = dateError,
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.bodySmall,
-                                modifier = Modifier.padding(top = 6.dp)
-                            )
-                        }
                     }
+                }
 
-                    item {
-                        Spacer(modifier = Modifier.height(50.dp))
-                    }
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 3.dp)
+                    ) {
 
-                    item {
-
-                        Row(
+                        Text(
+                            text = "Select one or more options",
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 24.dp),
-                        ) {
+                                .padding(vertical = 10.dp)
+                                .align(Alignment.Center),
+                            fontStyle = FontStyle.Italic
+                            //fontSize = 10.sp
+                        )
+                    }
 
-                            Button(
-                                onClick = {
-                                    navController.popBackStack()
-                                },
-                                modifier = Modifier
-                                    .width(160.dp)
-                                    .height(60.dp)
-                                    .padding(top = 16.dp)
-                            ) {
-                                Text("Cancel")
-                            }
-
-                            Spacer(modifier = Modifier.weight(1f))
-
-                            Button(
-                                onClick = {
-                                    if (!validateStringField(tripName)) {
-                                        tripNameError = true
-                                        stringErrorMessage = "This field cannot be empty"
-                                    } else if (!validateStringField(destination)) {
-                                        destinationError = true
-                                        stringErrorMessage = "This field cannot be empty"
-                                    } else if (!validatePrice(price)) {
-                                        priceError = true
-                                        priceErrorMessage = "Price must be greater than zero"
-                                    } else if (!validateGroupSize(groupSize)) {
-                                        groupSizeError = true
-                                        groupSizeErrorMessage = "Group size must be greater than 1"
-                                    } else if (!validateDateOrder(startCalendar, endCalendar)) {
-                                        priceError = false
-                                        priceErrorMessage = ""
-                                        dateError = "End date must be after start date"
-                                    } else if (selected.isEmpty()) {
-                                        typeTravelError = true
-                                        typeTravelErrorMessage = "Select at least one travel type"
-                                    } else {
-                                        priceError = false
-                                        priceErrorMessage = ""
-                                        dateError = ""
-
-                                        val creatorId = 1
-
-                                        // Create new Trip
-                                        if (vm.userAction == TripViewModel.UserAction.CREATE_TRIP) {
-                                            val activities =
-                                                mutableMapOf<Calendar, MutableList<Trip.Activity>>()
-
-                                            val newTrip = Trip(
-                                                photo = imageUri.toString(),
-                                                title = tripName,
-                                                destination = destination,
-                                                startDate = startCalendar!!,
-                                                endDate = endCalendar!!,
-                                                estimatedPrice = price.toDouble(),
-                                                groupSize = groupSize.toInt(),
-                                                activities = activities,
-                                                typeTravel = selected.map { TypeTravel.valueOf(it.uppercase()) },
-                                                creatorId = creatorId,
-                                                published = false,
-                                                id = -1,
-                                                participants = emptyList(),
-                                                status = Trip.TripStatus.NOT_STARTED,
-                                                appliedUsers = emptyList(),
-                                                reviews = emptyList()
-                                            )
-
-                                            vm.newTrip = newTrip
-                                            println("Trip making")
-
-                                        } else if(vm.userAction == TripViewModel.UserAction.EDIT_TRIP) {
-
-                                        val currentTrip = vm.editTrip
-
-                                        if (currentTrip.IsValid()) {
-                                            val updatedTrip = Trip(
-                                                photo = imageUri.toString(),
-                                                title = tripName,
-                                                destination = destination,
-                                                startDate = startCalendar!!,
-                                                endDate = endCalendar!!,
-                                                estimatedPrice = price.toDouble(),
-                                                groupSize = groupSize.toInt(),
-                                                activities = currentTrip.activities,
-                                                typeTravel = selected.map { TypeTravel.valueOf(it.uppercase()) },
-                                                creatorId = currentTrip.creatorId,
-                                                published = currentTrip.published,
-                                                id = currentTrip.id,
-                                                participants = currentTrip.participants,
-                                                status = currentTrip.status,
-                                                appliedUsers = currentTrip.appliedUsers,
-                                                reviews = currentTrip.reviews
-                                            )
-
-                                            vm.editTrip = updatedTrip
-                                            println("Trip editing")
-                                            }
-                                        }
-                                        navController.navigate("activities_list")
-                                    }
-                                },
-                                modifier = Modifier
-                                    .width(160.dp)
-                                    .height(60.dp)
-                                    .padding(top = 16.dp)
-                            ) {
-                                Text("Next")
-                            }
-                        }
+                    if (typeTravelError) {
+                        Text(
+                            text = typeTravelErrorMessage,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
                     }
 
                 }
-            }
 
+                item {
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier
+                            .padding(bottom = 10.dp)
+                    ) {
+                        typeTravel.forEach { type ->
+                            FilterChip(
+                                selected = type in selected,
+                                onClick = {
+                                    if (type in selected) {
+                                        selected.remove(type)
+                                    } else {
+                                        selected.add(type)
+                                    }
+                                },
+                                label = { Text(type.lowercase()) },
+                                modifier = Modifier.padding(end = 8.dp)
+                            )
+                        }
+                    }
+                }
+
+                item {
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
+
+                item {
+                    val context = LocalContext.current
+                    val calendar = Calendar.getInstance()
+                    val year = calendar.get(Calendar.YEAR)
+                    val month = calendar.get(Calendar.MONTH)
+                    val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+
+                    val startDatePickerDialog = remember {
+                        DatePickerDialog(
+                            context,
+                            { _: DatePicker, y: Int, m: Int, d: Int ->
+                                startDate = "$d/${m + 1}/$y"
+                                startCalendar = Calendar.getInstance().apply {
+                                    set(y, m, d, 0, 0, 0)
+                                    set(Calendar.MILLISECOND, 0)
+                                }
+                            }, year, month, day
+                        )
+                    }
+
+                    val endDatePickerDialog = remember {
+                        DatePickerDialog(
+                            context,
+                            { _: DatePicker, y: Int, m: Int, d: Int ->
+                                endDate = "$d/${m + 1}/$y"
+                                endCalendar = Calendar.getInstance().apply {
+                                    set(y, m, d, 0, 0, 0)
+                                    set(Calendar.MILLISECOND, 0)
+                                }
+                            }, year, month, day
+                        )
+                    }
+
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 35.dp),
+                        horizontalArrangement = Arrangement.spacedBy(5.dp)
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.Start,
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(vertical = 8.dp)
+                        ) {
+                            OutlinedButton(onClick = { startDatePickerDialog.show() }) {
+                                Text("Start Date")
+                            }
+
+                            if (startDate.isNotEmpty()) {
+                                Text(
+                                    "Start: $startDate",
+                                    modifier = Modifier.padding(top = 8.dp)
+                                )
+                            }
+                        }
+
+                        Column(
+                            horizontalAlignment = Alignment.End,
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(vertical = 8.dp)
+                        ) {
+                            OutlinedButton(onClick = { endDatePickerDialog.show() }) {
+                                Text("End Date")
+                            }
+
+                            if (endDate.isNotEmpty()) {
+                                Text("End: $endDate", modifier = Modifier.padding(top = 8.dp))
+                            }
+                        }
+                    }
+
+                    if (dateError.isNotEmpty()) {
+                        Text(
+                            text = dateError,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(top = 6.dp)
+                        )
+                    }
+                }
+
+                item {
+                    Spacer(modifier = Modifier.height(50.dp))
+                }
+
+                item {
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp),
+                    ) {
+
+                        Button(
+                            onClick = {
+                                navController.popBackStack()
+                            },
+                            modifier = Modifier
+                                .width(160.dp)
+                                .height(60.dp)
+                                .padding(top = 16.dp)
+                        ) {
+                            Text("Cancel")
+                        }
+
+                        Spacer(modifier = Modifier.weight(1f))
+
+                        Button(
+                            onClick = {
+                                if (!validateStringField(tripName)) {
+                                    tripNameError = true
+                                    stringErrorMessage = "This field cannot be empty"
+                                } else if (!validateStringField(destination)) {
+                                    destinationError = true
+                                    stringErrorMessage = "This field cannot be empty"
+                                } else if (!validatePrice(price)) {
+                                    priceError = true
+                                    priceErrorMessage = "Price must be greater than zero"
+                                } else if (!validateGroupSize(groupSize)) {
+                                    groupSizeError = true
+                                    groupSizeErrorMessage = "Group size must be greater than 1"
+                                } else if (!validateDateOrder(startCalendar, endCalendar)) {
+                                    priceError = false
+                                    priceErrorMessage = ""
+                                    dateError = "End date must be after start date"
+                                } else if (selected.isEmpty()) {
+                                    typeTravelError = true
+                                    typeTravelErrorMessage = "Select at least one travel type"
+                                } else {
+                                    priceError = false
+                                    priceErrorMessage = ""
+                                    dateError = ""
+
+                                    val creatorId = 1
+
+                                    // Create new Trip
+                                    if (vm.userAction == TripViewModel.UserAction.CREATE_TRIP) {
+                                        val activities =
+                                            mutableMapOf<Calendar, MutableList<Trip.Activity>>()
+
+                                        val newTrip = Trip(
+                                            photo = imageUri.toString(),
+                                            title = tripName,
+                                            destination = destination,
+                                            startDate = startCalendar!!,
+                                            endDate = endCalendar!!,
+                                            estimatedPrice = price.toDouble(),
+                                            groupSize = groupSize.toInt(),
+                                            activities = activities,
+                                            typeTravel = selected.map { TypeTravel.valueOf(it.uppercase()) },
+                                            creatorId = creatorId,
+                                            published = false,
+                                            id = -1,
+                                            participants = emptyList(),
+                                            status = Trip.TripStatus.NOT_STARTED,
+                                            appliedUsers = emptyList(),
+                                            reviews = emptyList()
+                                        )
+
+                                        vm.newTrip = newTrip
+                                        println("Trip making")
+
+                                    } else if(vm.userAction == TripViewModel.UserAction.EDIT_TRIP) {
+
+                                    val currentTrip = vm.editTrip
+
+                                    if (currentTrip.IsValid()) {
+                                        val updatedTrip = Trip(
+                                            photo = imageUri.toString(),
+                                            title = tripName,
+                                            destination = destination,
+                                            startDate = startCalendar!!,
+                                            endDate = endCalendar!!,
+                                            estimatedPrice = price.toDouble(),
+                                            groupSize = groupSize.toInt(),
+                                            activities = currentTrip.activities,
+                                            typeTravel = selected.map { TypeTravel.valueOf(it.uppercase()) },
+                                            creatorId = currentTrip.creatorId,
+                                            published = currentTrip.published,
+                                            id = currentTrip.id,
+                                            participants = currentTrip.participants,
+                                            status = currentTrip.status,
+                                            appliedUsers = currentTrip.appliedUsers,
+                                            reviews = currentTrip.reviews
+                                        )
+
+                                        vm.editTrip = updatedTrip
+                                        println("Trip editing")
+                                        }
+                                    }
+                                    navController.navigate("activities_list")
+                                }
+                            },
+                            modifier = Modifier
+                                .width(160.dp)
+                                .height(60.dp)
+                                .padding(top = 16.dp)
+                        ) {
+                            Text("Next")
+                        }
+                    }
+                }
+
+            }
         }
+
     }
+
 }
 
 fun Calendar.toStringDate(): String {
     val format = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     return format.format(this.time)
 }
-
-
-
 
 @SuppressLint("DiscouragedApi")
 @Composable

@@ -188,24 +188,15 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
 
                                         )
 
-                                        //vm.addNewTrip(newTrip)
-
                                         vm.addNewTrip(updatedTrip)
 
                                         //Go to the owned travel proposal
                                         navController.navigate("owned_travel_proposal_list") {
                                             popUpTo("owned_travel_proposal_list") {
-                                                inclusive = false // don't remove page1
+                                                inclusive = false
                                             }
-                                            launchSingleTop = true // avoid multiple copies of page1 on top
+                                            launchSingleTop = true
                                         }
-                                        /*
-                                        navController.popBackStack("owned_travel_proposal_list",
-                                            inclusive = false,
-                                            saveState = true
-                                            )
-
-                                         */
                                     } else {
                                         showIncompleteDialog = true
                                     }
@@ -230,14 +221,10 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
                         }
                     }
                 }
-
-
             }
         }
     }
 }
-
-
 
 @Composable
 fun ActivitiesListContent(trip: Trip, vm: TripViewModel, navController: NavController){
@@ -262,7 +249,6 @@ fun ActivitiesListContent(trip: Trip, vm: TripViewModel, navController: NavContr
                 val formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.US)
                 val activitiesForDay = (trip.activities[day] ?: emptyList())
                     .sortedBy { LocalTime.parse(it.time, formatter) }
-
 
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
@@ -334,7 +320,6 @@ fun ActivitiesListContent(trip: Trip, vm: TripViewModel, navController: NavContr
                             }
                         )
                     }
-
                 }
             }
         }

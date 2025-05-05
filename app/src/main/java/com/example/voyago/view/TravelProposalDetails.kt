@@ -350,9 +350,7 @@ fun TravelProposalDetail(navController: NavController, vm: TripViewModel, owner:
                 }
             }
         }
-
     }
-
 }
 
 @SuppressLint("DiscouragedApi")

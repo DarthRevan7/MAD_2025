@@ -323,7 +323,6 @@ fun NewTravelProposal(navController: NavController, vm: TripViewModel) {
                     Spacer(modifier = Modifier.height(10.dp))
                 }
 
-
                 //Data Selection with Error Check
                 item {
                     val context = LocalContext.current
@@ -357,7 +356,6 @@ fun NewTravelProposal(navController: NavController, vm: TripViewModel) {
                             }, year, month, day
                         )
                     }
-
 
                     Row(
                         modifier = Modifier
@@ -468,7 +466,6 @@ fun NewTravelProposal(navController: NavController, vm: TripViewModel) {
                                     dateError = ""
 
                                     val creatorId = 1
-
 
                                     val activities = mutableMapOf<Calendar, MutableList<Trip.Activity>>()
 

@@ -187,7 +187,6 @@ fun TripCard(trip: Trip, navController: NavController, vm: TripViewModel, edit: 
         Box {
 
             if(!trip.photo.isUriString()) {
-
                 //AsyncImage with resources.Drawable
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
@@ -218,7 +217,6 @@ fun TripCard(trip: Trip, navController: NavController, vm: TripViewModel, edit: 
                     modifier = Modifier.fillMaxSize()
                 )
             }
-
 
             Box(
                 modifier = Modifier

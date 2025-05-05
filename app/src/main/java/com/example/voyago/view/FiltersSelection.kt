@@ -76,11 +76,6 @@ data class SelectableItem(
 
 @Composable
 fun FilterSelection(navController: NavController, vm: TripViewModel = viewModel(factory = NewFactory)) {
-
-
-
-
-
     Scaffold(
         topBar = {
             TopBar()
@@ -294,7 +289,7 @@ fun FilterSelection(navController: NavController, vm: TripViewModel = viewModel(
                         onClick = {
                             vm.userAction = TripViewModel.UserAction.SEARCHING
                             vm.applyFilters()
-                            navController.popBackStack()
+                            navController.popBackStack() //reset backstack
                         },
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
@@ -402,8 +397,7 @@ fun RangeSlider(vm: TripViewModel) {
                 )
             }
         )
-
-        // Optionally display the selected range for the user
+        // Display the selected range for the user
         Text(text = "%.0f € - %.0f €".format(selectedPriceRange.start, selectedPriceRange.endInclusive))
     }
 }

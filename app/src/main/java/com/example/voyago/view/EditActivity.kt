@@ -248,16 +248,6 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
 
                         Button(
                             onClick = {
-                                /*
-                                var currentTrip = Trip()
-                                if(vm.userAction == TripViewModel.UserAction.EDIT_TRIP) {
-                                    currentTrip = vm.editTrip
-                                } else if(vm.userAction == TripViewModel.UserAction.CREATE_TRIP) {
-                                    currentTrip = vm.newTrip
-                                }
-
-                                 */
-
                                 val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
                                 val parsedDate = try {
                                     dateFormat.parse(activityDate)
@@ -298,12 +288,8 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                         ) {
                             Text("Update")
                         }
-
-
                     }
-
                 }
-
             }
         }
     }

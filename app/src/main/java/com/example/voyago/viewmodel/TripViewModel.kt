@@ -48,7 +48,6 @@ class TripViewModel(val model:Model): ViewModel() {
 
     val publishedTrips = model.publishedTrips
     val privateTrips = model.privateTrips
-    val allPublishedTrips = model.allPublishedTrips
     val askedTrips = model.askedTrips
     val filteredList = model.filteredList
 
@@ -65,12 +64,6 @@ class TripViewModel(val model:Model): ViewModel() {
         private set
 
 
-
-
-
-
-
-
     fun updateFilterDestination(str: String) {
         filterDestination = str
     }
@@ -80,13 +73,10 @@ class TripViewModel(val model:Model): ViewModel() {
         filterMinPrice = minPrice
     }
 
-
-
-
     fun updateFilterDuration(list: List<SelectableItem>) {
         durationItems = list
         filterDuration = model.setRange(list)
-        println("FilterDuration Pair: (${filterDuration.first}, ${filterDuration.second})")
+        //println("FilterDuration Pair: (${filterDuration.first}, ${filterDuration.second})")
     }
 
     fun updateFilterGroupSize(list: List<SelectableItem>) {

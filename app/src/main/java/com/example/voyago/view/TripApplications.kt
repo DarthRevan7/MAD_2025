@@ -52,8 +52,6 @@ fun TripApplications(vm: TripViewModel) {
         val listState = rememberLazyListState()
         val trip = vm.selectedTrip
 
-
-
         LazyColumn(
             state = listState,
             modifier = Modifier

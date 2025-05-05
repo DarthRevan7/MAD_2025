@@ -55,7 +55,6 @@ import com.example.voyago.viewmodel.TripViewModel
 @Composable
 fun NewActivity(navController: NavController, vm: TripViewModel) {
 
-
     var isGroupActivityChecked by rememberSaveable { mutableStateOf(false) }
     var activityDescription by rememberSaveable { mutableStateOf("") }
     var activityDate by rememberSaveable { mutableStateOf("") }
@@ -68,7 +67,6 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
     }
     var showDateError by rememberSaveable { mutableStateOf(false) }
     var dateErrorMessage by rememberSaveable { mutableStateOf("") }
-
 
     Scaffold(
         topBar = {
@@ -100,7 +98,6 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
                 item {
                     Row(
                         modifier = Modifier
@@ -290,11 +287,8 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                         ) {
                             Text("Add")
                         }
-
                     }
-
                 }
-
             }
         }
     }
