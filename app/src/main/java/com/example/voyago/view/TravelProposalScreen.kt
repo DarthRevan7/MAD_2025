@@ -149,12 +149,12 @@ fun Hero() {
             .height(300.dp)
     ) {
         // THE IMAGE IS TOO BIG
-//        Image(
-//            painter = painterResource(romeTrip.tripPhoto),
-//            contentDescription = "Trip Hero photo",
-//            modifier = Modifier
-//                .fillMaxSize()
-//        )
+        Image(
+            painter = painterResource(romeTrip.tripPhoto),
+            contentDescription = "Trip Hero photo",
+            modifier = Modifier
+                .fillMaxSize()
+        )
         Box(
             modifier = Modifier
                 .align(Alignment.TopStart)
