@@ -81,7 +81,13 @@ fun EditProfileScreen(user: LazyUser, navController: NavController, context:Cont
 
     newImageUri = user1.profileImage
 
-    val selected = remember { user.typeTravelPreferences.toMutableStateList() }
+    val selected = rememberSaveable(saver = listSaver(
+        save = { it.toList() },
+        restore = { it.toMutableStateList() }
+    )) {
+        user.typeTravelPreferences.toMutableStateList()
+    }
+
 
     //TODO: temporary, to be changed once database is fully implemented
     val availableDestinations = listOf("Argentina", "Armenia", "Australia", "Austria", "Azerbaijan",
