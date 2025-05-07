@@ -1,5 +1,6 @@
 package com.example.voyago.view
 
+import android.app.Activity.RESULT_OK
 import com.example.voyago.activities.*
 import android.content.Context
 import android.content.Intent
@@ -46,17 +47,39 @@ import androidx.compose.ui.window.Dialog
 import com.example.voyago.LazyUser
 import com.example.voyago.model.TypeTravel
 import android.net.Uri
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.border
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import coil3.compose.AsyncImage
-import com.example.voyago.user1
-
-var newImageUri: Uri? = null
-var showPopup = mutableStateOf(false)
 
 @Composable
 fun EditProfileScreen(user: LazyUser, navController: NavController, context:Context) {
+
+    // Use rememberSaveable to persist the profile image URI across configuration changes
+    var profileImageUri by rememberSaveable { mutableStateOf<Uri?>(user.profileImage) }
+
+    // Use rememberSaveable for dialog visibility
+    var showPopup by rememberSaveable { mutableStateOf(false) }
+
+    // Launcher for taking photo with camera
+    val takePhotoLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val uri = result.data?.data // Get the URI from the result Intent
+            if (uri != null) {
+                Log.d("CameraResult", "Captured URI: $uri")
+                profileImageUri = uri // Update the rememberSaveable state
+                user.profileImage = uri // Also update the user object
+                showPopup = false // Dismiss the popup
+            } else {
+                Log.d("CameraResult", "No URI received from camera")
+            }
+        } else {
+            Log.d("CameraResult", "Camera activity cancelled or failed")
+        }
+    }
 
     val fieldValues = rememberSaveable(saver = listSaver(
         save = { it.toList() },
@@ -77,9 +100,8 @@ fun EditProfileScreen(user: LazyUser, navController: NavController, context:Cont
         "User Description"
     )
 
-    var errors = arrayOf(false, false, false, false, false, false)
+    var errors = remember { mutableStateListOf<Boolean>().apply { addAll(List(fieldValues.size) { false }) } }
 
-    newImageUri = user1.profileImage
 
     val selected = rememberSaveable(saver = listSaver(
         save = { it.toList() },
@@ -134,7 +156,7 @@ fun EditProfileScreen(user: LazyUser, navController: NavController, context:Cont
             BottomBar(4)
         },
     ) {
-        innerPadding ->
+            innerPadding ->
 
         val listState = rememberLazyListState()
 
@@ -153,12 +175,14 @@ fun EditProfileScreen(user: LazyUser, navController: NavController, context:Cont
                         .fillMaxWidth()
                         .height(180.dp)
                 ) {
+                    // Pass the profileImageUri state and the showPopup state/lambda
                     ProfilePhotoEditing(
-                        user.name, user.surname,
-                        modifier = Modifier.align(Alignment.Center),
-                        context = context
+                        firstname = user.name,
+                        surname = user.surname,
+                        profileImageUri = profileImageUri,
+                        onCameraIconClick = { showPopup = true },
+                        modifier = Modifier.align(Alignment.Center)
                     )
-
                 }
             }
 
@@ -189,30 +213,30 @@ fun EditProfileScreen(user: LazyUser, navController: NavController, context:Cont
                     //TextFields with various info
                     fieldValues.forEachIndexed {
                             index, item ->
-                            //This is TextField with email
-                            if(index == 3) {
-                                val emailHasErrors by derivedStateOf {
-                                    if (item.isNotEmpty()) {
-                                        !android.util.Patterns.EMAIL_ADDRESS.matcher(item).matches()
-                                    } else {
-                                        false
-                                    }
+                        //This is TextField with email
+                        if(index == 3) {
+                            val emailHasErrors by derivedStateOf {
+                                if (item.isNotEmpty()) {
+                                    !android.util.Patterns.EMAIL_ADDRESS.matcher(item).matches()
+                                } else {
+                                    false
                                 }
-
-                                errors[index] = emailHasErrors
-
-                                ValidatingInputEmailField(item, {fieldValues[index] = it}, emailHasErrors)
                             }
-                            //These are other text fields
-                            else {
-                                val validatorHasErrors by derivedStateOf {
-                                    item.isBlank()
-                                }
 
-                                errors[index] = validatorHasErrors
+                            errors[index] = emailHasErrors
 
-                                ValidatingInputTextField(item, {fieldValues[index] = it}, validatorHasErrors, fieldNames[fieldValues.indexOf(item)])
+                            ValidatingInputEmailField(item, {fieldValues[index] = it}, emailHasErrors)
+                        }
+                        //These are other text fields
+                        else {
+                            val validatorHasErrors by derivedStateOf {
+                                item.isBlank()
                             }
+
+                            errors[index] = validatorHasErrors
+
+                            ValidatingInputTextField(item, {fieldValues[index] = it}, validatorHasErrors, fieldNames[fieldValues.indexOf(item)])
+                        }
                     }
 
                     Text(text = "Preferences about the type of travel",
@@ -304,14 +328,9 @@ fun EditProfileScreen(user: LazyUser, navController: NavController, context:Cont
                                 user.applyStrChanges(fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3], fieldValues[4], fieldValues[5])
                                 user.applyTypeTravelChanges(selected)
                                 user.desiredDestinations = selectedDestinations.toList()
-                                if(newImageUri != null)
-                                {
-                                    user.applyNewImage(newImageUri!!)
-                                }
-
                                 navController.navigate("my_profile")
                             }
-                    },
+                        },
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
                             .padding(5.dp)
@@ -324,10 +343,29 @@ fun EditProfileScreen(user: LazyUser, navController: NavController, context:Cont
         }
 
     }
+
+    // Show the popup when showPopup is true
+    if(showPopup) {
+        CameraPopup(
+            onDismissRequest = { showPopup = false },
+            onImageSelectedFromGallery = { uri ->
+                profileImageUri = uri
+                user.profileImage = uri
+                showPopup = false
+            },
+            onTakePhotoClick = {
+                // Launch the camera activity
+                val intent = Intent(context, CameraActivity::class.java)
+                takePhotoLauncher.launch(intent)
+            }
+        )
+    }
 }
 
 @Composable
-fun ProfilePhotoEditing(firstname: String, surname: String, modifier: Modifier = Modifier, context:Context) {
+fun ProfilePhotoEditing(firstname: String, surname: String, profileImageUri: Uri?,
+    onCameraIconClick: () -> Unit, modifier: Modifier = Modifier) {
+
     val initials = "${firstname.first()}"+"${surname.first()}"
 
     Box(
@@ -336,9 +374,10 @@ fun ProfilePhotoEditing(firstname: String, surname: String, modifier: Modifier =
             .size(130.dp)
             .background(Color.Blue, shape = CircleShape)
     ) {
-        if(newImageUri != null) {
+        if(profileImageUri != null) {
             AsyncImage(
-                newImageUri,"newProfilePic",
+                model = profileImageUri,
+                contentDescription = "Profile Picture",
                 modifier = Modifier
                     .fillMaxSize()
                     .clip( shape = CircleShape)
@@ -358,27 +397,21 @@ fun ProfilePhotoEditing(firstname: String, surname: String, modifier: Modifier =
             "camera",
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .clickable {showPopup.value = true}
+                .clickable { onCameraIconClick() }
         )
     }
-
-    if(showPopup.value)
-        CameraPopup(onDismissRequest = { if(newImageUri != null) showPopup.value = false } , context=context)
 }
 
 @Composable
-fun CameraPopup(onDismissRequest: () -> Unit, context:Context)
-{
-    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+fun CameraPopup(onDismissRequest: () -> Unit, onImageSelectedFromGallery: (Uri) -> Unit,
+    onTakePhotoClick: () -> Unit) {
 
     val pickMedia = rememberLauncherForActivityResult(
         contract = PickVisualMedia()
     ) { uri ->
         if (uri != null) {
             Log.d("PhotoPicker", "Selected URI: $uri")
-            selectedImageUri = uri
-            newImageUri = selectedImageUri
-            showPopup.value = false
+            onImageSelectedFromGallery(uri)
         } else {
             Log.d("PhotoPicker", "No media selected")
         }
@@ -394,7 +427,7 @@ fun CameraPopup(onDismissRequest: () -> Unit, context:Context)
         ) {
             Button(
                 onClick = {
-                    context.startActivity(Intent(context, CameraActivity::class.java))
+                    onTakePhotoClick() // Call the lambda to launch camera
                 },
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)

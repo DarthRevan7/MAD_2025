@@ -1,8 +1,11 @@
 package com.example.voyago.activities
 
 import android.Manifest
+import android.app.Activity
 import android.content.ContentValues
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
@@ -21,12 +24,10 @@ import android.util.Log
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
-import com.example.voyago.user1
-import com.example.voyago.view.newImageUri
 import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.util.Locale
-import com.example.voyago.view.showPopup
+
 
 typealias LumaListener = (luma: Double) -> Unit
 
@@ -79,8 +80,7 @@ class CameraActivity : AppCompatActivity() {
                 contentValues)
             .build()
 
-        // Set up image capture listener, which is triggered after photo has
-        // been taken
+        // Set up image capture listener, which is triggered after photo has been taken
         imageCapture.takePicture(
             outputOptions,
             ContextCompat.getMainExecutor(this),
@@ -97,8 +97,15 @@ class CameraActivity : AppCompatActivity() {
 
                     //Save output data
                     if(output.savedUri != null) {
-                        newImageUri = output.savedUri
-                        user1.profileImage = output.savedUri
+                        // Set the result URI and finish the activity
+                        val resultIntent = Intent().apply {
+                            data = output.savedUri
+                        }
+                        setResult(Activity.RESULT_OK, resultIntent)
+                        finish() // Finish the camera activity after saving
+                    } else {
+                        setResult(Activity.RESULT_CANCELED) // Set result canceled if URI is null
+                        finish()
                     }
                 }
             }
@@ -157,7 +164,6 @@ class CameraActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        showPopup.value = false
         super.onDestroy()
         cameraExecutor.shutdown()
     }
@@ -218,4 +224,3 @@ private class LuminosityAnalyzer(private val listener: LumaListener) : ImageAnal
         image.close()
     }
 }
-
