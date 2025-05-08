@@ -37,6 +37,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.listSaver
@@ -76,6 +77,10 @@ fun initUri(vm:TripViewModel): String {
 fun EditTravelProposal(navController: NavController, vm: TripViewModel) {
     val trip = vm.editTrip
 
+    LaunchedEffect(
+        Unit
+    ) { initUri(vm = vm) }
+
     var imageUri by rememberSaveable {
         mutableStateOf<Uri?>(
             if (trip.photo.isUriString()) {
@@ -85,30 +90,22 @@ fun EditTravelProposal(navController: NavController, vm: TripViewModel) {
             }
         )
     }
+    var tripImageError by rememberSaveable {mutableStateOf(false)}
 
+    val fieldValues = rememberSaveable(saver = listSaver(
+        save = { it.toList() },
+        restore = { it.toMutableStateList() }
+    )) {
+        mutableStateListOf(
+            trip.title,
+            trip.destination,
+            trip.estimatedPrice,
+            trip.groupSize,
+        )
+    }
+    val fieldNames = listOf("Title", "Destination", "Price Estimated", "Group Size")
+    var fieldErrors = arrayOf(false, false, false, false)
 
-    LaunchedEffect(
-        Unit
-    ) { initUri(vm = vm) }
-
-    //TripName and Destination Error handling
-    var tripName by rememberSaveable {mutableStateOf(trip.title)}
-    var destination by rememberSaveable {mutableStateOf(trip.destination)}
-    var tripNameError by rememberSaveable {mutableStateOf(false)}
-    var destinationError by rememberSaveable {mutableStateOf(false)}
-    var stringErrorMessage by rememberSaveable {mutableStateOf("")}
-
-    //Price Error Handling
-    var price by rememberSaveable { mutableStateOf(trip.estimatedPrice.toString()) }
-    var priceError by rememberSaveable { mutableStateOf(false) }
-    var priceErrorMessage by rememberSaveable { mutableStateOf("") }
-
-    //Group Size Error Handling
-    var groupSize by rememberSaveable { mutableStateOf(trip.groupSize.toString()) }
-    var groupSizeError by rememberSaveable { mutableStateOf(false) }
-    var groupSizeErrorMessage by rememberSaveable { mutableStateOf("") }
-
-    //Handling selected Trip Type
     val typeTravel = listOf("party", "adventure", "culture", "relax")
     val selected = rememberSaveable(
         saver = listSaver(
@@ -118,6 +115,7 @@ fun EditTravelProposal(navController: NavController, vm: TripViewModel) {
     ) {
         trip.typeTravel.map { it.toString().lowercase() }.toMutableStateList()
     }
+    var typeTravelError by rememberSaveable { mutableStateOf(false) }
 
 
     //Date Handling
@@ -128,11 +126,6 @@ fun EditTravelProposal(navController: NavController, vm: TripViewModel) {
     var endCalendar by rememberSaveable { mutableStateOf<Calendar?>(trip.endDate) }
 
     var dateError by rememberSaveable { mutableStateOf("") }
-
-    var typeTravelError by rememberSaveable { mutableStateOf(false) }
-    var typeTravelErrorMessage by rememberSaveable { mutableStateOf("") }
-
-
 
     Scaffold(
         topBar = {
@@ -170,100 +163,71 @@ fun EditTravelProposal(navController: NavController, vm: TripViewModel) {
                     )
                 }
 
+                if (tripImageError) {
+                    item {
+                        Text(
+                            text = "Upload Trip Photo",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                }
+
                 item {
                     Spacer(modifier = Modifier.height(40.dp))
                 }
 
-                //Trip Name Field
+                //Title, Destination, Price Estimated, Group Size Fields with Check Errors
                 item {
-                    TextField(
-                        value = tripName,
-                        onValueChange = { tripName = it },
-                        label = { Text("Trip name") },
-                        modifier = Modifier.fillMaxWidth(0.8f),
-                        supportingText = {
-                            if (tripNameError) {
-                                Text(
-                                    text = stringErrorMessage,
-                                    color = MaterialTheme.colorScheme.error,
-                                    style = MaterialTheme.typography.bodySmall
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        //TextFields with various info
+                        fieldValues.forEachIndexed { index, item ->
+                            //Title and Destination Fields
+                            if (index == 0 || index == 1) {
+                                val textHasErrors = (item.toString().isBlank() || item.toString().all { it.isDigit() || it.isWhitespace() })
+                                fieldErrors[index] = textHasErrors
+
+                                ValidatingInputTextField(
+                                    item.toString(),
+                                    {
+                                        fieldValues[index] = it
+                                    },
+                                    textHasErrors,
+                                    fieldNames[index]
+                                )
+                            } else if (index == 2) { //Price Estimated Field
+                                val floatHasErrors = (item.toString().isBlank() || item.toString().toDoubleOrNull()?.let { it <= 0.0 } != false)
+
+                                fieldErrors[index] = floatHasErrors
+
+                                ValidatingInputFloatField(
+                                    item.toString(),
+                                    {
+                                        fieldValues[index] = it
+                                    },
+                                    floatHasErrors,
+                                    fieldNames[index]
+                                )
+                            } else { //Group Size Field
+                                val intHasErrors = (item.toString().isBlank() || item.toString().toIntOrNull()?.let { it <= 1 } != false)
+
+                                fieldErrors[index] = intHasErrors
+
+                                ValidatingInputIntField(
+                                    item.toString(),
+                                    {
+                                        fieldValues[index] = it
+                                    },
+                                    intHasErrors,
+                                    fieldNames[index]
                                 )
                             }
                         }
-                    )
-                }
-
-                item {
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
-
-                //Destination Field
-                item {
-                    TextField(
-                        value = destination,
-                        onValueChange = { destination = it },
-                        label = { Text("Destination") },
-                        modifier = Modifier.fillMaxWidth(0.8f),
-                        supportingText = {
-                            if (destinationError) {
-                                Text(
-                                    text = stringErrorMessage,
-                                    color = MaterialTheme.colorScheme.error,
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                            }
-                        }
-                    )
-                }
-
-                item {
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
-
-                //Price Field
-                item {
-                    TextField(
-                        value = price,
-                        onValueChange = {
-                            price = it
-                            priceError = false
-                        },
-                        label = { Text("Price estimate") },
-                        modifier = Modifier.fillMaxWidth(0.8f),
-                        isError = priceError,
-                        supportingText = {
-                            if (priceError) {
-                                Text(
-                                    text = priceErrorMessage,
-                                    color = MaterialTheme.colorScheme.error,
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                            }
-                        }
-                    )
-                }
-
-                //Price Field
-                item {
-                    TextField(
-                        value = groupSize,
-                        onValueChange = {
-                            groupSize = it
-                            groupSizeError = false
-                        },
-                        label = { Text("Group Size") },
-                        modifier = Modifier.fillMaxWidth(0.8f),
-                        isError = groupSizeError,
-                        supportingText = {
-                            if (groupSizeError) {
-                                Text(
-                                    text = groupSizeErrorMessage,
-                                    color = MaterialTheme.colorScheme.error,
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                            }
-                        }
-                    )
+                    }
                 }
 
                 item {
@@ -301,9 +265,9 @@ fun EditTravelProposal(navController: NavController, vm: TripViewModel) {
                         )
                     }
 
-                    if (typeTravelError) {
+                    if (typeTravelError && selected.isEmpty()) {
                         Text(
-                            text = typeTravelErrorMessage,
+                            text = "Select at least one travel type",
                             color = MaterialTheme.colorScheme.error,
                             style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier.padding(top = 4.dp)
@@ -453,85 +417,43 @@ fun EditTravelProposal(navController: NavController, vm: TripViewModel) {
                         //Next Button
                         Button(
                             onClick = {
-                                if (!validateStringField(tripName)) {
-                                    tripNameError = true
-                                    stringErrorMessage = "This field cannot be empty"
-                                } else if (!validateStringField(destination)) {
-                                    destinationError = true
-                                    stringErrorMessage = "This field cannot be empty"
-                                } else if (!validatePrice(price)) {
-                                    priceError = true
-                                    priceErrorMessage = "Price must be greater than zero"
-                                } else if (!validateGroupSize(groupSize)) {
-                                    groupSizeError = true
-                                    groupSizeErrorMessage = "Group size must be greater than 1"
-                                } else if (!validateDateOrder(startCalendar, endCalendar)) {
-                                    priceError = false
-                                    priceErrorMessage = ""
-                                    dateError = "End date must be after start date"
-                                } else if (selected.isEmpty()) {
-                                    typeTravelError = true
-                                    typeTravelErrorMessage = "Select at least one travel type"
+                                tripImageError = !imageUri.toString().isUriString()
+
+                                typeTravelError = selected.isEmpty()
+
+                                dateError = if (!validateDateOrder(startCalendar, endCalendar)) {
+                                    "Start Date and End Date cannot be empty.\n End Date must be after Start Date"
                                 } else {
-                                    priceError = false
-                                    priceErrorMessage = ""
-                                    dateError = ""
+                                    ""
+                                }
 
-                                    val creatorId = 1
+                                if (!tripImageError && !fieldErrors.any{it} && !typeTravelError && validateDateOrder(startCalendar, endCalendar)) {
+                                    if(vm.userAction == TripViewModel.UserAction.EDIT_TRIP) {
 
-                                    // Create new Trip
-                                    if (vm.userAction == TripViewModel.UserAction.CREATE_TRIP) {
-                                        val activities =
-                                            mutableMapOf<Calendar, MutableList<Trip.Activity>>()
+                                        val currentTrip = vm.editTrip
 
-                                        val newTrip = Trip(
-                                            photo = imageUri.toString(),
-                                            title = tripName,
-                                            destination = destination,
-                                            startDate = startCalendar!!,
-                                            endDate = endCalendar!!,
-                                            estimatedPrice = price.toDouble(),
-                                            groupSize = groupSize.toInt(),
-                                            activities = activities,
-                                            typeTravel = selected.map { TypeTravel.valueOf(it.uppercase()) },
-                                            creatorId = creatorId,
-                                            published = false,
-                                            id = -1,
-                                            participants = emptyList(),
-                                            status = Trip.TripStatus.NOT_STARTED,
-                                            appliedUsers = emptyList(),
-                                            reviews = emptyList()
-                                        )
+                                        if (currentTrip.IsValid()) {
+                                            val updatedTrip = Trip(
+                                                photo = imageUri?.toString() ?: trip.photo,
+                                                title = fieldValues[0].toString(),
+                                                destination = fieldValues[1].toString(),
+                                                startDate = startCalendar!!,
+                                                endDate = endCalendar!!,
+                                                estimatedPrice = fieldValues[2].toString().toDouble(),
+                                                groupSize = fieldValues[3].toString().toInt(),
+                                                activities = currentTrip.activities,
+                                                typeTravel = selected.map { TypeTravel.valueOf(it.uppercase()) },
+                                                creatorId = currentTrip.creatorId,
+                                                published = currentTrip.published,
+                                                id = currentTrip.id,
+                                                participants = currentTrip.participants,
+                                                status = currentTrip.status,
+                                                appliedUsers = currentTrip.appliedUsers,
+                                                reviews = currentTrip.reviews
+                                            )
 
-                                        vm.newTrip = newTrip
-                                        println("Trip making")
-
-                                    } else if(vm.userAction == TripViewModel.UserAction.EDIT_TRIP) {
-
-                                    val currentTrip = vm.editTrip
-
-                                    if (currentTrip.IsValid()) {
-                                        val updatedTrip = Trip(
-                                            photo = imageUri?.toString() ?: trip.photo,
-                                            title = tripName,
-                                            destination = destination,
-                                            startDate = startCalendar!!,
-                                            endDate = endCalendar!!,
-                                            estimatedPrice = price.toDouble(),
-                                            groupSize = groupSize.toInt(),
-                                            activities = currentTrip.activities,
-                                            typeTravel = selected.map { TypeTravel.valueOf(it.uppercase()) },
-                                            creatorId = currentTrip.creatorId,
-                                            published = currentTrip.published,
-                                            id = currentTrip.id,
-                                            participants = currentTrip.participants,
-                                            status = currentTrip.status,
-                                            appliedUsers = currentTrip.appliedUsers,
-                                            reviews = currentTrip.reviews
-                                        )
-
-                                        vm.editTrip = updatedTrip
-                                        println("Trip editing")
+                                            vm.editTrip = updatedTrip
+                                            println("Trip editing")
                                         }
                                     }
                                     navController.navigate("activities_list")

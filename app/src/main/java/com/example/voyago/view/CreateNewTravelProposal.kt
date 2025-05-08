@@ -8,6 +8,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,9 +20,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material3.Button
@@ -31,11 +34,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -45,16 +48,20 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.voyago.activities.*
 import java.util.Calendar
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.input.KeyboardType
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
@@ -66,26 +73,29 @@ import com.example.voyago.viewmodel.TripViewModel
 @Composable
 fun NewTravelProposal(navController: NavController, vm: TripViewModel) {
 
-    //vm.selectTrip(null)
 
     vm.userAction = TripViewModel.UserAction.CREATE_TRIP
 
-    var tripName by rememberSaveable {mutableStateOf("")}
-    var destination by rememberSaveable {mutableStateOf("")}
-    var tripNameError by rememberSaveable {mutableStateOf(false)}
-    var destinationError by rememberSaveable {mutableStateOf(false)}
-    var stringErrorMessage by rememberSaveable {mutableStateOf("")}
-
+    var imageUri by rememberSaveable {mutableStateOf<Uri?>(null)}
+    var photoTouched = remember {mutableStateOf(false)}
     var tripImageError by rememberSaveable {mutableStateOf(false)}
-    var photoErrorMessage by rememberSaveable { mutableStateOf("") }
 
-    var price by rememberSaveable {mutableStateOf("")}
-    var priceError by rememberSaveable {mutableStateOf(false)}
-    var priceErrorMessage by rememberSaveable {mutableStateOf("")}
 
-    var groupSize by rememberSaveable {mutableStateOf("")}
-    var groupSizeError by rememberSaveable {mutableStateOf(false)}
-    var groupSizeErrorMessage by rememberSaveable {mutableStateOf("")}
+    val fieldValues = rememberSaveable(saver = listSaver(
+        save = { it.toList() },
+        restore = { it.toMutableStateList() }
+    )) {
+        mutableStateListOf(
+            "",
+            "",
+            "",
+            "",
+        )
+    }
+    val fieldNames = listOf("Title", "Destination", "Price Estimated", "Group Size")
+    val fieldTouched = remember {mutableStateListOf(false, false, false, false)}
+    var fieldErrors = arrayOf(false, false, false, false)
+
 
     val typeTravel = listOf("Party", "Adventure", "Culture", "Relax")
     val selected = rememberSaveable(
@@ -96,6 +106,7 @@ fun NewTravelProposal(navController: NavController, vm: TripViewModel) {
     ) {
         mutableStateListOf<String>()
     }
+    var typeTravelError by rememberSaveable { mutableStateOf(false) }
 
     var startDate by rememberSaveable { mutableStateOf("") }
     var startCalendar by rememberSaveable { mutableStateOf<Calendar?>(null) }
@@ -104,12 +115,6 @@ fun NewTravelProposal(navController: NavController, vm: TripViewModel) {
     var endCalendar by rememberSaveable { mutableStateOf<Calendar?>(null) }
 
     var dateError by rememberSaveable { mutableStateOf("") }
-
-    var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
-
-    var typeTravelError by rememberSaveable { mutableStateOf(false) }
-    var typeTravelErrorMessage by rememberSaveable { mutableStateOf("") }
-
 
     Scaffold(
         topBar = {
@@ -138,13 +143,13 @@ fun NewTravelProposal(navController: NavController, vm: TripViewModel) {
 
                 //Image Trip with Error check
                 item {
-                    TripImage(imageUri = imageUri, onUriSelected = { uri -> imageUri = uri })
+                    TripImage(imageUri = imageUri, onUriSelected = { uri -> imageUri = uri }, photoTouched)
                 }
 
-                if (tripImageError) {
+                if (tripImageError && !photoTouched.value) {
                     item {
                         Text(
-                            text = photoErrorMessage,
+                            text = "Upload Trip Photo",
                             color = MaterialTheme.colorScheme.error,
                             style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier.padding(16.dp)
@@ -156,100 +161,68 @@ fun NewTravelProposal(navController: NavController, vm: TripViewModel) {
                     Spacer(modifier = Modifier.height(40.dp))
                 }
 
-                //Trip Name field with Error Check
+                //Title, Destination, Price Estimated, Group Size Fields with Check Errors
                 item {
-                    TextField(
-                        value = tripName,
-                        onValueChange = { tripName = it },
-                        label = { Text("Trip name") },
-                        modifier = Modifier.fillMaxWidth(0.8f),
-                        supportingText = {
-                            if (tripNameError) {
-                                Text(
-                                    text = stringErrorMessage,
-                                    color = MaterialTheme.colorScheme.error,
-                                    style = MaterialTheme.typography.bodySmall
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        //TextFields with various info
+                        fieldValues.forEachIndexed { index, item ->
+                            val fieldIsBeenTouched = fieldTouched[index]
+                            //Title and Destination Fields
+                            if (index == 0 || index == 1) {
+                                val textHasErrors = fieldIsBeenTouched && (item.isBlank() || item.all { it.isDigit() || it.isWhitespace() })
+                                fieldErrors[index] = textHasErrors
+
+                                ValidatingInputTextField(
+                                    item,
+                                    {
+                                        fieldValues[index] = it
+                                        if(!fieldIsBeenTouched) {
+                                            fieldTouched[index] = true
+                                        }
+                                    },
+                                    textHasErrors,
+                                    fieldNames[index]
+                                )
+                            } else if (index == 2) { //Price Estimated Field
+                                val floatHasErrors = fieldIsBeenTouched &&
+                                        (item.isBlank() || item.toDoubleOrNull()?.let { it <= 0.0 } != false)
+
+                                fieldErrors[index] = floatHasErrors
+
+                                ValidatingInputFloatField(
+                                    item,
+                                    {
+                                        fieldValues[index] = it
+                                        if(!fieldIsBeenTouched) {
+                                            fieldTouched[index] = true
+                                        }
+                                    },
+                                    floatHasErrors,
+                                    fieldNames[index]
+                                )
+                            } else { //Group Size Field
+                                val intHasErrors = fieldIsBeenTouched &&
+                                        (item.isBlank() || item.toIntOrNull()?.let { it <= 1 } != false)
+
+                                fieldErrors[index] = intHasErrors
+
+                                ValidatingInputIntField(
+                                    item,
+                                    {
+                                        fieldValues[index] = it
+                                        if(!fieldIsBeenTouched) {
+                                            fieldTouched[index] = true
+                                        }
+                                    },
+                                    intHasErrors,
+                                    fieldNames[index]
                                 )
                             }
                         }
-                    )
-                }
-
-                item {
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-
-                //Destination field with Error Check
-                item {
-                    TextField(
-                        value = destination,
-                        onValueChange = { destination = it },
-                        label = { Text("Destination") },
-                        modifier = Modifier.fillMaxWidth(0.8f),
-                        supportingText = {
-                            if (destinationError) {
-                                Text(
-                                    text = stringErrorMessage,
-                                    color = MaterialTheme.colorScheme.error,
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                            }
-                        }
-                    )
-                }
-
-                item {
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-
-                //Price Field with Error Check
-                item {
-                    TextField(
-                        value = price,
-                        onValueChange = {
-                            price = it
-                            priceError = false
-                        },
-                        label = { Text("Price estimate") },
-                        modifier = Modifier.fillMaxWidth(0.8f),
-                        isError = priceError,
-                        supportingText = {
-                            if (priceError) {
-                                Text(
-                                    text = priceErrorMessage,
-                                    color = MaterialTheme.colorScheme.error,
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                            }
-                        }
-                    )
-                }
-
-                //Group Size field with Error Check
-                item {
-                    TextField(
-                        value = groupSize,
-                        onValueChange = {
-                            groupSize = it
-                            groupSizeError = false
-                        },
-                        label = { Text("Group Size") },
-                        modifier = Modifier.fillMaxWidth(0.8f),
-                        isError = groupSizeError,
-                        supportingText = {
-                            if (groupSizeError) {
-                                Text(
-                                    text = groupSizeErrorMessage,
-                                    color = MaterialTheme.colorScheme.error,
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                            }
-                        }
-                    )
-                }
-
-                item {
-                    Spacer(modifier = Modifier.height(24.dp))
+                    }
                 }
 
                 //Trip Type with Error Check
@@ -257,7 +230,6 @@ fun NewTravelProposal(navController: NavController, vm: TripViewModel) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-
                     ) {
                         Text(
                             text = "Trip type",
@@ -284,9 +256,9 @@ fun NewTravelProposal(navController: NavController, vm: TripViewModel) {
                         )
                     }
 
-                    if (typeTravelError) {
+                    if (typeTravelError && selected.isEmpty()) {
                         Text(
-                            text = typeTravelErrorMessage,
+                            text = "Select at least one travel type",
                             color = MaterialTheme.colorScheme.error,
                             style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier.padding(top = 4.dp)
@@ -393,7 +365,7 @@ fun NewTravelProposal(navController: NavController, vm: TripViewModel) {
                         }
                     }
 
-                    if (dateError.isNotEmpty()) {
+                    if (dateError.isNotEmpty() && !validateDateOrder(startCalendar, endCalendar)) {
                         Text(
                             text = dateError,
                             color = MaterialTheme.colorScheme.error,
@@ -407,16 +379,14 @@ fun NewTravelProposal(navController: NavController, vm: TripViewModel) {
                     Spacer(modifier = Modifier.height(50.dp))
                 }
 
-
-                //Cancel Button
+                //Cancel Button and Next Button
                 item {
-
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 24.dp),
                     ) {
-
+                        //Cancel Button
                         Button(
                             onClick = {
                                 vm.userAction = TripViewModel.UserAction.NOTHING
@@ -437,45 +407,33 @@ fun NewTravelProposal(navController: NavController, vm: TripViewModel) {
                         Button(
                             onClick = {
 
-                                if(!imageUri.toString().isUriString()) {
-                                    tripImageError = true
-                                    photoErrorMessage = "Upload Trip Photo"
-                                } else if (!validateStringField(tripName)) {
-                                    tripNameError = true
-                                    stringErrorMessage = "This field cannot be empty"
-                                } else if (!validateStringField(destination)) {
-                                    destinationError = true
-                                    stringErrorMessage = "This field cannot be empty"
-                                } else if (!validatePrice(price)) {
-                                    priceError = true
-                                    priceErrorMessage = "Price must be greater than zero"
-                                } else if (!validateGroupSize(groupSize)) {
-                                    groupSizeError = true
-                                    groupSizeErrorMessage = "Group size must be greater than 1"
-                                } else if (!validateDateOrder(startCalendar, endCalendar)) {
-                                    priceError = false
-                                    priceErrorMessage = ""
-                                    dateError = "End date must be after start date"
-                                } else if (selected.isEmpty()) {
-                                    typeTravelError = true
-                                    typeTravelErrorMessage = "Select at least one travel type"
-                                } else {
-                                    priceError = false
-                                    priceErrorMessage = ""
-                                    dateError = ""
+                                tripImageError = !imageUri.toString().isUriString()
 
+                                fieldTouched.forEachIndexed { index, _ ->
+                                    fieldTouched[index] = true
+                                }
+
+                                typeTravelError = selected.isEmpty()
+
+                                dateError = if (!validateDateOrder(startCalendar, endCalendar)) {
+                                    "Start Date and End Date cannot be empty.\n End Date must be after Start Date"
+                                } else {
+                                    ""
+                                }
+
+                                if (!tripImageError && !fieldErrors.any{it} && !typeTravelError && validateDateOrder(startCalendar, endCalendar)) {
                                     val creatorId = 1
 
                                     val activities = mutableMapOf<Calendar, MutableList<Trip.Activity>>()
 
                                     val newTrip = Trip(
                                         photo = imageUri.toString(),
-                                        title = tripName,
-                                        destination = destination,
+                                        title = fieldValues[0],
+                                        destination = fieldValues[1],
                                         startDate = startCalendar!!,
                                         endDate = endCalendar!!,
-                                        estimatedPrice = price.toDouble(),
-                                        groupSize = groupSize.toInt(),
+                                        estimatedPrice = fieldValues[2].toDouble(),
+                                        groupSize = fieldValues[3].toInt(),
                                         activities = activities,
                                         typeTravel = selected.map { TypeTravel.valueOf(it.uppercase()) },
                                         creatorId = creatorId,
@@ -508,24 +466,12 @@ fun NewTravelProposal(navController: NavController, vm: TripViewModel) {
     }
 }
 
-fun validateStringField(str: String): Boolean {
-    return str != ""
-}
-
-fun validatePrice(price: String): Boolean {
-    return price.toDoubleOrNull()?.let { it > 0 } == true
-}
-
-fun validateGroupSize(groupSize: String): Boolean {
-    return groupSize.toIntOrNull()?.let { it > 1 } == true
-}
-
 fun validateDateOrder(start: Calendar?, end: Calendar?): Boolean {
     return start != null && end != null && end.after(start)
 }
 
 @Composable
-fun TripImage(imageUri: Uri?, onUriSelected: (Uri?) -> Unit) {
+fun TripImage(imageUri: Uri?, onUriSelected: (Uri?) -> Unit, photoTouched: MutableState<Boolean>) {
     val context = LocalContext.current
 
     val pickMedia = rememberLauncherForActivityResult(
@@ -557,6 +503,7 @@ fun TripImage(imageUri: Uri?, onUriSelected: (Uri?) -> Unit) {
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
+            photoTouched.value = true
         } else {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -576,6 +523,7 @@ fun TripImage(imageUri: Uri?, onUriSelected: (Uri?) -> Unit) {
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                 )
             }
+            photoTouched.value = false
         }
 
         IconButton(
@@ -597,6 +545,101 @@ fun TripImage(imageUri: Uri?, onUriSelected: (Uri?) -> Unit) {
                 modifier = Modifier.padding(4.dp)
             )
         }
+    }
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+fun ValidatingInputTextField(text: String, updateState: (String) -> Unit,
+                             validatorHasErrors: Boolean, label: String) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    Column(
+        modifier = Modifier
+            .wrapContentSize()
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = {
+                    keyboardController?.hide()
+                })
+            }
+    ) {
+        OutlinedTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
+            value = text,
+            onValueChange = updateState,
+            label = { Text(label) },
+            isError = validatorHasErrors,
+            supportingText = {
+                if (validatorHasErrors) {
+                    Text("This field cannot be empty and cannot contains only numbers")
+                }
+            },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+        )
+    }
+}
+
+@Composable
+fun ValidatingInputFloatField(text:String, updateState: (String) -> Unit, validatorHasErrors: Boolean, label: String) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    Column(
+        modifier = Modifier
+            .wrapContentSize()
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = {
+                    keyboardController?.hide()
+                })
+            }
+    ) {
+        OutlinedTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
+            value = text,
+            onValueChange = updateState,
+            label = { Text(label) },
+            isError = validatorHasErrors,
+            supportingText = {
+                if (validatorHasErrors) {
+                    Text("This field cannot be empty and must be a number greater that 0.0")
+                }
+            },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+        )
+    }
+}
+
+@Composable
+fun ValidatingInputIntField(text:String, updateState: (String) -> Unit, validatorHasErrors: Boolean, label: String) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    Column(
+        modifier = Modifier
+            .wrapContentSize()
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = {
+                    keyboardController?.hide()
+                })
+            }
+    ) {
+        OutlinedTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
+            value = text,
+            onValueChange = updateState,
+            label = { Text(label) },
+            isError = validatorHasErrors,
+            supportingText = {
+                if (validatorHasErrors) {
+                    Text("This field cannot be empty and must be a number greater than 1")
+                }
+            },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+        )
     }
 }
 
