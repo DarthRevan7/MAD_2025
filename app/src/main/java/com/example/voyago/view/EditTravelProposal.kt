@@ -60,7 +60,6 @@ import com.example.voyago.activities.BottomBar
 import com.example.voyago.activities.TopBar
 import com.example.voyago.model.Trip
 import com.example.voyago.model.TypeTravel
-import com.example.voyago.viewmodel.TripListViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -77,8 +76,6 @@ fun initUri(vm:TripViewModel): String {
 fun EditTravelProposal(navController: NavController, vm: TripViewModel) {
     val trip = vm.editTrip
 
-    //Can delete this if
-
     var imageUri by rememberSaveable {
         mutableStateOf<Uri?>(
             if (trip.photo.isUriString()) {
@@ -88,6 +85,7 @@ fun EditTravelProposal(navController: NavController, vm: TripViewModel) {
             }
         )
     }
+
 
     LaunchedEffect(
         Unit
@@ -163,7 +161,8 @@ fun EditTravelProposal(navController: NavController, vm: TripViewModel) {
 
                 //Trip Image
                 item {
-                    TripImageEdit(trip,
+                    TripImageEdit(
+                        trip = trip,
                         imageUri = imageUri,
                         onUriSelected = { uri ->
                             imageUri = uri
@@ -175,6 +174,7 @@ fun EditTravelProposal(navController: NavController, vm: TripViewModel) {
                     Spacer(modifier = Modifier.height(40.dp))
                 }
 
+                //Trip Name Field
                 item {
                     TextField(
                         value = tripName,
@@ -197,6 +197,7 @@ fun EditTravelProposal(navController: NavController, vm: TripViewModel) {
                     Spacer(modifier = Modifier.height(12.dp))
                 }
 
+                //Destination Field
                 item {
                     TextField(
                         value = destination,
@@ -219,8 +220,8 @@ fun EditTravelProposal(navController: NavController, vm: TripViewModel) {
                     Spacer(modifier = Modifier.height(12.dp))
                 }
 
+                //Price Field
                 item {
-
                     TextField(
                         value = price,
                         onValueChange = {
@@ -242,6 +243,7 @@ fun EditTravelProposal(navController: NavController, vm: TripViewModel) {
                     )
                 }
 
+                //Price Field
                 item {
                     TextField(
                         value = groupSize,
@@ -268,6 +270,7 @@ fun EditTravelProposal(navController: NavController, vm: TripViewModel) {
                     Spacer(modifier = Modifier.height(24.dp))
                 }
 
+                //Trip Type
                 item {
                     Box(
                         modifier = Modifier
@@ -280,8 +283,6 @@ fun EditTravelProposal(navController: NavController, vm: TripViewModel) {
                                 .align(Alignment.Center),
                             fontSize = 17.sp
                         )
-
-
                     }
                 }
 
@@ -291,14 +292,12 @@ fun EditTravelProposal(navController: NavController, vm: TripViewModel) {
                             .fillMaxWidth()
                             .padding(bottom = 3.dp)
                     ) {
-
                         Text(
                             text = "Select one or more options",
                             modifier = Modifier
                                 .padding(vertical = 10.dp)
                                 .align(Alignment.Center),
                             fontStyle = FontStyle.Italic
-                            //fontSize = 10.sp
                         )
                     }
 
@@ -340,13 +339,13 @@ fun EditTravelProposal(navController: NavController, vm: TripViewModel) {
                     Spacer(modifier = Modifier.height(10.dp))
                 }
 
+                //Dates
                 item {
                     val context = LocalContext.current
                     val calendar = Calendar.getInstance()
                     val year = calendar.get(Calendar.YEAR)
                     val month = calendar.get(Calendar.MONTH)
                     val day = calendar.get(Calendar.DAY_OF_MONTH)
-
 
                     val startDatePickerDialog = remember {
                         DatePickerDialog(
@@ -373,7 +372,6 @@ fun EditTravelProposal(navController: NavController, vm: TripViewModel) {
                             }, year, month, day
                         )
                     }
-
 
                     Row(
                         modifier = Modifier
@@ -429,14 +427,15 @@ fun EditTravelProposal(navController: NavController, vm: TripViewModel) {
                     Spacer(modifier = Modifier.height(50.dp))
                 }
 
-                item {
 
+                //Cancel Button and Next Button
+                item {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 24.dp),
                     ) {
-
+                        //Cancel Button
                         Button(
                             onClick = {
                                 navController.popBackStack()
@@ -451,6 +450,7 @@ fun EditTravelProposal(navController: NavController, vm: TripViewModel) {
 
                         Spacer(modifier = Modifier.weight(1f))
 
+                        //Next Button
                         Button(
                             onClick = {
                                 if (!validateStringField(tripName)) {
@@ -512,7 +512,7 @@ fun EditTravelProposal(navController: NavController, vm: TripViewModel) {
 
                                     if (currentTrip.IsValid()) {
                                         val updatedTrip = Trip(
-                                            photo = imageUri.toString(),
+                                            photo = imageUri?.toString() ?: trip.photo,
                                             title = tripName,
                                             destination = destination,
                                             startDate = startCalendar!!,
@@ -546,10 +546,8 @@ fun EditTravelProposal(navController: NavController, vm: TripViewModel) {
                         }
                     }
                 }
-
             }
         }
-
     }
 
 }
@@ -617,7 +615,7 @@ fun TripImageEdit(trip:Trip, imageUri: Uri?, onUriSelected: (Uri?) -> Unit) {
             }
         }
 
-        //Iconbutton select photo
+        //Icon Button select photo
         IconButton(
             onClick = {
                 pickMedia.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))

@@ -24,7 +24,6 @@ import androidx.compose.ui.unit.dp
 import com.example.voyago.activities.BottomBar
 import com.example.voyago.activities.TopBar
 import com.example.voyago.model.LazyUser
-import com.example.voyago.viewmodel.TripListViewModel
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape

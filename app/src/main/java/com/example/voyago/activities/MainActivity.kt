@@ -81,7 +81,7 @@ class MainActivity : ComponentActivity() {
                         val parentEntry = remember(navBackStackEntry) {
                             navController.getBackStackEntry("all_trips_graph")
                         }
-                        val vm: TripViewModel = viewModel(parentEntry, factory = NewFactory)
+                        val vm: TripViewModel = viewModel(parentEntry, factory = Factory)
                         TravelProposalList(navController, vm)
                     }
 
@@ -89,7 +89,7 @@ class MainActivity : ComponentActivity() {
                         val parentEntry = remember(navBackStackEntry) {
                             navController.getBackStackEntry("all_trips_graph")
                         }
-                        val vm: TripViewModel = viewModel(parentEntry, factory = NewFactory)
+                        val vm: TripViewModel = viewModel(parentEntry, factory = Factory)
                         TravelProposalDetail(navController, vm, false)
                     }
 
@@ -97,7 +97,7 @@ class MainActivity : ComponentActivity() {
                         val parentEntry = remember(navBackStackEntry) {
                             navController.getBackStackEntry("all_trips_graph")
                         }
-                        val vm: TripViewModel = viewModel(parentEntry, factory = NewFactory)
+                        val vm: TripViewModel = viewModel(parentEntry, factory = Factory)
                         FilterSelection(navController, vm)
                     }
                 }
@@ -112,7 +112,7 @@ class MainActivity : ComponentActivity() {
                         val parentEntry = remember(navBackStackEntry) {
                             navController.getBackStackEntry("owned_trips_graph")
                         }
-                        val vm: TripViewModel = viewModel(parentEntry, factory = NewFactory)
+                        val vm: TripViewModel = viewModel(parentEntry, factory = Factory)
                         OwnedTravelProposalList(navController, vm)
                     }
 
@@ -120,7 +120,7 @@ class MainActivity : ComponentActivity() {
                         val parentEntry = remember(navBackStackEntry) {
                             navController.getBackStackEntry("owned_trips_graph")
                         }
-                        val vm: TripViewModel = viewModel(parentEntry, factory = NewFactory)
+                        val vm: TripViewModel = viewModel(parentEntry, factory = Factory)
                         TravelProposalDetail(navController, vm, true)
                     }
 
@@ -128,7 +128,7 @@ class MainActivity : ComponentActivity() {
                         val parentEntry = remember(navBackStackEntry) {
                             navController.getBackStackEntry("owned_trips_graph")
                         }
-                        val vm: TripViewModel = viewModel(parentEntry, factory = NewFactory)
+                        val vm: TripViewModel = viewModel(parentEntry, factory = Factory)
                         TripApplications(vm)
                     }
 
@@ -136,7 +136,7 @@ class MainActivity : ComponentActivity() {
                         val parentEntry = remember(navBackStackEntry) {
                             navController.getBackStackEntry("owned_trips_graph")
                         }
-                        val vm: TripViewModel = viewModel(parentEntry, factory = NewFactory)
+                        val vm: TripViewModel = viewModel(parentEntry, factory = Factory)
                         EditTravelProposal(navController, vm)
                     }
 
@@ -144,7 +144,7 @@ class MainActivity : ComponentActivity() {
                         val parentEntry = remember(navBackStackEntry) {
                             navController.getBackStackEntry("owned_trips_graph")
                         }
-                        val vm: TripViewModel = viewModel(parentEntry, factory = NewFactory)
+                        val vm: TripViewModel = viewModel(parentEntry, factory = Factory)
                         NewTravelProposal(navController, vm)
                     }
 
@@ -152,7 +152,7 @@ class MainActivity : ComponentActivity() {
                         val parentEntry = remember(navBackStackEntry) {
                             navController.getBackStackEntry("owned_trips_graph")
                         }
-                        val vm: TripViewModel = viewModel(parentEntry, factory = NewFactory)
+                        val vm: TripViewModel = viewModel(parentEntry, factory = Factory)
                         ActivitiesList(navController, vm)
                     }
 
@@ -160,7 +160,7 @@ class MainActivity : ComponentActivity() {
                         val parentEntry = remember(navBackStackEntry) {
                             navController.getBackStackEntry("owned_trips_graph")
                         }
-                        val vm: TripViewModel = viewModel(parentEntry, factory = NewFactory)
+                        val vm: TripViewModel = viewModel(parentEntry, factory = Factory)
                         NewActivity(navController, vm)
                     }
 
@@ -171,19 +171,11 @@ class MainActivity : ComponentActivity() {
                         val parentEntry = remember(navBackStackEntry) {
                             navController.getBackStackEntry("owned_trips_graph")
                         }
-                        val vm: TripViewModel = viewModel(parentEntry, factory = NewFactory)
+                        val vm: TripViewModel = viewModel(parentEntry, factory = Factory)
 
                         val activityId = navBackStackEntry.arguments?.getInt("activityId") ?: -1
                         EditActivity(navController, vm, activityId)
                     }
-                }
-
-
-
-
-                //To delete
-                composable("try_load_images") {
-                    LoadImages()
                 }
             }
         }
@@ -211,13 +203,6 @@ fun MainPage(navController: NavController) {
             navController.navigate("create_new_travel_proposal")
         }) {
             Text("Create New Travel Proposal")
-        }
-
-        //to delete later
-        Button(onClick = {
-            navController.navigate("try_load_images")
-        }) {
-            Text("Try load images")
         }
     }
 }

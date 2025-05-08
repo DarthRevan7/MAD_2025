@@ -104,7 +104,7 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
                     Spacer(modifier = Modifier.height(40.dp))
                 }
 
-
+                //Activity List
                 item {
                     ActivitiesListContent(selectedTrip, vm, navController)
                 }
@@ -114,6 +114,7 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
                     Spacer(modifier = Modifier.height(40.dp))
                 }
 
+                //New Activity Button
                 item {
                     Button(
                         onClick = {
@@ -139,7 +140,7 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
                     Spacer(modifier = Modifier.height(50.dp))
                 }
 
-
+                //Back Button
                 item {
                     Column(
                         modifier = Modifier
@@ -163,40 +164,72 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
 
                             Spacer(modifier = Modifier.weight(1f))
 
+                            //Finish Button
                             Button(
                                 onClick = {
                                     if (allDaysHaveActivities(selectedTrip)) {
 
-                                        val updatedTrip = Trip(
-                                            photo = vm.newTrip.photo,
-                                            title = vm.newTrip.title,
-                                            destination = vm.newTrip.destination,
-                                            startDate = vm.newTrip.startDate,
-                                            endDate = vm.newTrip.endDate,
-                                            estimatedPrice = vm.newTrip.estimatedPrice,
-                                            groupSize = vm.newTrip.groupSize,
-                                            //activities = activities,
-                                            activities = vm.newTrip.activities,
-                                            typeTravel = vm.newTrip.typeTravel,
-                                            creatorId = vm.newTrip.creatorId,
-                                            published = false,
-                                            id = vm.newTrip.id,
-                                            participants = emptyList(),
-                                            status = Trip.TripStatus.NOT_STARTED,
-                                            appliedUsers = emptyList(),
-                                            reviews = emptyList()
+                                        if(vm.userAction == TripViewModel.UserAction.CREATE_TRIP) {
+                                            val updatedTrip = Trip(
+                                                photo = vm.newTrip.photo,
+                                                title = vm.newTrip.title,
+                                                destination = vm.newTrip.destination,
+                                                startDate = vm.newTrip.startDate,
+                                                endDate = vm.newTrip.endDate,
+                                                estimatedPrice = vm.newTrip.estimatedPrice,
+                                                groupSize = vm.newTrip.groupSize,
+                                                activities = vm.newTrip.activities,
+                                                typeTravel = vm.newTrip.typeTravel,
+                                                creatorId = vm.newTrip.creatorId,
+                                                published = false,
+                                                id = vm.newTrip.id,
+                                                participants = emptyList(),
+                                                status = Trip.TripStatus.NOT_STARTED,
+                                                appliedUsers = emptyList(),
+                                                reviews = emptyList()
 
-                                        )
+                                            )
 
-                                        vm.addNewTrip(updatedTrip)
+                                            vm.addNewTrip(updatedTrip)
 
-                                        //Go to the owned travel proposal
-                                        navController.navigate("owned_travel_proposal_list") {
-                                            popUpTo("owned_travel_proposal_list") {
-                                                inclusive = false
+                                            //Go to the owned travel proposal
+                                            navController.navigate("owned_travel_proposal_list") {
+                                                popUpTo("owned_travel_proposal_list") {
+                                                    inclusive = false
+                                                }
+                                                launchSingleTop = true
                                             }
-                                            launchSingleTop = true
+                                        } else if(vm.userAction == TripViewModel.UserAction.EDIT_TRIP){
+                                            val updatedTrip = Trip(
+                                                photo = vm.editTrip.photo,
+                                                title = vm.editTrip.title,
+                                                destination = vm.editTrip.destination,
+                                                startDate = vm.editTrip.startDate,
+                                                endDate = vm.editTrip.endDate,
+                                                estimatedPrice = vm.editTrip.estimatedPrice,
+                                                groupSize = vm.editTrip.groupSize,
+                                                activities = vm.editTrip.activities,
+                                                typeTravel = vm.editTrip.typeTravel,
+                                                creatorId = vm.editTrip.creatorId,
+                                                published = vm.editTrip.published,
+                                                id = vm.editTrip.id,
+                                                participants = vm.editTrip.participants,
+                                                status = vm.editTrip.status,
+                                                appliedUsers = vm.editTrip.appliedUsers,
+                                                reviews = vm.editTrip.reviews
+                                            )
+
+                                            vm.editNewTrip(updatedTrip)
+
+                                            //Go to the owned travel proposal
+                                            navController.navigate("owned_travel_proposal_list") {
+                                                popUpTo("owned_travel_proposal_list") {
+                                                    inclusive = false
+                                                }
+                                                launchSingleTop = true
+                                            }
                                         }
+
                                     } else {
                                         showIncompleteDialog = true
                                     }

@@ -30,7 +30,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.voyago.activities.BottomBar
 import com.example.voyago.activities.TopBar
-import com.example.voyago.viewmodel.TripListViewModel
 import androidx.compose.runtime.collectAsState
 import com.example.voyago.model.Trip
 import androidx.compose.runtime.getValue

@@ -42,8 +42,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.voyago.activities.BottomBar
 import com.example.voyago.activities.TopBar
-import com.example.voyago.viewmodel.Factory
-import com.example.voyago.viewmodel.TripListViewModel
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.filled.Add
@@ -63,7 +61,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.window.PopupProperties
 import com.example.voyago.model.TypeTravel
-import com.example.voyago.viewmodel.NewFactory
+import com.example.voyago.viewmodel.Factory
 import com.example.voyago.viewmodel.TripViewModel
 
 data class SelectableItem(
@@ -75,7 +73,7 @@ data class SelectableItem(
 )
 
 @Composable
-fun FilterSelection(navController: NavController, vm: TripViewModel = viewModel(factory = NewFactory)) {
+fun FilterSelection(navController: NavController, vm: TripViewModel = viewModel(factory = Factory)) {
     Scaffold(
         topBar = {
             TopBar()

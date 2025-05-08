@@ -263,7 +263,7 @@ class TripViewModel(val model:Model): ViewModel() {
 
 }
 
-object NewFactory : ViewModelProvider.Factory{
+object Factory : ViewModelProvider.Factory{
     private val model:Model = Model()
 
     override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {

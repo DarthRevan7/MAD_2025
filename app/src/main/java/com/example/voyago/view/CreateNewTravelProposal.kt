@@ -60,7 +60,6 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.example.voyago.model.Trip
 import com.example.voyago.model.TypeTravel
-import com.example.voyago.viewmodel.TripListViewModel
 import com.example.voyago.viewmodel.TripViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
