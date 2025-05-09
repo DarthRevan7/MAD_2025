@@ -303,6 +303,7 @@ fun ActivitiesListContent(trip: Trip, vm: TripViewModel, navController: NavContr
                                 .fillMaxWidth()
                         ) {
 
+                            //Edit Activity Button
                             Icon(
                                 imageVector = Icons.Default.Edit,
                                 contentDescription = "Edit Activity",
@@ -316,6 +317,7 @@ fun ActivitiesListContent(trip: Trip, vm: TripViewModel, navController: NavContr
 
                             Spacer(modifier = Modifier.width(8.dp))
 
+                            //Print Activity information
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = "${activity.time} - ${activity.description}" +
@@ -324,6 +326,7 @@ fun ActivitiesListContent(trip: Trip, vm: TripViewModel, navController: NavContr
                                 )
                             }
 
+                            //Delete Activity Button
                             OutlinedButton(
                                 onClick = { activityToDelete = activity },
                                 modifier = Modifier.height(36.dp)

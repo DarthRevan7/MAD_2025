@@ -11,7 +11,7 @@ data class Trip(
     var endDate: Calendar,
     var estimatedPrice: Double,
     var groupSize: Int,
-    var participants: List<Int>,                            //user id - is this useful?
+    var participants: List<Int>,                            //user id
     var activities: Map<Calendar, List<Activity>>,          //Map<Date,Activity> to filter by day
     var status: TripStatus,
     var typeTravel: List<TypeTravel>,
@@ -60,8 +60,8 @@ data class Trip(
 
     }
 
-    fun IsValid():Boolean {
-        var condition: Boolean = true
+    fun isValid():Boolean {
+        var condition = true
         var yesterday = Calendar.getInstance()
         yesterday.add(Calendar.DATE, -1)
 

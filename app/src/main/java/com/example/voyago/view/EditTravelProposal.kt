@@ -67,7 +67,7 @@ import java.util.Calendar
 import java.util.Locale
 
 fun initUri(vm:TripViewModel): String {
-    if(vm.editTrip.IsValid()) {
+    if(vm.editTrip.isValid()) {
         return vm.selectedTrip.photo
     }
     return "placeholder_photo"
@@ -431,7 +431,7 @@ fun EditTravelProposal(navController: NavController, vm: TripViewModel) {
 
                                         val currentTrip = vm.editTrip
 
-                                        if (currentTrip.IsValid()) {
+                                        if (currentTrip.isValid()) {
                                             val updatedTrip = Trip(
                                                 photo = imageUri?.toString() ?: trip.photo,
                                                 title = fieldValues[0].toString(),
