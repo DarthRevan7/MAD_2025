@@ -97,6 +97,7 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                //Group Activity Check
                 item {
                     Row(
                         modifier = Modifier
@@ -114,6 +115,7 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                     }
                 }
 
+                //Select Date Button
                 item {
                     val context = LocalContext.current
                     val calendar = Calendar.getInstance()
@@ -140,7 +142,7 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                             containerColor = Color(0xFFD6D0D9)
                         )
                     ) {
-                        Text(if (activityDate.isNotEmpty()) "Date: $activityDate" else "Select date")
+                        Text(if (activityDate.isNotEmpty()) "Date: $activityDate" else "Select Date of the Activity")
                     }
 
                     if (showDateError) {
@@ -153,7 +155,7 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                     }
                 }
 
-
+                //Select Time Button
                 item {
                     val context = LocalContext.current
                     val calendar = remember { Calendar.getInstance() }
@@ -170,7 +172,7 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                                 val hour = cal.get(Calendar.HOUR)
                                 val amPm = if (cal.get(Calendar.AM_PM) == Calendar.AM) "AM" else "PM"
                                 selectedTime = String.format(
-                                    Locale.ITALY,
+                                    Locale.getDefault(),
                                     "%02d:%02d %s",
                                     if (hour == 0) 12 else hour,
                                     minute,
@@ -198,11 +200,12 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                     }
                 }
 
+                //Activity Description
                 item {
                     TextField(
                         value = activityDescription,
                         onValueChange = { activityDescription = it },
-                        label = { Text("Activity description") },
+                        label = { Text("Activity Description") },
                         modifier = Modifier
                             .fillMaxWidth(0.8f),
                         colors = TextFieldDefaults.textFieldColors(
@@ -211,6 +214,7 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                     )
                 }
 
+                //Cancel Button and Add Button
                 item {
                     Row(
                         modifier = Modifier
@@ -218,6 +222,7 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                             .padding(vertical = 24.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
+                        //Cancel Button
                         Button(
                             onClick = { navController.popBackStack() },
                             modifier = Modifier
@@ -229,6 +234,7 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
 
                         Spacer(modifier = Modifier.width(16.dp))
 
+                        //Add Button
                         Button(
                             onClick = {
                                 var currentTrip = Trip()

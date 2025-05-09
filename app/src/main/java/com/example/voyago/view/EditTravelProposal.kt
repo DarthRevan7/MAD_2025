@@ -417,7 +417,6 @@ fun EditTravelProposal(navController: NavController, vm: TripViewModel) {
                         //Next Button
                         Button(
                             onClick = {
-                                tripImageError = !imageUri.toString().isUriString()
 
                                 typeTravelError = selected.isEmpty()
 
