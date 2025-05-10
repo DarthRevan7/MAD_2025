@@ -3,7 +3,6 @@ package com.example.voyago.view
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.net.Uri
-
 import android.util.Log
 import android.widget.DatePicker
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -66,16 +65,19 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-fun initUri(vm:TripViewModel): String {
-    if(vm.editTrip.isValid()) {
-        return vm.selectedTrip.photo
+fun initUri(vm: TripViewModel): String {
+    val trip = vm.selectedTrip.value
+    if (trip != null && vm.editTrip.isValid()) {
+        return trip.photo
     }
     return "placeholder_photo"
 }
 
+
 @Composable
 fun EditTravelProposal(navController: NavController, vm: TripViewModel) {
     val trip = vm.editTrip
+    vm.userAction = TripViewModel.UserAction.EDIT_TRIP
 
     LaunchedEffect(
         Unit
@@ -452,6 +454,7 @@ fun EditTravelProposal(navController: NavController, vm: TripViewModel) {
                                             )
 
                                             vm.editTrip = updatedTrip
+                                            vm.setSelectedTrip(updatedTrip)
                                             println("Trip editing")
                                         }
                                     }

@@ -24,7 +24,13 @@ class TripViewModel(val model:Model): ViewModel() {
     //Use in the edit trip interface
     var editTrip:Trip = Trip()
     //Use in the select trip interface (trip detail)
-    var selectedTrip:Trip = Trip()
+    private val _selectedTrip = mutableStateOf<Trip?>(null)
+    val selectedTrip: State<Trip?> = _selectedTrip
+
+    fun setSelectedTrip(trip: Trip) {
+        _selectedTrip.value = trip
+    }
+
 
     //Identify what the user is doing
     var userAction:UserAction = UserAction.NOTHING
@@ -127,13 +133,13 @@ class TripViewModel(val model:Model): ViewModel() {
 
     fun addNewTrip(newTrip: Trip): Trip {
         val createdTrip = model.createNewTrip(newTrip)
-        selectedTrip = createdTrip
+        _selectedTrip.value = createdTrip
         return createdTrip
     }
 
     fun editNewTrip(newTrip: Trip): List<Trip> {
         val updatedList = model.editTrip(newTrip)
-        selectedTrip = updatedList.find { it.id == newTrip.id }!!
+        _selectedTrip.value = updatedList.find { it.id == newTrip.id }!!
         return updatedList
     }
 
@@ -151,8 +157,8 @@ class TripViewModel(val model:Model): ViewModel() {
     fun setMaxMinPrice() = model.setMaxMinPrice()
 
     fun addActivityToSelectedTrip(activity: Trip.Activity) {
-        model.addActivityToTrip(activity, selectedTrip)?.let { updatedTrip ->
-            selectedTrip = updatedTrip
+        model.addActivityToTrip(activity, _selectedTrip.value)?.let { updatedTrip ->
+            _selectedTrip.value = updatedTrip
         }
     }
 
@@ -161,11 +167,13 @@ class TripViewModel(val model:Model): ViewModel() {
         if(userAction == UserAction.CREATE_TRIP) {
             model.addActivityToTrip(activity, newTrip)?.let { updatedTrip ->
                 newTrip = updatedTrip
+                _selectedTrip.value = newTrip
             }
         } else if(userAction == UserAction.EDIT_TRIP) {
             //I am editing an existing trip
             model.addActivityToTrip(activity, editTrip)?.let { updatedTrip ->
                 editTrip = updatedTrip
+                _selectedTrip.value = editTrip
             }
         }
     }
@@ -175,11 +183,20 @@ class TripViewModel(val model:Model): ViewModel() {
     }
 
     fun deleteActivity(activity: Trip.Activity) {
-        selectedTrip = model.removeActivityFromTrip(activity, selectedTrip)!!
+        val trip =  model.removeActivityFromTrip(activity, _selectedTrip.value)!!
+
+        _selectedTrip.value = trip
+
+        if (userAction == UserAction.CREATE_TRIP) {
+            newTrip = trip
+        } else if (userAction == UserAction.EDIT_TRIP) {
+            editTrip = trip
+        }
+
     }
 
     fun editActivity(activityId: Int, updatedActivity: Trip.Activity) {
-        selectedTrip = model.editActivityInSelectedTrip(activityId, updatedActivity, selectedTrip)!!
+        _selectedTrip.value = model.editActivityInSelectedTrip(activityId, updatedActivity, _selectedTrip.value)!!
     }
 
     fun applyFilters() = model.filterFunction(tripList, filterDestination, filterMinPrice, filterMaxPrice,

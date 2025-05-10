@@ -177,7 +177,7 @@ fun TripCard(trip: Trip, navController: NavController, vm: TripViewModel, edit: 
             .height(200.dp),
         shape = CardDefaults.elevatedShape,
         onClick = {
-            vm.selectedTrip = trip
+            vm.setSelectedTrip(trip)
             vm.userAction = TripViewModel.UserAction.VIEW_TRIP
             navController.navigate("travel_proposal_details")
 

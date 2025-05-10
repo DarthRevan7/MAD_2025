@@ -65,14 +65,20 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun TravelProposalDetail(navController: NavController, vm: TripViewModel, owner: Boolean) {
-    val trip = vm.selectedTrip
+    val trip by vm.selectedTrip
 
+    if (trip == null) {
+        Text("Loading trip details...")
+        return
+    }
+
+    val nonNullTrip = trip!!
 
 
     var showPopup by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     val askedTrips: Set<Int> by vm.askedTrips.collectAsState()
-    val hasAsked = askedTrips.contains(trip.id)
+    val hasAsked = askedTrips.contains(trip?.id)
 
     Scaffold(
         topBar = {
@@ -97,7 +103,7 @@ fun TravelProposalDetail(navController: NavController, vm: TripViewModel, owner:
                     .padding(innerPadding)
             ) {
                 item {
-                    Hero(trip)
+                    Hero(nonNullTrip)
                 }
 
                 item {
@@ -111,11 +117,11 @@ fun TravelProposalDetail(navController: NavController, vm: TripViewModel, owner:
                             .padding(start = 24.dp, end = 24.dp)
                     ) {
                         Text(
-                            text = formatTripDate(trip.startDate) + " - " +
-                                    formatTripDate(trip.endDate) + "\n " +
-                                    "${trip.groupSize} people" +
-                                    if (trip.availableSpots() > 0) {
-                                        " (${trip.availableSpots()} spots left)"
+                            text = formatTripDate(nonNullTrip.startDate) + " - " +
+                                    formatTripDate(nonNullTrip.endDate) + "\n " +
+                                    "${nonNullTrip.groupSize} people" +
+                                    if (nonNullTrip.availableSpots() > 0) {
+                                        " (${nonNullTrip.availableSpots()} spots left)"
                                     } else {
                                         ""
                                     },
@@ -123,14 +129,14 @@ fun TravelProposalDetail(navController: NavController, vm: TripViewModel, owner:
                         )
                         Spacer(modifier = Modifier.weight(1f))
                         Text(
-                            text = "${trip.estimatedPrice} €",
+                            text = "${trip?.estimatedPrice} €",
                             modifier = Modifier.align(Alignment.CenterVertically)
                         )
                     }
                 }
 
                 if (owner) {
-                    if (trip.published) {
+                    if (nonNullTrip.published) {
                         item {
                             Row(
                                 modifier = Modifier
@@ -150,7 +156,7 @@ fun TravelProposalDetail(navController: NavController, vm: TripViewModel, owner:
                                         Text("Applications")
                                     }
 
-                                    if (trip.appliedUsers.isNotEmpty()) {
+                                    if (nonNullTrip.appliedUsers.isNotEmpty()) {
                                         Box(
                                             modifier = Modifier
                                                 .size(15.dp)
@@ -164,7 +170,7 @@ fun TravelProposalDetail(navController: NavController, vm: TripViewModel, owner:
 
                                 Button(
                                     onClick = {
-                                        vm.changePublishedStatus(trip.id)
+                                        vm.changePublishedStatus(nonNullTrip.id)
                                         vm.updatePublishedTrip()
                                         navController.popBackStack()
                                     },
@@ -177,12 +183,12 @@ fun TravelProposalDetail(navController: NavController, vm: TripViewModel, owner:
 
                                 Spacer(Modifier.padding(5.dp))
 
-                                DeleteButtonWithConfirmation(trip, navController, vm)
+                                DeleteButtonWithConfirmation(nonNullTrip, navController, vm)
                             }
                         }
                     }
 
-                    if (!trip.published) {
+                    if (!nonNullTrip.published) {
                         item {
                             Row(
                                 modifier = Modifier
@@ -192,7 +198,7 @@ fun TravelProposalDetail(navController: NavController, vm: TripViewModel, owner:
                             ) {
                                 Button(
                                     onClick = {
-                                        vm.changePublishedStatus(trip.id)
+                                        vm.changePublishedStatus(nonNullTrip.id)
                                         vm.updatePublishedTrip()
                                         navController.popBackStack()
                                     },
@@ -205,7 +211,7 @@ fun TravelProposalDetail(navController: NavController, vm: TripViewModel, owner:
 
                                 Spacer(Modifier.padding(5.dp))
 
-                                DeleteButtonWithConfirmation(trip, navController, vm)
+                                DeleteButtonWithConfirmation(nonNullTrip, navController, vm)
                             }
                         }
                     }
@@ -228,15 +234,15 @@ fun TravelProposalDetail(navController: NavController, vm: TripViewModel, owner:
                             Button(
                                 onClick = {
                                     vm.addImportedTrip(
-                                        trip.photo,
-                                        trip.title,
-                                        trip.destination,
-                                        trip.startDate,
-                                        trip.endDate,
-                                        trip.estimatedPrice,
-                                        trip.groupSize,
-                                        trip.activities,
-                                        trip.typeTravel,
+                                        nonNullTrip.photo,
+                                        nonNullTrip.title,
+                                        nonNullTrip.destination,
+                                        nonNullTrip.startDate,
+                                        nonNullTrip.endDate,
+                                        nonNullTrip.estimatedPrice,
+                                        nonNullTrip.groupSize,
+                                        nonNullTrip.activities,
+                                        nonNullTrip.typeTravel,
                                         1,
                                         false
                                     )
@@ -257,10 +263,10 @@ fun TravelProposalDetail(navController: NavController, vm: TripViewModel, owner:
 
                             Spacer(Modifier.padding(5.dp))
 
-                            if (trip.canJoin()) {
+                            if (nonNullTrip.canJoin()) {
                                 Button(
                                     onClick = {
-                                        vm.toggleAskToJoin(trip.id)
+                                        vm.toggleAskToJoin(nonNullTrip.id)
                                     },
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor =
@@ -292,7 +298,7 @@ fun TravelProposalDetail(navController: NavController, vm: TripViewModel, owner:
 
                 item {
                     ItineraryText(
-                        trip,
+                        nonNullTrip,
                         modifier = Modifier
                             .padding(start = 24.dp, top = 16.dp, end = 20.dp)
                     )
@@ -302,7 +308,7 @@ fun TravelProposalDetail(navController: NavController, vm: TripViewModel, owner:
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
-                if (trip.reviews.isNotEmpty()) {
+                if (nonNullTrip.reviews.isNotEmpty()) {
                     item {
                         TitleBox("Reviews")
                     }
@@ -311,7 +317,7 @@ fun TravelProposalDetail(navController: NavController, vm: TripViewModel, owner:
                         Spacer(modifier = Modifier.height(16.dp))
                     }
 
-                    items(trip.reviews) { review ->
+                    items(nonNullTrip.reviews) { review ->
                         ShowReview(review)
                     }
                 }

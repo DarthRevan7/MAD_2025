@@ -49,101 +49,103 @@ fun TripApplications(vm: TripViewModel) {
     ) { innerPadding ->
 
         val listState = rememberLazyListState()
-        val trip = vm.selectedTrip
+        val trip = vm.selectedTrip.value
 
-        LazyColumn(
-            state = listState,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.Start
-        ) {
-            item {
-                Hero(trip)
-            }
+        if (trip != null){
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.Start
+            ) {
+                item {
+                    Hero(trip)
+                }
 
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
-            }
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
 
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 24.dp, end = 24.dp, bottom = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 24.dp, end = 24.dp, bottom = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "${trip.groupSize} people" +
+                                    if(trip.availableSpots() > 0) {
+                                        " (${trip.availableSpots()} spots left)"
+                                    } else { "" },
+                            modifier = Modifier.align(Alignment.CenterVertically)
+                        )
+                    }
+                }
+
+                item {
+                    TitleBox("Applications")
+                }
+
+                item {
                     Text(
-                        text = "${trip.groupSize} people" +
-                                if(trip.availableSpots() > 0) {
-                                    " (${trip.availableSpots()} spots left)"
-                                } else { "" },
-                        modifier = Modifier.align(Alignment.CenterVertically)
+                        text = "Approved Applications:",
+                        modifier = Modifier
+                            .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
+                        fontWeight = FontWeight.Bold
                     )
                 }
-            }
 
-            item {
-                TitleBox("Applications")
-            }
+                if (trip.participants.size > 1) {
+                    var participants = vm.getTripParticipants(trip)
 
-            item {
-                Text(
-                    text = "Approved Applications:",
-                    modifier = Modifier
-                        .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
-                    fontWeight = FontWeight.Bold
-                )
-            }
+                    items(participants) { user ->
+                        if (user.id != 1) {
+                            ShowParticipants(user)
+                        }
+                    }
 
-            if (trip.participants.size > 1) {
-                var participants = vm.getTripParticipants(trip)
-
-                items(participants) { user ->
-                    if (user.id != 1) {
-                        ShowParticipants(user)
+                } else {
+                    item {
+                        Row (
+                            modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text("There aren't any participants yet.")
+                        }
                     }
                 }
 
-            } else {
                 item {
-                    Row (
-                        modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Text("There aren't any participants yet.")
+                    Text(
+                        text = "Pending Applications:",
+                        modifier = Modifier
+                            .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                if (trip.appliedUsers.isNotEmpty()) {
+                    var applicants = vm.getTripApplicants(trip)
+                    items(applicants) { user ->
+                        ShowApplications(user)
+                    }
+                } else {
+                    item {
+                        Row (
+                            modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text("There aren't any new applications for this trip.")
+                        }
                     }
                 }
-            }
 
-            item {
-                Text(
-                    text = "Pending Applications:",
-                    modifier = Modifier
-                        .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            if (trip.appliedUsers.isNotEmpty()) {
-                var applicants = vm.getTripApplicants(trip)
-                items(applicants) { user ->
-                    ShowApplications(user)
-                }
-            } else {
-                item {
-                    Row (
-                        modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Text("There aren't any new applications for this trip.")
-                    }
-                }
             }
 
         }
-
     }
 }
 

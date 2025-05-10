@@ -62,16 +62,16 @@ fun allDaysHaveActivities(trip: Trip?): Boolean {
 @Composable
 fun ActivitiesList(navController: NavController, vm: TripViewModel) {
 
-    var selectedTrip = Trip()
-
-    if(vm.userAction == TripViewModel.UserAction.CREATE_TRIP) {
-        selectedTrip = vm.newTrip
-    } else if(vm.userAction == TripViewModel.UserAction.EDIT_TRIP){
-        selectedTrip = vm.editTrip
-    }
+    val selectedTrip by vm.selectedTrip
+//
+//    if(vm.userAction == TripViewModel.UserAction.CREATE_TRIP) {
+//        selectedTrip = vm.newTrip
+//    } else if(vm.userAction == TripViewModel.UserAction.EDIT_TRIP){
+//        selectedTrip = vm.editTrip
+//    }
 
     println("Vm.UserAction = " + vm.userAction.toString())
-    println("selected trip to: ${selectedTrip.destination}")
+    println("selected trip to: ${selectedTrip?.destination}")
 
     var showIncompleteDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -219,7 +219,7 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
                                                 reviews = vm.editTrip.reviews
                                             )
 
-                                            vm.editNewTrip(updatedTrip)
+                                            vm.editTrip = updatedTrip
 
                                             //Go to the owned travel proposal
                                             navController.navigate("owned_travel_proposal_list") {
@@ -260,7 +260,12 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
 }
 
 @Composable
-fun ActivitiesListContent(trip: Trip, vm: TripViewModel, navController: NavController){
+fun ActivitiesListContent(trip: Trip?, vm: TripViewModel, navController: NavController){
+    if (trip == null) {
+        Text("No trip selected", modifier = Modifier.padding(16.dp))
+        return
+    }
+
     val sortedDays = trip.activities.keys.sortedBy { it.timeInMillis }
 
     // Check if all activity lists are empty

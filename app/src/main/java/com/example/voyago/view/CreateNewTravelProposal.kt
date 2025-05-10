@@ -446,6 +446,7 @@ fun NewTravelProposal(navController: NavController, vm: TripViewModel) {
                                     )
 
                                     vm.newTrip = newTrip
+                                    vm.setSelectedTrip(newTrip)
                                     vm.userAction = TripViewModel.UserAction.CREATE_TRIP
                                     navController.navigate("activities_list")
                                 }
