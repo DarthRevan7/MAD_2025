@@ -951,13 +951,31 @@ class Model {
     ): Trip? {
         if (trip == null) return null
 
-        val updatedActivities = trip.activities.mapValues { (date, activities) ->
-            activities.map { activity ->
-                if (activity.id == activityId) updatedActivity else activity
+        val originalActivities = trip.activities.toMutableMap()
+
+        //Find and remove the old activity
+        var found = false
+        for ((date, activities) in originalActivities) {
+            if (activities.any { it.id == activityId }) {
+                val newList = activities.filter { it.id != activityId }
+                if (newList.isEmpty()) {
+                    originalActivities.remove(date)
+                } else {
+                    originalActivities[date] = newList
+                }
+                found = true
+                break
             }
         }
 
-        val updatedTrip = trip.copy(activities = updatedActivities)
+        if (!found) return trip // nothing changed
+
+        //Add the updated activity to the new date key
+        val newDateKey = updatedActivity.date
+        val updatedList = originalActivities.getOrDefault(newDateKey, emptyList()) + updatedActivity
+        originalActivities[newDateKey] = updatedList
+
+        val updatedTrip = trip.copy(activities = originalActivities)
 
         _tripList.value = _tripList.value.map {
             if (it.id == updatedTrip.id) updatedTrip else it

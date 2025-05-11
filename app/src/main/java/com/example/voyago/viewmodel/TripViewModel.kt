@@ -196,7 +196,16 @@ class TripViewModel(val model:Model): ViewModel() {
     }
 
     fun editActivity(activityId: Int, updatedActivity: Trip.Activity) {
-        _selectedTrip.value = model.editActivityInSelectedTrip(activityId, updatedActivity, _selectedTrip.value)!!
+        val trip = model.editActivityInSelectedTrip(activityId, updatedActivity, _selectedTrip.value)!!
+
+        _selectedTrip.value = trip
+
+        if (userAction == UserAction.CREATE_TRIP) {
+            newTrip = trip
+        } else if (userAction == UserAction.EDIT_TRIP) {
+            editTrip = trip
+        }
+
     }
 
     fun applyFilters() = model.filterFunction(tripList, filterDestination, filterMinPrice, filterMaxPrice,

@@ -63,12 +63,7 @@ fun allDaysHaveActivities(trip: Trip?): Boolean {
 fun ActivitiesList(navController: NavController, vm: TripViewModel) {
 
     val selectedTrip by vm.selectedTrip
-//
-//    if(vm.userAction == TripViewModel.UserAction.CREATE_TRIP) {
-//        selectedTrip = vm.newTrip
-//    } else if(vm.userAction == TripViewModel.UserAction.EDIT_TRIP){
-//        selectedTrip = vm.editTrip
-//    }
+
 
     println("Vm.UserAction = " + vm.userAction.toString())
     println("selected trip to: ${selectedTrip?.destination}")
