@@ -18,30 +18,6 @@ import kotlinx.coroutines.launch
 import java.util.Calendar
 
 class TripViewModel(val model:Model): ViewModel() {
-    // Initialize ViewModel, fetching min and max price from model
-    init {
-        viewModelScope.launch {
-            model.setMaxMinPrice()
-
-            val minPrice = model.minPrice.toFloat()
-            val maxPrice = model.maxPrice.toFloat()
-
-            if (minPrice.isFinite() && maxPrice.isFinite() && maxPrice >= minPrice) {
-                val bounds = minPrice..maxPrice
-                _priceBounds.value = bounds
-                _selectedPriceRange.value = bounds
-            } else {
-                _priceBounds.value = 0f..1000f
-                _selectedPriceRange.value = 0f..1000f
-            }
-        }
-    }
-
-    //Min price and Max price of the database (still useful?)
-    fun getMinPrice() = model.minPrice
-    fun getMaxPrice() = model.maxPrice
-    fun setMaxMinPrice() = model.setMaxMinPrice()
-
     //Use in the new Trip interface
     var newTrip:Trip = Trip()
 
@@ -107,6 +83,11 @@ class TripViewModel(val model:Model): ViewModel() {
         filterMaxPrice = maxPrice
         filterMinPrice = minPrice
     }
+
+    //Min price and Max price of the database (still useful?)
+    fun getMinPrice() = model.minPrice
+    fun getMaxPrice() = model.maxPrice
+    fun setMaxMinPrice() = model.setMaxMinPrice()
 
     //Duration filter
     var filterDuration: Pair<Int, Int> by mutableStateOf(Pair(-1, -1))
@@ -313,6 +294,25 @@ class TripViewModel(val model:Model): ViewModel() {
             editTrip = trip
         }
 
+    }
+
+    // Initialize ViewModel, fetching min and max price from model
+    init {
+        viewModelScope.launch {
+            model.setMaxMinPrice()
+
+            val minPrice = model.minPrice.toFloat()
+            val maxPrice = model.maxPrice.toFloat()
+
+            if (minPrice.isFinite() && maxPrice.isFinite() && maxPrice >= minPrice) {
+                val bounds = minPrice..maxPrice
+                _priceBounds.value = bounds
+                _selectedPriceRange.value = bounds
+            } else {
+                _priceBounds.value = 0f..1000f
+                _selectedPriceRange.value = 0f..1000f
+            }
+        }
     }
 }
 
