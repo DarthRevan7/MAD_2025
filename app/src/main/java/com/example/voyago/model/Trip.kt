@@ -109,6 +109,23 @@ data class Trip(
 
     }
 
+    fun hasActivityForEachDay(): Boolean {
+        val current = startDate.clone() as Calendar
+        val end = endDate.clone() as Calendar
+
+        while (!current.after(end)) {
+            val hasActivity = activities.any { (activityDate, _) ->
+                activityDate.get(Calendar.YEAR) == current.get(Calendar.YEAR) &&
+                        activityDate.get(Calendar.DAY_OF_YEAR) == current.get(Calendar.DAY_OF_YEAR)
+            }
+
+            if (!hasActivity) return false
+            current.add(Calendar.DATE, 1)
+        }
+
+        return true
+    }
+
 }
 
 enum class TypeTravel {

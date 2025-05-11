@@ -459,6 +459,7 @@ fun EditTravelProposal(navController: NavController, vm: TripViewModel) {
                                             println("Trip editing")
                                         }
                                     }
+                                    //Go to the list of activities
                                     navController.navigate("activities_list")
                                 }
                             },

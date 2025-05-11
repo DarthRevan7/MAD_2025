@@ -485,6 +485,43 @@ fun TitleBox(title:String) {
 
 @Composable
 fun ItineraryText(trip: Trip, modifier: Modifier = Modifier) {
+    val timeFormat = SimpleDateFormat("hh:mm a", Locale.getDefault()) // Adjust to your format
+
+    val itineraryString = trip.activities
+        .toSortedMap(compareBy { it.timeInMillis }) // Sort days chronologically
+        .entries
+        .joinToString("\n\n") { (day, activities) ->
+            val dayIndex = ((day.timeInMillis - trip.startDate.timeInMillis) / (1000 * 60 * 60 * 24)).toInt() + 1
+            val dayHeader = "Day $dayIndex:\n"
+
+            val sortedActivities = activities.sortedBy { activity ->
+                try {
+                    timeFormat.parse(activity.time)
+                } catch (e: Exception) {
+                    null
+                }
+            }
+
+            val activityDescriptions = sortedActivities.joinToString("\n") { activity ->
+                val groupActivity = if (activity.isGroupActivity) " (group activity)" else ""
+                "- ${activity.time} → ${activity.description}$groupActivity"
+            }
+
+            dayHeader + activityDescriptions
+        }
+
+    Text(
+        text = itineraryString,
+        style = MaterialTheme.typography.bodySmall,
+        fontWeight = FontWeight.Bold,
+        modifier = modifier
+    )
+}
+
+
+/*
+@Composable
+fun ItineraryText(trip: Trip, modifier: Modifier = Modifier) {
     val itineraryString = trip.activities.entries.joinToString("\n\n") { (day, activities) ->
         val dayIndex = ((day.timeInMillis - trip.startDate.timeInMillis) / (1000 * 60 * 60 * 24)).toInt() + 1
         val dayHeader = "Day $dayIndex:\n"
@@ -502,6 +539,7 @@ fun ItineraryText(trip: Trip, modifier: Modifier = Modifier) {
         modifier = modifier
     )
 }
+ */
 
 @Composable
 fun DeleteButtonWithConfirmation(trip: Trip, navController: NavController, vm: TripViewModel) {

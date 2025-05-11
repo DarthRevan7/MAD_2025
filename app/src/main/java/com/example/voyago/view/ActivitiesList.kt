@@ -135,16 +135,27 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
                     Spacer(modifier = Modifier.height(50.dp))
                 }
 
-                //Back Button
                 item {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 24.dp)
                     ) {
+
+                        if (showIncompleteDialog) {
+                            Text(
+                                text = "Each day of the trip must have at least one activity.",
+                                color = Color.Red,
+                                fontSize = 14.sp,
+                                modifier = Modifier
+                                    .padding(top = 8.dp)
+                            )
+                        }
+
                         Row(
                             modifier = Modifier.fillMaxWidth()
                         ) {
+                            //Back Button
                             Button(
                                 onClick = {
                                     navController.popBackStack()
@@ -162,7 +173,7 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
                             //Finish Button
                             Button(
                                 onClick = {
-                                    if (allDaysHaveActivities(selectedTrip)) {
+                                    if (selectedTrip?.hasActivityForEachDay() == true) {
 
                                         if(vm.userAction == TripViewModel.UserAction.CREATE_TRIP) {
                                             val updatedTrip = Trip(
@@ -236,16 +247,6 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
                             ) {
                                 Text("Finish")
                             }
-                        }
-
-                        if (showIncompleteDialog) {
-                            Text(
-                                text = "Each day of the trip must have at least one activity.",
-                                color = Color.Red,
-                                fontSize = 14.sp,
-                                modifier = Modifier
-                                    .padding(top = 8.dp)
-                            )
                         }
                     }
                 }
