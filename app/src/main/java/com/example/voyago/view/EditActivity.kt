@@ -170,10 +170,19 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                     }
                 }
 
-
+                //Select Time Button
                 item {
                     val context = LocalContext.current
-                    val calendar = remember { Calendar.getInstance() }
+                    val calendar = remember {
+                        val cal = Calendar.getInstance()
+                        try {
+                            val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault())
+                            cal.time = sdf.parse(selectedTime) ?: cal.time
+                        } catch (e: Exception) {
+                            // Fallback to default time
+                        }
+                        cal
+                    }
                     val showTimePicker = remember { mutableStateOf(false) }
 
                     if (showTimePicker.value) {
