@@ -38,7 +38,6 @@ import com.example.voyago.viewmodel.TripViewModel
 
 @Composable
 fun TripApplications(vm: TripViewModel) {
-
     Scaffold(
         topBar = {
             TopBar()
@@ -60,6 +59,8 @@ fun TripApplications(vm: TripViewModel) {
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.Start
             ) {
+
+                //Trip photo
                 item {
                     Hero(trip)
                 }
@@ -68,6 +69,7 @@ fun TripApplications(vm: TripViewModel) {
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
+                //Group Size and Available spots
                 item {
                     Row(
                         modifier = Modifier
@@ -98,6 +100,7 @@ fun TripApplications(vm: TripViewModel) {
                     )
                 }
 
+                //List of user that have already been approved
                 if (trip.participants.size > 1) {
                     var participants = vm.getTripParticipants(trip)
 
@@ -127,6 +130,7 @@ fun TripApplications(vm: TripViewModel) {
                     )
                 }
 
+                //Applications that must be still approved or rejected
                 if (trip.appliedUsers.isNotEmpty()) {
                     var applicants = vm.getTripApplicants(trip)
                     items(applicants) { user ->
@@ -142,16 +146,13 @@ fun TripApplications(vm: TripViewModel) {
                         }
                     }
                 }
-
             }
-
         }
     }
 }
 
 @Composable
 fun ShowParticipants(user: LazyUser) {
-
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -160,17 +161,20 @@ fun ShowParticipants(user: LazyUser) {
             .border(1.dp, Color.Gray, RoundedCornerShape(12.dp))
             .padding(12.dp)
     ) {
+        //Profile image of the participant
         Box(
             contentAlignment = Alignment.CenterStart,
             modifier = Modifier
                 .size(30.dp)
                 .background(Color.Gray, shape = CircleShape)
         ) {
-            //Image
             ProfilePhoto(user.name, user.surname,true, null)
         }
+
+        //Participant information
         Text("${user.name} ${user.surname}", modifier = Modifier.padding( start = 16.dp))
 
+        //Participant's rating
         Row(
             modifier = Modifier
                 .weight(1f),
@@ -197,18 +201,19 @@ fun ShowApplications(user: LazyUser) {
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
+            //Profile image of the applicant
             Box(
                 contentAlignment = Alignment.CenterStart,
                 modifier = Modifier
                     .size(30.dp)
                     .background(Color.Gray, shape = CircleShape)
             ) {
-                //Image
                 ProfilePhoto(user.name, user.surname, true, null)
             }
             Text("${user.name} ${user.surname}", modifier = Modifier.padding(start = 16.dp))
         }
 
+        //Applicant's rating
         Row(
             modifier = Modifier
                 .weight(1f),
@@ -220,6 +225,7 @@ fun ShowApplications(user: LazyUser) {
             Text(user.rating.toString())
         }
 
+        //Accept and Reject Icons
         Row(
             modifier = Modifier
                 .weight(1f),

@@ -58,7 +58,6 @@ fun TravelProposalList(navController: NavController, vm: TripViewModel = viewMod
             vm.resetFilters()
         }
         vm.applyFilters()
-        //Log.d("FilteredTrips", "Filtered trips: $filteredTrips")
     }
 
     Scaffold(
@@ -81,9 +80,10 @@ fun TravelProposalList(navController: NavController, vm: TripViewModel = viewMod
                     modifier = Modifier
                         .fillMaxSize()
                         .fillMaxWidth(0.9f)
-                        .padding(16.dp), // Padding for the Row
-                    horizontalArrangement = Arrangement.Start // Align items to the left in the Row
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.Start
                 ) {
+                    //Filters Button
                     Button(
                         onClick = {
                             vm.userAction = TripViewModel.UserAction.FILTER_SELECTION
@@ -101,6 +101,7 @@ fun TravelProposalList(navController: NavController, vm: TripViewModel = viewMod
                 }
             }
 
+            //List of trips
             if (filteredTrips.isEmpty()) {
                 item {
                     Box(

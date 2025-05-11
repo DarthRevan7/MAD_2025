@@ -74,7 +74,6 @@ fun TravelProposalDetail(navController: NavController, vm: TripViewModel, owner:
 
     val nonNullTrip = trip!!
 
-
     var showPopup by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     val askedTrips: Set<Int> by vm.askedTrips.collectAsState()
@@ -102,6 +101,7 @@ fun TravelProposalDetail(navController: NavController, vm: TripViewModel, owner:
                     .fillMaxSize()
                     .padding(innerPadding)
             ) {
+                //Trip image
                 item {
                     Hero(nonNullTrip)
                 }
@@ -110,6 +110,7 @@ fun TravelProposalDetail(navController: NavController, vm: TripViewModel, owner:
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
+                //Trip information
                 item {
                     Row(
                         modifier = Modifier
@@ -135,7 +136,9 @@ fun TravelProposalDetail(navController: NavController, vm: TripViewModel, owner:
                     }
                 }
 
+                //The logged in user see a trip created by them
                 if (owner) {
+                    //The trip created by the logged in user is published
                     if (nonNullTrip.published) {
                         item {
                             Row(
@@ -145,6 +148,7 @@ fun TravelProposalDetail(navController: NavController, vm: TripViewModel, owner:
                                 horizontalArrangement = Arrangement.End
                             ) {
                                 Box {
+                                    //Applications Button
                                     Button(
                                         onClick = {
                                             navController.navigate("trip_applications")
@@ -168,6 +172,7 @@ fun TravelProposalDetail(navController: NavController, vm: TripViewModel, owner:
 
                                 Spacer(Modifier.weight(1f))
 
+                                //Private Button (makes the trip private)
                                 Button(
                                     onClick = {
                                         vm.changePublishedStatus(nonNullTrip.id)
@@ -183,11 +188,13 @@ fun TravelProposalDetail(navController: NavController, vm: TripViewModel, owner:
 
                                 Spacer(Modifier.padding(5.dp))
 
+                                //Delete button with popup for confirmation
                                 DeleteButtonWithConfirmation(nonNullTrip, navController, vm)
                             }
                         }
                     }
 
+                    //The trip created by the logged in user is private
                     if (!nonNullTrip.published) {
                         item {
                             Row(
@@ -196,6 +203,7 @@ fun TravelProposalDetail(navController: NavController, vm: TripViewModel, owner:
                                     .fillMaxWidth(),
                                 horizontalArrangement = Arrangement.End
                             ) {
+                                //Publish Button
                                 Button(
                                     onClick = {
                                         vm.changePublishedStatus(nonNullTrip.id)
@@ -211,6 +219,7 @@ fun TravelProposalDetail(navController: NavController, vm: TripViewModel, owner:
 
                                 Spacer(Modifier.padding(5.dp))
 
+                                //Delete button with popup for confirmation
                                 DeleteButtonWithConfirmation(nonNullTrip, navController, vm)
                             }
                         }
@@ -223,7 +232,9 @@ fun TravelProposalDetail(navController: NavController, vm: TripViewModel, owner:
                     item {
                         TitleBox("My Itinerary")
                     }
-                } else {
+                }
+                //The logged in user see a published trip
+                else {
                     item {
                         Row(
                             modifier = Modifier
@@ -231,6 +242,7 @@ fun TravelProposalDetail(navController: NavController, vm: TripViewModel, owner:
                                 .fillMaxWidth(),
                             horizontalArrangement = Arrangement.End
                         ) {
+                            //Create a Copy Button (creates a copy of the trip in the logged in user private trips)
                             Button(
                                 onClick = {
                                     vm.addImportedTrip(
@@ -263,7 +275,9 @@ fun TravelProposalDetail(navController: NavController, vm: TripViewModel, owner:
 
                             Spacer(Modifier.padding(5.dp))
 
+                            //If the user can join the trip
                             if (nonNullTrip.canJoin()) {
+                                //Ask to Join/Asked to Join Button
                                 Button(
                                     onClick = {
                                         vm.toggleAskToJoin(nonNullTrip.id)
@@ -296,6 +310,7 @@ fun TravelProposalDetail(navController: NavController, vm: TripViewModel, owner:
                     }
                 }
 
+                //The Itinerary of the trip
                 item {
                     ItineraryText(
                         nonNullTrip,
@@ -308,6 +323,7 @@ fun TravelProposalDetail(navController: NavController, vm: TripViewModel, owner:
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
+                //Reviews section
                 if (nonNullTrip.reviews.isNotEmpty()) {
                     item {
                         TitleBox("Reviews")
@@ -317,12 +333,14 @@ fun TravelProposalDetail(navController: NavController, vm: TripViewModel, owner:
                         Spacer(modifier = Modifier.height(16.dp))
                     }
 
+                    //List of reviews of the trip
                     items(nonNullTrip.reviews) { review ->
                         ShowReview(review)
                     }
                 }
             }
 
+            //PopUp that appears when the user creates a copy of the trip
             if (showPopup) {
                 Popup(
                     alignment = Alignment.TopCenter,
@@ -371,6 +389,7 @@ fun Hero(trip: Trip) {
             context.resources.getIdentifier(trip.photo, "drawable", context.packageName)
         }
 
+        //The photo is saved as a uri (the user selected it from the gallery)
         if(trip.photo.isUriString()) {
             AsyncImage(
                 model = ImageRequest.Builder(context)
@@ -381,7 +400,9 @@ fun Hero(trip: Trip) {
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
-        } else {
+        }
+        //The photo is saved as a drawable (the trip was already in the database and the user hadn't edit its photo)
+        else {
             AsyncImage(
                 model = ImageRequest.Builder(context)
                     .data(drawableId)
@@ -394,6 +415,7 @@ fun Hero(trip: Trip) {
             )
         }
 
+        //Title and Destination of the trip
         Box(
             modifier = Modifier
                 .align(Alignment.TopStart)
@@ -422,7 +444,7 @@ fun Hero(trip: Trip) {
     }
 }
 
-@Composable
+//Function that create a good format for the dates
 fun formatTripDate(calendar: Calendar): String {
     val day = calendar.get(Calendar.DAY_OF_MONTH)
     val suffix = getDayOfMonthSuffix(day)
@@ -463,7 +485,6 @@ fun TitleBox(title:String) {
 
 @Composable
 fun ItineraryText(trip: Trip, modifier: Modifier = Modifier) {
-
     val itineraryString = trip.activities.entries.joinToString("\n\n") { (day, activities) ->
         val dayIndex = ((day.timeInMillis - trip.startDate.timeInMillis) / (1000 * 60 * 60 * 24)).toInt() + 1
         val dayHeader = "Day $dayIndex:\n"
@@ -479,7 +500,6 @@ fun ItineraryText(trip: Trip, modifier: Modifier = Modifier) {
         style = MaterialTheme.typography.bodySmall,
         fontWeight = FontWeight.Bold,
         modifier = modifier
-
     )
 }
 
@@ -487,6 +507,7 @@ fun ItineraryText(trip: Trip, modifier: Modifier = Modifier) {
 fun DeleteButtonWithConfirmation(trip: Trip, navController: NavController, vm: TripViewModel) {
     val showDialog = remember { mutableStateOf(false) }
 
+    //Delete Button
     Button(onClick = {
         showDialog.value = true
     },
@@ -497,6 +518,7 @@ fun DeleteButtonWithConfirmation(trip: Trip, navController: NavController, vm: T
         Text("Delete")
     }
 
+    //PupUp that asks for confirmation of the cancellation of the trip
     if (showDialog.value) {
         AlertDialog(
             onDismissRequest = {
@@ -541,6 +563,7 @@ fun ShowReview(review: Review) {
             .fillMaxWidth()
             .padding(8.dp)
     ) {
+        //Profile photo of the reviewer
         Box(
             contentAlignment = Alignment.CenterStart,
             modifier = Modifier
@@ -552,6 +575,7 @@ fun ShowReview(review: Review) {
         Text("${review.reviewer.name} ${review.reviewer.surname}",
             modifier = Modifier.padding( start = 16.dp))
 
+        //Stars rating
         Row(
             modifier = Modifier
                 .weight(1f),
@@ -562,12 +586,15 @@ fun ShowReview(review: Review) {
         }
     }
 
+    //Review title
     Row {
         Text(
             text = review.title,
             modifier = Modifier.padding(start = 50.dp, end = 16.dp),
             fontWeight = FontWeight.Bold)
     }
+
+    //Review content
     Row {
         Text(
             text = review.text,

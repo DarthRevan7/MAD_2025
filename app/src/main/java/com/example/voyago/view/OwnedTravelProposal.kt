@@ -58,7 +58,9 @@ import com.example.voyago.viewmodel.TripViewModel
 @Composable
 fun OwnedTravelProposalList(navController: NavController, vm: TripViewModel) {
 
+    //List of trip created and published by the logged in user (id=1)
     val publishedTrips by vm.publishedTrips.collectAsState()
+    //List of trip created, but not published by the logged in user (id=1)
     val privateTrips by vm.privateTrips.collectAsState()
 
     LaunchedEffect(Unit) {
@@ -93,6 +95,7 @@ fun OwnedTravelProposalList(navController: NavController, vm: TripViewModel) {
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start
         ) {
+            //Back button (still useful?)
             item {
                 Row(
                     modifier = Modifier.padding(16.dp)
@@ -103,6 +106,7 @@ fun OwnedTravelProposalList(navController: NavController, vm: TripViewModel) {
                 }
             }
 
+            //List of published trips
             item {
                 Text(
                     text = "Published Trips:",
@@ -127,6 +131,7 @@ fun OwnedTravelProposalList(navController: NavController, vm: TripViewModel) {
                 }
             }
 
+            //List of private trips
             item {
                 Text(
                     text = "Private Trips:",
@@ -154,7 +159,7 @@ fun OwnedTravelProposalList(navController: NavController, vm: TripViewModel) {
     }
 }
 
-
+//Return true is the string is a Uri
 fun String.isUriString(): Boolean {
     return try {
         val uri = this.toUri()
@@ -166,10 +171,10 @@ fun String.isUriString(): Boolean {
     }
 }
 
-
 @SuppressLint("DiscouragedApi")
 @Composable
 fun TripCard(trip: Trip, navController: NavController, vm: TripViewModel, edit: Boolean) {
+    //Clicking on the card the user go to the page that show the details of the trip
     Card(
         modifier = Modifier
             .padding(start = 16.dp, end = 16.dp, top = 10.dp)
@@ -184,7 +189,6 @@ fun TripCard(trip: Trip, navController: NavController, vm: TripViewModel, edit: 
         }
     ) {
         Box {
-
             if(!trip.photo.isUriString()) {
                 //AsyncImage with resources.Drawable
                 AsyncImage(
@@ -205,7 +209,7 @@ fun TripCard(trip: Trip, navController: NavController, vm: TripViewModel, edit: 
                         .height(200.dp)
                 )
             } else {
-                //Async Image with uri
+                //Async Image with Uri
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(trip.photo)
@@ -217,6 +221,7 @@ fun TripCard(trip: Trip, navController: NavController, vm: TripViewModel, edit: 
                 )
             }
 
+            //Destination and Title information
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
@@ -243,7 +248,9 @@ fun TripCard(trip: Trip, navController: NavController, vm: TripViewModel, edit: 
 
             }
 
+            //If the trip can be edit (is in the 'My Trips' section of the app)
             if (edit) {
+                //Edit button that send the user to the edit page
                 Box(
                     modifier = Modifier
                         .padding(vertical = 10.dp, horizontal = 10.dp)
@@ -267,7 +274,9 @@ fun TripCard(trip: Trip, navController: NavController, vm: TripViewModel, edit: 
                 }
             }
 
-            if (!trip.canJoin() && edit) {
+            //If the trip has the max number of participants or it's already started
+            if (!trip.canJoin()) {
+                //Banner that indicated that nobody can join the trip anymore
                 CompletedBanner(Modifier.align(Alignment.TopEnd))
             }
         }
