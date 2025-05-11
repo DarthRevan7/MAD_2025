@@ -8,10 +8,8 @@ import android.widget.TimePicker
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -25,11 +23,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,7 +43,6 @@ import com.example.voyago.model.Trip
 import com.example.voyago.viewmodel.TripViewModel
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
 import java.util.Locale
 
 
@@ -71,7 +65,11 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
     }
 
     var isGroupActivityChecked by rememberSaveable { mutableStateOf(activityToEdit.isGroupActivity) }
+
     var activityDescription by rememberSaveable { mutableStateOf(activityToEdit.description) }
+    var descriptionTouched = remember {mutableStateOf(false)}
+    var descriptionHasErrors by rememberSaveable {mutableStateOf(false)}
+
     var activityDate by rememberSaveable {
         mutableStateOf(SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(activityToEdit.date.time))
     }
@@ -130,19 +128,39 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                     }
                 }
 
-                //Date selection
+                //Select Date Button
                 item {
                     val context = LocalContext.current
                     val calendar = activityToEdit.date
                     val year = calendar.get(Calendar.YEAR)
                     val month = calendar.get(Calendar.MONTH)
                     val day = calendar.get(Calendar.DAY_OF_MONTH)
+                    val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 
                     val startDatePickerDialog = remember {
                         DatePickerDialog(
                             context,
                             { _: DatePicker, y: Int, m: Int, d: Int ->
+                                val pickedCalendar = Calendar.getInstance().apply {
+                                    set(Calendar.YEAR, y)
+                                    set(Calendar.MONTH, m)
+                                    set(Calendar.DAY_OF_MONTH, d)
+                                    set(Calendar.HOUR_OF_DAY, 0)
+                                    set(Calendar.MINUTE, 0)
+                                    set(Calendar.SECOND, 0)
+                                }
+
+                                val isValid = !(pickedCalendar.before(currentTrip.startDate) || pickedCalendar.after(currentTrip.endDate))
+
                                 activityDate = "$d/${m + 1}/$y"
+
+                                if (isValid) {
+                                    showDateError = false
+                                    dateErrorMessage = ""
+                                } else {
+                                    showDateError = true
+                                    dateErrorMessage = "Activity date must be within the trip period \n(${dateFormat.format(currentTrip.startDate.time)} - ${dateFormat.format(currentTrip.endDate.time)})"
+                                }
                             }, year, month, day
                         )
                     }
@@ -163,7 +181,7 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                     if (showDateError) {
                         Text(
                             text = dateErrorMessage,
-                            color = Color.Red,
+                            color = MaterialTheme.colorScheme.error,
                             fontSize = 12.sp,
                             modifier = Modifier.padding(top = 4.dp)
                         )
@@ -224,20 +242,21 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                     }
                 }
 
-
+                //Activity Description
                 item {
-                    TextField(
-                        value = activityDescription,
-                        onValueChange = { activityDescription = it },
-                        label = { Text("Activity description") },
-                        modifier = Modifier
-                            .fillMaxWidth(0.8f),
-                        colors = TextFieldDefaults.textFieldColors(
-                            containerColor = Color(0xFFCBC2DB)
-                        )
+                    descriptionHasErrors = descriptionTouched.value && (activityDescription.isBlank() || activityDescription.all { it.isDigit() || it.isWhitespace() })
+                    ValidatingInputTextField(
+                        activityDescription,
+                        {
+                            activityDescription = it
+                            descriptionTouched.value = true
+                        },
+                        descriptionHasErrors,
+                        "Activity Description"
                     )
                 }
 
+                //Cancel Button and Add Button
                 item {
                     Row(
                         modifier = Modifier
@@ -245,6 +264,7 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                             .padding(vertical = 24.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
+                        //Cancel Button
                         Button(
                             onClick = { navController.popBackStack() },
                             modifier = Modifier
@@ -256,6 +276,7 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
 
                         Spacer(modifier = Modifier.width(16.dp))
 
+                        //Add Button
                         Button(
                             onClick = {
                                 val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
@@ -268,29 +289,29 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                                 if (parsedDate == null) {
                                     showDateError = true
                                     dateErrorMessage = "Invalid date format. Please select a date."
-                                    return@Button
                                 }
 
                                 val activityCalendar = Calendar.getInstance().apply {
-                                    time = parsedDate
+                                    if (parsedDate != null) {
+                                        time = parsedDate
+                                    }
                                 }
 
-                                if ((activityCalendar.before(currentTrip.startDate) || activityCalendar.after(currentTrip.endDate))) {
-                                    showDateError = true
-                                    dateErrorMessage = "Activity date must be within the trip period (${dateFormat.format(currentTrip.startDate.time)} - ${dateFormat.format(currentTrip.endDate.time)})."
-                                    return@Button
+                                descriptionTouched.value = true
+
+                                if (!showDateError && !descriptionHasErrors) {
+
+                                    val updatedActivity = Trip.Activity(
+                                        id = activityId, // preserve the original ID
+                                        date = activityCalendar,
+                                        time = selectedTime,
+                                        isGroupActivity = isGroupActivityChecked,
+                                        description = activityDescription
+                                    )
+
+                                    vm.editActivity(activityId, updatedActivity)
+                                    navController.popBackStack()
                                 }
-
-                                val updatedActivity = Trip.Activity(
-                                    id = activityId, // preserve the original ID
-                                    date = activityCalendar,
-                                    time = selectedTime,
-                                    isGroupActivity = isGroupActivityChecked,
-                                    description = activityDescription
-                                )
-
-                                vm.editActivity(activityId, updatedActivity)
-                                navController.popBackStack()
                             },
                             modifier = Modifier
                                 .weight(1f)
