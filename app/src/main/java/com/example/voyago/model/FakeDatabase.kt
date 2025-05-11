@@ -27,8 +27,8 @@ class Model {
                 photo = "barcelona",
                 title = "Cultural Wonders of Spain",
                 destination = "Barcelona",
-                startDate = Calendar.getInstance().apply { set(2025, 6, 10) },
-                endDate = Calendar.getInstance().apply { set(2025, 6, 11) },
+                startDate = Calendar.getInstance().apply { set(2025, 6, 10); stripTime() },
+                endDate = Calendar.getInstance().apply { set(2025, 6, 11); stripTime() },
                 estimatedPrice = 950.0,
                 groupSize = 4,
                 creatorId = 6,
@@ -38,61 +38,61 @@ class Model {
                 typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.RELAX),
                 status = TripStatus.COMPLETED,
                 activities = mapOf(
-                    Calendar.getInstance().apply { set(2025, 6, 10) } to listOf(
+                    Calendar.getInstance().apply { set(2025, 6, 10); stripTime() } to listOf(
                         Activity(
                             1,
-                            Calendar.getInstance().apply { set(2025, 6, 10) },
+                            Calendar.getInstance().apply { set(2025, 6, 10); stripTime() },
                             "09:00 AM",
                             true,
                             "City tour"
                         ),
                         Activity(
                             2,
-                            Calendar.getInstance().apply { set(2025, 6, 10) },
+                            Calendar.getInstance().apply { set(2025, 6, 10); stripTime() },
                             "02:00 PM",
                             false,
                             "Lunch at market"
                         ),
                         Activity(
                             3,
-                            Calendar.getInstance().apply { set(2025, 6, 10) },
+                            Calendar.getInstance().apply { set(2025, 6, 10); stripTime() },
                             "03:00 PM",
                             true,
                             "Museum visit"
                         ),
                         Activity(
                             4,
-                            Calendar.getInstance().apply { set(2025, 6, 10) },
+                            Calendar.getInstance().apply { set(2025, 6, 10); stripTime() },
                             "08:00 PM",
                             true,
                             "Welcome dinner"
                         )
                     ),
-                    Calendar.getInstance().apply { set(2025, 6, 11) } to listOf(
+                    Calendar.getInstance().apply { set(2025, 6, 11); stripTime() } to listOf(
                         Activity(
                             5,
-                            Calendar.getInstance().apply { set(2025, 6, 11) },
+                            Calendar.getInstance().apply { set(2025, 6, 11); stripTime() },
                             "08:00 AM",
                             true,
                             "Hiking trip"
                         ),
                         Activity(
                             6,
-                            Calendar.getInstance().apply { set(2025, 6, 11) },
+                            Calendar.getInstance().apply { set(2025, 6, 11); stripTime() },
                             "01:00 PM",
                             true,
                             "Mountain picnic"
                         ),
                         Activity(
                             7,
-                            Calendar.getInstance().apply { set(2025, 6, 11) },
+                            Calendar.getInstance().apply { set(2025, 6, 11); stripTime() },
                             "05:00 PM",
                             false,
                             "Free time"
                         ),
                         Activity(
                             8,
-                            Calendar.getInstance().apply { set(2025, 6, 11) },
+                            Calendar.getInstance().apply { set(2025, 6, 11); stripTime() },
                             "09:00 PM",
                             true,
                             "Campfire stories"
@@ -123,8 +123,8 @@ class Model {
                 photo = "phuket",
                 title = "Beach Escape in Thailand",
                 destination = "Phuket",
-                startDate = Calendar.getInstance().apply { set(2025, 7, 20) },
-                endDate = Calendar.getInstance().apply { set(2025, 7, 21) },
+                startDate = Calendar.getInstance().apply { set(2025, 7, 20); stripTime() },
+                endDate = Calendar.getInstance().apply { set(2025, 7, 21); stripTime() },
                 estimatedPrice = 1200.0,
                 groupSize = 4,
                 creatorId = 2,
@@ -134,61 +134,61 @@ class Model {
                 typeTravel = listOf(TypeTravel.PARTY, TypeTravel.RELAX),
                 status = TripStatus.COMPLETED,
                 activities = mapOf(
-                    Calendar.getInstance().apply { set(2025, 7, 20) } to listOf(
+                    Calendar.getInstance().apply { set(2025, 7, 20); stripTime() } to listOf(
                         Activity(
                             9,
-                            Calendar.getInstance().apply { set(2025, 7, 20) },
+                            Calendar.getInstance().apply { set(2025, 7, 20); stripTime() },
                             "10:00 AM",
                             true,
                             "Snorkeling tour"
                         ),
                         Activity(
                             10,
-                            Calendar.getInstance().apply { set(2025, 7, 20) },
+                            Calendar.getInstance().apply { set(2025, 7, 20); stripTime() },
                             "01:00 PM",
                             true,
                             "Beach lunch"
                         ),
                         Activity(
                             11,
-                            Calendar.getInstance().apply { set(2025, 7, 20) },
+                            Calendar.getInstance().apply { set(2025, 7, 20); stripTime() },
                             "04:00 PM",
                             false,
                             "Massage session"
                         ),
                         Activity(
                             12,
-                            Calendar.getInstance().apply { set(2025, 7, 20) },
+                            Calendar.getInstance().apply { set(2025, 7, 20); stripTime() },
                             "07:00 PM",
                             true,
                             "Sunset cruise"
                         )
                     ),
-                    Calendar.getInstance().apply { set(2025, 7, 21) } to listOf(
+                    Calendar.getInstance().apply { set(2025, 7, 21); stripTime() } to listOf(
                         Activity(
                             13,
-                            Calendar.getInstance().apply { set(2025, 7, 21) },
+                            Calendar.getInstance().apply { set(2025, 7, 21); stripTime() },
                             "09:00 AM",
                             true,
                             "Island hopping"
                         ),
                         Activity(
                             14,
-                            Calendar.getInstance().apply { set(2025, 7, 21) },
+                            Calendar.getInstance().apply { set(2025, 7, 21); stripTime() },
                             "02:00 PM",
                             true,
                             "Cuisine tasting"
                         ),
                         Activity(
                             15,
-                            Calendar.getInstance().apply { set(2025, 7, 21) },
+                            Calendar.getInstance().apply { set(2025, 7, 21); stripTime() },
                             "03:00 PM",
                             false,
                             "Shopping"
                         ),
                         Activity(
                             16,
-                            Calendar.getInstance().apply { set(2025, 7, 21) },
+                            Calendar.getInstance().apply { set(2025, 7, 21); stripTime() },
                             "08:00 PM",
                             true,
                             "Beach party"
@@ -220,8 +220,8 @@ class Model {
                 photo = "peru",
                 title = "Adventures in Peru",
                 destination = "Cusco",
-                startDate = Calendar.getInstance().apply { set(2025, 9, 5) },
-                endDate = Calendar.getInstance().apply { set(2025, 9, 6) },
+                startDate = Calendar.getInstance().apply { set(2025, 9, 5); stripTime() },
+                endDate = Calendar.getInstance().apply { set(2025, 9, 6); stripTime() },
                 estimatedPrice = 1100.0,
                 groupSize = 4,
                 creatorId = 3,
@@ -231,17 +231,17 @@ class Model {
                 typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.CULTURE),
                 status = TripStatus.IN_PROGRESS,
                 activities = mapOf(
-                    Calendar.getInstance().apply { set(2025, 9, 5) } to listOf(
-                        Activity(17, Calendar.getInstance().apply { set(2025, 9, 5) }, "08:00 AM", true, "Guided trek through Sacred Valley"),
-                        Activity(18, Calendar.getInstance().apply { set(2025, 9, 5) }, "02:00 PM", true, "Traditional Andean lunch"),
-                        Activity(19, Calendar.getInstance().apply { set(2025, 9, 5) }, "03:00 PM", false, "Free exploration time"),
-                        Activity(20, Calendar.getInstance().apply { set(2025, 9, 5) }, "07:00 PM", true, "Local dance show")
+                    Calendar.getInstance().apply { set(2025, 9, 5); stripTime() } to listOf(
+                        Activity(17, Calendar.getInstance().apply { set(2025, 9, 5); stripTime() }, "08:00 AM", true, "Guided trek through Sacred Valley"),
+                        Activity(18, Calendar.getInstance().apply { set(2025, 9, 5); stripTime() }, "02:00 PM", true, "Traditional Andean lunch"),
+                        Activity(19, Calendar.getInstance().apply { set(2025, 9, 5); stripTime() }, "03:00 PM", false, "Free exploration time"),
+                        Activity(20, Calendar.getInstance().apply { set(2025, 9, 5); stripTime() }, "07:00 PM", true, "Local dance show")
                     ),
                     Calendar.getInstance().apply { set(2025, 9, 6) } to listOf(
-                        Activity(21, Calendar.getInstance().apply { set(2025, 9, 6) }, "06:00 AM", true, "Visit to Machu Picchu"),
-                        Activity(22, Calendar.getInstance().apply { set(2025, 9, 6) }, "11:00 AM", false, "Photography session"),
-                        Activity(23, Calendar.getInstance().apply { set(2025, 9, 6) }, "02:00 PM", true, "Lunch with a view"),
-                        Activity(24, Calendar.getInstance().apply { set(2025, 9, 6) }, "06:00 PM", true, "Group reflection session")
+                        Activity(21, Calendar.getInstance().apply { set(2025, 9, 6); stripTime() }, "06:00 AM", true, "Visit to Machu Picchu"),
+                        Activity(22, Calendar.getInstance().apply { set(2025, 9, 6); stripTime() }, "11:00 AM", false, "Photography session"),
+                        Activity(23, Calendar.getInstance().apply { set(2025, 9, 6); stripTime() }, "02:00 PM", true, "Lunch with a view"),
+                        Activity(24, Calendar.getInstance().apply { set(2025, 9, 6); stripTime()}, "06:00 PM", true, "Group reflection session")
                     )
                 ),
                 reviews = emptyList()
@@ -341,8 +341,8 @@ class Model {
                 photo = "sydney",
                 title = "Sydney Coastal Explorer",
                 destination = "Sydney",
-                startDate = Calendar.getInstance().apply { set(2025, 12, 10) },
-                endDate = Calendar.getInstance().apply { set(2025, 12, 13) },
+                startDate = Calendar.getInstance().apply { set(2025, 12, 10); stripTime() },
+                endDate = Calendar.getInstance().apply { set(2025, 12, 13); stripTime() },
                 estimatedPrice = 1900.0,
                 groupSize = 6,
                 creatorId = 4,
@@ -353,28 +353,28 @@ class Model {
                 status = TripStatus.NOT_STARTED,
                 activities = mapOf(
                     Calendar.getInstance().apply { set(2025, 12, 10) } to listOf(
-                        Activity(81, Calendar.getInstance().apply { set(2025, 12, 10) }, "09:00 AM", true, "Bondi to Coogee coastal walk"),
-                        Activity(82, Calendar.getInstance().apply { set(2025, 12, 10) }, "02:00 PM", true, "Beachside BBQ lunch"),
-                        Activity(83, Calendar.getInstance().apply { set(2025, 12, 10) }, "03:00 PM", false, "Surfing intro class"),
-                        Activity(84, Calendar.getInstance().apply { set(2025, 12, 10) }, "08:00 PM", true, "Rooftop drinks downtown")
+                        Activity(81, Calendar.getInstance().apply { set(2025, 12, 10); stripTime() }, "09:00 AM", true, "Bondi to Coogee coastal walk"),
+                        Activity(82, Calendar.getInstance().apply { set(2025, 12, 10); stripTime() }, "02:00 PM", true, "Beachside BBQ lunch"),
+                        Activity(83, Calendar.getInstance().apply { set(2025, 12, 10); stripTime() }, "03:00 PM", false, "Surfing intro class"),
+                        Activity(84, Calendar.getInstance().apply { set(2025, 12, 10); stripTime() }, "08:00 PM", true, "Rooftop drinks downtown")
                     ),
                     Calendar.getInstance().apply { set(2025, 12, 11) } to listOf(
-                        Activity(85, Calendar.getInstance().apply { set(2025, 12, 11) }, "08:00 AM", true, "Harbour Bridge climb"),
-                        Activity(86, Calendar.getInstance().apply { set(2025, 12, 11) }, "11:00 AM", true, "Opera House guided tour"),
-                        Activity(87, Calendar.getInstance().apply { set(2025, 12, 11) }, "02:00 PM", false, "Museum of Contemporary Art visit"),
-                        Activity(88, Calendar.getInstance().apply { set(2025, 12, 11) }, "07:00 PM", true, "Sunset dinner cruise")
+                        Activity(85, Calendar.getInstance().apply { set(2025, 12, 11); stripTime() }, "08:00 AM", true, "Harbour Bridge climb"),
+                        Activity(86, Calendar.getInstance().apply { set(2025, 12, 11); stripTime() }, "11:00 AM", true, "Opera House guided tour"),
+                        Activity(87, Calendar.getInstance().apply { set(2025, 12, 11); stripTime() }, "02:00 PM", false, "Museum of Contemporary Art visit"),
+                        Activity(88, Calendar.getInstance().apply { set(2025, 12, 11); stripTime() }, "07:00 PM", true, "Sunset dinner cruise")
                     ),
                     Calendar.getInstance().apply { set(2025, 12, 12) } to listOf(
-                        Activity(89, Calendar.getInstance().apply { set(2025, 12, 12) }, "10:00 AM", true, "Ferry to Manly Beach"),
-                        Activity(90, Calendar.getInstance().apply { set(2025, 12, 12) }, "01:00 PM", true, "Seafood lunch at the wharf"),
-                        Activity(91, Calendar.getInstance().apply { set(2025, 12, 12) }, "04:00 PM", false, "Relax on the sand"),
-                        Activity(92, Calendar.getInstance().apply { set(2025, 12, 12) }, "09:00 PM", true, "Beach party")
+                        Activity(89, Calendar.getInstance().apply { set(2025, 12, 12); stripTime() }, "10:00 AM", true, "Ferry to Manly Beach"),
+                        Activity(90, Calendar.getInstance().apply { set(2025, 12, 12); stripTime() }, "01:00 PM", true, "Seafood lunch at the wharf"),
+                        Activity(91, Calendar.getInstance().apply { set(2025, 12, 12); stripTime() }, "04:00 PM", false, "Relax on the sand"),
+                        Activity(92, Calendar.getInstance().apply { set(2025, 12, 12); stripTime() }, "09:00 PM", true, "Beach party")
                     ),
                     Calendar.getInstance().apply { set(2025, 12, 13) } to listOf(
-                        Activity(93, Calendar.getInstance().apply { set(2025, 12, 13) }, "08:00 AM", true, "Morning yoga by the bay"),
-                        Activity(94, Calendar.getInstance().apply { set(2025, 12, 13) }, "11:00 AM", true, "Brunch & recap session"),
-                        Activity(95, Calendar.getInstance().apply { set(2025, 12, 13) }, "02:00 PM", false, "Last-minute shopping"),
-                        Activity(96, Calendar.getInstance().apply { set(2025, 12, 13) }, "05:00 PM", true, "Farewell drinks")
+                        Activity(93, Calendar.getInstance().apply { set(2025, 12, 13); stripTime() }, "08:00 AM", true, "Morning yoga by the bay"),
+                        Activity(94, Calendar.getInstance().apply { set(2025, 12, 13); stripTime() }, "11:00 AM", true, "Brunch & recap session"),
+                        Activity(95, Calendar.getInstance().apply { set(2025, 12, 13); stripTime() }, "02:00 PM", false, "Last-minute shopping"),
+                        Activity(96, Calendar.getInstance().apply { set(2025, 12, 13); stripTime() }, "05:00 PM", true, "Farewell drinks")
                     )
                 ),
                 reviews = emptyList()
@@ -385,8 +385,8 @@ class Model {
                 photo = "rio",
                 title = "Rio Rhythms & Rainforests",
                 destination = "Rio de Janeiro",
-                startDate = Calendar.getInstance().apply { set(2026, 0, 10) },
-                endDate = Calendar.getInstance().apply { set(2026, 0, 16) },
+                startDate = Calendar.getInstance().apply { set(2026, 0, 10); stripTime() },
+                endDate = Calendar.getInstance().apply { set(2026, 0, 16); stripTime() },
                 estimatedPrice = 2100.0,
                 groupSize = 6,
                 creatorId = 2,
@@ -396,211 +396,211 @@ class Model {
                 typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.PARTY),
                 status = TripStatus.NOT_STARTED,
                 activities = mapOf(
-                    Calendar.getInstance().apply { set(2026, 0, 10) } to listOf(
+                    Calendar.getInstance().apply { set(2026, 0, 10); stripTime() } to listOf(
                         Activity(
                             100,
-                            Calendar.getInstance().apply { set(2026, 0, 10) },
+                            Calendar.getInstance().apply { set(2026, 0, 10); stripTime() },
                             "08:00 AM",
                             true,
                             "Tijuca Forest hike"
                         ),
                         Activity(
                             101,
-                            Calendar.getInstance().apply { set(2026, 0, 10) },
+                            Calendar.getInstance().apply { set(2026, 0, 10); stripTime() },
                             "02:00 PM",
                             true,
                             "Street food tour"
                         ),
                         Activity(
                             102,
-                            Calendar.getInstance().apply { set(2026, 0, 10) },
+                            Calendar.getInstance().apply { set(2026, 0, 10); stripTime() },
                             "03:00 PM",
                             false,
                             "Beach volleyball at Copacabana"
                         ),
                         Activity(
                             103,
-                            Calendar.getInstance().apply { set(2026, 0, 10) },
+                            Calendar.getInstance().apply { set(2026, 0, 10); stripTime() },
                             "08:00 PM",
                             true,
                             "Samba night in Lapa"
                         )
                     ),
-                    Calendar.getInstance().apply { set(2026, 0, 11) } to listOf(
+                    Calendar.getInstance().apply { set(2026, 0, 11); stripTime() } to listOf(
                         Activity(
                             104,
-                            Calendar.getInstance().apply { set(2026, 0, 11) },
+                            Calendar.getInstance().apply { set(2026, 0, 11); stripTime() },
                             "09:00 AM",
                             true,
                             "Sugarloaf Mountain cable car"
                         ),
                         Activity(
                             105,
-                            Calendar.getInstance().apply { set(2026, 0, 11) },
+                            Calendar.getInstance().apply { set(2026, 0, 11); stripTime() },
                             "01:00 PM",
                             true,
                             "Traditional feijoada lunch"
                         ),
                         Activity(
                             106,
-                            Calendar.getInstance().apply { set(2026, 0, 11) },
+                            Calendar.getInstance().apply { set(2026, 0, 11); stripTime() },
                             "04:00 PM",
                             false,
                             "Ipanema shopping stroll"
                         ),
                         Activity(
                             107,
-                            Calendar.getInstance().apply { set(2026, 0, 11) },
+                            Calendar.getInstance().apply { set(2026, 0, 11); stripTime() },
                             "09:00 PM",
                             true,
                             "Live bossa nova show"
                         )
                     ),
-                    Calendar.getInstance().apply { set(2026, 0, 12) } to listOf(
+                    Calendar.getInstance().apply { set(2026, 0, 12); stripTime() } to listOf(
                         Activity(
                             108,
-                            Calendar.getInstance().apply { set(2026, 0, 12) },
+                            Calendar.getInstance().apply { set(2026, 0, 12); stripTime() },
                             "08:30 AM",
                             true,
                             "Christ the Redeemer visit"
                         ),
                         Activity(
                             109,
-                            Calendar.getInstance().apply { set(2026, 0, 12) },
+                            Calendar.getInstance().apply { set(2026, 0, 12); stripTime() },
                             "12:30 PM",
                             true,
                             "Lunch with a view at Santa Teresa"
                         ),
                         Activity(
                             110,
-                            Calendar.getInstance().apply { set(2026, 0, 12) },
+                            Calendar.getInstance().apply { set(2026, 0, 12); stripTime() },
                             "03:30 PM",
                             false,
                             "Art museum visit"
                         ),
                         Activity(
                             111,
-                            Calendar.getInstance().apply { set(2026, 0, 12) },
+                            Calendar.getInstance().apply { set(2026, 0, 12); stripTime() },
                             "07:00 PM",
                             true,
                             "Samba dance workshop"
                         )
                     ),
-                    Calendar.getInstance().apply { set(2026, 0, 13) } to listOf(
+                    Calendar.getInstance().apply { set(2026, 0, 13); stripTime() } to listOf(
                         Activity(
                             112,
-                            Calendar.getInstance().apply { set(2026, 0, 13) },
+                            Calendar.getInstance().apply { set(2026, 0, 13); stripTime() },
                             "09:00 AM",
                             true,
                             "Favela walking tour"
                         ),
                         Activity(
                             113,
-                            Calendar.getInstance().apply { set(2026, 0, 13) },
+                            Calendar.getInstance().apply { set(2026, 0, 13); stripTime() },
                             "01:00 PM",
                             true,
                             "Local market tasting"
                         ),
                         Activity(
                             114,
-                            Calendar.getInstance().apply { set(2026, 0, 13) },
+                            Calendar.getInstance().apply { set(2026, 0, 13); stripTime() },
                             "04:00 PM",
                             false,
                             "Chill at Leblon beach"
                         ),
                         Activity(
                             115,
-                            Calendar.getInstance().apply { set(2026, 0, 13) },
+                            Calendar.getInstance().apply { set(2026, 0, 13); stripTime() },
                             "08:00 PM",
                             true,
                             "Evening cruise on Guanabara Bay"
                         )
                     ),
-                    Calendar.getInstance().apply { set(2026, 0, 14) } to listOf(
+                    Calendar.getInstance().apply { set(2026, 0, 14); stripTime() } to listOf(
                         Activity(
                             116,
-                            Calendar.getInstance().apply { set(2026, 0, 14) },
+                            Calendar.getInstance().apply { set(2026, 0, 14); stripTime() },
                             "10:00 AM",
                             true,
                             "Hang gliding experience"
                         ),
                         Activity(
                             117,
-                            Calendar.getInstance().apply { set(2026, 0, 14) },
+                            Calendar.getInstance().apply { set(2026, 0, 14); stripTime() },
                             "01:00 PM",
                             true,
                             "Fresh seafood lunch"
                         ),
                         Activity(
                             118,
-                            Calendar.getInstance().apply { set(2026, 0, 14) },
+                            Calendar.getInstance().apply { set(2026, 0, 14); stripTime() },
                             "04:00 PM",
                             false,
                             "Free exploration time"
                         ),
                         Activity(
                             119,
-                            Calendar.getInstance().apply { set(2026, 0, 14) },
+                            Calendar.getInstance().apply { set(2026, 0, 14); stripTime() },
                             "10:00 PM",
                             true,
                             "Rio nightlife crawl"
                         )
                     ),
-                    Calendar.getInstance().apply { set(2026, 0, 15) } to listOf(
+                    Calendar.getInstance().apply { set(2026, 0, 15); stripTime() } to listOf(
                         Activity(
                             120,
-                            Calendar.getInstance().apply { set(2026, 0, 15) },
+                            Calendar.getInstance().apply { set(2026, 0, 15); stripTime() },
                             "08:00 AM",
                             true,
                             "Morning yoga by the beach"
                         ),
                         Activity(
                             121,
-                            Calendar.getInstance().apply { set(2026, 0, 15) },
+                            Calendar.getInstance().apply { set(2026, 0, 15); stripTime() },
                             "11:00 AM",
                             true,
                             "Street art tour"
                         ),
                         Activity(
                             122,
-                            Calendar.getInstance().apply { set(2026, 0, 15) },
+                            Calendar.getInstance().apply { set(2026, 0, 15); stripTime() },
                             "03:00 PM",
                             false,
                             "Sunset photo session"
                         ),
                         Activity(
                             123,
-                            Calendar.getInstance().apply { set(2026, 0, 15) },
+                            Calendar.getInstance().apply { set(2026, 0, 15); stripTime() },
                             "07:00 PM",
                             true,
                             "Dinner & storytelling night"
                         )
                     ),
-                    Calendar.getInstance().apply { set(2026, 0, 16) } to listOf(
+                    Calendar.getInstance().apply { set(2026, 0, 16); stripTime() } to listOf(
                         Activity(
                             124,
-                            Calendar.getInstance().apply { set(2026, 0, 16) },
+                            Calendar.getInstance().apply { set(2026, 0, 16); stripTime() },
                             "09:00 AM",
                             true,
                             "Botanical garden tour"
                         ),
                         Activity(
                             125,
-                            Calendar.getInstance().apply { set(2026, 0, 16) },
+                            Calendar.getInstance().apply { set(2026, 0, 16); stripTime() },
                             "02:00 PM",
                             true,
                             "Farewell brunch"
                         ),
                         Activity(
                             126,
-                            Calendar.getInstance().apply { set(2026, 0, 16) },
+                            Calendar.getInstance().apply { set(2026, 0, 16); stripTime() },
                             "02:00 PM",
                             false,
                             "Last-minute shopping"
                         ),
                         Activity(
                             127,
-                            Calendar.getInstance().apply { set(2026, 0, 16) },
+                            Calendar.getInstance().apply { set(2026, 0, 16); stripTime() },
                             "05:00 PM",
                             true,
                             "Trip recap & goodbye circle"
@@ -615,8 +615,8 @@ class Model {
                 photo = "monaco",
                 title = "Monaco Luxe Experience",
                 destination = "Monaco",
-                startDate = Calendar.getInstance().apply { set(2026, 4, 5) },
-                endDate = Calendar.getInstance().apply { set(2026, 4, 11) },
+                startDate = Calendar.getInstance().apply { set(2026, 4, 5); stripTime() },
+                endDate = Calendar.getInstance().apply { set(2026, 4, 11); stripTime() },
                 estimatedPrice = 4600.0,
                 groupSize = 4,
                 creatorId = 6,
@@ -626,181 +626,181 @@ class Model {
                 typeTravel = listOf(TypeTravel.RELAX, TypeTravel.CULTURE),
                 status = TripStatus.NOT_STARTED,
                 activities = mapOf(
-                    Calendar.getInstance().apply { set(2026, 4, 5) } to listOf(
+                    Calendar.getInstance().apply { set(2026, 4, 5); stripTime() } to listOf(
                         Activity(
                             130,
-                            Calendar.getInstance().apply { set(2026, 4, 5) },
+                            Calendar.getInstance().apply { set(2026, 4, 5); stripTime() },
                             "09:00 AM",
                             true,
                             "Breakfast at Café de Paris"
                         ),
                         Activity(
                             131,
-                            Calendar.getInstance().apply { set(2026, 4, 5) },
+                            Calendar.getInstance().apply { set(2026, 4, 5); stripTime() },
                             "11:00 AM",
                             true,
                             "Tour of the Prince’s Palace"
                         ),
                         Activity(
                             132,
-                            Calendar.getInstance().apply { set(2026, 4, 5) },
+                            Calendar.getInstance().apply { set(2026, 4, 5); stripTime() },
                             "03:00 PM",
                             false,
                             "Free time in Monte Carlo"
                         ),
                         Activity(
                             133,
-                            Calendar.getInstance().apply { set(2026, 4, 5) },
+                            Calendar.getInstance().apply { set(2026, 4, 5); stripTime() },
                             "08:00 PM",
                             true,
                             "Gala dinner at Hôtel de Paris"
                         )
                     ),
-                    Calendar.getInstance().apply { set(2026, 4, 6) } to listOf(
+                    Calendar.getInstance().apply { set(2026, 4, 6); stripTime() } to listOf(
                         Activity(
                             134,
-                            Calendar.getInstance().apply { set(2026, 4, 6) },
+                            Calendar.getInstance().apply { set(2026, 4, 6); stripTime() },
                             "10:00 AM",
                             true,
                             "Oceanographic Museum visit"
                         ),
                         Activity(
                             135,
-                            Calendar.getInstance().apply { set(2026, 4, 6) },
+                            Calendar.getInstance().apply { set(2026, 4, 6); stripTime() },
                             "01:00 PM",
                             true,
                             "Harbor-side lunch"
                         ),
                         Activity(
                             136,
-                            Calendar.getInstance().apply { set(2026, 4, 6) },
+                            Calendar.getInstance().apply { set(2026, 4, 6); stripTime() },
                             "04:00 PM",
                             false,
                             "Shopping at Boulevard des Moulins"
                         ),
                         Activity(
                             137,
-                            Calendar.getInstance().apply { set(2026, 4, 6) },
+                            Calendar.getInstance().apply { set(2026, 4, 6); stripTime() },
                             "07:00 PM",
                             true,
                             "Casino de Monte-Carlo night"
                         )
                     ),
-                    Calendar.getInstance().apply { set(2026, 4, 7) } to listOf(
+                    Calendar.getInstance().apply { set(2026, 4, 7); stripTime() } to listOf(
                         Activity(
                             138,
-                            Calendar.getInstance().apply { set(2026, 4, 7) },
+                            Calendar.getInstance().apply { set(2026, 4, 7); stripTime() },
                             "09:00 AM",
                             true,
                             "Luxury yacht cruise"
                         ),
                         Activity(
                             139,
-                            Calendar.getInstance().apply { set(2026, 4, 7) },
+                            Calendar.getInstance().apply { set(2026, 4, 7); stripTime() },
                             "02:00 PM",
                             true,
                             "Private art gallery viewing"
                         ),
                         Activity(
                             140,
-                            Calendar.getInstance().apply { set(2026, 4, 7) },
+                            Calendar.getInstance().apply { set(2026, 4, 7); stripTime() },
                             "04:00 PM",
                             false,
                             "Spa and wellness retreat"
                         ),
                         Activity(
                             141,
-                            Calendar.getInstance().apply { set(2026, 4, 7) },
+                            Calendar.getInstance().apply { set(2026, 4, 7); stripTime() },
                             "08:00 PM",
                             true,
                             "Michelin-starred dinner"
                         )
                     ),
-                    Calendar.getInstance().apply { set(2026, 4, 8) } to listOf(
+                    Calendar.getInstance().apply { set(2026, 4, 8); stripTime() } to listOf(
                         Activity(
                             142,
-                            Calendar.getInstance().apply { set(2026, 4, 8) },
+                            Calendar.getInstance().apply { set(2026, 4, 8); stripTime() },
                             "10:00 AM",
                             true,
                             "Matisse Museum exploration"
                         ),
                         Activity(
                             143,
-                            Calendar.getInstance().apply { set(2026, 4, 8) },
+                            Calendar.getInstance().apply { set(2026, 4, 8); stripTime() },
                             "01:00 PM",
                             true,
                             "Coastal drive to Eze"
                         ),
                         Activity(
                             144,
-                            Calendar.getInstance().apply { set(2026, 4, 8) },
+                            Calendar.getInstance().apply { set(2026, 4, 8); stripTime() },
                             "04:00 PM",
                             false,
                             "Free exploration of Eze"
                         ),
                         Activity(
                             145,
-                            Calendar.getInstance().apply { set(2026, 4, 8) },
+                            Calendar.getInstance().apply { set(2026, 4, 8); stripTime() },
                             "08:00 PM",
                             true,
                             "Evening at the Monte Carlo Opera House"
                         )
                     ),
-                    Calendar.getInstance().apply { set(2026, 4, 9) } to listOf(
+                    Calendar.getInstance().apply { set(2026, 4, 9); stripTime() } to listOf(
                         Activity(
                             146,
-                            Calendar.getInstance().apply { set(2026, 4, 9) },
+                            Calendar.getInstance().apply { set(2026, 4, 9); stripTime() },
                             "09:00 AM",
                             true,
                             "Visit the Exotic Garden"
                         ),
                         Activity(
                             147,
-                            Calendar.getInstance().apply { set(2026, 4, 9) },
+                            Calendar.getInstance().apply { set(2026, 4, 9); stripTime() },
                             "02:00 PM",
                             true,
                             "Lunch in the old town"
                         ),
                         Activity(
                             148,
-                            Calendar.getInstance().apply { set(2026, 4, 9) },
+                            Calendar.getInstance().apply { set(2026, 4, 9); stripTime() },
                             "03:00 PM",
                             false,
                             "Shopping at La Condamine Market"
                         ),
                         Activity(
                             149,
-                            Calendar.getInstance().apply { set(2026, 4, 9) },
+                            Calendar.getInstance().apply { set(2026, 4, 9); stripTime() },
                             "07:00 PM",
                             true,
                             "Monaco Yacht Club party"
                         )
                     ),
-                    Calendar.getInstance().apply { set(2026, 4, 10) } to listOf(
+                    Calendar.getInstance().apply { set(2026, 4, 10); stripTime() } to listOf(
                         Activity(
                             150,
-                            Calendar.getInstance().apply { set(2026, 4, 10) },
+                            Calendar.getInstance().apply { set(2026, 4, 10); stripTime() },
                             "09:00 AM",
                             true,
                             "Helicopter tour of Monaco"
                         ),
                         Activity(
                             151,
-                            Calendar.getInstance().apply { set(2026, 4, 10) },
+                            Calendar.getInstance().apply { set(2026, 4, 10); stripTime() },
                             "01:00 PM",
                             true,
                             "Luxury shopping spree"
                         ),
                         Activity(
                             152,
-                            Calendar.getInstance().apply { set(2026, 4, 10) },
+                            Calendar.getInstance().apply { set(2026, 4, 10); stripTime() },
                             "04:00 PM",
                             false,
                             "Relaxation at the beach"
                         ),
                         Activity(
                             153,
-                            Calendar.getInstance().apply { set(2026, 4, 10) },
+                            Calendar.getInstance().apply { set(2026, 4, 10); stripTime() },
                             "08:00 PM",
                             true,
                             "Farewell gala"

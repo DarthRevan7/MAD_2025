@@ -62,6 +62,8 @@ import androidx.core.net.toUri
 import com.example.voyago.viewmodel.TripViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun TravelProposalDetail(navController: NavController, vm: TripViewModel, owner: Boolean) {
@@ -485,7 +487,7 @@ fun TitleBox(title:String) {
 
 @Composable
 fun ItineraryText(trip: Trip, modifier: Modifier = Modifier) {
-    val timeFormat = SimpleDateFormat("hh:mm a", Locale.getDefault()) // Adjust to your format
+    val formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.US) // Same format used in your first view
 
     val itineraryString = trip.activities
         .toSortedMap(compareBy { it.timeInMillis }) // Sort days chronologically
@@ -496,9 +498,9 @@ fun ItineraryText(trip: Trip, modifier: Modifier = Modifier) {
 
             val sortedActivities = activities.sortedBy { activity ->
                 try {
-                    timeFormat.parse(activity.time)
+                    LocalTime.parse(activity.time, formatter)
                 } catch (e: Exception) {
-                    null
+                    LocalTime.MIDNIGHT // fallback if parsing fails
                 }
             }
 
@@ -517,6 +519,7 @@ fun ItineraryText(trip: Trip, modifier: Modifier = Modifier) {
         modifier = modifier
     )
 }
+
 
 
 /*
