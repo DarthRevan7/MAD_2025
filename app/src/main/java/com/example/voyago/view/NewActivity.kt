@@ -6,13 +6,10 @@ import android.app.TimePickerDialog
 import android.widget.DatePicker
 import android.widget.TimePicker
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -53,6 +50,13 @@ import com.example.voyago.viewmodel.TripViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewActivity(navController: NavController, vm: TripViewModel) {
+    var currentTrip = Trip()
+
+    if(vm.userAction == TripViewModel.UserAction.CREATE_TRIP) {
+        currentTrip = vm.newTrip
+    } else if(vm.userAction == TripViewModel.UserAction.EDIT_TRIP) {
+        currentTrip = vm.editTrip
+    }
 
     var isGroupActivityChecked by rememberSaveable { mutableStateOf(false) }
     var activityDescription by rememberSaveable { mutableStateOf("") }
@@ -118,7 +122,7 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                 //Select Date Button
                 item {
                     val context = LocalContext.current
-                    val calendar = Calendar.getInstance()
+                    val calendar = currentTrip.startDate
                     val year = calendar.get(Calendar.YEAR)
                     val month = calendar.get(Calendar.MONTH)
                     val day = calendar.get(Calendar.DAY_OF_MONTH)
@@ -237,14 +241,6 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                         //Add Button
                         Button(
                             onClick = {
-                                var currentTrip = Trip()
-
-                                if(vm.userAction == TripViewModel.UserAction.CREATE_TRIP) {
-                                    currentTrip = vm.newTrip
-                                } else if(vm.userAction == TripViewModel.UserAction.EDIT_TRIP) {
-                                    currentTrip = vm.editTrip
-                                }
-
                                 val existingActivities = currentTrip.activities.values.flatten().map { it.id }
                                 val newId = if (existingActivities.isNotEmpty()) existingActivities.max() + 1 else 1
 

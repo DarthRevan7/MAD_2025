@@ -47,17 +47,6 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 
-fun allDaysHaveActivities(trip: Trip?): Boolean {
-
-    if(trip != null) {
-
-        return trip.activities.values.all { list -> list.isNotEmpty() }
-    }
-
-    return false
-
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ActivitiesList(navController: NavController, vm: TripViewModel) {
