@@ -252,8 +252,8 @@ class Model {
                 photo = "japan",
                 title = "Japanese Autumn Journey",
                 destination = "Japan",
-                startDate = Calendar.getInstance().apply { set(2025, 11, 5) },
-                endDate = Calendar.getInstance().apply { set(2025, 11, 8) },
+                startDate = Calendar.getInstance().apply { set(2025, 11, 5); stripTime() },
+                endDate = Calendar.getInstance().apply { set(2025, 11, 8); stripTime() },
                 estimatedPrice = 1800.0,
                 groupSize = 4,
                 creatorId = 1,
@@ -263,29 +263,29 @@ class Model {
                 typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.RELAX),
                 status = TripStatus.NOT_STARTED,
                 activities = mapOf(
-                    Calendar.getInstance().apply { set(2025, 11, 5) } to listOf(
-                        Activity(49, Calendar.getInstance().apply { set(2025, 11, 5) }, "09:00 AM", true, "Fushimi Inari shrine walk"),
-                        Activity(50, Calendar.getInstance().apply { set(2025, 11, 5) }, "02:00 PM", true, "Ramen tasting lunch"),
-                        Activity(51, Calendar.getInstance().apply { set(2025, 11, 5) }, "03:00 PM", false, "Kimono fitting"),
-                        Activity(52, Calendar.getInstance().apply { set(2025, 11, 5) }, "06:00 PM", true, "Tea ceremony experience")
+                    Calendar.getInstance().apply { set(2025, 11, 5); stripTime() } to listOf(
+                        Activity(49, Calendar.getInstance().apply { set(2025, 11, 5); stripTime() }, "09:00 AM", true, "Fushimi Inari shrine walk"),
+                        Activity(50, Calendar.getInstance().apply { set(2025, 11, 5); stripTime() }, "02:00 PM", true, "Ramen tasting lunch"),
+                        Activity(51, Calendar.getInstance().apply { set(2025, 11, 5); stripTime() }, "03:00 PM", false, "Kimono fitting"),
+                        Activity(52, Calendar.getInstance().apply { set(2025, 11, 5); stripTime() }, "06:00 PM", true, "Tea ceremony experience")
                     ),
-                    Calendar.getInstance().apply { set(2025, 11, 6) } to listOf(
-                        Activity(53, Calendar.getInstance().apply { set(2025, 11, 6) }, "08:00 AM", true, "Visit Arashiyama Bamboo Grove"),
-                        Activity(54, Calendar.getInstance().apply { set(2025, 11, 6) }, "11:00 AM", true, "River boat ride"),
-                        Activity(55, Calendar.getInstance().apply { set(2025, 11, 6) }, "02:00 PM", false, "Visit monkey park"),
-                        Activity(56, Calendar.getInstance().apply { set(2025, 11, 6) }, "08:00 PM", true, "Night street food tour")
+                    Calendar.getInstance().apply { set(2025, 11, 6); stripTime() } to listOf(
+                        Activity(53, Calendar.getInstance().apply { set(2025, 11, 6); stripTime() }, "08:00 AM", true, "Visit Arashiyama Bamboo Grove"),
+                        Activity(54, Calendar.getInstance().apply { set(2025, 11, 6); stripTime() }, "11:00 AM", true, "River boat ride"),
+                        Activity(55, Calendar.getInstance().apply { set(2025, 11, 6); stripTime() }, "02:00 PM", false, "Visit monkey park"),
+                        Activity(56, Calendar.getInstance().apply { set(2025, 11, 6); stripTime() }, "08:00 PM", true, "Night street food tour")
                     ),
-                    Calendar.getInstance().apply { set(2025, 11, 7) } to listOf(
-                        Activity(57, Calendar.getInstance().apply { set(2025, 11, 7) }, "09:00 AM", true, "Day trip to Nara"),
-                        Activity(58, Calendar.getInstance().apply { set(2025, 11, 7) }, "02:00 PM", true, "Deer park picnic"),
-                        Activity(59, Calendar.getInstance().apply { set(2025, 11, 7) }, "03:00 PM", false, "Visit Todai-ji temple"),
-                        Activity(60, Calendar.getInstance().apply { set(2025, 11, 7) }, "07:00 PM", true, "Traditional dinner")
+                    Calendar.getInstance().apply { set(2025, 11, 7); stripTime() } to listOf(
+                        Activity(57, Calendar.getInstance().apply { set(2025, 11, 7); stripTime() }, "09:00 AM", true, "Day trip to Nara"),
+                        Activity(58, Calendar.getInstance().apply { set(2025, 11, 7); stripTime() }, "02:00 PM", true, "Deer park picnic"),
+                        Activity(59, Calendar.getInstance().apply { set(2025, 11, 7); stripTime() }, "03:00 PM", false, "Visit Todai-ji temple"),
+                        Activity(60, Calendar.getInstance().apply { set(2025, 11, 7); stripTime() }, "07:00 PM", true, "Traditional dinner")
                     ),
-                    Calendar.getInstance().apply { set(2025, 11, 8) } to listOf(
-                        Activity(61, Calendar.getInstance().apply { set(2025, 11, 8) }, "08:00 AM", true, "Morning garden stroll"),
-                        Activity(62, Calendar.getInstance().apply { set(2025, 11, 8) }, "11:00 AM", false, "Souvenir shopping"),
-                        Activity(63, Calendar.getInstance().apply { set(2025, 11, 8) }, "02:00 PM", true, "Cooking class"),
-                        Activity(64, Calendar.getInstance().apply { set(2025, 11, 8) }, "06:00 PM", true, "Closing group dinner")
+                    Calendar.getInstance().apply { set(2025, 11, 8); stripTime() } to listOf(
+                        Activity(61, Calendar.getInstance().apply { set(2025, 11, 8); stripTime() }, "08:00 AM", true, "Morning garden stroll"),
+                        Activity(62, Calendar.getInstance().apply { set(2025, 11, 8); stripTime() }, "11:00 AM", false, "Souvenir shopping"),
+                        Activity(63, Calendar.getInstance().apply { set(2025, 11, 8); stripTime() }, "02:00 PM", true, "Cooking class"),
+                        Activity(64, Calendar.getInstance().apply { set(2025, 11, 8); stripTime() }, "06:00 PM", true, "Closing group dinner")
                     )
                 ),
                 reviews = emptyList()
@@ -296,8 +296,8 @@ class Model {
                 photo = "kyoto",
                 title = "Kyoto Zen Retreat",
                 destination = "Kyoto",
-                startDate = Calendar.getInstance().apply { set(2025, 12, 1) },
-                endDate = Calendar.getInstance().apply { set(2025, 12, 4) },
+                startDate = Calendar.getInstance().apply { set(2025, 12, 1); stripTime() },
+                endDate = Calendar.getInstance().apply { set(2025, 12, 4); stripTime() },
                 estimatedPrice = 1650.0,
                 groupSize = 5,
                 creatorId = 1,
@@ -307,33 +307,34 @@ class Model {
                 typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.RELAX),
                 status = TripStatus.NOT_STARTED,
                 activities = mapOf(
-                    Calendar.getInstance().apply { set(2025, 12, 1) } to listOf(
-                        Activity(65, Calendar.getInstance().apply { set(2025, 12, 1) }, "08:00 AM", true, "Zen meditation at Ryōan-ji"),
-                        Activity(66, Calendar.getInstance().apply { set(2025, 12, 1) }, "11:00 AM", true, "Stroll through Philosopher’s Path"),
-                        Activity(67, Calendar.getInstance().apply { set(2025, 12, 1) }, "02:00 PM", false, "Matcha tasting"),
-                        Activity(68, Calendar.getInstance().apply { set(2025, 12, 1) }, "06:00 PM", true, "Kaiseki dinner at local ryokan")
+                    Calendar.getInstance().apply { set(2025, 12, 1); stripTime() } to listOf(
+                        Activity(65, Calendar.getInstance().apply { set(2025, 12, 1); stripTime() }, "08:00 AM", true, "Zen meditation at Ryōan-ji"),
+                        Activity(66, Calendar.getInstance().apply { set(2025, 12, 1); stripTime() }, "11:00 AM", true, "Stroll through Philosopher’s Path"),
+                        Activity(67, Calendar.getInstance().apply { set(2025, 12, 1); stripTime() }, "02:00 PM", false, "Matcha tasting"),
+                        Activity(68, Calendar.getInstance().apply { set(2025, 12, 1); stripTime() }, "06:00 PM", true, "Kaiseki dinner at local ryokan")
                     ),
-                    Calendar.getInstance().apply { set(2025, 12, 2) } to listOf(
-                        Activity(69, Calendar.getInstance().apply { set(2025, 12, 2) }, "09:00 AM", true, "Visit Fushimi Inari shrine"),
-                        Activity(70, Calendar.getInstance().apply { set(2025, 12, 2) }, "02:00 PM", true, "Tofu lunch in Gion"),
-                        Activity(71, Calendar.getInstance().apply { set(2025, 12, 2) }, "03:00 PM", false, "Tea ceremony workshop"),
-                        Activity(72, Calendar.getInstance().apply { set(2025, 12, 2) }, "07:00 PM", true, "Night walk in Gion district")
+                    Calendar.getInstance().apply { set(2025, 12, 2); stripTime() } to listOf(
+                        Activity(69, Calendar.getInstance().apply { set(2025, 12, 2); stripTime() }, "09:00 AM", true, "Visit Fushimi Inari shrine"),
+                        Activity(70, Calendar.getInstance().apply { set(2025, 12, 2); stripTime() }, "02:00 PM", true, "Tofu lunch in Gion"),
+                        Activity(71, Calendar.getInstance().apply { set(2025, 12, 2); stripTime() }, "03:00 PM", false, "Tea ceremony workshop"),
+                        Activity(72, Calendar.getInstance().apply { set(2025, 12, 2); stripTime() }, "07:00 PM", true, "Night walk in Gion district")
                     ),
-                    Calendar.getInstance().apply { set(2025, 12, 3) } to listOf(
-                        Activity(73, Calendar.getInstance().apply { set(2025, 12, 3) }, "08:00 AM", true, "Arashiyama Bamboo Grove walk"),
-                        Activity(74, Calendar.getInstance().apply { set(2025, 12, 3) }, "11:00 AM", true, "River boat ride"),
-                        Activity(75, Calendar.getInstance().apply { set(2025, 12, 3) }, "02:00 PM", false, "Zen garden journaling"),
-                        Activity(76, Calendar.getInstance().apply { set(2025, 12, 3) }, "06:00 PM", true, "Dinner & sake tasting")
+                    Calendar.getInstance().apply { set(2025, 12, 3); stripTime() } to listOf(
+                        Activity(73, Calendar.getInstance().apply { set(2025, 12, 3); stripTime() }, "08:00 AM", true, "Arashiyama Bamboo Grove walk"),
+                        Activity(74, Calendar.getInstance().apply { set(2025, 12, 3); stripTime() }, "11:00 AM", true, "River boat ride"),
+                        Activity(75, Calendar.getInstance().apply { set(2025, 12, 3); stripTime() }, "02:00 PM", false, "Zen garden journaling"),
+                        Activity(76, Calendar.getInstance().apply { set(2025, 12, 3); stripTime() }, "06:00 PM", true, "Dinner & sake tasting")
                     ),
-                    Calendar.getInstance().apply { set(2025, 12, 4) } to listOf(
-                        Activity(77, Calendar.getInstance().apply { set(2025, 12, 4) }, "09:00 AM", true, "Kinkaku-ji visit"),
-                        Activity(78, Calendar.getInstance().apply { set(2025, 12, 4) }, "02:00 PM", true, "Farewell sushi lunch"),
-                        Activity(79, Calendar.getInstance().apply { set(2025, 12, 4) }, "03:00 PM", false, "Free time & shopping"),
-                        Activity(80, Calendar.getInstance().apply { set(2025, 12, 4) }, "06:00 PM", true, "Closing circle reflection")
+                    Calendar.getInstance().apply { set(2025, 12, 4); stripTime() } to listOf(
+                        Activity(77, Calendar.getInstance().apply { set(2025, 12, 4); stripTime() }, "09:00 AM", true, "Kinkaku-ji visit"),
+                        Activity(78, Calendar.getInstance().apply { set(2025, 12, 4); stripTime() }, "02:00 PM", true, "Farewell sushi lunch"),
+                        Activity(79, Calendar.getInstance().apply { set(2025, 12, 4); stripTime() }, "03:00 PM", false, "Free time & shopping"),
+                        Activity(80, Calendar.getInstance().apply { set(2025, 12, 4); stripTime() }, "06:00 PM", true, "Closing circle reflection")
                     )
                 ),
                 reviews = emptyList()
             ),
+
 
             Trip(
                 id = 6,
@@ -1123,4 +1124,12 @@ class Model {
         }
         _filteredList.value = filtered
     }
+}
+
+fun Calendar.stripTime(): Calendar {
+    this.set(Calendar.HOUR_OF_DAY, 0)
+    this.set(Calendar.MINUTE, 0)
+    this.set(Calendar.SECOND, 0)
+    this.set(Calendar.MILLISECOND, 0)
+    return this
 }
