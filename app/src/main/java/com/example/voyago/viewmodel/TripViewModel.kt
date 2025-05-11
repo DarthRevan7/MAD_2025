@@ -231,9 +231,9 @@ class TripViewModel(val model:Model): ViewModel() {
     }
 
     //Edit an already existing trip in the database
-    fun editNewTrip(newTrip: Trip): List<Trip> {
-        val updatedList = model.editTrip(newTrip)
-        _selectedTrip.value = updatedList.find { it.id == newTrip.id }!!
+    fun editExistingTrip(trip: Trip): List<Trip> {
+        val updatedList = model.editTrip(trip)
+        _selectedTrip.value = updatedList.find { it.id == trip.id }!!
         return updatedList
     }
 
