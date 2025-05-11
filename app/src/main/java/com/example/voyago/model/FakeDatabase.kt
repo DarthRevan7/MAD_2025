@@ -932,8 +932,15 @@ class Model {
             }
             .toMap()
 
-        return trip.copy(activities = updatedActivities)
+        val updatedTrip = trip.copy(activities = updatedActivities)
+
+        _tripList.value = _tripList.value.map {
+            if (it.id == updatedTrip.id) updatedTrip else it
+        }
+
+        return updatedTrip
     }
+
 
 
 
