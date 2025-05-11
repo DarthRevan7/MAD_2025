@@ -63,7 +63,7 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
     } else if(vm.userAction == TripViewModel.UserAction.CREATE_TRIP) {
         currentTrip = vm.newTrip
     }
-    val activityToEdit = currentTrip?.activities?.values?.flatten()?.find { it.id == activityId }
+    val activityToEdit = currentTrip.activities.values.flatten().find { it.id == activityId }
 
     if (activityToEdit == null) {
         Text("Activity not found.")
@@ -112,6 +112,7 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
+                //Group Activity selection
                 item {
                     Row(
                         modifier = Modifier
@@ -129,9 +130,10 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                     }
                 }
 
+                //Date selection
                 item {
                     val context = LocalContext.current
-                    val calendar = Calendar.getInstance()
+                    val calendar = activityToEdit.date
                     val year = calendar.get(Calendar.YEAR)
                     val month = calendar.get(Calendar.MONTH)
                     val day = calendar.get(Calendar.DAY_OF_MONTH)
@@ -155,7 +157,7 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                             containerColor = Color(0xFFD6D0D9)
                         )
                     ) {
-                        Text(if (activityDate.isNotEmpty()) "Date: $activityDate" else "Select date")
+                        Text(if (activityDate.isNotEmpty()) "Selected Date: $activityDate" else "Select date")
                     }
 
                     if (showDateError) {
@@ -168,10 +170,19 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                     }
                 }
 
-
+                //Select Time Button
                 item {
                     val context = LocalContext.current
-                    val calendar = remember { Calendar.getInstance() }
+                    val calendar = remember {
+                        val cal = Calendar.getInstance()
+                        try {
+                            val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault())
+                            cal.time = sdf.parse(selectedTime) ?: cal.time
+                        } catch (e: Exception) {
+                            // Fallback to default time
+                        }
+                        cal
+                    }
                     val showTimePicker = remember { mutableStateOf(false) }
 
                     if (showTimePicker.value) {
@@ -185,7 +196,7 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                                 val hour = cal.get(Calendar.HOUR)
                                 val amPm = if (cal.get(Calendar.AM_PM) == Calendar.AM) "AM" else "PM"
                                 selectedTime = String.format(
-                                    Locale.ITALY,
+                                    Locale.getDefault(),
                                     "%02d:%02d %s",
                                     if (hour == 0) 12 else hour,
                                     minute,
