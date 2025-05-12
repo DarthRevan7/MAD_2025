@@ -18,7 +18,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -33,7 +32,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.voyago.activities.*
 import com.example.voyago.model.Trip
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -59,183 +57,172 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
 
     var showIncompleteDialog by rememberSaveable { mutableStateOf(false) }
 
-    Scaffold(
-        topBar = {
-            TopBar()
-        },
-        bottomBar = {
-            BottomBar(1)
-        }
-    ) { innerPadding ->
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF3EDF7))
+    ) {
+        val listState = rememberLazyListState()
 
-        Box(
+        LazyColumn(
+            state = listState,
             modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .background(Color(0xFFF3EDF7))
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            val listState = rememberLazyListState()
 
-            LazyColumn(
-                state = listState,
-                modifier = Modifier
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.Top,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+            item {
+                Spacer(modifier = Modifier.height(40.dp))
+            }
 
-                item {
-                    Spacer(modifier = Modifier.height(40.dp))
+            //Activity List
+            item {
+                ActivitiesListContent(selectedTrip, vm, navController)
+            }
+
+
+            item {
+                Spacer(modifier = Modifier.height(40.dp))
+            }
+
+            //New Activity Button
+            item {
+                Button(
+                    onClick = {
+                        navController.navigate("new_activity")
+                        showIncompleteDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.DarkGray,
+                        contentColor = Color.White
+                    ),
+                    modifier = Modifier
+                        .width(200.dp)
+                        .height(50.dp)
+                ) {
+                    Text(
+                        text = "+",
+                        fontSize = 30.sp
+                    )
                 }
+            }
 
-                //Activity List
-                item {
-                    ActivitiesListContent(selectedTrip, vm, navController)
-                }
+            item {
+                Spacer(modifier = Modifier.height(50.dp))
+            }
 
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
+                ) {
 
-                item {
-                    Spacer(modifier = Modifier.height(40.dp))
-                }
-
-                //New Activity Button
-                item {
-                    Button(
-                        onClick = {
-                            navController.navigate("new_activity")
-                            showIncompleteDialog = false
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.DarkGray,
-                            contentColor = Color.White
-                        ),
-                        modifier = Modifier
-                            .width(200.dp)
-                            .height(50.dp)
-                    ) {
+                    if (showIncompleteDialog) {
                         Text(
-                            text = "+",
-                            fontSize = 30.sp
+                            text = "Each day of the trip must have at least one activity.",
+                            color = Color.Red,
+                            fontSize = 14.sp,
+                            modifier = Modifier
+                                .padding(top = 8.dp)
                         )
                     }
-                }
 
-                item {
-                    Spacer(modifier = Modifier.height(50.dp))
-                }
-
-                item {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 24.dp)
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-
-                        if (showIncompleteDialog) {
-                            Text(
-                                text = "Each day of the trip must have at least one activity.",
-                                color = Color.Red,
-                                fontSize = 14.sp,
-                                modifier = Modifier
-                                    .padding(top = 8.dp)
-                            )
+                        //Back Button
+                        Button(
+                            onClick = {
+                                navController.popBackStack()
+                            },
+                            modifier = Modifier
+                                .width(160.dp)
+                                .height(60.dp)
+                                .padding(top = 16.dp)
+                        ) {
+                            Text("Back")
                         }
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            //Back Button
-                            Button(
-                                onClick = {
-                                    navController.popBackStack()
-                                },
-                                modifier = Modifier
-                                    .width(160.dp)
-                                    .height(60.dp)
-                                    .padding(top = 16.dp)
-                            ) {
-                                Text("Back")
-                            }
+                        Spacer(modifier = Modifier.weight(1f))
 
-                            Spacer(modifier = Modifier.weight(1f))
+                        //Finish Button
+                        Button(
+                            onClick = {
+                                if (selectedTrip?.hasActivityForEachDay() == true) {
 
-                            //Finish Button
-                            Button(
-                                onClick = {
-                                    if (selectedTrip?.hasActivityForEachDay() == true) {
+                                    if(vm.userAction == TripViewModel.UserAction.CREATE_TRIP) {
+                                        val updatedTrip = Trip(
+                                            photo = vm.newTrip.photo,
+                                            title = vm.newTrip.title,
+                                            destination = vm.newTrip.destination,
+                                            startDate = vm.newTrip.startDate,
+                                            endDate = vm.newTrip.endDate,
+                                            estimatedPrice = vm.newTrip.estimatedPrice,
+                                            groupSize = vm.newTrip.groupSize,
+                                            activities = vm.newTrip.activities,
+                                            typeTravel = vm.newTrip.typeTravel,
+                                            creatorId = vm.newTrip.creatorId,
+                                            published = false,
+                                            id = vm.newTrip.id,
+                                            participants = emptyList(),
+                                            status = Trip.TripStatus.NOT_STARTED,
+                                            appliedUsers = emptyList(),
+                                            reviews = emptyList()
 
-                                        if(vm.userAction == TripViewModel.UserAction.CREATE_TRIP) {
-                                            val updatedTrip = Trip(
-                                                photo = vm.newTrip.photo,
-                                                title = vm.newTrip.title,
-                                                destination = vm.newTrip.destination,
-                                                startDate = vm.newTrip.startDate,
-                                                endDate = vm.newTrip.endDate,
-                                                estimatedPrice = vm.newTrip.estimatedPrice,
-                                                groupSize = vm.newTrip.groupSize,
-                                                activities = vm.newTrip.activities,
-                                                typeTravel = vm.newTrip.typeTravel,
-                                                creatorId = vm.newTrip.creatorId,
-                                                published = false,
-                                                id = vm.newTrip.id,
-                                                participants = emptyList(),
-                                                status = Trip.TripStatus.NOT_STARTED,
-                                                appliedUsers = emptyList(),
-                                                reviews = emptyList()
+                                        )
 
-                                            )
+                                        vm.addNewTrip(updatedTrip)
 
-                                            vm.addNewTrip(updatedTrip)
-
-                                            //Go to the owned travel proposal
-                                            navController.navigate("owned_travel_proposal_list") {
-                                                popUpTo("owned_travel_proposal_list") {
-                                                    inclusive = false
-                                                }
-                                                launchSingleTop = true
+                                        //Go to the owned travel proposal
+                                        navController.navigate("my_trips_main") {
+                                            popUpTo("my_trips_main") {
+                                                inclusive = false
                                             }
-                                        } else if(vm.userAction == TripViewModel.UserAction.EDIT_TRIP){
-                                            val updatedTrip = Trip(
-                                                photo = vm.editTrip.photo,
-                                                title = vm.editTrip.title,
-                                                destination = vm.editTrip.destination,
-                                                startDate = vm.editTrip.startDate,
-                                                endDate = vm.editTrip.endDate,
-                                                estimatedPrice = vm.editTrip.estimatedPrice,
-                                                groupSize = vm.editTrip.groupSize,
-                                                activities = vm.editTrip.activities,
-                                                typeTravel = vm.editTrip.typeTravel,
-                                                creatorId = vm.editTrip.creatorId,
-                                                published = vm.editTrip.published,
-                                                id = vm.editTrip.id,
-                                                participants = vm.editTrip.participants,
-                                                status = vm.editTrip.status,
-                                                appliedUsers = vm.editTrip.appliedUsers,
-                                                reviews = vm.editTrip.reviews
-                                            )
-
-                                            vm.editTrip = updatedTrip
-
-                                            //Go to the owned travel proposal
-                                            navController.navigate("owned_travel_proposal_list") {
-                                                popUpTo("owned_travel_proposal_list") {
-                                                    inclusive = false
-                                                }
-                                                launchSingleTop = true
-                                            }
+                                            launchSingleTop = true
                                         }
+                                    } else if(vm.userAction == TripViewModel.UserAction.EDIT_TRIP){
+                                        val updatedTrip = Trip(
+                                            photo = vm.editTrip.photo,
+                                            title = vm.editTrip.title,
+                                            destination = vm.editTrip.destination,
+                                            startDate = vm.editTrip.startDate,
+                                            endDate = vm.editTrip.endDate,
+                                            estimatedPrice = vm.editTrip.estimatedPrice,
+                                            groupSize = vm.editTrip.groupSize,
+                                            activities = vm.editTrip.activities,
+                                            typeTravel = vm.editTrip.typeTravel,
+                                            creatorId = vm.editTrip.creatorId,
+                                            published = vm.editTrip.published,
+                                            id = vm.editTrip.id,
+                                            participants = vm.editTrip.participants,
+                                            status = vm.editTrip.status,
+                                            appliedUsers = vm.editTrip.appliedUsers,
+                                            reviews = vm.editTrip.reviews
+                                        )
 
-                                    } else {
-                                        showIncompleteDialog = true
+                                        vm.editTrip = updatedTrip
+
+                                        //Go to the owned travel proposal
+                                        navController.navigate("my_trips_main") {
+                                            popUpTo("my_trips_main") {
+                                                inclusive = false
+                                            }
+                                            launchSingleTop = true
+                                        }
                                     }
-                                },
-                                modifier = Modifier
-                                    .width(160.dp)
-                                    .height(60.dp)
-                                    .padding(top = 16.dp)
-                            ) {
-                                Text("Finish")
-                            }
+
+                                } else {
+                                    showIncompleteDialog = true
+                                }
+                            },
+                            modifier = Modifier
+                                .width(160.dp)
+                                .height(60.dp)
+                                .padding(top = 16.dp)
+                        ) {
+                            Text("Finish")
                         }
                     }
                 }

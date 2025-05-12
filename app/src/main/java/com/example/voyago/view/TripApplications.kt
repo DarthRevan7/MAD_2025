@@ -14,15 +14,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.voyago.activities.BottomBar
-import com.example.voyago.activities.TopBar
 import com.example.voyago.model.LazyUser
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -38,112 +35,102 @@ import com.example.voyago.viewmodel.TripViewModel
 
 @Composable
 fun TripApplications(vm: TripViewModel) {
-    Scaffold(
-        topBar = {
-            TopBar()
-        },
-        bottomBar = {
-            BottomBar(1)
-        }
-    ) { innerPadding ->
 
-        val listState = rememberLazyListState()
-        val trip = vm.selectedTrip.value
+    val listState = rememberLazyListState()
+    val trip = vm.selectedTrip.value
 
-        if (trip != null){
-            LazyColumn(
-                state = listState,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                verticalArrangement = Arrangement.Top,
-                horizontalAlignment = Alignment.Start
-            ) {
+    if (trip != null){
+        LazyColumn(
+            state = listState,
+            modifier = Modifier
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.Start
+        ) {
 
-                //Trip photo
-                item {
-                    Hero(trip)
+            //Trip photo
+            item {
+                Hero(trip)
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            //Group Size and Available spots
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 24.dp, end = 24.dp, bottom = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "${trip.groupSize} people" +
+                                if(trip.availableSpots() > 0) {
+                                    " (${trip.availableSpots()} spots left)"
+                                } else { "" },
+                        modifier = Modifier.align(Alignment.CenterVertically)
+                    )
+                }
+            }
+
+            item {
+                TitleBox("Applications")
+            }
+
+            item {
+                Text(
+                    text = "Approved Applications:",
+                    modifier = Modifier
+                        .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            //List of user that have already been approved
+            if (trip.participants.size > 1) {
+                var participants = vm.getTripParticipants(trip)
+
+                items(participants) { user ->
+                    if (user.id != 1) {
+                        ShowParticipants(user)
+                    }
                 }
 
+            } else {
                 item {
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-
-                //Group Size and Available spots
-                item {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 24.dp, end = 24.dp, bottom = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                    Row (
+                        modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
                     ) {
-                        Text(
-                            text = "${trip.groupSize} people" +
-                                    if(trip.availableSpots() > 0) {
-                                        " (${trip.availableSpots()} spots left)"
-                                    } else { "" },
-                            modifier = Modifier.align(Alignment.CenterVertically)
-                        )
+                        Text("There aren't any participants yet.")
                     }
                 }
+            }
 
+            item {
+                Text(
+                    text = "Pending Applications:",
+                    modifier = Modifier
+                        .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            //Applications that must be still approved or rejected
+            if (trip.appliedUsers.isNotEmpty()) {
+                var applicants = vm.getTripApplicants(trip)
+                items(applicants) { user ->
+                    ShowApplications(user)
+                }
+            } else {
                 item {
-                    TitleBox("Applications")
-                }
-
-                item {
-                    Text(
-                        text = "Approved Applications:",
-                        modifier = Modifier
-                            .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
-                //List of user that have already been approved
-                if (trip.participants.size > 1) {
-                    var participants = vm.getTripParticipants(trip)
-
-                    items(participants) { user ->
-                        if (user.id != 1) {
-                            ShowParticipants(user)
-                        }
-                    }
-
-                } else {
-                    item {
-                        Row (
-                            modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Text("There aren't any participants yet.")
-                        }
-                    }
-                }
-
-                item {
-                    Text(
-                        text = "Pending Applications:",
-                        modifier = Modifier
-                            .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
-                //Applications that must be still approved or rejected
-                if (trip.appliedUsers.isNotEmpty()) {
-                    var applicants = vm.getTripApplicants(trip)
-                    items(applicants) { user ->
-                        ShowApplications(user)
-                    }
-                } else {
-                    item {
-                        Row (
-                            modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Text("There aren't any new applications for this trip.")
-                        }
+                    Row (
+                        modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text("There aren't any new applications for this trip.")
                     }
                 }
             }

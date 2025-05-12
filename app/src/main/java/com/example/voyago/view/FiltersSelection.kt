@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
@@ -22,7 +21,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,8 +38,6 @@ import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.voyago.activities.BottomBar
-import com.example.voyago.activities.TopBar
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.filled.Add
@@ -56,8 +52,6 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.RangeSlider
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.window.PopupProperties
 import com.example.voyago.model.TypeTravel
@@ -73,231 +67,220 @@ data class SelectableItem(
 )
 
 @Composable
-fun FilterSelection(navController: NavController, vm: TripViewModel = viewModel(factory = Factory)) {
-    Scaffold(
-        topBar = {
-            TopBar()
-        },
-        bottomBar = {
-            BottomBar(1)
+fun FiltersSelection(navController: NavController, vm: TripViewModel = viewModel(factory = Factory)) {
+
+    val listState = rememberLazyListState()
+    var query by remember { mutableStateOf("") }
+    var selectedDestination by remember { mutableStateOf<String?>(null) }
+
+    var allDestinations = vm.allDestinations()
+
+    val filteredSuggestions = remember(query) {
+        allDestinations.filter {
+            it.contains(query, ignoreCase = true)
         }
-    ) { innerPadding ->
+    }
 
-        val listState = rememberLazyListState()
-        var query by remember { mutableStateOf("") }
-        var selectedDestination by remember { mutableStateOf<String?>(null) }
+    val isSelected = vm.filterCompletedTrips
 
-        var allDestinations = vm.allDestinations()
+    vm.setMaxMinPrice()
 
-        val filteredSuggestions = remember(query) {
-            allDestinations.filter {
-                it.contains(query, ignoreCase = true)
+    LazyColumn(
+        state = listState,
+        modifier = Modifier
+            .fillMaxSize(),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.Start
+    ) {
+        item {
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 400.dp)
+            ) {
+                DestinationSearchBar(
+                    query = vm.filterDestination,
+                    onQueryChange = { vm.updateFilterDestination(it) },
+                    onSearch = { result ->
+                        selectedDestination = result
+                        query = result
+                    },
+                    searchResults = filteredSuggestions,
+                    onResultClick = { result ->
+                        vm.updateFilterDestination(result)
+                    },
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp)
+                )
             }
         }
 
-        val isSelected = vm.filterCompletedTrips
-        val count = vm.filterBySeats
+        item {
+            Text(
+                text = "Price Range:",
+                modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp),
+                fontWeight = FontWeight.Bold
+            )
+        }
 
-        vm.setMaxMinPrice()
+        item {
+            RangeSlider(vm)
+        }
 
-        LazyColumn(
-            state = listState,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.Start
-        ) {
-            item {
-                Box(
-                    Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 400.dp)
+        item {
+            Spacer(modifier = Modifier.padding(16.dp))
+        }
+
+        item {
+            Box(
+                modifier = Modifier
+                    .wrapContentSize()
+                    .padding(start = 16.dp, bottom = 8.dp)
+            ) {
+
+                MultiSelectDropdownMenu("Duration", vm = vm, items = vm.durationItems
+                ) { updatedItems ->
+                    vm.updateFilterDuration(updatedItems)
+                }
+
+            }
+        }
+
+        item {
+            Box(
+                modifier = Modifier
+                    .wrapContentSize()
+                    .padding(start = 16.dp, bottom = 8.dp)
+            ) {
+
+                MultiSelectDropdownMenu("Group Size", vm = vm, items = vm.groupSizeItems
+                ) { updatedItems ->
+                    vm.updateFilterGroupSize(updatedItems)
+                }
+
+            }
+        }
+
+        item {
+            Box(
+                modifier = Modifier
+                    .wrapContentSize()
+                    .padding(start = 16.dp)
+            ) {
+
+                MultiSelectDropdownMenu("Trip Type", vm = vm, items = vm.filtersTripType
+                ) { updatedItems ->
+                    vm.updateFiltersTripType(updatedItems)
+                }
+
+            }
+        }
+
+        item {
+            Spacer(Modifier.padding(2.dp))
+        }
+
+        item {
+            Row(
+                modifier = Modifier.padding(start = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = {
+                        vm.updateCompletedTripsFilter(!vm.filterCompletedTrips)
+                    }
                 ) {
-                    DestinationSearchBar(
-                        query = vm.filterDestination,
-                        onQueryChange = { vm.updateFilterDestination(it) },
-                        onSearch = { result ->
-                            selectedDestination = result
-                            query = result
+                    Icon(
+                        imageVector = if (isSelected) {
+                            Icons.Default.CheckBox
+                        } else {
+                            Icons.Default.CheckBoxOutlineBlank
                         },
-                        searchResults = filteredSuggestions,
-                        onResultClick = { result ->
-                            vm.updateFilterDestination(result)
+                        contentDescription = if (isSelected) {
+                            "Selected"
+                        } else {
+                            "NotSelected"
+                        },
+                        tint = if (isSelected) {
+                            Color(0x65, 0x55, 0x8f, 255)
+                        } else {
+                            Color.Black
                         }
                     )
                 }
+                Text("Search in completed trips")
             }
+        }
 
-            item {
-                Text(
-                    text = "Price Range:",
-                    modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp),
-                    fontWeight = FontWeight.Bold
-                )
-            }
+        item {
+            Spacer(Modifier.padding(4.dp))
+        }
 
-            item {
-                RangeSlider(vm)
-            }
-
-            item {
-                Spacer(modifier = Modifier.padding(16.dp))
-            }
-
-            item {
-                Box(
-                    modifier = Modifier
-                        .wrapContentSize()
-                        .padding(start = 16.dp, bottom = 8.dp)
-                ) {
-
-                    MultiSelectDropdownMenu("Duration", vm = vm, items = vm.durationItems
-                    ) { updatedItems ->
-                        vm.updateFilterDuration(updatedItems)
-                    }
-
-                }
-            }
-
-            item {
-                Box(
-                    modifier = Modifier
-                        .wrapContentSize()
-                        .padding(start = 16.dp, bottom = 8.dp)
-                ) {
-
-                    MultiSelectDropdownMenu("Group Size", vm = vm, items = vm.groupSizeItems
-                    ) { updatedItems ->
-                        vm.updateFilterGroupSize(updatedItems)
-                    }
-
-                }
-            }
-
-            item {
-                Box(
-                    modifier = Modifier
-                        .wrapContentSize()
-                        .padding(start = 16.dp)
-                ) {
-
-                    MultiSelectDropdownMenu("Trip Type", vm = vm, items = vm.filtersTripType
-                    ) { updatedItems ->
-                        vm.updateFiltersTripType(updatedItems)
-                    }
-
-                }
-            }
-
-            item {
-                Spacer(Modifier.padding(2.dp))
-            }
-
+        if (!isSelected) {
             item {
                 Row(
-                    modifier = Modifier.padding(start = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(start = 30.dp)
                 ) {
-                    IconButton(
-                        onClick = {
-                            vm.updateCompletedTripsFilter(!vm.filterCompletedTrips)
-                        }
-                    ) {
-                        Icon(
-                            imageVector = if (isSelected) {
-                                Icons.Default.CheckBox
-                            } else {
-                                Icons.Default.CheckBoxOutlineBlank
-                            },
-                            contentDescription = if (isSelected) {
-                                "Selected"
-                            } else {
-                                "NotSelected"
-                            },
-                            tint = if (isSelected) {
-                                Color(0x65, 0x55, 0x8f, 255)
-                            } else {
-                                Color.Black
-                            }
-                        )
-                    }
-                    Text("Search in completed trips")
-                }
-            }
-
-            item {
-                Spacer(Modifier.padding(4.dp))
-            }
-
-            if (!isSelected) {
-                item {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(start = 30.dp)
-                    ) {
-                        Text(text = "Min available seats: ", modifier = Modifier.padding(end = 8.dp))
-                        Box(
-                            modifier = Modifier
-                                .size(25.dp)
-                                .border(width = 1.dp, color = Color.Gray, shape = CircleShape)
-                        ) {
-                            IconButton(
-                                onClick = { if (vm.filterBySeats > 0) vm.updateFilterBySeats(vm.filterBySeats - 1) },
-                                modifier = Modifier.fillMaxSize()
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Remove,
-                                    contentDescription = "Decrease"
-                                )
-                            }
-                        }
-                        Text(
-                            text = vm.filterBySeats.toString(),
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                            fontWeight = FontWeight.Bold
-                        )
-                        Box(
-                            modifier = Modifier
-                                .size(25.dp)
-                                .border(width = 1.dp, color = Color.Gray, shape = CircleShape)
-                        ) {
-                            IconButton(
-                                onClick = { vm.updateFilterBySeats(vm.filterBySeats + 1) },
-                                modifier = Modifier.fillMaxSize()
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Add,
-                                    contentDescription = "Increase"
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    contentAlignment = Alignment.BottomEnd
-                ) {
-                    Button(
-                        onClick = {
-                            vm.userAction = TripViewModel.UserAction.SEARCHING
-                            vm.applyFilters()
-                            navController.popBackStack() //reset backstack
-                        },
+                    Text(text = "Min available seats: ", modifier = Modifier.padding(end = 8.dp))
+                    Box(
                         modifier = Modifier
-                            .align(Alignment.BottomEnd)
+                            .size(25.dp)
+                            .border(width = 1.dp, color = Color.Gray, shape = CircleShape)
                     ) {
-                        Text(text = "Search")
+                        IconButton(
+                            onClick = { if (vm.filterBySeats > 0) vm.updateFilterBySeats(vm.filterBySeats - 1) },
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Remove,
+                                contentDescription = "Decrease"
+                            )
+                        }
+                    }
+                    Text(
+                        text = vm.filterBySeats.toString(),
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        fontWeight = FontWeight.Bold
+                    )
+                    Box(
+                        modifier = Modifier
+                            .size(25.dp)
+                            .border(width = 1.dp, color = Color.Gray, shape = CircleShape)
+                    ) {
+                        IconButton(
+                            onClick = { vm.updateFilterBySeats(vm.filterBySeats + 1) },
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Increase"
+                            )
+                        }
                     }
                 }
             }
         }
 
+        item {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                contentAlignment = Alignment.BottomEnd
+            ) {
+                Button(
+                    onClick = {
+                        vm.userAction = TripViewModel.UserAction.SEARCHING
+                        vm.applyFilters()
+                        navController.popBackStack() //reset backstack
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                ) {
+                    Text(text = "Search")
+                }
+            }
+        }
     }
 }
 
@@ -421,7 +404,7 @@ fun MultiSelectDropdownMenu(filter:String, vm: TripViewModel,
 
         DropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false;
+            onDismissRequest = { expanded = false
                 if (filter == "Duration") {
                     vm.updateFilterDuration(items)
                     //println("Dropdown update: ${vm.filterDuration.first} - ${vm.filterDuration.second}")

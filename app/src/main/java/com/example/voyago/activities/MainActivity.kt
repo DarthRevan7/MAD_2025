@@ -8,9 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -20,13 +18,13 @@ import androidx.compose.material.icons.filled.ChatBubble
 import androidx.compose.material.icons.filled.Commute
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
@@ -43,166 +41,262 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import coil3.compose.AsyncImage
 import com.example.voyago.model.NavItem
 import com.example.voyago.R
-import com.example.voyago.view.*
-import com.example.voyago.viewmodel.*
+import com.example.voyago.view.ActivitiesList
+import com.example.voyago.view.CreateNewTrip
+import com.example.voyago.view.EditActivity
+import com.example.voyago.view.EditTrip
+import com.example.voyago.view.ExplorePage
+import com.example.voyago.view.FiltersSelection
+import com.example.voyago.view.MyTripsPage
+import com.example.voyago.view.NewActivity
+import com.example.voyago.view.TripApplications
+import com.example.voyago.view.TripDetails
+import com.example.voyago.viewmodel.Factory
+import com.example.voyago.viewmodel.TripViewModel
 
+sealed class Screen(val route: String) {
+    object Explore : Screen("explore_root")
+    object MyTrips : Screen("my_trips_root")
+    object Home : Screen("home_root")
+    object Chats : Screen("chats_root")
+    object Profile : Screen("profile_root")
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-
-            val navController = rememberNavController()
-
-            NavHost(
-                navController = navController,
-                startDestination = "main_page"
-            ) {
-                composable("main_page") {
-                    MainPage(navController)
-                }
-
-                //Travel Proposal Flow
-                navigation(
-                    startDestination = "travel_proposal_list",
-                    route = "all_trips_graph"
-                ) {
-                    composable("travel_proposal_list") { navBackStackEntry ->
-                        val parentEntry = remember(navBackStackEntry) {
-                            navController.getBackStackEntry("all_trips_graph")
-                        }
-                        val vm: TripViewModel = viewModel(parentEntry, factory = Factory)
-                        TravelProposalList(navController, vm)
-                    }
-
-                    composable("travel_proposal_details") { navBackStackEntry ->
-                        val parentEntry = remember(navBackStackEntry) {
-                            navController.getBackStackEntry("all_trips_graph")
-                        }
-                        val vm: TripViewModel = viewModel(parentEntry, factory = Factory)
-                        TravelProposalDetail(navController, vm, false)
-                    }
-
-                    composable("filter_selection") { navBackStackEntry ->
-                        val parentEntry = remember(navBackStackEntry) {
-                            navController.getBackStackEntry("all_trips_graph")
-                        }
-                        val vm: TripViewModel = viewModel(parentEntry, factory = Factory)
-                        FilterSelection(navController, vm)
-                    }
-                }
-
-
-                //Owned Trip Flow
-                navigation(
-                    startDestination = "owned_travel_proposal_list",
-                    route = "owned_trips_graph"
-                ) {
-                    composable("owned_travel_proposal_list") { navBackStackEntry ->
-                        val parentEntry = remember(navBackStackEntry) {
-                            navController.getBackStackEntry("owned_trips_graph")
-                        }
-                        val vm: TripViewModel = viewModel(parentEntry, factory = Factory)
-                        OwnedTravelProposalList(navController, vm)
-                    }
-
-                    composable("travel_proposal_details") { navBackStackEntry ->
-                        val parentEntry = remember(navBackStackEntry) {
-                            navController.getBackStackEntry("owned_trips_graph")
-                        }
-                        val vm: TripViewModel = viewModel(parentEntry, factory = Factory)
-                        TravelProposalDetail(navController, vm, true)
-                    }
-
-                    composable("trip_applications") { navBackStackEntry ->
-                        val parentEntry = remember(navBackStackEntry) {
-                            navController.getBackStackEntry("owned_trips_graph")
-                        }
-                        val vm: TripViewModel = viewModel(parentEntry, factory = Factory)
-                        TripApplications(vm)
-                    }
-
-                    composable("edit_travel_proposal") { navBackStackEntry ->
-                        val parentEntry = remember(navBackStackEntry) {
-                            navController.getBackStackEntry("owned_trips_graph")
-                        }
-                        val vm: TripViewModel = viewModel(parentEntry, factory = Factory)
-                        EditTravelProposal(navController, vm)
-                    }
-
-                    composable("create_new_travel_proposal") { navBackStackEntry ->
-                        val parentEntry = remember(navBackStackEntry) {
-                            navController.getBackStackEntry("owned_trips_graph")
-                        }
-                        val vm: TripViewModel = viewModel(parentEntry, factory = Factory)
-                        NewTravelProposal(navController, vm)
-                    }
-
-                    composable("activities_list") { navBackStackEntry ->
-                        val parentEntry = remember(navBackStackEntry) {
-                            navController.getBackStackEntry("owned_trips_graph")
-                        }
-                        val vm: TripViewModel = viewModel(parentEntry, factory = Factory)
-                        ActivitiesList(navController, vm)
-                    }
-
-                    composable("new_activity") { navBackStackEntry ->
-                        val parentEntry = remember(navBackStackEntry) {
-                            navController.getBackStackEntry("owned_trips_graph")
-                        }
-                        val vm: TripViewModel = viewModel(parentEntry, factory = Factory)
-                        NewActivity(navController, vm)
-                    }
-
-                    composable(
-                        "edit_activity/{activityId}",
-                        arguments = listOf(navArgument("activityId") { type = NavType.IntType })
-                    ) { navBackStackEntry ->
-                        val parentEntry = remember(navBackStackEntry) {
-                            navController.getBackStackEntry("owned_trips_graph")
-                        }
-                        val vm: TripViewModel = viewModel(parentEntry, factory = Factory)
-
-                        val activityId = navBackStackEntry.arguments?.getInt("activityId") ?: -1
-                        EditActivity(navController, vm, activityId)
-                    }
-                }
-            }
+            MainScreen()
         }
     }
 }
 
 @Composable
-fun MainPage(navController: NavController) {
-    Column (
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Button(onClick = {
-            navController.navigate("travel_proposal_list")
-        }) {
-            Text("Travel Proposal List ")
+fun MainScreen() {
+    val navController = rememberNavController()
+    Scaffold(
+        topBar = { TopBar() },
+        bottomBar = { BottomBar(navController) }
+    ) { innerPadding ->
+        NavigationGraph(navController = navController, modifier = Modifier.padding(innerPadding))
+    }
+}
+
+@Composable
+fun BottomBar(navController: NavHostController) {
+    val items = listOf(
+        NavItem("Explore", Icons.Filled.LocationOn, Screen.Explore.route),
+        NavItem("My Trips", Icons.Filled.Commute, Screen.MyTrips.route),
+        NavItem("Home", Icons.Filled.Language, Screen.Home.route),
+        NavItem("Chats", Icons.Filled.ChatBubble, Screen.Chats.route),
+        NavItem("Profile", Icons.Filled.AccountCircle, Screen.Profile.route)
+    )
+
+    NavigationBar {
+        val navBackStackEntryState = navController.currentBackStackEntryAsState()
+        val currentRoute = navBackStackEntryState.value?.destination?.route
+
+        items.forEach { item ->
+            NavigationBarItem(
+                icon = { Icon(item.icon, contentDescription = item.label) },
+                label = { Text(item.label) },
+                selected = currentRoute?.startsWith(item.route.split("_").first()) == true,
+                onClick = {
+                    navController.navigate(item.route) {
+                        navController.graph.startDestinationRoute?.let { screenRoute ->
+                            popUpTo(screenRoute) {
+                                saveState = true
+                            }
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            )
         }
-        Button(onClick = {
-            navController.navigate("owned_travel_proposal_list")
-        }) {
-            Text("Owned Travel Proposal List ")
+    }
+}
+
+@Composable
+fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modifier) {
+    NavHost(navController = navController, startDestination = Screen.Home.route, modifier = modifier) {
+        exploreNavGraph(navController)
+        myTripsNavGraph(navController)
+        homeNavGraph()
+        chatsNavGraph()
+        profileNavGraph()
+    }
+}
+
+fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
+    navigation(startDestination = "explore_main", route = Screen.Explore.route) {
+        composable("explore_main") { entry ->
+            val exploreGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Explore.route)
+            }
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = Factory
+            )
+            ExplorePage(navController = navController, vm = tripViewModel)
         }
-        Button(onClick = {
-            navController.navigate("create_new_travel_proposal")
-        }) {
-            Text("Create New Travel Proposal")
+
+        composable("trip_details") { entry ->
+            val exploreGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Explore.route)
+            }
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = Factory
+            )
+            TripDetails(navController = navController, vm = tripViewModel, owner = false)
+        }
+
+        composable("filters_selection") { entry ->
+            val exploreGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Explore.route)
+            }
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = Factory
+            )
+            FiltersSelection(navController = navController, vm = tripViewModel)
+        }
+    }
+}
+
+
+fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
+    navigation(startDestination = "my_trips_main", route = Screen.MyTrips.route) {
+        composable("my_trips_main") { entry ->
+            val exploreGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.MyTrips.route)
+            }
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = Factory
+            )
+            MyTripsPage(navController = navController, vm = tripViewModel)
+        }
+
+        composable("trip_details") { entry ->
+            val exploreGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.MyTrips.route)
+            }
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = Factory
+            )
+            TripDetails(navController = navController, vm = tripViewModel, owner = true)
+        }
+
+        composable("trip_applications") { entry ->
+            val exploreGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.MyTrips.route)
+            }
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = Factory
+            )
+            TripApplications(vm = tripViewModel)
+        }
+
+        composable("edit_trip") { entry ->
+            val exploreGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.MyTrips.route)
+            }
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = Factory
+            )
+            EditTrip(navController = navController, vm = tripViewModel)
+        }
+
+        composable("create_new_trip") { entry ->
+            val exploreGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.MyTrips.route)
+            }
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = Factory
+            )
+            CreateNewTrip(navController = navController, vm = tripViewModel)
+        }
+
+        composable("activities_list") { entry ->
+            val exploreGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.MyTrips.route)
+            }
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = Factory
+            )
+            ActivitiesList(navController = navController, vm = tripViewModel)
+        }
+
+        composable("new_activity") { entry ->
+            val exploreGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.MyTrips.route)
+            }
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = Factory
+            )
+            NewActivity(navController = navController, vm = tripViewModel)
+        }
+
+        composable("edit_activity/{activityId}",
+            arguments = listOf(navArgument("activityId") { type = NavType.IntType })) { entry ->
+            val exploreGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.MyTrips.route)
+            }
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = Factory
+            )
+            val activityId = entry.arguments?.getInt("activityId") ?: -1
+            EditActivity(navController = navController, vm = tripViewModel, activityId)
+        }
+    }
+}
+
+fun NavGraphBuilder.homeNavGraph() {
+    composable(Screen.Home.route) {
+        Text("Home Screen")
+    }
+}
+
+fun NavGraphBuilder.chatsNavGraph() {
+    navigation(startDestination = "chats_list", route = Screen.Chats.route) {
+        composable("chats_list") {
+            Text("Chats List Screen")
+        }
+        composable("chat_detail/{chatId}") { backStackEntry ->
+            Text("Chat Detail Screen with ID: ${backStackEntry.arguments?.getString("chatId")}")
+        }
+    }
+}
+
+fun NavGraphBuilder.profileNavGraph() {
+    navigation(startDestination = "profile_overview", route = Screen.Profile.route) {
+        composable("profile_overview") {
+            Text("Profile Overview Screen")
+        }
+        composable("profile_settings") {
+            Text("Profile Settings Screen")
         }
     }
 }
@@ -302,37 +396,4 @@ fun TopBar() {
         },
         modifier = Modifier.shadow(8.dp)
     )
-}
-
-@Composable
-fun BottomBar(selectedIndex: Any?) {
-
-    //NavBarItem
-    val navItemList = listOf(
-        NavItem("Explore", Icons.Default.LocationOn),
-        NavItem("My Trips", Icons.Default.Commute),
-        NavItem("Home", Icons.Default.Language),
-        NavItem("Chats", Icons.Default.ChatBubble),
-        NavItem("Profile", Icons.Default.AccountCircle)
-    )
-
-    NavigationBar(
-        containerColor = Color(0xf3, 0xed, 0xf7, 255),
-        contentColor = MaterialTheme.colorScheme.primary,
-    ) {
-        navItemList.forEachIndexed { index, navItem ->
-            NavigationBarItem(
-                selected = selectedIndex == index,
-                onClick = {},
-                icon = {
-                    Icon(
-                        imageVector = navItem.icon,
-                        contentDescription = "Icon",
-                        modifier = Modifier.size(30.dp)) },
-                label = {
-                    Text(text = navItem.label)
-                }
-            )
-        }
-    }
 }
