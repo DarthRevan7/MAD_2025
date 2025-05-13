@@ -233,6 +233,7 @@ class TripViewModel(val model:Model): ViewModel() {
         if (trip != null && userId in trip.appliedUsers) {
             trip.appliedUsers -= userId
             trip.participants += userId
+            applications.value = getTripApplicants(trip)
         }
     }
 
@@ -241,6 +242,7 @@ class TripViewModel(val model:Model): ViewModel() {
         if (trip != null && userId in trip.appliedUsers) {
             trip.appliedUsers -= userId
             trip.rejectedUsers += userId
+            applications.value = getTripApplicants(trip)
         }
     }
 
