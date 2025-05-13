@@ -2,6 +2,7 @@ package com.example.voyago.view
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -38,6 +39,10 @@ fun TripApplications(vm: TripViewModel) {
 
     val listState = rememberLazyListState()
     val trip = vm.selectedTrip.value
+
+    if (trip != null) {
+        vm.applications.value = vm.getTripApplicants(trip)
+    }
 
     if (trip != null){
         LazyColumn(
@@ -120,9 +125,9 @@ fun TripApplications(vm: TripViewModel) {
 
             //Applications that must be still approved or rejected
             if (trip.appliedUsers.isNotEmpty()) {
-                var applicants = vm.getTripApplicants(trip)
+                var applicants = vm.applications.value
                 items(applicants) { user ->
-                    ShowApplications(user)
+                    ShowApplications(user, vm)
                 }
             } else {
                 item {
@@ -147,7 +152,7 @@ fun TripApplications(vm: TripViewModel) {
             if (trip.rejectedUsers.isNotEmpty()) {
                 var applicants = vm.getTripRejectedUsers(trip)
                 items(applicants) { user ->
-                    ShowApplications(user)
+                    ShowParticipants(user)
                 }
             } else {
                 item {
@@ -201,7 +206,7 @@ fun ShowParticipants(user: LazyUser) {
 }
 
 @Composable
-fun ShowApplications(user: LazyUser) {
+fun ShowApplications(user: LazyUser, vm: TripViewModel) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -244,9 +249,9 @@ fun ShowApplications(user: LazyUser) {
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically)
         {
-            Icon(Icons.Default.Check, "check", modifier = Modifier.background(Color.Green))
+            Icon(Icons.Default.Check, "approve", modifier = Modifier.background(Color.Green).clickable{vm.acceptApplication(vm.selectedTrip.value, user.id)})
             Spacer(modifier = Modifier.padding(5.dp))
-            Icon(Icons.Default.Close, "close", modifier = Modifier.background(Color.Red))
+            Icon(Icons.Default.Close, "reject", modifier = Modifier.background(Color.Red).clickable{vm.rejectApplication(vm.selectedTrip.value, user.id)})
         }
     }
 }
