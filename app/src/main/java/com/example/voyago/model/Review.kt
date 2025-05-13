@@ -1,12 +1,16 @@
 package com.example.voyago.model
 
+import java.util.Calendar
 import android.net.Uri
 
 data class Review(
-    val id:Int,
-    val reviewer:LazyUser,
-    val title:String,
-    val text:String,
-    val rating:Int,  //Integer from 1 to 10 -> 1 star = 2 points
-    var pictures:List<Uri>
+    val reviewId: Int,
+    var reviewerId: Int,
+    var tripId: Int,
+    var title: String,
+    var comment: String,
+    var score: Float,
+    var photos: List<Uri>,
+    var userId: Int?,
+    var date: Calendar
 )

@@ -296,6 +296,8 @@ class TripViewModel(val model:Model): ViewModel() {
 
     }
 
+
+
     // Initialize ViewModel, fetching min and max price from model
     init {
         viewModelScope.launch {

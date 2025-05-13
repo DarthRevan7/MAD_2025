@@ -10,15 +10,72 @@ import java.util.Calendar
 
 
 class Model {
-    private val _users = listOf(
-        LazyUser(1, "Alice", "Johnson", 4.2f),
-        LazyUser(2, "Bob", "Smith", 4.5f),
-        LazyUser(3, "Charlie", "Lee", 4.3f),
-        LazyUser(4, "Diana", "Martinez", 3.9f),
-        LazyUser(5, "Ethan", "Brown", 4.7f),
-        LazyUser(6, "Fiona", "White", 4.6f)
+    private var _users = MutableStateFlow<List<UserData>>(
+        listOf(
+            UserData(id = 1,
+                firstname = "Alice",
+                surname = "Walker",
+                username = "alice_w",
+                dateOfBirth = Calendar.getInstance().apply { set(1995, 6, 10); stripTime() },
+                country = "USA",
+                email = "alice@example.com",
+                password = "securePassword123",
+                userDescription = "hi",
+                profilePicture = null,
+                typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.ADVENTURE),
+                desiredDestination = listOf("Greece", "Italy", "Japan"),
+                rating = 4.7f,
+                reliability = 90,
+                publicTrips = emptyList(),
+                articles = emptyList(),
+                reviews = emptyList(),
+                privateTrips = emptyList(),
+                tripsAppliedTo = emptyList(),
+                tripsApplicationAccepted = emptyList()),
+
+            UserData(id = 2,
+                firstname = "Bella",
+                surname = "Estrange",
+                username = "beauty_lest",
+                dateOfBirth = Calendar.getInstance().apply { set(1985, 10, 31); stripTime() },
+                country = "UK",
+                email = "bellalast@example.com",
+                password = "securePassword987",
+                userDescription = "hi",
+                profilePicture = null,
+                typeTravel = listOf(TypeTravel.RELAX, TypeTravel.PARTY),
+                desiredDestination = listOf("Romania", "USA", "South Korea"),
+                rating = 4.3f,
+                reliability = 55,
+                publicTrips = emptyList(),
+                articles = emptyList(),
+                reviews = emptyList(),
+                privateTrips = emptyList(),
+                tripsAppliedTo = emptyList(),
+                tripsApplicationAccepted = emptyList()),
+
+            )
     )
-    val users: List<LazyUser> = _users
+
+    var users: StateFlow<List<UserData>> = _users
+
+    private var _reviews = MutableStateFlow<List<Review>>(
+        listOf(
+            Review(
+                reviewId = 1,
+                reviewerId = 1,
+                tripId = 1,
+                title = "Amazing trip!",
+                comment = "This trip was absolutely incredible from start to finish. The guided city tour was informative and fun, the food was delicious, and the museum visit was a highlight for me. Everything was well-organized and the group dynamic was awesome. I would recommend this experience to anyone wanting a deep cultural immersion.",
+                score = 9.0f,
+                photos = emptyList(),
+                userId = 1,
+                date = Calendar.getInstance().apply { set(2025, 6, 12); stripTime() }
+            )
+        )
+    )
+
+    var reviews: StateFlow<List<Review>> = _reviews
 
     private var _tripList = MutableStateFlow<List<Trip>>(
         listOf(
@@ -99,23 +156,24 @@ class Model {
                         )
                     )
                 ),
-                reviews = listOf(
-                    Review(
-                        1, users[1], "Amazing trip!",
-                        "This trip was absolutely incredible from start to finish. The guided city tour was informative and fun, the food was delicious, and the museum visit was a highlight for me. Everything was well-organized and the group dynamic was awesome. I would recommend this experience to anyone wanting a deep cultural immersion.",
-                        9, emptyList()
-                    ),
-                    Review(
-                        2, users[2], "Great experience",
-                        "Barcelona was a dream destination and this trip made it even better. I loved how the itinerary was balanced with both group activities and personal time. The hike on day two was a bit challenging but totally worth it for the views. I came back with great memories and new friends.",
-                        8, emptyList()
-                    ),
-                    Review(
-                        3, users[3], "Would go again",
-                        "I’m really impressed by how well this trip was planned. Every activity had a purpose, and even the free time was suggested with local tips. The welcome dinner was a beautiful introduction to Spanish culture, and the entire experience felt authentic and enriching. 10/10 would do it again.",
-                        10, emptyList()
-                    )
-                )
+                reviews = emptyList()
+//                reviews = listOf(
+//                    Review(
+//                        1, users[1], "Amazing trip!",
+//                        "This trip was absolutely incredible from start to finish. The guided city tour was informative and fun, the food was delicious, and the museum visit was a highlight for me. Everything was well-organized and the group dynamic was awesome. I would recommend this experience to anyone wanting a deep cultural immersion.",
+//                        9, emptyList()
+//                    ),
+//                    Review(
+//                        2, users[2], "Great experience",
+//                        "Barcelona was a dream destination and this trip made it even better. I loved how the itinerary was balanced with both group activities and personal time. The hike on day two was a bit challenging but totally worth it for the views. I came back with great memories and new friends.",
+//                        8, emptyList()
+//                    ),
+//                    Review(
+//                        3, users[3], "Would go again",
+//                        "I’m really impressed by how well this trip was planned. Every activity had a purpose, and even the free time was suggested with local tips. The welcome dinner was a beautiful introduction to Spanish culture, and the entire experience felt authentic and enriching. 10/10 would do it again.",
+//                        10, emptyList()
+//                    )
+//                )
             ),
 
             Trip(
@@ -195,23 +253,24 @@ class Model {
                         )
                     )
                 ),
-                reviews = listOf(
-                    Review(
-                        4, users[2], "Loved it!",
-                        "This was the ultimate beach escape. The snorkeling tour showed us some of the most stunning coral reefs I’ve ever seen. The food was delicious, and the beach party was an unforgettable night with music, dancing, and laughter. It struck the perfect balance between adventure and relaxation.",
-                        10, emptyList()
-                    ),
-                    Review(
-                        5, users[4], "Relaxing trip",
-                        "I needed a break from work, and this trip delivered. From the moment we arrived, everything was taken care of. The massage session was heavenly, and the sunsets over the ocean were something out of a movie. I left feeling refreshed and truly happy. Would highly recommend for anyone seeking peace.",
-                        9, emptyList()
-                    ),
-                    Review(
-                        6, users[5], "Beautiful place",
-                        "Thailand was everything I imagined and more. The island hopping day was packed with activities, yet never felt rushed. The local cuisine tasting opened my eyes to so many flavors, and I even brought some recipes home. A wonderful way to experience the culture while soaking up the sun.",
-                        8, emptyList()
-                    )
-                )
+                reviews = emptyList()
+//                reviews = listOf(
+//                    Review(
+//                        4, users[2], "Loved it!",
+//                        "This was the ultimate beach escape. The snorkeling tour showed us some of the most stunning coral reefs I’ve ever seen. The food was delicious, and the beach party was an unforgettable night with music, dancing, and laughter. It struck the perfect balance between adventure and relaxation.",
+//                        10, emptyList()
+//                    ),
+//                    Review(
+//                        5, users[4], "Relaxing trip",
+//                        "I needed a break from work, and this trip delivered. From the moment we arrived, everything was taken care of. The massage session was heavenly, and the sunsets over the ocean were something out of a movie. I left feeling refreshed and truly happy. Would highly recommend for anyone seeking peace.",
+//                        9, emptyList()
+//                    ),
+//                    Review(
+//                        6, users[5], "Beautiful place",
+//                        "Thailand was everything I imagined and more. The island hopping day was packed with activities, yet never felt rushed. The local cuisine tasting opened my eyes to so many flavors, and I even brought some recipes home. A wonderful way to experience the culture while soaking up the sun.",
+//                        8, emptyList()
+//                    )
+//                )
             ),
 
 
@@ -1124,6 +1183,9 @@ class Model {
         }
         _filteredList.value = filtered
     }
+
+    // Get reviews list of a trip
+    fun getReviewsbyId(id)
 }
 
 fun Calendar.stripTime(): Calendar {
