@@ -53,6 +53,8 @@ import com.example.voyago.activities.ProfilePhoto
 import com.example.voyago.model.Review
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.window.Popup
 import androidx.core.net.toUri
@@ -80,6 +82,16 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean)
     val hasAsked = askedTrips.contains(trip?.id)
 
     val listState = rememberLazyListState()
+
+    val today = Calendar.getInstance().apply {
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }
+
+    val isAfterToday = nonNullTrip.startDate.after(today)
+    var publishError by rememberSaveable {mutableStateOf(false)}
 
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
@@ -192,9 +204,13 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean)
                             //Publish Button
                             Button(
                                 onClick = {
-                                    vm.changePublishedStatus(nonNullTrip.id)
-                                    vm.updatePublishedTrip()
-                                    navController.popBackStack()
+                                    if (isAfterToday) {
+                                        vm.changePublishedStatus(nonNullTrip.id)
+                                        vm.updatePublishedTrip()
+                                        navController.popBackStack()
+                                    } else {
+                                        publishError = true
+                                    }
                                 },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(0x14, 0xa1, 0x55, 255)
@@ -207,6 +223,15 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean)
 
                             //Delete button with popup for confirmation
                             DeleteButtonWithConfirmation(nonNullTrip, navController, vm)
+                        }
+
+                        if (publishError) {
+                            Text(
+                                text = "The Start Date of the trip must be after today for it to be published.",
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(16.dp)
+                            )
                         }
                     }
                 }

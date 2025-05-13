@@ -30,8 +30,8 @@ class Model {
                 photo = "barcelona",
                 title = "Cultural Wonders of Spain",
                 destination = "Barcelona",
-                startDate = Calendar.getInstance().apply { set(2025, 6, 10); stripTime() },
-                endDate = Calendar.getInstance().apply { set(2025, 6, 11); stripTime() },
+                startDate = Calendar.getInstance().apply { set(2024, 6, 10); stripTime() },
+                endDate = Calendar.getInstance().apply { set(2024, 6, 11); stripTime() },
                 estimatedPrice = 950.0,
                 groupSize = 4,
                 creatorId = 6,
@@ -42,61 +42,61 @@ class Model {
                 typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.RELAX),
                 status = TripStatus.COMPLETED,
                 activities = mapOf(
-                    Calendar.getInstance().apply { set(2025, 6, 10); stripTime() } to listOf(
+                    Calendar.getInstance().apply { set(2024, 6, 10); stripTime() } to listOf(
                         Activity(
                             1,
-                            Calendar.getInstance().apply { set(2025, 6, 10); stripTime() },
+                            Calendar.getInstance().apply { set(2024, 6, 10); stripTime() },
                             "09:00 AM",
                             true,
                             "City tour"
                         ),
                         Activity(
                             2,
-                            Calendar.getInstance().apply { set(2025, 6, 10); stripTime() },
+                            Calendar.getInstance().apply { set(2024, 6, 10); stripTime() },
                             "02:00 PM",
                             false,
                             "Lunch at market"
                         ),
                         Activity(
                             3,
-                            Calendar.getInstance().apply { set(2025, 6, 10); stripTime() },
+                            Calendar.getInstance().apply { set(2024, 6, 10); stripTime() },
                             "03:00 PM",
                             true,
                             "Museum visit"
                         ),
                         Activity(
                             4,
-                            Calendar.getInstance().apply { set(2025, 6, 10); stripTime() },
+                            Calendar.getInstance().apply { set(2024, 6, 10); stripTime() },
                             "08:00 PM",
                             true,
                             "Welcome dinner"
                         )
                     ),
-                    Calendar.getInstance().apply { set(2025, 6, 11); stripTime() } to listOf(
+                    Calendar.getInstance().apply { set(2024, 6, 11); stripTime() } to listOf(
                         Activity(
                             5,
-                            Calendar.getInstance().apply { set(2025, 6, 11); stripTime() },
+                            Calendar.getInstance().apply { set(2024, 6, 11); stripTime() },
                             "08:00 AM",
                             true,
                             "Hiking trip"
                         ),
                         Activity(
                             6,
-                            Calendar.getInstance().apply { set(2025, 6, 11); stripTime() },
+                            Calendar.getInstance().apply { set(2024, 6, 11); stripTime() },
                             "01:00 PM",
                             true,
                             "Mountain picnic"
                         ),
                         Activity(
                             7,
-                            Calendar.getInstance().apply { set(2025, 6, 11); stripTime() },
+                            Calendar.getInstance().apply { set(2024, 6, 11); stripTime() },
                             "05:00 PM",
                             false,
                             "Free time"
                         ),
                         Activity(
                             8,
-                            Calendar.getInstance().apply { set(2025, 6, 11); stripTime() },
+                            Calendar.getInstance().apply { set(2024, 6, 11); stripTime() },
                             "09:00 PM",
                             true,
                             "Campfire stories"

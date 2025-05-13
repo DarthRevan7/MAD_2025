@@ -128,7 +128,7 @@ fun ExplorePage(navController: NavController, vm: TripViewModel = viewModel(fact
 @SuppressLint("DiscouragedApi")
 @Composable
 fun TripCard(trip: Trip, navController: NavController, vm: TripViewModel, edit: Boolean) {
-    //Clicking on the card the user go to the page that show the details of the trip
+    //Clicking on the card the user goes to the page that show the details of the trip
     Card(
         modifier = Modifier
             .padding(start = 16.dp, end = 16.dp, top = 10.dp)
@@ -203,7 +203,7 @@ fun TripCard(trip: Trip, navController: NavController, vm: TripViewModel, edit: 
 
             }
 
-            //If the trip can be edit (is in the 'My Trips' section of the app)
+            //If the trip can be edit
             if (edit) {
                 //Edit button that send the user to the edit page
                 Box(
