@@ -6,6 +6,7 @@ import com.example.voyago.model.Trip.TripStatus
 import com.example.voyago.view.SelectableItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.forEach
 import java.util.Calendar
 
 
@@ -1185,7 +1186,19 @@ class Model {
     }
 
     // Get reviews list of a trip
-    fun getReviewsbyId(id)
+    fun getReviewsbyTripId(id: Int) {
+        var tripReviewsList = emptyList<>()
+        reviews.forEach { review ->
+            if (review.tripId == id){
+                tripReviewsList += review
+            }
+        }
+
+        return tripReviewsList
+    }
+
+
+
 }
 
 fun Calendar.stripTime(): Calendar {
