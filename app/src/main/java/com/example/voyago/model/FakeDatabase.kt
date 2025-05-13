@@ -1124,6 +1124,7 @@ class Model {
         }
         _filteredList.value = filtered
     }
+
 }
 
 fun Calendar.stripTime(): Calendar {
