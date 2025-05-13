@@ -287,7 +287,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean)
                         Spacer(Modifier.padding(5.dp))
 
                         //If the user can join the trip
-                        if (nonNullTrip.canJoin()) {
+                        if (nonNullTrip.canJoin() && nonNullTrip.creatorId != 1) {
                             //Ask to Join/Asked to Join Button
                             Button(
                                 onClick = {
