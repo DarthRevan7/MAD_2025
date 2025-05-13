@@ -623,7 +623,7 @@ fun ValidatingInputIntField(text:String, updateState: (String) -> Unit, validato
             isError = validatorHasErrors,
             supportingText = {
                 if (validatorHasErrors) {
-                    Text("This field cannot be empty and must be a number greater than 1")
+                    Text("This field cannot be empty and must be an integer number greater than 1")
                 }
             },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
