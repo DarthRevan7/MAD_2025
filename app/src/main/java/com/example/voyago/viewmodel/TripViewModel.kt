@@ -230,12 +230,38 @@ class TripViewModel(val model:Model): ViewModel() {
 
     //Approve an application
     fun acceptApplication(trip: Trip?, userId: Int) {
-        if (trip != null && userId in trip.appliedUsers) {
-            trip.appliedUsers -= userId
-            trip.participants += userId
-            applications.value = getTripApplicants(trip)
+        if (trip == null || userId !in trip.appliedUsers) return
+
+        val applicant = getTripApplicants(trip).find { it.id == userId } ?: return
+        val requestedSpots = applicant.requestedSpots
+        val usedSpots = trip.groupSize - trip.availableSpots()
+
+        if (usedSpots + requestedSpots > trip.groupSize) {
+            return
         }
+
+        // Accept applicant
+        trip.appliedUsers -= userId
+        repeat(applicant.requestedSpots) {
+            trip.participants += userId
+        }
+
+        // Recalculate used spots after acceptance
+        val remainingApplicants = getTripApplicants(trip)
+        val updatedUsedSpots = usedSpots + requestedSpots
+        val remainingSpots = trip.groupSize - updatedUsedSpots
+
+        // Reject remaining applicants who can't fit
+        remainingApplicants.forEach {
+            if (it.requestedSpots > remainingSpots) {
+                trip.appliedUsers -= it.id
+                trip.rejectedUsers += it.id
+            }
+        }
+
+        applications.value = getTripApplicants(trip)
     }
+
 
     //Reject an application
     fun rejectApplication(trip: Trip?, userId: Int) {

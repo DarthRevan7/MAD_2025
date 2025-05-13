@@ -14,12 +14,12 @@ import kotlin.String
 class Model {
 
     private val _users = listOf(
-        LazyUser(1, "Alice", "Johnson", 4.2f),
-        LazyUser(2, "Bob", "Smith", 4.5f),
-        LazyUser(3, "Charlie", "Lee", 4.3f),
-        LazyUser(4, "Diana", "Martinez", 3.9f),
-        LazyUser(5, "Ethan", "Brown", 4.7f),
-        LazyUser(6, "Fiona", "White", 4.6f)
+        LazyUser(1, "Alice", "Johnson", 4.2f, 1),
+        LazyUser(2, "Bob", "Smith", 4.5f, 1),
+        LazyUser(3, "Charlie", "Lee", 4.3f, 1),
+        LazyUser(4, "Diana", "Martinez", 3.9f, 1),
+        LazyUser(5, "Ethan", "Brown", 4.7f, 2),
+        LazyUser(6, "Fiona", "White", 4.6f, 1)
     )
     val users: List<LazyUser> = _users
 
@@ -309,8 +309,8 @@ class Model {
                 groupSize = 5,
                 creatorId = 1,
                 participants = listOf(1, 2),
-                appliedUsers = listOf(3, 5),
-                rejectedUsers = listOf(4),
+                appliedUsers = listOf(3, 5, 4, 6),
+                rejectedUsers = listOf(),
                 published = true,
                 typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.RELAX),
                 status = TripStatus.NOT_STARTED,
