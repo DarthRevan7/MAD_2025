@@ -99,11 +99,11 @@ fun MainScreen() {
 @Composable
 fun BottomBar(navController: NavHostController) {
     val items = listOf(
-        NavItem("Explore", Icons.Filled.LocationOn, Screen.Explore.route),
-        NavItem("My Trips", Icons.Filled.Commute, Screen.MyTrips.route),
-        NavItem("Home", Icons.Filled.Language, Screen.Home.route),
-        NavItem("Chats", Icons.Filled.ChatBubble, Screen.Chats.route),
-        NavItem("Profile", Icons.Filled.AccountCircle, Screen.Profile.route)
+        NavItem("Explore", Icons.Filled.LocationOn, Screen.Explore.route, "explore_main"),
+        NavItem("My Trips", Icons.Filled.Commute, Screen.MyTrips.route, "my_trips_main"),
+        NavItem("Home", Icons.Filled.Language, Screen.Home.route, Screen.Home.route),
+        NavItem("Chats", Icons.Filled.ChatBubble, Screen.Chats.route, "chats_list"),
+        NavItem("Profile", Icons.Filled.AccountCircle, Screen.Profile.route, "profile_overview")
     )
 
     NavigationBar {
@@ -113,14 +113,14 @@ fun BottomBar(navController: NavHostController) {
         items.forEach { item ->
             val selected = currentDestination
                 ?.hierarchy
-                ?.any { it.route == item.route } == true
+                ?.any { it.route == item.rootRoute } == true
 
             NavigationBarItem(
                 icon = { Icon(item.icon, contentDescription = item.label) },
                 label = { Text(item.label) },
                 selected = selected,
                 onClick = {
-                    navController.navigate(item.route) {
+                    navController.navigate(item.startRoute) {
                         navController.graph.startDestinationRoute?.let { screenRoute ->
                             popUpTo(screenRoute) {
                                 saveState = true
