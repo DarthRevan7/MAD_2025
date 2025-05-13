@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -106,14 +107,18 @@ fun BottomBar(navController: NavHostController) {
     )
 
     NavigationBar {
-        val navBackStackEntryState = navController.currentBackStackEntryAsState()
-        val currentRoute = navBackStackEntryState.value?.destination?.route
+        val navBackStackEntry = navController.currentBackStackEntryAsState().value
+        val currentDestination = navBackStackEntry?.destination
 
         items.forEach { item ->
+            val selected = currentDestination
+                ?.hierarchy
+                ?.any { it.route == item.route } == true
+
             NavigationBarItem(
                 icon = { Icon(item.icon, contentDescription = item.label) },
                 label = { Text(item.label) },
-                selected = currentRoute?.startsWith(item.route.split("_").first()) == true,
+                selected = selected,
                 onClick = {
                     navController.navigate(item.route) {
                         navController.graph.startDestinationRoute?.let { screenRoute ->
@@ -129,6 +134,7 @@ fun BottomBar(navController: NavHostController) {
         }
     }
 }
+
 
 @Composable
 fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modifier) {
