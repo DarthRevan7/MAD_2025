@@ -176,7 +176,8 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                     fieldValues.forEachIndexed { index, item ->
                         //Title and Destination Fields
                         if (index == 0 || index == 1) {
-                            val textHasErrors = (item.toString().isBlank() || item.toString().all { it.isDigit() || it.isWhitespace() })
+                            val textHasErrors = item.toString().isBlank() ||
+                                    !item.toString().any { it.isLetter() }
                             fieldErrors[index] = textHasErrors
 
                             ValidatingInputTextField(
@@ -188,7 +189,9 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                                 fieldNames[index]
                             )
                         } else if (index == 2) { //Price Estimated Field
-                            val floatHasErrors = (item.toString().isBlank() || item.toString().toDoubleOrNull()?.let { it <= 0.0 } != false)
+                            val floatHasErrors = item.toString().isBlank() ||
+                                    item.toString().toDoubleOrNull()?.let { it <= 0.0 } != false ||
+                                    !item.toString().matches(Regex("^\\d+(\\.\\d+)?$"))
 
                             fieldErrors[index] = floatHasErrors
 
