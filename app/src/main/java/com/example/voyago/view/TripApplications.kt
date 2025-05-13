@@ -134,6 +134,31 @@ fun TripApplications(vm: TripViewModel) {
                     }
                 }
             }
+
+            item {
+                Text(
+                    text = "Rejected Applications:",
+                    modifier = Modifier
+                        .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            if (trip.rejectedUsers.isNotEmpty()) {
+                var applicants = vm.getTripRejectedUsers(trip)
+                items(applicants) { user ->
+                    ShowApplications(user)
+                }
+            } else {
+                item {
+                    Row (
+                        modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text("There aren't any rejected applications for this trip.")
+                    }
+                }
+            }
         }
     }
 }

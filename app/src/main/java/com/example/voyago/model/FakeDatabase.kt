@@ -1,15 +1,18 @@
 package com.example.voyago.model
 
 import android.util.Log
+import com.example.voyago.model.Trip
 import com.example.voyago.model.Trip.Activity
 import com.example.voyago.model.Trip.TripStatus
 import com.example.voyago.view.SelectableItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.util.Calendar
+import kotlin.String
 
 
 class Model {
+
     private val _users = listOf(
         LazyUser(1, "Alice", "Johnson", 4.2f),
         LazyUser(2, "Bob", "Smith", 4.5f),
@@ -34,6 +37,7 @@ class Model {
                 creatorId = 6,
                 participants = listOf(1, 2, 3, 4),
                 appliedUsers = listOf(5, 6),
+                rejectedUsers = emptyList<Int>(),
                 published = true,
                 typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.RELAX),
                 status = TripStatus.COMPLETED,
@@ -130,6 +134,7 @@ class Model {
                 creatorId = 2,
                 participants = listOf(2, 3, 5, 6),
                 appliedUsers = listOf(1, 4),
+                rejectedUsers = emptyList<Int>(),
                 published = true,
                 typeTravel = listOf(TypeTravel.PARTY, TypeTravel.RELAX),
                 status = TripStatus.COMPLETED,
@@ -227,6 +232,7 @@ class Model {
                 creatorId = 3,
                 participants = listOf(1, 3, 4, 5),
                 appliedUsers = listOf(2, 6),
+                rejectedUsers = emptyList<Int>(),
                 published = true,
                 typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.CULTURE),
                 status = TripStatus.IN_PROGRESS,
@@ -259,6 +265,7 @@ class Model {
                 creatorId = 1,
                 participants = listOf(1),
                 appliedUsers = emptyList(),
+                rejectedUsers = emptyList<Int>(),
                 published = false,
                 typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.RELAX),
                 status = TripStatus.NOT_STARTED,
@@ -302,7 +309,8 @@ class Model {
                 groupSize = 5,
                 creatorId = 1,
                 participants = listOf(1, 2),
-                appliedUsers = listOf(4, 5),
+                appliedUsers = listOf(3, 5),
+                rejectedUsers = listOf(4),
                 published = true,
                 typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.RELAX),
                 status = TripStatus.NOT_STARTED,
@@ -348,6 +356,7 @@ class Model {
                 creatorId = 4,
                 participants = listOf(2, 4, 5, 6),
                 appliedUsers = listOf(1, 3),
+                rejectedUsers = emptyList<Int>(),
                 published = true,
                 typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.PARTY),
                 status = TripStatus.NOT_STARTED,
@@ -392,6 +401,7 @@ class Model {
                 creatorId = 2,
                 participants = listOf(1, 2, 3, 5),
                 appliedUsers = listOf(4, 6),
+                rejectedUsers = emptyList<Int>(),
                 published = true,
                 typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.PARTY),
                 status = TripStatus.NOT_STARTED,
@@ -622,6 +632,7 @@ class Model {
                 creatorId = 6,
                 participants = listOf(2, 4, 6),
                 appliedUsers = listOf(1, 5),
+                rejectedUsers = emptyList<Int>(),
                 published = true,
                 typeTravel = listOf(TypeTravel.RELAX, TypeTravel.CULTURE),
                 status = TripStatus.NOT_STARTED,
@@ -894,6 +905,7 @@ class Model {
             typeTravel = typeTravel,
             creatorId = creatorId,
             appliedUsers = emptyList(),
+            rejectedUsers = emptyList(),
             published = published,
             reviews = emptyList()
         )
@@ -943,8 +955,6 @@ class Model {
     }
 
 
-
-
     fun editActivityInSelectedTrip(
         activityId: Int,
         updatedActivity: Trip.Activity,
@@ -986,9 +996,6 @@ class Model {
     }
 
 
-
-
-
     fun addActivityToTrip(activity: Trip.Activity, trip: Trip?): Trip? {
         if (trip == null) return null
 
@@ -1008,9 +1015,6 @@ class Model {
 
         return updatedTrip
     }
-
-
-
 
 
     fun toggleAskToJoin(tripId: Int) {
@@ -1087,17 +1091,6 @@ class Model {
                 trip.estimatedPrice in filterMinPrice..filterMaxPrice // Aplly filter with given interval
             }
             Log.d("FilterFunction", "Checking price for trip ${trip.title}: estimatedPrice=${trip.estimatedPrice}, filterMinPrice=$filterMinPrice, filterMaxPrice=$filterMaxPrice, priceCondition=$price")
-
-
-            /*
-            val selectedTripTypes = filtersTripType.filter { it.isSelected }
-
-            var tripType:Boolean = selectedTripTypes.any { trip.typeTravel.toString() == it.label }
-            if(tripType == false)
-            {
-
-            }
-             */
 
             val completed = !filterCompletedTrips || !trip.canJoin()
             val spots = trip.availableSpots() >= filterBySeats

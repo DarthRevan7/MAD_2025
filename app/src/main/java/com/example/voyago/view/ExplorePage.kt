@@ -70,7 +70,7 @@ fun ExplorePage(navController: NavController, vm: TripViewModel = viewModel(fact
 
         println("User Action = " + vm.userAction)
 
-        if(vm.userAction != TripViewModel.UserAction.SEARCHING) {
+        if(vm.userAction != TripViewModel.UserAction.SEARCHING && vm.userAction != TripViewModel.UserAction.VIEW_TRIP) {
             vm.resetFilters()
         }
         vm.applyFilters()

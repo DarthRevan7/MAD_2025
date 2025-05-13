@@ -223,6 +223,9 @@ class TripViewModel(val model:Model): ViewModel() {
     //List of user that asked to join the trip
     fun getTripApplicants(trip: Trip): List<LazyUser> = model.getUsers(trip.appliedUsers)
 
+    //List of user that asked to join and had been rejected
+    fun getTripRejectedUsers(trip: Trip): List<LazyUser> = model.getUsers(trip.rejectedUsers)
+
     //Add new trip to the database
     fun addNewTrip(newTrip: Trip): Trip {
         val createdTrip = model.createNewTrip(newTrip)
