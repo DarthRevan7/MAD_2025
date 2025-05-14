@@ -220,10 +220,10 @@ class TripViewModel(val model:Model): ViewModel() {
     var applications = mutableStateOf(emptyList<LazyUser>())
 
     //List of user that are taking part to the trip
-    fun getTripParticipants(trip: Trip): List<LazyUser> = model.getUsers(trip.participants)
+    fun getTripParticipants(trip: Trip): List<UserData> = model.getUsers(trip.participants)
 
     //List of user that asked to join the trip
-    fun getTripApplicants(trip: Trip): List<LazyUser> = model.getUsers(trip.appliedUsers)
+    fun getTripApplicants(trip: Trip): List<UserData> = model.getUsers(trip.appliedUsers)
 
     //List of user that asked to join and had been rejected
     fun getTripRejectedUsers(trip: Trip): List<LazyUser> = model.getUsers(trip.rejectedUsers)
@@ -344,6 +344,12 @@ class TripViewModel(val model:Model): ViewModel() {
         }
 
     }
+
+    fun getUserData(id: Int): UserData {
+        return model.getUserDataById(id)
+    }
+
+
 
     // Initialize ViewModel, fetching min and max price from model
     init {

@@ -346,7 +346,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean)
 
                 //List of reviews of the trip
                 items(nonNullTrip.reviews) { review ->
-                    ShowReview(review)
+                    ShowReview(review, vm)
                 }
             }
         }
@@ -606,7 +606,8 @@ fun DeleteButtonWithConfirmation(trip: Trip, navController: NavController, vm: T
 }
 
 @Composable
-fun ShowReview(review: Review) {
+fun ShowReview(review: Review, vm: TripViewModel) {
+    val reviewer = vm.getUserData(review.reviewerId)
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -620,9 +621,9 @@ fun ShowReview(review: Review) {
                 .size(30.dp)
                 .background(Color.Gray, shape = CircleShape)
         ) {
-            ProfilePhoto(review.reviewer.name, review.reviewer.surname,true, null)
+            ProfilePhoto(reviewer.firstname, reviewer.surname,true, null)
         }
-        Text("${review.reviewer.name} ${review.reviewer.surname}",
+        Text("${reviewer.firstname} ${reviewer.surname}",
             modifier = Modifier.padding( start = 16.dp))
 
         //Stars rating
@@ -632,7 +633,7 @@ fun ShowReview(review: Review) {
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically)
         {
-            PrintStars(review.rating)
+            PrintStars(review.score)
         }
     }
 
@@ -647,7 +648,7 @@ fun ShowReview(review: Review) {
     //Review content
     Row {
         Text(
-            text = review.text,
+            text = review.comment,
             modifier = Modifier.padding(start = 50.dp, end = 16.dp)
         )
     }
