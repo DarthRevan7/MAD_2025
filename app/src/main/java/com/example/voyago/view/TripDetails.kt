@@ -53,6 +53,8 @@ import com.example.voyago.activities.ProfilePhoto
 import com.example.voyago.model.Review
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.window.Popup
 import androidx.core.net.toUri
@@ -80,6 +82,16 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean)
     val hasAsked = askedTrips.contains(trip?.id)
 
     val listState = rememberLazyListState()
+
+    val today = Calendar.getInstance().apply {
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }
+
+    val isAfterToday = nonNullTrip.startDate.after(today)
+    var publishError by rememberSaveable {mutableStateOf(false)}
 
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
@@ -192,9 +204,13 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean)
                             //Publish Button
                             Button(
                                 onClick = {
-                                    vm.changePublishedStatus(nonNullTrip.id)
-                                    vm.updatePublishedTrip()
-                                    navController.popBackStack()
+                                    if (isAfterToday) {
+                                        vm.changePublishedStatus(nonNullTrip.id)
+                                        vm.updatePublishedTrip()
+                                        navController.popBackStack()
+                                    } else {
+                                        publishError = true
+                                    }
                                 },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(0x14, 0xa1, 0x55, 255)
@@ -207,6 +223,15 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean)
 
                             //Delete button with popup for confirmation
                             DeleteButtonWithConfirmation(nonNullTrip, navController, vm)
+                        }
+
+                        if (publishError) {
+                            Text(
+                                text = "The Start Date of the trip must be after today for it to be published.",
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(16.dp)
+                            )
                         }
                     }
                 }
@@ -262,7 +287,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean)
                         Spacer(Modifier.padding(5.dp))
 
                         //If the user can join the trip
-                        if (nonNullTrip.canJoin()) {
+                        if (nonNullTrip.canJoin() && nonNullTrip.creatorId != 1) {
                             //Ask to Join/Asked to Join Button
                             Button(
                                 onClick = {
@@ -321,7 +346,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean)
 
                 //List of reviews of the trip
                 items(nonNullTrip.reviews) { review ->
-                    ShowReview(review)
+                    ShowReview(review, vm)
                 }
             }
         }
@@ -581,7 +606,8 @@ fun DeleteButtonWithConfirmation(trip: Trip, navController: NavController, vm: T
 }
 
 @Composable
-fun ShowReview(review: Review) {
+fun ShowReview(review: Review, vm: TripViewModel) {
+    val reviewer = vm.getUserData(review.reviewerId)
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -595,9 +621,9 @@ fun ShowReview(review: Review) {
                 .size(30.dp)
                 .background(Color.Gray, shape = CircleShape)
         ) {
-            ProfilePhoto(review.reviewer.name, review.reviewer.surname,true, null)
+            ProfilePhoto(reviewer.firstname, reviewer.surname,true, null)
         }
-        Text("${review.reviewer.name} ${review.reviewer.surname}",
+        Text("${reviewer.firstname} ${reviewer.surname}",
             modifier = Modifier.padding( start = 16.dp))
 
         //Stars rating
@@ -607,7 +633,7 @@ fun ShowReview(review: Review) {
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically)
         {
-            PrintStars(review.rating)
+            PrintStars(review.score)
         }
     }
 
@@ -622,7 +648,7 @@ fun ShowReview(review: Review) {
     //Review content
     Row {
         Text(
-            text = review.text,
+            text = review.comment,
             modifier = Modifier.padding(start = 50.dp, end = 16.dp)
         )
     }

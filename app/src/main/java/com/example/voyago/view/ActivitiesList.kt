@@ -167,6 +167,7 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
                                             published = false,
                                             id = vm.newTrip.id,
                                             participants = emptyList(),
+                                            rejectedUsers = emptyList(),
                                             status = Trip.TripStatus.NOT_STARTED,
                                             appliedUsers = emptyList(),
                                             reviews = emptyList()
@@ -197,6 +198,7 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
                                             published = vm.editTrip.published,
                                             id = vm.editTrip.id,
                                             participants = vm.editTrip.participants,
+                                            rejectedUsers = vm.editTrip.rejectedUsers,
                                             status = vm.editTrip.status,
                                             appliedUsers = vm.editTrip.appliedUsers,
                                             reviews = vm.editTrip.reviews

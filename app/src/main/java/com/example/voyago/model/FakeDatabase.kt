@@ -6,19 +6,110 @@ import com.example.voyago.model.Trip.TripStatus
 import com.example.voyago.view.SelectableItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.forEach
 import java.util.Calendar
 
 
 class Model {
-    private val _users = listOf(
-        LazyUser(1, "Alice", "Johnson", 4.2f),
-        LazyUser(2, "Bob", "Smith", 4.5f),
-        LazyUser(3, "Charlie", "Lee", 4.3f),
-        LazyUser(4, "Diana", "Martinez", 3.9f),
-        LazyUser(5, "Ethan", "Brown", 4.7f),
-        LazyUser(6, "Fiona", "White", 4.6f)
+    private var _users = MutableStateFlow<List<UserData>>(
+        listOf(
+            UserData(id = 1,
+                firstname = "Alice",
+                surname = "Walker",
+                username = "alice_w",
+                dateOfBirth = Calendar.getInstance().apply { set(1995, 6, 10); stripTime() },
+                country = "USA",
+                email = "alice@example.com",
+                password = "securePassword123",
+                userDescription = "hi",
+                profilePicture = null,
+                typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.ADVENTURE),
+                desiredDestination = listOf("Greece", "Italy", "Japan"),
+                rating = 4.7f,
+                reliability = 90,
+                publicTrips = emptyList(),
+                articles = emptyList(),
+                reviews = emptyList(),
+                privateTrips = emptyList(),
+                tripsAppliedTo = emptyList(),
+                tripsApplicationAccepted = emptyList(),
+                requestedSpots = 1
+            ),
+
+            UserData(id = 2,
+                firstname = "Bella",
+                surname = "Estrange",
+                username = "beauty_lest",
+                dateOfBirth = Calendar.getInstance().apply { set(1985, 10, 31); stripTime() },
+                country = "UK",
+                email = "bellalast@example.com",
+                password = "securePassword987",
+                userDescription = "hi",
+                profilePicture = null,
+                typeTravel = listOf(TypeTravel.RELAX, TypeTravel.PARTY),
+                desiredDestination = listOf("Romania", "USA", "South Korea"),
+                rating = 4.3f,
+                reliability = 55,
+                publicTrips = emptyList(),
+                articles = emptyList(),
+                reviews = emptyList(),
+                privateTrips = emptyList(),
+                tripsAppliedTo = emptyList(),
+                tripsApplicationAccepted = emptyList(),
+                requestedSpots = 1
+            ),
+
+            )
     )
-    val users: List<LazyUser> = _users
+
+    var users: StateFlow<List<UserData>> = _users
+
+    private var _reviews = MutableStateFlow<List<Review>>(
+        listOf(
+            Review(
+                reviewId = 1,
+                reviewerId = 1,
+                tripId = 1,
+                title = "Amazing trip!",
+                comment = "This trip was absolutely incredible from start to finish. The guided city tour was informative and fun, the food was delicious, and the museum visit was a highlight for me. Everything was well-organized and the group dynamic was awesome. I would recommend this experience to anyone wanting a deep cultural immersion.",
+                score = 9,
+                photos = emptyList(),
+                userId = 1,
+                date = Calendar.getInstance().apply { set(2025, 6, 12); stripTime() }
+            ),
+
+            Review(
+                reviewId = 2,
+                reviewerId = 2,
+                tripId = 1,
+                title = "Loved it!",
+                comment = "This was the ultimate beach escape. The snorkeling tour showed us some of the most stunning coral reefs I’ve ever seen. The food was delicious, and the beach party was an unforgettable night with music, dancing, and laughter. It struck the perfect balance between adventure and relaxation.",
+                score = 10,
+                photos = emptyList(),
+                userId = 1,
+                date = Calendar.getInstance().apply { set(2022, 4, 12); stripTime() }
+            )
+//                reviews = listOf(
+//                    Review(
+//                        4, users[2], "Loved it!",
+//                        "This was the ultimate beach escape. The snorkeling tour showed us some of the most stunning coral reefs I’ve ever seen. The food was delicious, and the beach party was an unforgettable night with music, dancing, and laughter. It struck the perfect balance between adventure and relaxation.",
+//                        10, emptyList()
+//                    ),
+//                    Review(
+//                        5, users[4], "Relaxing trip",
+//                        "I needed a break from work, and this trip delivered. From the moment we arrived, everything was taken care of. The massage session was heavenly, and the sunsets over the ocean were something out of a movie. I left feeling refreshed and truly happy. Would highly recommend for anyone seeking peace.",
+//                        9, emptyList()
+//                    ),
+//                    Review(
+//                        6, users[5], "Beautiful place",
+//                        "Thailand was everything I imagined and more. The island hopping day was packed with activities, yet never felt rushed. The local cuisine tasting opened my eyes to so many flavors, and I even brought some recipes home. A wonderful way to experience the culture while soaking up the sun.",
+//                        8, emptyList()
+//                    )
+//                )
+        )
+    )
+
+    var reviews: StateFlow<List<Review>> = _reviews
 
     private var _tripList = MutableStateFlow<List<Trip>>(
         listOf(
@@ -34,6 +125,7 @@ class Model {
                 creatorId = 6,
                 participants = listOf(1, 2, 3, 4),
                 appliedUsers = listOf(5, 6),
+                rejectedUsers = emptyList(),
                 published = true,
                 typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.RELAX),
                 status = TripStatus.COMPLETED,
@@ -99,23 +191,7 @@ class Model {
                         )
                     )
                 ),
-                reviews = listOf(
-                    Review(
-                        1, users[1], "Amazing trip!",
-                        "This trip was absolutely incredible from start to finish. The guided city tour was informative and fun, the food was delicious, and the museum visit was a highlight for me. Everything was well-organized and the group dynamic was awesome. I would recommend this experience to anyone wanting a deep cultural immersion.",
-                        9, emptyList()
-                    ),
-                    Review(
-                        2, users[2], "Great experience",
-                        "Barcelona was a dream destination and this trip made it even better. I loved how the itinerary was balanced with both group activities and personal time. The hike on day two was a bit challenging but totally worth it for the views. I came back with great memories and new friends.",
-                        8, emptyList()
-                    ),
-                    Review(
-                        3, users[3], "Would go again",
-                        "I’m really impressed by how well this trip was planned. Every activity had a purpose, and even the free time was suggested with local tips. The welcome dinner was a beautiful introduction to Spanish culture, and the entire experience felt authentic and enriching. 10/10 would do it again.",
-                        10, emptyList()
-                    )
-                )
+                reviews = getReviewsbyTripId(1)
             ),
 
             Trip(
@@ -130,6 +206,7 @@ class Model {
                 creatorId = 2,
                 participants = listOf(2, 3, 5, 6),
                 appliedUsers = listOf(1, 4),
+                rejectedUsers = emptyList(),
                 published = true,
                 typeTravel = listOf(TypeTravel.PARTY, TypeTravel.RELAX),
                 status = TripStatus.COMPLETED,
@@ -195,23 +272,7 @@ class Model {
                         )
                     )
                 ),
-                reviews = listOf(
-                    Review(
-                        4, users[2], "Loved it!",
-                        "This was the ultimate beach escape. The snorkeling tour showed us some of the most stunning coral reefs I’ve ever seen. The food was delicious, and the beach party was an unforgettable night with music, dancing, and laughter. It struck the perfect balance between adventure and relaxation.",
-                        10, emptyList()
-                    ),
-                    Review(
-                        5, users[4], "Relaxing trip",
-                        "I needed a break from work, and this trip delivered. From the moment we arrived, everything was taken care of. The massage session was heavenly, and the sunsets over the ocean were something out of a movie. I left feeling refreshed and truly happy. Would highly recommend for anyone seeking peace.",
-                        9, emptyList()
-                    ),
-                    Review(
-                        6, users[5], "Beautiful place",
-                        "Thailand was everything I imagined and more. The island hopping day was packed with activities, yet never felt rushed. The local cuisine tasting opened my eyes to so many flavors, and I even brought some recipes home. A wonderful way to experience the culture while soaking up the sun.",
-                        8, emptyList()
-                    )
-                )
+                reviews = getReviewsbyTripId(2)
             ),
 
 
@@ -227,6 +288,7 @@ class Model {
                 creatorId = 3,
                 participants = listOf(1, 3, 4, 5),
                 appliedUsers = listOf(2, 6),
+                rejectedUsers = emptyList(),
                 published = true,
                 typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.CULTURE),
                 status = TripStatus.IN_PROGRESS,
@@ -259,6 +321,7 @@ class Model {
                 creatorId = 1,
                 participants = listOf(1),
                 appliedUsers = emptyList(),
+                rejectedUsers = emptyList(),
                 published = false,
                 typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.RELAX),
                 status = TripStatus.NOT_STARTED,
@@ -303,6 +366,7 @@ class Model {
                 creatorId = 1,
                 participants = listOf(1, 2),
                 appliedUsers = listOf(4, 5),
+                rejectedUsers = emptyList(),
                 published = true,
                 typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.RELAX),
                 status = TripStatus.NOT_STARTED,
@@ -348,6 +412,7 @@ class Model {
                 creatorId = 4,
                 participants = listOf(2, 4, 5, 6),
                 appliedUsers = listOf(1, 3),
+                rejectedUsers = emptyList(),
                 published = true,
                 typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.PARTY),
                 status = TripStatus.NOT_STARTED,
@@ -392,6 +457,7 @@ class Model {
                 creatorId = 2,
                 participants = listOf(1, 2, 3, 5),
                 appliedUsers = listOf(4, 6),
+                rejectedUsers = emptyList(),
                 published = true,
                 typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.PARTY),
                 status = TripStatus.NOT_STARTED,
@@ -622,6 +688,7 @@ class Model {
                 creatorId = 6,
                 participants = listOf(2, 4, 6),
                 appliedUsers = listOf(1, 5),
+                rejectedUsers = emptyList(),
                 published = true,
                 typeTravel = listOf(TypeTravel.RELAX, TypeTravel.CULTURE),
                 status = TripStatus.NOT_STARTED,
@@ -837,8 +904,8 @@ class Model {
     val filteredList: StateFlow<List<Trip>> = _filteredList
 
     //User Business Logic
-    fun getUsers(ids: List<Int>): List<LazyUser> {
-        return _users.filter { it.id in ids }
+    fun getUsers(ids: List<Int>): List<UserData> {
+        return _users.value.filter { it.id in ids }
     }
 
     //TripList Business Logic
@@ -894,6 +961,7 @@ class Model {
             typeTravel = typeTravel,
             creatorId = creatorId,
             appliedUsers = emptyList(),
+            rejectedUsers = emptyList(),
             published = published,
             reviews = emptyList()
         )
@@ -1124,6 +1192,20 @@ class Model {
         }
         _filteredList.value = filtered
     }
+
+    // Get reviews list of a trip
+    fun getReviewsbyTripId(id: Int): List<Review> {
+        return _reviews.value.filter { it.tripId == id }
+    }
+
+    fun getUserDataById(id: Int): UserData {
+        return _users.value.find { it.id == id }
+            ?: throw NoSuchElementException("User with ID $id not found")
+    }
+
+
+
+
 
 }
 
