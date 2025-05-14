@@ -72,7 +72,36 @@ class Model {
                 photos = emptyList(),
                 userId = 1,
                 date = Calendar.getInstance().apply { set(2025, 6, 12); stripTime() }
+            ),
+
+            Review(
+                reviewId = 2,
+                reviewerId = 2,
+                tripId = 1,
+                title = "Loved it!",
+                comment = "This was the ultimate beach escape. The snorkeling tour showed us some of the most stunning coral reefs I’ve ever seen. The food was delicious, and the beach party was an unforgettable night with music, dancing, and laughter. It struck the perfect balance between adventure and relaxation.",
+                score = 10.0f,
+                photos = emptyList(),
+                userId = 1,
+                date = Calendar.getInstance().apply { set(2022, 4, 12); stripTime() }
             )
+//                reviews = listOf(
+//                    Review(
+//                        4, users[2], "Loved it!",
+//                        "This was the ultimate beach escape. The snorkeling tour showed us some of the most stunning coral reefs I’ve ever seen. The food was delicious, and the beach party was an unforgettable night with music, dancing, and laughter. It struck the perfect balance between adventure and relaxation.",
+//                        10, emptyList()
+//                    ),
+//                    Review(
+//                        5, users[4], "Relaxing trip",
+//                        "I needed a break from work, and this trip delivered. From the moment we arrived, everything was taken care of. The massage session was heavenly, and the sunsets over the ocean were something out of a movie. I left feeling refreshed and truly happy. Would highly recommend for anyone seeking peace.",
+//                        9, emptyList()
+//                    ),
+//                    Review(
+//                        6, users[5], "Beautiful place",
+//                        "Thailand was everything I imagined and more. The island hopping day was packed with activities, yet never felt rushed. The local cuisine tasting opened my eyes to so many flavors, and I even brought some recipes home. A wonderful way to experience the culture while soaking up the sun.",
+//                        8, emptyList()
+//                    )
+//                )
         )
     )
 
@@ -157,24 +186,7 @@ class Model {
                         )
                     )
                 ),
-                reviews = emptyList()
-//                reviews = listOf(
-//                    Review(
-//                        1, users[1], "Amazing trip!",
-//                        "This trip was absolutely incredible from start to finish. The guided city tour was informative and fun, the food was delicious, and the museum visit was a highlight for me. Everything was well-organized and the group dynamic was awesome. I would recommend this experience to anyone wanting a deep cultural immersion.",
-//                        9, emptyList()
-//                    ),
-//                    Review(
-//                        2, users[2], "Great experience",
-//                        "Barcelona was a dream destination and this trip made it even better. I loved how the itinerary was balanced with both group activities and personal time. The hike on day two was a bit challenging but totally worth it for the views. I came back with great memories and new friends.",
-//                        8, emptyList()
-//                    ),
-//                    Review(
-//                        3, users[3], "Would go again",
-//                        "I’m really impressed by how well this trip was planned. Every activity had a purpose, and even the free time was suggested with local tips. The welcome dinner was a beautiful introduction to Spanish culture, and the entire experience felt authentic and enriching. 10/10 would do it again.",
-//                        10, emptyList()
-//                    )
-//                )
+                reviews = getReviewsbyTripId(1)
             ),
 
             Trip(
@@ -254,24 +266,7 @@ class Model {
                         )
                     )
                 ),
-                reviews = emptyList()
-//                reviews = listOf(
-//                    Review(
-//                        4, users[2], "Loved it!",
-//                        "This was the ultimate beach escape. The snorkeling tour showed us some of the most stunning coral reefs I’ve ever seen. The food was delicious, and the beach party was an unforgettable night with music, dancing, and laughter. It struck the perfect balance between adventure and relaxation.",
-//                        10, emptyList()
-//                    ),
-//                    Review(
-//                        5, users[4], "Relaxing trip",
-//                        "I needed a break from work, and this trip delivered. From the moment we arrived, everything was taken care of. The massage session was heavenly, and the sunsets over the ocean were something out of a movie. I left feeling refreshed and truly happy. Would highly recommend for anyone seeking peace.",
-//                        9, emptyList()
-//                    ),
-//                    Review(
-//                        6, users[5], "Beautiful place",
-//                        "Thailand was everything I imagined and more. The island hopping day was packed with activities, yet never felt rushed. The local cuisine tasting opened my eyes to so many flavors, and I even brought some recipes home. A wonderful way to experience the culture while soaking up the sun.",
-//                        8, emptyList()
-//                    )
-//                )
+                reviews = getReviewsbyTripId(2)
             ),
 
 
@@ -897,8 +892,8 @@ class Model {
     val filteredList: StateFlow<List<Trip>> = _filteredList
 
     //User Business Logic
-    fun getUsers(ids: List<Int>): List<LazyUser> {
-        return _users.filter { it.id in ids }
+    fun getUsers(ids: List<Int>): List<UserData> {
+        return _users.value.filter { it.id in ids }
     }
 
     //TripList Business Logic
@@ -1186,16 +1181,14 @@ class Model {
     }
 
     // Get reviews list of a trip
-    fun getReviewsbyTripId(id: Int) {
-        var tripReviewsList = emptyList<>()
-        reviews.forEach { review ->
-            if (review.tripId == id){
-                tripReviewsList += review
-            }
-        }
-
-        return tripReviewsList
+    fun getReviewsbyTripId(id: Int): List<Review> {
+        return _reviews.value.filter { it.tripId == id }
     }
+
+    fun getUserDataById(id:Int): UserData{
+        return _users.value.filter{it.id == id}
+    }
+
 
 
 
