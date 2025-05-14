@@ -231,7 +231,8 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
 
             //Activity Description
             item {
-                descriptionHasErrors = descriptionTouched.value && (activityDescription.isBlank() || activityDescription.all { it.isDigit() || it.isWhitespace() })
+                descriptionHasErrors = descriptionTouched.value && (activityDescription.toString().isBlank() ||
+                        !activityDescription.toString().any { it.isLetter() })
                 ValidatingInputTextField(
                     activityDescription,
                     {

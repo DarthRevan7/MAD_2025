@@ -74,6 +74,14 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
     var showDateError by rememberSaveable { mutableStateOf(false) }
     var dateErrorMessage by rememberSaveable { mutableStateOf("") }
 
+    fun Calendar.stripTime(): Calendar {
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+        return this
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -130,12 +138,10 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                                 set(Calendar.YEAR, y)
                                 set(Calendar.MONTH, m)
                                 set(Calendar.DAY_OF_MONTH, d)
-                                set(Calendar.HOUR_OF_DAY, 0)
-                                set(Calendar.MINUTE, 0)
-                                set(Calendar.SECOND, 0)
-                            }
+                            }.stripTime()
 
-                            val isValid = !(pickedCalendar.before(currentTrip.startDate) || pickedCalendar.after(currentTrip.endDate))
+                            val isValid = !(pickedCalendar.before(currentTrip.startDate.stripTime()) ||
+                                    pickedCalendar.after(currentTrip.endDate.stripTime()))
 
                             activityDate = "$d/${m + 1}/$y"
 
@@ -149,8 +155,6 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                         }, year, month, day
                     )
                 }
-
-
 
                 Button(
                     onClick = { startDatePickerDialog.show() },
@@ -222,7 +226,8 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
 
             //Activity Description
             item {
-                descriptionHasErrors = descriptionTouched.value && (activityDescription.isBlank() || activityDescription.all { it.isDigit() || it.isWhitespace() })
+                descriptionHasErrors = descriptionTouched.value && (activityDescription.toString().isBlank() ||
+                        !activityDescription.toString().any { it.isLetter() })
                 ValidatingInputTextField(
                     activityDescription,
                     {
@@ -276,8 +281,10 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                             val activityCalendar = Calendar.getInstance().apply {
                                 if (parsedDate != null) {
                                     time = parsedDate
+                                    stripTime()
                                 }
                             }
+
 
                             descriptionTouched.value = true
 

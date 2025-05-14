@@ -160,7 +160,8 @@ fun CreateNewTrip(navController: NavController, vm: TripViewModel) {
                         val fieldIsBeenTouched = fieldTouched[index]
                         //Title and Destination Fields
                         if (index == 0 || index == 1) {
-                            val textHasErrors = fieldIsBeenTouched && (item.isBlank() || item.all { it.isDigit() || it.isWhitespace() })
+                            val textHasErrors = fieldIsBeenTouched && (item.toString().isBlank() ||
+                                    !item.toString().any { it.isLetter() })
                             fieldErrors[index] = textHasErrors
 
                             ValidatingInputTextField(
@@ -175,8 +176,9 @@ fun CreateNewTrip(navController: NavController, vm: TripViewModel) {
                                 fieldNames[index]
                             )
                         } else if (index == 2) { //Price Estimated Field
-                            val floatHasErrors = fieldIsBeenTouched &&
-                                    (item.isBlank() || item.toDoubleOrNull()?.let { it <= 0.0 } != false)
+                            val floatHasErrors = fieldIsBeenTouched && (item.toString().isBlank() ||
+                                    item.toString().toDoubleOrNull()?.let { it <= 0.0 } != false ||
+                                    !item.toString().matches(Regex("^\\d+(\\.\\d+)?$")))
 
                             fieldErrors[index] = floatHasErrors
 
@@ -430,6 +432,7 @@ fun CreateNewTrip(navController: NavController, vm: TripViewModel) {
                                     participants = emptyList(),
                                     status = Trip.TripStatus.NOT_STARTED,
                                     appliedUsers = emptyList(),
+                                    rejectedUsers = emptyList(),
                                     reviews = emptyList()
                                 )
 
@@ -623,7 +626,7 @@ fun ValidatingInputIntField(text:String, updateState: (String) -> Unit, validato
             isError = validatorHasErrors,
             supportingText = {
                 if (validatorHasErrors) {
-                    Text("This field cannot be empty and must be a number greater than 1")
+                    Text("This field cannot be empty and must be an integer number greater than 1")
                 }
             },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)

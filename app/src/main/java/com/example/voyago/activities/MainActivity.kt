@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -98,24 +99,28 @@ fun MainScreen() {
 @Composable
 fun BottomBar(navController: NavHostController) {
     val items = listOf(
-        NavItem("Explore", Icons.Filled.LocationOn, Screen.Explore.route),
-        NavItem("My Trips", Icons.Filled.Commute, Screen.MyTrips.route),
-        NavItem("Home", Icons.Filled.Language, Screen.Home.route),
-        NavItem("Chats", Icons.Filled.ChatBubble, Screen.Chats.route),
-        NavItem("Profile", Icons.Filled.AccountCircle, Screen.Profile.route)
+        NavItem("Explore", Icons.Filled.LocationOn, Screen.Explore.route, "explore_main"),
+        NavItem("My Trips", Icons.Filled.Commute, Screen.MyTrips.route, "my_trips_main"),
+        NavItem("Home", Icons.Filled.Language, Screen.Home.route, Screen.Home.route),
+        NavItem("Chats", Icons.Filled.ChatBubble, Screen.Chats.route, "chats_list"),
+        NavItem("Profile", Icons.Filled.AccountCircle, Screen.Profile.route, "profile_overview")
     )
 
     NavigationBar {
-        val navBackStackEntryState = navController.currentBackStackEntryAsState()
-        val currentRoute = navBackStackEntryState.value?.destination?.route
+        val navBackStackEntry = navController.currentBackStackEntryAsState().value
+        val currentDestination = navBackStackEntry?.destination
 
         items.forEach { item ->
+            val selected = currentDestination
+                ?.hierarchy
+                ?.any { it.route == item.rootRoute } == true
+
             NavigationBarItem(
                 icon = { Icon(item.icon, contentDescription = item.label) },
                 label = { Text(item.label) },
-                selected = currentRoute?.startsWith(item.route.split("_").first()) == true,
+                selected = selected,
                 onClick = {
-                    navController.navigate(item.route) {
+                    navController.navigate(item.startRoute) {
                         navController.graph.startDestinationRoute?.let { screenRoute ->
                             popUpTo(screenRoute) {
                                 saveState = true
@@ -129,6 +134,7 @@ fun BottomBar(navController: NavHostController) {
         }
     }
 }
+
 
 @Composable
 fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modifier) {

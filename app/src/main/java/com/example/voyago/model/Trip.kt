@@ -17,6 +17,7 @@ data class Trip(
     var typeTravel: List<TypeTravel>,
     var creatorId: Int,
     var appliedUsers: List<Int>,
+    var rejectedUsers: List<Int>,
     var published: Boolean,
     var reviews:List<Review>
 ) {
@@ -49,6 +50,7 @@ data class Trip(
         typeTravel = emptyList(),
         creatorId = -1,
         appliedUsers = emptyList(),
+        rejectedUsers = emptyList(),
         published = false,
         reviews = emptyList()
     ) {
