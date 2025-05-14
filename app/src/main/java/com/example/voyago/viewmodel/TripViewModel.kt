@@ -296,7 +296,7 @@ class TripViewModel(val model:Model): ViewModel() {
 
     }
 
-    fun getUserData(id: Int): UserData(){
+    fun getUserData(id: Int): UserData {
         return model.getUserDataById(id)
     }
 

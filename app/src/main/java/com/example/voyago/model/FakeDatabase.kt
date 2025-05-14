@@ -68,7 +68,7 @@ class Model {
                 tripId = 1,
                 title = "Amazing trip!",
                 comment = "This trip was absolutely incredible from start to finish. The guided city tour was informative and fun, the food was delicious, and the museum visit was a highlight for me. Everything was well-organized and the group dynamic was awesome. I would recommend this experience to anyone wanting a deep cultural immersion.",
-                score = 9.0f,
+                score = 9,
                 photos = emptyList(),
                 userId = 1,
                 date = Calendar.getInstance().apply { set(2025, 6, 12); stripTime() }
@@ -80,7 +80,7 @@ class Model {
                 tripId = 1,
                 title = "Loved it!",
                 comment = "This was the ultimate beach escape. The snorkeling tour showed us some of the most stunning coral reefs I’ve ever seen. The food was delicious, and the beach party was an unforgettable night with music, dancing, and laughter. It struck the perfect balance between adventure and relaxation.",
-                score = 10.0f,
+                score = 10,
                 photos = emptyList(),
                 userId = 1,
                 date = Calendar.getInstance().apply { set(2022, 4, 12); stripTime() }
@@ -1185,9 +1185,11 @@ class Model {
         return _reviews.value.filter { it.tripId == id }
     }
 
-    fun getUserDataById(id:Int): UserData{
-        return _users.value.filter{it.id == id}
+    fun getUserDataById(id: Int): UserData {
+        return _users.value.find { it.id == id }
+            ?: throw NoSuchElementException("User with ID $id not found")
     }
+
 
 
 

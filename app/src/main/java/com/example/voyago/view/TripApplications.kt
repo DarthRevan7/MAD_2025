@@ -20,7 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.voyago.model.LazyUser
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -31,6 +30,7 @@ import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.Icon
 import androidx.compose.ui.graphics.Color
 import com.example.voyago.activities.ProfilePhoto
+import com.example.voyago.model.UserData
 import com.example.voyago.viewmodel.TripViewModel
 
 @Composable
@@ -139,7 +139,7 @@ fun TripApplications(vm: TripViewModel) {
 }
 
 @Composable
-fun ShowParticipants(user: LazyUser) {
+fun ShowParticipants(user: UserData) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -155,11 +155,11 @@ fun ShowParticipants(user: LazyUser) {
                 .size(30.dp)
                 .background(Color.Gray, shape = CircleShape)
         ) {
-            ProfilePhoto(user.name, user.surname,true, null)
+            ProfilePhoto(user.firstname, user.surname,true, null)
         }
 
         //Participant information
-        Text("${user.name} ${user.surname}", modifier = Modifier.padding( start = 16.dp))
+        Text("${user.firstname} ${user.surname}", modifier = Modifier.padding( start = 16.dp))
 
         //Participant's rating
         Row(
@@ -176,7 +176,7 @@ fun ShowParticipants(user: LazyUser) {
 }
 
 @Composable
-fun ShowApplications(user: LazyUser) {
+fun ShowApplications(user: UserData) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -195,9 +195,9 @@ fun ShowApplications(user: LazyUser) {
                     .size(30.dp)
                     .background(Color.Gray, shape = CircleShape)
             ) {
-                ProfilePhoto(user.name, user.surname, true, null)
+                ProfilePhoto(user.firstname, user.surname, true, null)
             }
-            Text("${user.name} ${user.surname}", modifier = Modifier.padding(start = 16.dp))
+            Text("${user.firstname} ${user.surname}", modifier = Modifier.padding(start = 16.dp))
         }
 
         //Applicant's rating

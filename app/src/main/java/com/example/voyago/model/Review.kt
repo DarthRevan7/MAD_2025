@@ -9,7 +9,7 @@ data class Review(
     var tripId: Int,
     var title: String,
     var comment: String,
-    var score: Float,
+    var score: Int,
     var photos: List<Uri>,
     var userId: Int?,
     var date: Calendar
