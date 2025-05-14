@@ -26,7 +26,8 @@ data class UserData(
     var reviews: List<Review>,                      //Reviews id
     var privateTrips: List<Trip>,                   //Trip id
     var tripsAppliedTo: List<Trip>,                 //Trip id
-    var tripsApplicationAccepted: List<Trip>       //Trip id
+    var tripsApplicationAccepted: List<Trip>,       //Trip id
+    var requestedSpots: Int
 
 ) {
     fun age(): String

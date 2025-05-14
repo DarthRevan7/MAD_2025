@@ -32,7 +32,9 @@ class Model {
                 reviews = emptyList(),
                 privateTrips = emptyList(),
                 tripsAppliedTo = emptyList(),
-                tripsApplicationAccepted = emptyList()),
+                tripsApplicationAccepted = emptyList(),
+                requestedSpots = 1
+            ),
 
             UserData(id = 2,
                 firstname = "Bella",
@@ -53,7 +55,9 @@ class Model {
                 reviews = emptyList(),
                 privateTrips = emptyList(),
                 tripsAppliedTo = emptyList(),
-                tripsApplicationAccepted = emptyList()),
+                tripsApplicationAccepted = emptyList(),
+                requestedSpots = 1
+            ),
 
             )
     )
@@ -121,6 +125,7 @@ class Model {
                 creatorId = 6,
                 participants = listOf(1, 2, 3, 4),
                 appliedUsers = listOf(5, 6),
+                rejectedUsers = emptyList(),
                 published = true,
                 typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.RELAX),
                 status = TripStatus.COMPLETED,
@@ -201,6 +206,7 @@ class Model {
                 creatorId = 2,
                 participants = listOf(2, 3, 5, 6),
                 appliedUsers = listOf(1, 4),
+                rejectedUsers = emptyList(),
                 published = true,
                 typeTravel = listOf(TypeTravel.PARTY, TypeTravel.RELAX),
                 status = TripStatus.COMPLETED,
@@ -282,6 +288,7 @@ class Model {
                 creatorId = 3,
                 participants = listOf(1, 3, 4, 5),
                 appliedUsers = listOf(2, 6),
+                rejectedUsers = emptyList(),
                 published = true,
                 typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.CULTURE),
                 status = TripStatus.IN_PROGRESS,
@@ -314,6 +321,7 @@ class Model {
                 creatorId = 1,
                 participants = listOf(1),
                 appliedUsers = emptyList(),
+                rejectedUsers = emptyList(),
                 published = false,
                 typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.RELAX),
                 status = TripStatus.NOT_STARTED,
@@ -358,6 +366,7 @@ class Model {
                 creatorId = 1,
                 participants = listOf(1, 2),
                 appliedUsers = listOf(4, 5),
+                rejectedUsers = emptyList(),
                 published = true,
                 typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.RELAX),
                 status = TripStatus.NOT_STARTED,
@@ -403,6 +412,7 @@ class Model {
                 creatorId = 4,
                 participants = listOf(2, 4, 5, 6),
                 appliedUsers = listOf(1, 3),
+                rejectedUsers = emptyList(),
                 published = true,
                 typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.PARTY),
                 status = TripStatus.NOT_STARTED,
@@ -447,6 +457,7 @@ class Model {
                 creatorId = 2,
                 participants = listOf(1, 2, 3, 5),
                 appliedUsers = listOf(4, 6),
+                rejectedUsers = emptyList(),
                 published = true,
                 typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.PARTY),
                 status = TripStatus.NOT_STARTED,
@@ -677,6 +688,7 @@ class Model {
                 creatorId = 6,
                 participants = listOf(2, 4, 6),
                 appliedUsers = listOf(1, 5),
+                rejectedUsers = emptyList(),
                 published = true,
                 typeTravel = listOf(TypeTravel.RELAX, TypeTravel.CULTURE),
                 status = TripStatus.NOT_STARTED,
@@ -949,6 +961,7 @@ class Model {
             typeTravel = typeTravel,
             creatorId = creatorId,
             appliedUsers = emptyList(),
+            rejectedUsers = emptyList(),
             published = published,
             reviews = emptyList()
         )

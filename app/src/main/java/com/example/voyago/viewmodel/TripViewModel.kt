@@ -217,7 +217,7 @@ class TripViewModel(val model:Model): ViewModel() {
     //Delete a trip from the database
     fun deleteTrip(id: Int) = model.deleteTrip(id)
 
-    var applications = mutableStateOf(emptyList<LazyUser>())
+    var applications = mutableStateOf(emptyList<UserData>())
 
     //List of user that are taking part to the trip
     fun getTripParticipants(trip: Trip): List<UserData> = model.getUsers(trip.participants)
@@ -226,7 +226,7 @@ class TripViewModel(val model:Model): ViewModel() {
     fun getTripApplicants(trip: Trip): List<UserData> = model.getUsers(trip.appliedUsers)
 
     //List of user that asked to join and had been rejected
-    fun getTripRejectedUsers(trip: Trip): List<LazyUser> = model.getUsers(trip.rejectedUsers)
+    fun getTripRejectedUsers(trip: Trip): List<UserData> = model.getUsers(trip.rejectedUsers)
 
     //Approve an application
     fun acceptApplication(trip: Trip?, userId: Int) {
