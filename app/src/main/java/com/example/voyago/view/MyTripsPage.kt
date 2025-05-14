@@ -71,7 +71,7 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel) {
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start
         ) {
-            //List of published trips
+            //List of published trips created by the logged in user (id=1)
             item {
                 Text(
                     text = "Published Trips:",
@@ -96,7 +96,7 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel) {
                 }
             }
 
-            //List of private trips
+            //List of private trips created by the logged in user (id=1)
             item {
                 Text(
                     text = "Private Trips:",

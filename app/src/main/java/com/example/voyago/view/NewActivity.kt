@@ -4,6 +4,7 @@ package com.example.voyago.view
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.util.Log
 import android.widget.DatePicker
 import android.widget.TimePicker
 import androidx.compose.foundation.background
@@ -26,6 +27,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,7 +63,12 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
 
     var activityDescription by rememberSaveable { mutableStateOf("") }
     var descriptionTouched = remember {mutableStateOf(false)}
-    var descriptionHasErrors by rememberSaveable {mutableStateOf(false)}
+    val descriptionHasErrors by remember {
+        derivedStateOf {
+            descriptionTouched.value && (activityDescription.isBlank() || !activityDescription.any { it.isLetter() })
+        }
+    }
+
 
     var activityDate by rememberSaveable { mutableStateOf("") }
     var selectedTime by rememberSaveable {
@@ -226,8 +233,6 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
 
             //Activity Description
             item {
-                descriptionHasErrors = descriptionTouched.value && (activityDescription.toString().isBlank() ||
-                        !activityDescription.toString().any { it.isLetter() })
                 ValidatingInputTextField(
                     activityDescription,
                     {
@@ -285,9 +290,9 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                                 }
                             }
 
-
                             descriptionTouched.value = true
 
+                            Log.d("Validation", "!showDateError = ${!showDateError}\n!descriptionHasError = ${!descriptionHasErrors}")
                             if (!showDateError && !descriptionHasErrors) {
 
                                 val newActivity = Trip.Activity(

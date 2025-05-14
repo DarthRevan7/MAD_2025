@@ -25,6 +25,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -66,7 +67,12 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
 
     var activityDescription by rememberSaveable { mutableStateOf(activityToEdit.description) }
     var descriptionTouched = remember {mutableStateOf(false)}
-    var descriptionHasErrors by rememberSaveable {mutableStateOf(false)}
+    val descriptionHasErrors by remember {
+        derivedStateOf {
+            descriptionTouched.value && (activityDescription.isBlank() || !activityDescription.any { it.isLetter() })
+        }
+    }
+
 
     var activityDate by rememberSaveable {
         mutableStateOf(SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(activityToEdit.date.time))
@@ -231,8 +237,6 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
 
             //Activity Description
             item {
-                descriptionHasErrors = descriptionTouched.value && (activityDescription.toString().isBlank() ||
-                        !activityDescription.toString().any { it.isLetter() })
                 ValidatingInputTextField(
                     activityDescription,
                     {

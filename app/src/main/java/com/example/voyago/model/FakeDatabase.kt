@@ -13,7 +13,8 @@ import java.util.Calendar
 class Model {
     private var _users = MutableStateFlow<List<UserData>>(
         listOf(
-            UserData(id = 1,
+            UserData(
+                id = 1,
                 firstname = "Alice",
                 surname = "Walker",
                 username = "alice_w",
@@ -36,7 +37,8 @@ class Model {
                 requestedSpots = 1
             ),
 
-            UserData(id = 2,
+            UserData(
+                id = 2,
                 firstname = "Bella",
                 surname = "Estrange",
                 username = "beauty_lest",
