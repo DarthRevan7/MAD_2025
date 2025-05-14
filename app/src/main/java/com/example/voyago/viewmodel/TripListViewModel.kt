@@ -15,12 +15,12 @@ import kotlinx.coroutines.flow.StateFlow
 import java.util.Calendar
 
 private val users = listOf(
-    LazyUser(1, "Alice", "Johnson", 4.2f),
-    LazyUser(2, "Bob", "Smith", 4.5f),
-    LazyUser(3, "Charlie", "Lee", 4.3f),
-    LazyUser(4, "Diana", "Martinez", 3.9f),
-    LazyUser(5, "Ethan", "Brown", 4.7f),
-    LazyUser(6, "Fiona", "White", 4.6f)
+    LazyUser(1, "Alice", "Johnson", 4.2f, 1),
+    LazyUser(2, "Bob", "Smith", 4.5f, 1),
+    LazyUser(3, "Charlie", "Lee", 4.3f, 1),
+    LazyUser(4, "Diana", "Martinez", 3.9f, 1),
+    LazyUser(5, "Ethan", "Brown", 4.7f, 2),
+    LazyUser(6, "Fiona", "White", 4.6f, 2)
 )
 
 fun sampleTrips(): List<Trip> {
@@ -37,6 +37,7 @@ fun sampleTrips(): List<Trip> {
             creatorId = 6,
             participants = listOf(1, 2, 3, 4),
             appliedUsers = listOf(5, 6),
+            rejectedUsers = emptyList(),
             published = true,
             typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.RELAX),
             status = TripStatus.COMPLETED,
@@ -104,7 +105,7 @@ fun sampleTrips(): List<Trip> {
             ),
             reviews = listOf(
                 Review(
-                    1, users[1], "Amazing trip!",
+                    reviewId = 1, users[1], "Amazing trip!",
                     "This trip was absolutely incredible from start to finish. The guided city tour was informative and fun, the food was delicious, and the museum visit was a highlight for me. Everything was well-organized and the group dynamic was awesome. I would recommend this experience to anyone wanting a deep cultural immersion.",
                     9, emptyList()
                 ),
@@ -133,6 +134,7 @@ fun sampleTrips(): List<Trip> {
             creatorId = 2,
             participants = listOf(2, 3, 5, 6),
             appliedUsers = listOf(1, 4),
+            rejectedUsers = emptyList(),
             published = true,
             typeTravel = listOf(TypeTravel.PARTY, TypeTravel.RELAX),
             status = TripStatus.COMPLETED,
@@ -230,6 +232,7 @@ fun sampleTrips(): List<Trip> {
             creatorId = 3,
             participants = listOf(1, 3, 4, 5),
             appliedUsers = listOf(2, 6),
+            rejectedUsers = emptyList(),
             published = true,
             typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.CULTURE),
             status = TripStatus.IN_PROGRESS,
@@ -262,6 +265,7 @@ fun sampleTrips(): List<Trip> {
             creatorId = 1,
             participants = listOf(1),
             appliedUsers = emptyList(),
+            rejectedUsers = emptyList(),
             published = false,
             typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.RELAX),
             status = TripStatus.NOT_STARTED,
@@ -306,6 +310,7 @@ fun sampleTrips(): List<Trip> {
             creatorId = 1,
             participants = listOf(1, 2),
             appliedUsers = listOf(4, 5),
+            rejectedUsers = emptyList(),
             published = true,
             typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.RELAX),
             status = TripStatus.NOT_STARTED,
@@ -351,6 +356,7 @@ fun sampleTrips(): List<Trip> {
             creatorId = 4,
             participants = listOf(2, 4, 5, 6),
             appliedUsers = listOf(1, 3),
+            rejectedUsers = emptyList(),
             published = true,
             typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.PARTY),
             status = TripStatus.NOT_STARTED,
@@ -395,6 +401,7 @@ fun sampleTrips(): List<Trip> {
             creatorId = 2,
             participants = listOf(1, 2, 3, 5),
             appliedUsers = listOf(4, 6),
+            rejectedUsers = emptyList(),
             published = true,
             typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.PARTY),
             status = TripStatus.NOT_STARTED,
@@ -625,6 +632,7 @@ fun sampleTrips(): List<Trip> {
             creatorId = 6,
             participants = listOf(2, 4, 6),
             appliedUsers = listOf(1, 5),
+            rejectedUsers = emptyList(),
             published = true,
             typeTravel = listOf(TypeTravel.RELAX, TypeTravel.CULTURE),
             status = TripStatus.NOT_STARTED,
