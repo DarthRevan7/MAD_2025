@@ -1203,6 +1203,16 @@ class Model {
             ?: throw NoSuchElementException("User with ID $id not found")
     }
 
+    //Get list of completed trips
+    fun getCompletedTrips(): List<Trip> {
+        return _tripList.value.filter { it.status == TripStatus.COMPLETED }
+    }
+
+    //Get list of upcoming trips
+    fun getUpcomingTrips(): List<Trip> {
+        return _tripList.value.filter { it.status == TripStatus.NOT_STARTED }
+    }
+
 
 
 

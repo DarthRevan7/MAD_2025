@@ -145,7 +145,11 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
     NavHost(navController = navController, startDestination = Screen.Home.route, modifier = modifier) {
         exploreNavGraph(navController)
         myTripsNavGraph(navController)
+<<<<<<< Updated upstream
         homeNavGraph(navController, TripListViewModel(), ArticleViewModel())
+=======
+        homeNavGraph(navController, ArticleViewModel())
+>>>>>>> Stashed changes
         chatsNavGraph()
         profileNavGraph()
     }
@@ -285,6 +289,7 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
 
 fun NavGraphBuilder.homeNavGraph(
     navController: NavHostController,
+<<<<<<< Updated upstream
     vm1: TripListViewModel,
     vm2: ArticleViewModel
 ) {
@@ -292,12 +297,33 @@ fun NavGraphBuilder.homeNavGraph(
         HomePageScreen(
             navController = navController,
             vm1 = vm1,
+=======
+    //vm1: TripListViewModel,
+    vm2: ArticleViewModel
+) {
+    composable(Screen.Home.route) { entry ->
+        val exploreGraphEntry = remember(entry) {
+            navController.getBackStackEntry(Screen.Home.route)
+        }
+        val tripViewModel: TripViewModel = viewModel(
+            viewModelStoreOwner = exploreGraphEntry,
+            factory = Factory
+        )
+
+        HomePageScreen(
+            navController = navController,
+            vm1 = tripViewModel,
+>>>>>>> Stashed changes
             vm2 = vm2
         )
     }
 }
 
 
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 fun NavGraphBuilder.chatsNavGraph() {
     navigation(startDestination = "chats_list", route = Screen.Chats.route) {
         composable("chats_list") {

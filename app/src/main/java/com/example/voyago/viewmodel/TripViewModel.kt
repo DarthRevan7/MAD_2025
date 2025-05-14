@@ -147,7 +147,19 @@ class TripViewModel(val model:Model): ViewModel() {
         filtersTripType = list
     }
 
+    fun getCompletedTripsList(): List<Trip>{
+        return model.getCompletedTrips()
+    }
+
+    fun getUpcomingTripsList(): List<Trip>{
+        return model.getUpcomingTrips()
+    }
+
+
     //Trips you can no longer join filter
+    var filterUpcomingTrips: Boolean by mutableStateOf(true)
+        private set
+
     var filterCompletedTrips: Boolean by mutableStateOf(false)
         private set
 
