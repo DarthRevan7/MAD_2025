@@ -57,21 +57,12 @@ fun sampleArticles(): List<Article> {
 
     return List(10) { index ->
         Article(
-<<<<<<< Updated upstream
-            id = index + 1L,
-            title = titles[index],
-            description = descriptions[index],
-            imageUrl = imageNames[index],
-            author = authors[index],
-            publishedAt = LocalDateTime.of(2025, 5, 1 + index, 9 + (index % 3) * 3, 0),
-=======
             id = index + 1,
             title = titles[index],
             text = descriptions[index],
             photo = imageNames[index],
             authorId = authors[index],
             date = LocalDateTime.of(2025, 5, 1 + index, 9 + (index % 3) * 3, 0),
->>>>>>> Stashed changes
             contentUrl = "https://example.com/articles/${titles[index].lowercase().replace("""[^a-z0-9]+""".toRegex(), "-")}",
             tags = tagsList[index]
         )

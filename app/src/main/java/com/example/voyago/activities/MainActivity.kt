@@ -1,6 +1,5 @@
 package com.example.voyago.activities
 
-import android.health.connect.datatypes.Vo2MaxRecord
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -68,7 +67,6 @@ import com.example.voyago.view.TripApplications
 import com.example.voyago.view.TripDetails
 import com.example.voyago.viewmodel.ArticleViewModel
 import com.example.voyago.viewmodel.Factory
-import com.example.voyago.viewmodel.TripListViewModel
 import com.example.voyago.viewmodel.TripViewModel
 
 sealed class Screen(val route: String) {
@@ -145,11 +143,7 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
     NavHost(navController = navController, startDestination = Screen.Home.route, modifier = modifier) {
         exploreNavGraph(navController)
         myTripsNavGraph(navController)
-<<<<<<< Updated upstream
-        homeNavGraph(navController, TripListViewModel(), ArticleViewModel())
-=======
         homeNavGraph(navController, ArticleViewModel())
->>>>>>> Stashed changes
         chatsNavGraph()
         profileNavGraph()
     }
@@ -289,15 +283,6 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
 
 fun NavGraphBuilder.homeNavGraph(
     navController: NavHostController,
-<<<<<<< Updated upstream
-    vm1: TripListViewModel,
-    vm2: ArticleViewModel
-) {
-    composable(Screen.Home.route) {
-        HomePageScreen(
-            navController = navController,
-            vm1 = vm1,
-=======
     //vm1: TripListViewModel,
     vm2: ArticleViewModel
 ) {
@@ -313,17 +298,13 @@ fun NavGraphBuilder.homeNavGraph(
         HomePageScreen(
             navController = navController,
             vm1 = tripViewModel,
->>>>>>> Stashed changes
             vm2 = vm2
         )
     }
 }
 
 
-<<<<<<< Updated upstream
-=======
 
->>>>>>> Stashed changes
 fun NavGraphBuilder.chatsNavGraph() {
     navigation(startDestination = "chats_list", route = Screen.Chats.route) {
         composable("chats_list") {

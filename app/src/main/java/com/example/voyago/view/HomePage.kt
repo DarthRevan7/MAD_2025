@@ -43,56 +43,31 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.voyago.viewmodel.ArticleViewModel
-<<<<<<< Updated upstream
-import com.example.voyago.viewmodel.TripListViewModel
-=======
 import com.example.voyago.viewmodel.TripViewModel
->>>>>>> Stashed changes
 import androidx.compose.runtime.setValue
 
 @Composable
 fun HomePageScreen(
     navController: NavHostController,   // 如果你需要从首页再导航出去
-<<<<<<< Updated upstream
-    vm1: TripListViewModel,                  // 或者别的 ViewModel
-=======
     vm1: TripViewModel,                  // 或者别的 ViewModel
->>>>>>> Stashed changes
     onTripClick: (Trip) -> Unit = {} ,
     vm2: ArticleViewModel,
 ) {
 
-<<<<<<< Updated upstream
-    val tripLists by vm1.tripList.collectAsState()
-=======
 
 //    val tripLists by vm1.tripList.collectAsState()
->>>>>>> Stashed changes
     val articles by vm2.articleList.collectAsState()
     var displayCount by remember { mutableStateOf(5) }
     val scrollState = rememberScrollState()
     // 1. 先拿到“现在”的时间点
     val now = remember { Calendar.getInstance() }
     // 2. 按条件分组
-<<<<<<< Updated upstream
-    val completedTrips = tripLists.filter { trip ->
-        // 如果行程开始时间早于“现在”，或者参与人数已满
-        trip.startDate.timeInMillis <= now.timeInMillis
-
-    }
-    val upcomingTrips = tripLists.filter { trip ->
-        // 否则就当成“Popular Trips”
-        trip.startDate.timeInMillis > now.timeInMillis
-
-    }
-=======
     vm1.resetFilters()
 
     val completedTrips = vm1.getCompletedTripsList()
 
     val upcomingTrips = vm1.getUpcomingTripsList()
 
->>>>>>> Stashed changes
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -101,7 +76,7 @@ fun HomePageScreen(
                 top = 21.dp,
                 end = 24.dp,
                 bottom = 12.dp
-                         ),
+            ),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
 
@@ -140,15 +115,9 @@ fun HomePageScreen(
 
         toDisplay.forEach { article ->
             ArticleShow(
-<<<<<<< Updated upstream
-                imageUrl    = article.imageUrl,
-                title       = article.title,
-                description = article.description,        // 或者拼成 “Discover • 3 days” 之类
-=======
                 imageUrl    = article.photo,
                 title       = article.title,
                 description = article.text,        // 或者拼成 “Discover • 3 days” 之类
->>>>>>> Stashed changes
                 modifier    = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
