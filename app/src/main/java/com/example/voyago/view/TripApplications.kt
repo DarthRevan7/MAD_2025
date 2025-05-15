@@ -2,6 +2,7 @@ package com.example.voyago.view
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -26,9 +27,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.StarBorder
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.sp
 import com.example.voyago.activities.ProfilePhoto
 import com.example.voyago.model.UserData
 import com.example.voyago.viewmodel.TripViewModel
@@ -79,6 +88,7 @@ fun TripApplications(vm: TripViewModel) {
                 TitleBox("Applications")
             }
 
+            //Approved users
             item {
                 Text(
                     text = "Approved Applications:",
@@ -88,7 +98,6 @@ fun TripApplications(vm: TripViewModel) {
                 )
             }
 
-            //List of user that have already been approved
             if (trip.participants.size > 1) {
                 var participants = vm.getTripParticipants(trip)
 
@@ -109,6 +118,7 @@ fun TripApplications(vm: TripViewModel) {
                 }
             }
 
+            //Applications that must be still approved or rejected
             item {
                 Text(
                     text = "Pending Applications:",
@@ -118,11 +128,10 @@ fun TripApplications(vm: TripViewModel) {
                 )
             }
 
-            //Applications that must be still approved or rejected
             if (trip.appliedUsers.isNotEmpty()) {
                 var applicants = vm.getTripApplicants(trip)
                 items(applicants) { user ->
-                    ShowApplications(user)
+                    ShowApplications(user, vm)
                 }
             } else {
                 item {
@@ -130,7 +139,37 @@ fun TripApplications(vm: TripViewModel) {
                         modifier = Modifier.padding(16.dp).fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        Text("There aren't any new applications for this trip.")
+                        if (trip.hasAvailableSpots()) {
+                            Text("There aren't any new applications for this trip.")
+                        } else {
+                            Text("The group for the trip is completed. There won't be any new applications.")
+                        }
+                    }
+                }
+            }
+
+            //Rejected users
+            item {
+                Text(
+                    text = "Rejected Applications:",
+                    modifier = Modifier
+                        .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            if (trip.rejectedUsers.isNotEmpty()) {
+                var applicants = vm.getTripRejectedUsers(trip)
+                items(applicants) { user ->
+                    ShowParticipants(user)
+                }
+            } else {
+                item {
+                    Row (
+                        modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text("There aren't any rejected applications for this trip.")
                     }
                 }
             }
@@ -159,7 +198,36 @@ fun ShowParticipants(user: UserData) {
         }
 
         //Participant information
-        Text("${user.firstname} ${user.surname}", modifier = Modifier.padding( start = 16.dp))
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(start = 16.dp)
+        ) {
+            //User information
+            Text("${user.firstname} ${user.surname}")
+
+            if (user.requestedSpots > 1) {
+                Spacer(modifier = Modifier.width(8.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .background(Color(0xFF9C4DFF), shape = RoundedCornerShape(12.dp))
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.People,
+                        contentDescription = "Multiple spots",
+                        modifier = Modifier.size(14.dp),
+                        tint = Color.White
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "${user.requestedSpots}",
+                        fontSize = 12.sp,
+                        color = Color.White
+                    )
+                }
+            }
+        }
 
         //Participant's rating
         Row(
@@ -176,7 +244,10 @@ fun ShowParticipants(user: UserData) {
 }
 
 @Composable
-fun ShowApplications(user: UserData) {
+fun ShowApplications(user: UserData, vm: TripViewModel) {
+    var showDialog by remember { mutableStateOf(false) }
+    var isAcceptAction by remember { mutableStateOf(true) }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -197,7 +268,37 @@ fun ShowApplications(user: UserData) {
             ) {
                 ProfilePhoto(user.firstname, user.surname, true, null)
             }
-            Text("${user.firstname} ${user.surname}", modifier = Modifier.padding(start = 16.dp))
+            //User information
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(start = 16.dp)
+            ) {
+                //User information
+                Text("${user.firstname} ${user.surname}")
+
+                if (user.requestedSpots > 1) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .background(Color(0xFF9C4DFF), shape = RoundedCornerShape(12.dp))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.People,
+                            contentDescription = "Multiple spots",
+                            modifier = Modifier.size(14.dp),
+                            tint = Color.White
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "${user.requestedSpots}",
+                            fontSize = 12.sp,
+                            color = Color.White
+                        )
+                    }
+                }
+            }
         }
 
         //Applicant's rating
@@ -219,9 +320,59 @@ fun ShowApplications(user: UserData) {
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically)
         {
-            Icon(Icons.Default.Check, "check", modifier = Modifier.background(Color.Green))
+            //Approve Icon
+            Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = "approve",
+                modifier = Modifier
+                    .background(Color.Green)
+                    .clickable{
+                        isAcceptAction = true
+                        showDialog = true
+                    }
+            )
+
             Spacer(modifier = Modifier.padding(5.dp))
-            Icon(Icons.Default.Close, "close", modifier = Modifier.background(Color.Red))
+
+            //Reject Icon
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = "reject",
+                modifier = Modifier
+                    .background(Color.Red)
+                    .clickable{
+                        isAcceptAction = false
+                        showDialog = true
+                    }
+            )
         }
+    }
+
+    //PopUp of confirmation for acceptance/rejection of an application
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text(if (isAcceptAction) "Accept Application" else "Reject Application") },
+            text = {
+                Text("Are you sure you want to ${if (isAcceptAction) "accept" else "reject"} ${user.firstname} ${user.surname}'s application?")
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    if (isAcceptAction) {
+                        vm.acceptApplication(vm.selectedTrip.value, user.id)
+                    } else {
+                        vm.rejectApplication(vm.selectedTrip.value, user.id)
+                    }
+                    showDialog = false
+                }) {
+                    Text("Yes")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
