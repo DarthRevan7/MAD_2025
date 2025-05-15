@@ -335,7 +335,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean)
             }
 
             //Reviews section
-            if (vm.getTripReviews(nonNullTrip.id).isNotEmpty()) {
+            if (nonNullTrip.reviews.isNotEmpty()) {
                 item {
                     TitleBox("Reviews")
                 }
@@ -345,7 +345,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean)
                 }
 
                 //List of reviews of the trip
-                items(vm.getTripReviews(nonNullTrip.id)) { review ->
+                items(nonNullTrip.reviews) { review ->
                     ShowReview(review, vm)
                 }
             }

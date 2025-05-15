@@ -229,7 +229,6 @@ class TripViewModel(val model:Model): ViewModel() {
     //Delete a trip from the database
     fun deleteTrip(id: Int) = model.deleteTrip(id)
 
-    //Mutable list of applications
     var applications = mutableStateOf(emptyList<UserData>())
 
     //List of user that are taking part to the trip
@@ -358,12 +357,11 @@ class TripViewModel(val model:Model): ViewModel() {
 
     }
 
-    //Get user information
     fun getUserData(id: Int): UserData {
         return model.getUserDataById(id)
     }
 
-    fun getTripReviews(id: Int): List<Review> = model.getTripRewiews(id)
+
 
     // Initialize ViewModel, fetching min and max price from model
     init {
