@@ -357,11 +357,12 @@ class TripViewModel(val model:Model): ViewModel() {
 
     }
 
+    //Get user information
     fun getUserData(id: Int): UserData {
         return model.getUserDataById(id)
     }
 
-
+    fun getTripReviews(id: Int): List<Review> = model.getTripRewiews(id)
 
     // Initialize ViewModel, fetching min and max price from model
     init {

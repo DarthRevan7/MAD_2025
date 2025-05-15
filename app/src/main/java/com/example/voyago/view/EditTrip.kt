@@ -439,8 +439,7 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                                             participants = currentTrip.participants,
                                             status = currentTrip.status,
                                             appliedUsers = currentTrip.appliedUsers,
-                                            rejectedUsers = currentTrip.rejectedUsers,
-                                            reviews = currentTrip.reviews
+                                            rejectedUsers = currentTrip.rejectedUsers
                                         )
 
                                         vm.editTrip = updatedTrip

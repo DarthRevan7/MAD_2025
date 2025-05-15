@@ -18,8 +18,7 @@ data class Trip(
     var creatorId: Int,
     var appliedUsers: List<Int>,
     var rejectedUsers: List<Int>,
-    var published: Boolean,
-    var reviews:List<Review>
+    var published: Boolean
 ) {
     data class Activity(
         val id: Int,
@@ -51,8 +50,7 @@ data class Trip(
         creatorId = -1,
         appliedUsers = emptyList(),
         rejectedUsers = emptyList(),
-        published = false,
-        reviews = emptyList()
+        published = false
     ) {
         var yesterday = Calendar.getInstance()
         yesterday.add(Calendar.DATE, -1)
