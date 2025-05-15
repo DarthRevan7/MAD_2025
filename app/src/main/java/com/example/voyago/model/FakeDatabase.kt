@@ -28,7 +28,6 @@ class Model {
                 desiredDestination = listOf("Greece", "Italy", "Japan"),
                 rating = 4.7f,
                 reliability = 90,
-                articles = emptyList(),
                 requestedSpots = 1
             ),
 
@@ -47,7 +46,6 @@ class Model {
                 desiredDestination = listOf("Romania", "USA", "South Korea"),
                 rating = 4.3f,
                 reliability = 55,
-                articles = emptyList(),
                 requestedSpots = 1
             ),
 
@@ -66,7 +64,6 @@ class Model {
                 desiredDestination = listOf("Peru", "Nepal", "Morocco"),
                 rating = 4.7f,
                 reliability = 80,
-                articles = emptyList(),
                 requestedSpots = 2
             ),
 
@@ -85,7 +82,6 @@ class Model {
                 desiredDestination = listOf("New Zealand", "Iceland", "Japan"),
                 rating = 4.5f,
                 reliability = 73,
-                articles = emptyList(),
                 requestedSpots = 3
             ),
 
@@ -104,7 +100,6 @@ class Model {
                 desiredDestination = listOf("Thailand", "Italy", "Vietnam"),
                 rating = 4.1f,
                 reliability = 67,
-                articles = emptyList(),
                 requestedSpots = 1
             ),
 
@@ -123,7 +118,6 @@ class Model {
                 desiredDestination = listOf("Turkey", "Spain", "Malaysia"),
                 rating = 4.8f,
                 reliability = 90,
-                articles = emptyList(),
                 requestedSpots = 4
             )
         )

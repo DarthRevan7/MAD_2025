@@ -20,8 +20,7 @@ data class UserData(
     var typeTravel: List<TypeTravel>,
     var desiredDestination: List<String>,
     var rating: Float,
-    var reliability: Int,                           //Trip id
-    var articles: List<Article>,                    //Article id
+    var reliability: Int,
     var requestedSpots: Int
 
 ) {
