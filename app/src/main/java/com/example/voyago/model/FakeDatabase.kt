@@ -927,7 +927,7 @@ class Model {
                 reviewId = 4,
                 isTripReview = true,
                 reviewerId = 2,
-                reviewedId = 1,
+                reviewedId = 2,
                 title = "Loved it!",
                 comment = "This was the ultimate beach escape. The snorkeling tour showed us some of the most stunning coral reefs I’ve ever seen. The food was delicious, and the beach party was an unforgettable night with music, dancing, and laughter. It struck the perfect balance between adventure and relaxation.",
                 score = 10,
