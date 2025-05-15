@@ -48,6 +48,10 @@ fun TripApplications(vm: TripViewModel) {
     val listState = rememberLazyListState()
     val trip = vm.selectedTrip.value
 
+    if (trip != null) {
+        vm.applications.value = vm.getTripApplicants(trip)
+    }
+
     if (trip != null){
         LazyColumn(
             state = listState,
@@ -99,7 +103,7 @@ fun TripApplications(vm: TripViewModel) {
             }
 
             if (trip.participants.size > 1) {
-                var participants = vm.getTripParticipants(trip)
+                var participants = vm.applications.value
 
                 items(participants) { user ->
                     if (user.id != 1) {
