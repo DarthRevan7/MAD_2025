@@ -133,7 +133,7 @@ fun TripApplications(vm: TripViewModel) {
             }
 
             if (trip.appliedUsers.isNotEmpty()) {
-                var applicants = vm.getTripApplicants(trip)
+                var applicants = vm.applications.value
                 items(applicants) { user ->
                     ShowApplications(user, vm)
                 }
@@ -277,7 +277,6 @@ fun ShowApplications(user: UserData, vm: TripViewModel) {
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(start = 16.dp)
             ) {
-                //User information
                 Text("${user.firstname} ${user.surname}")
 
                 if (user.requestedSpots > 1) {

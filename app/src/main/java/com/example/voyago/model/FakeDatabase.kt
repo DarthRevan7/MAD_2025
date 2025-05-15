@@ -28,12 +28,6 @@ class Model {
                 desiredDestination = listOf("Greece", "Italy", "Japan"),
                 rating = 4.7f,
                 reliability = 90,
-                publicTrips = emptyList(),
-                articles = emptyList(),
-                reviews = emptyList(),
-                privateTrips = emptyList(),
-                tripsAppliedTo = emptyList(),
-                tripsApplicationAccepted = emptyList(),
                 requestedSpots = 1
             ),
 
@@ -52,66 +46,84 @@ class Model {
                 desiredDestination = listOf("Romania", "USA", "South Korea"),
                 rating = 4.3f,
                 reliability = 55,
-                publicTrips = emptyList(),
-                articles = emptyList(),
-                reviews = emptyList(),
-                privateTrips = emptyList(),
-                tripsAppliedTo = emptyList(),
-                tripsApplicationAccepted = emptyList(),
                 requestedSpots = 1
             ),
 
-            )
-    )
-
-    var users: StateFlow<List<UserData>> = _users
-
-    private var _reviews = MutableStateFlow<List<Review>>(
-        listOf(
-            Review(
-                reviewId = 1,
-                reviewerId = 1,
-                tripId = 1,
-                title = "Amazing trip!",
-                comment = "This trip was absolutely incredible from start to finish. The guided city tour was informative and fun, the food was delicious, and the museum visit was a highlight for me. Everything was well-organized and the group dynamic was awesome. I would recommend this experience to anyone wanting a deep cultural immersion.",
-                score = 9,
-                photos = emptyList(),
-                userId = 1,
-                date = Calendar.getInstance().apply { set(2025, 6, 12); stripTime() }
+            UserData(
+                id = 3,
+                firstname = "Liam",
+                surname = "Hunter",
+                username = "globetrotliam",
+                dateOfBirth = Calendar.getInstance().apply { set(1990, 5, 21); stripTime() },
+                country = "Canada",
+                email = "liam.hunter@example.com",
+                password = "canuckTravels123",
+                userDescription = "Adventurer and culture seeker",
+                profilePicture = null,
+                typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.CULTURE),
+                desiredDestination = listOf("Peru", "Nepal", "Morocco"),
+                rating = 4.7f,
+                reliability = 80,
+                requestedSpots = 2
             ),
 
-            Review(
-                reviewId = 2,
-                reviewerId = 2,
-                tripId = 1,
-                title = "Loved it!",
-                comment = "This was the ultimate beach escape. The snorkeling tour showed us some of the most stunning coral reefs I’ve ever seen. The food was delicious, and the beach party was an unforgettable night with music, dancing, and laughter. It struck the perfect balance between adventure and relaxation.",
-                score = 10,
-                photos = emptyList(),
-                userId = 1,
-                date = Calendar.getInstance().apply { set(2022, 4, 12); stripTime() }
+            UserData(
+                id = 4,
+                firstname = "Sofia",
+                surname = "Mendoza",
+                username = "sofi_explorer",
+                dateOfBirth = Calendar.getInstance().apply { set(1993, 2, 14); stripTime() },
+                country = "Argentina",
+                email = "sofia.mendoza@example.com",
+                password = "andesLover2021",
+                userDescription = "Love hiking and photographing landscapes",
+                profilePicture = null,
+                typeTravel = listOf(TypeTravel.ADVENTURE),
+                desiredDestination = listOf("New Zealand", "Iceland", "Japan"),
+                rating = 4.5f,
+                reliability = 73,
+                requestedSpots = 3
+            ),
+
+            UserData(
+                id = 5,
+                firstname = "Ethan",
+                surname = "Nguyen",
+                username = "ethan_nomad",
+                dateOfBirth = Calendar.getInstance().apply { set(1988, 7, 9); stripTime() },
+                country = "USA",
+                email = "ethan.nguyen@example.com",
+                password = "secureWay888",
+                userDescription = "Foodie with a passion for street markets",
+                profilePicture = null,
+                typeTravel = listOf(TypeTravel.CULTURE),
+                desiredDestination = listOf("Thailand", "Italy", "Vietnam"),
+                rating = 4.1f,
+                reliability = 67,
+                requestedSpots = 1
+            ),
+
+            UserData(
+                id = 6,
+                firstname = "Aisha",
+                surname = "Khan",
+                username = "aishatravels",
+                dateOfBirth = Calendar.getInstance().apply { set(1995, 12, 3); stripTime() },
+                country = "Pakistan",
+                email = "aisha.khan@example.com",
+                password = "safeJourney999",
+                userDescription = "Solo traveler sharing stories from around the world",
+                profilePicture = null,
+                typeTravel = listOf(TypeTravel.RELAX, TypeTravel.CULTURE),
+                desiredDestination = listOf("Turkey", "Spain", "Malaysia"),
+                rating = 4.8f,
+                reliability = 90,
+                requestedSpots = 4
             )
-//                reviews = listOf(
-//                    Review(
-//                        4, users[2], "Loved it!",
-//                        "This was the ultimate beach escape. The snorkeling tour showed us some of the most stunning coral reefs I’ve ever seen. The food was delicious, and the beach party was an unforgettable night with music, dancing, and laughter. It struck the perfect balance between adventure and relaxation.",
-//                        10, emptyList()
-//                    ),
-//                    Review(
-//                        5, users[4], "Relaxing trip",
-//                        "I needed a break from work, and this trip delivered. From the moment we arrived, everything was taken care of. The massage session was heavenly, and the sunsets over the ocean were something out of a movie. I left feeling refreshed and truly happy. Would highly recommend for anyone seeking peace.",
-//                        9, emptyList()
-//                    ),
-//                    Review(
-//                        6, users[5], "Beautiful place",
-//                        "Thailand was everything I imagined and more. The island hopping day was packed with activities, yet never felt rushed. The local cuisine tasting opened my eyes to so many flavors, and I even brought some recipes home. A wonderful way to experience the culture while soaking up the sun.",
-//                        8, emptyList()
-//                    )
-//                )
         )
     )
+    var users: StateFlow<List<UserData>> = _users
 
-    var reviews: StateFlow<List<Review>> = _reviews
 
     private var _tripList = MutableStateFlow<List<Trip>>(
         listOf(
@@ -192,8 +204,7 @@ class Model {
                             "Campfire stories"
                         )
                     )
-                ),
-                reviews = getReviewsbyTripId(1)
+                )
             ),
 
             Trip(
@@ -273,8 +284,7 @@ class Model {
                             "Beach party"
                         )
                     )
-                ),
-                reviews = getReviewsbyTripId(2)
+                )
             ),
 
 
@@ -307,8 +317,7 @@ class Model {
                         Activity(23, Calendar.getInstance().apply { set(2025, 9, 6); stripTime() }, "02:00 PM", true, "Lunch with a view"),
                         Activity(24, Calendar.getInstance().apply { set(2025, 9, 6); stripTime()}, "06:00 PM", true, "Group reflection session")
                     )
-                ),
-                reviews = emptyList()
+                )
             ),
 
             Trip(
@@ -352,8 +361,7 @@ class Model {
                         Activity(63, Calendar.getInstance().apply { set(2025, 11, 8); stripTime() }, "02:00 PM", true, "Cooking class"),
                         Activity(64, Calendar.getInstance().apply { set(2025, 11, 8); stripTime() }, "06:00 PM", true, "Closing group dinner")
                     )
-                ),
-                reviews = emptyList()
+                )
             ),
 
             Trip(
@@ -397,10 +405,8 @@ class Model {
                         Activity(79, Calendar.getInstance().apply { set(2025, 12, 4); stripTime() }, "03:00 PM", false, "Free time & shopping"),
                         Activity(80, Calendar.getInstance().apply { set(2025, 12, 4); stripTime() }, "06:00 PM", true, "Closing circle reflection")
                     )
-                ),
-                reviews = emptyList()
+                )
             ),
-
 
             Trip(
                 id = 6,
@@ -443,8 +449,7 @@ class Model {
                         Activity(95, Calendar.getInstance().apply { set(2025, 12, 13); stripTime() }, "02:00 PM", false, "Last-minute shopping"),
                         Activity(96, Calendar.getInstance().apply { set(2025, 12, 13); stripTime() }, "05:00 PM", true, "Farewell drinks")
                     )
-                ),
-                reviews = emptyList()
+                )
             ),
 
             Trip(
@@ -674,8 +679,7 @@ class Model {
                             "Trip recap & goodbye circle"
                         )
                     )
-                ),
-                reviews = emptyList()
+                )
             ),
 
             Trip(
@@ -875,12 +879,78 @@ class Model {
                             "Farewell gala"
                         )
                     )
-                ),
-                reviews = emptyList()
+                )
             )
         )
     )
     var tripList: StateFlow<List<Trip>> = _tripList
+
+    private var _reviews = MutableStateFlow<List<Review>>(
+        listOf(
+            Review(
+                reviewId = 1,
+                isTripReview = true,
+                reviewerId = 1,
+                reviewedId = 1,
+                title = "Amazing trip!",
+                comment = "This trip was absolutely incredible from start to finish. The guided city tour was informative and fun, the food was delicious, and the museum visit was a highlight for me. Everything was well-organized and the group dynamic was awesome. I would recommend this experience to anyone wanting a deep cultural immersion.",
+                score = 9,
+                photos = emptyList()
+            ),
+            Review(
+                reviewId = 2,
+                isTripReview = true,
+                reviewerId = 2,
+                reviewedId = 1,
+                title = "Great experience",
+                comment = "Barcelona was a dream destination and this trip made it even better. I loved how the itinerary was balanced with both group activities and personal time. The hike on day two was a bit challenging but totally worth it for the views. I came back with great memories and new friends.",
+                score = 8,
+                photos = emptyList()
+            ),
+            Review(
+                reviewId = 3,
+                isTripReview = true,
+                reviewerId = 3,
+                reviewedId = 1,
+                title = "Would go again",
+                comment = "I’m really impressed by how well this trip was planned. Every activity had a purpose, and even the free time was suggested with local tips. The welcome dinner was a beautiful introduction to Spanish culture, and the entire experience felt authentic and enriching. 10/10 would do it again.",
+                score = 10,
+                photos = emptyList()
+            ),
+            Review(
+                reviewId = 4,
+                isTripReview = true,
+                reviewerId = 2,
+                reviewedId = 2,
+                title = "Loved it!",
+                comment = "This was the ultimate beach escape. The snorkeling tour showed us some of the most stunning coral reefs I’ve ever seen. The food was delicious, and the beach party was an unforgettable night with music, dancing, and laughter. It struck the perfect balance between adventure and relaxation.",
+                score = 10,
+                photos = emptyList()
+            ),
+            Review(
+                reviewId = 5,
+                isTripReview = true,
+                reviewerId = 4,
+                reviewedId = 2,
+                title = "Relaxing trip",
+                comment = "I needed a break from work, and this trip delivered. From the moment we arrived, everything was taken care of. The massage session was heavenly, and the sunsets over the ocean were something out of a movie. I left feeling refreshed and truly happy. Would highly recommend for anyone seeking peace.",
+                score = 9,
+                photos = emptyList()
+            ),
+            Review(
+                reviewId = 6,
+                isTripReview = true,
+                reviewerId = 5,
+                reviewedId = 2,
+                title = "Beautiful place",
+                comment = "Thailand was everything I imagined and more. The island hopping day was packed with activities, yet never felt rushed. The local cuisine tasting opened my eyes to so many flavors, and I even brought some recipes home. A wonderful way to experience the culture while soaking up the sun.",
+                score = 8,
+                photos = emptyList()
+            )
+        )
+    )
+
+    var reviews: StateFlow<List<Review>> = _reviews
 
     private var nextId = 9
 
@@ -964,8 +1034,7 @@ class Model {
             creatorId = creatorId,
             appliedUsers = emptyList(),
             rejectedUsers = emptyList(),
-            published = published,
-            reviews = emptyList()
+            published = published
         )
         _tripList.value = _tripList.value + newTrip
 
@@ -987,11 +1056,11 @@ class Model {
         return _tripList.value
     }
 
-    fun removeActivityFromTrip(activity: Trip.Activity, trip: Trip?): Trip? {
+    fun removeActivityFromTrip(activity: Activity, trip: Trip?): Trip? {
         if (trip == null) return null
 
         val dateKey = activity.date
-        val updatedActivities = trip.activities.orEmpty()
+        val updatedActivities = trip.activities
             .toMutableMap()
             .apply {
                 val updatedList = getOrDefault(dateKey, emptyList()) - activity
@@ -1017,7 +1086,7 @@ class Model {
 
     fun editActivityInSelectedTrip(
         activityId: Int,
-        updatedActivity: Trip.Activity,
+        updatedActivity: Activity,
         trip: Trip?
     ): Trip? {
         if (trip == null) return null
@@ -1059,11 +1128,11 @@ class Model {
 
 
 
-    fun addActivityToTrip(activity: Trip.Activity, trip: Trip?): Trip? {
+    fun addActivityToTrip(activity: Activity, trip: Trip?): Trip? {
         if (trip == null) return null
 
         val updatedTrip = trip.copy(
-            activities = trip.activities.orEmpty()
+            activities = trip.activities
                 .toMutableMap()
                 .apply {
                     val dateKey = activity.date
@@ -1159,16 +1228,6 @@ class Model {
             Log.d("FilterFunction", "Checking price for trip ${trip.title}: estimatedPrice=${trip.estimatedPrice}, filterMinPrice=$filterMinPrice, filterMaxPrice=$filterMaxPrice, priceCondition=$price")
 
 
-            /*
-            val selectedTripTypes = filtersTripType.filter { it.isSelected }
-
-            var tripType:Boolean = selectedTripTypes.any { trip.typeTravel.toString() == it.label }
-            if(tripType == false)
-            {
-
-            }
-             */
-
             val completed = !filterCompletedTrips || !trip.canJoin()
             val spots = trip.availableSpots() >= filterBySeats
 
@@ -1196,8 +1255,8 @@ class Model {
     }
 
     // Get reviews list of a trip
-    fun getReviewsbyTripId(id: Int): List<Review> {
-        return _reviews.value.filter { it.tripId == id }
+    fun getTripRewiews(id: Int): List<Review> {
+        return _reviews.value.filter { it.isTripReview && it.reviewedId == id }
     }
 
     fun getUserDataById(id: Int): UserData {

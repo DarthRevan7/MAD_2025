@@ -5,12 +5,11 @@ import android.net.Uri
 
 data class Review(
     val reviewId: Int,
+    val isTripReview: Boolean,
     var reviewerId: Int,
-    var tripId: Int,
+    var reviewedId: Int,
     var title: String,
     var comment: String,
     var score: Int,
-    var photos: List<Uri>,
-    var userId: Int?,
-    var date: Calendar
+    var photos: List<Uri>
 )
