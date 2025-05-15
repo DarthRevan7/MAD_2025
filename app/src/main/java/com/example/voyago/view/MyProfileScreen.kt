@@ -58,124 +58,115 @@
 //import com.example.voyago.R
 //import com.example.voyago.activities.*
 //import com.example.voyago.*
+//import com.example.voyago.model.UserData
 //import com.example.voyago.viewmodel.*
 //
 //@OptIn(ExperimentalMaterial3Api::class)
 //@Composable
-//fun MyProfileScreen(viewModel: TripViewModel, navController: NavController) {
+//fun MyProfileScreen(vm: TripViewModel, navController: NavController) {
+//
+//    val user1 = vm.getUserData(1)
 //
 //    //Icons
 //    val painterLogout = painterResource(R.drawable.logout)
 //    val painterEdit = painterResource(R.drawable.edit)
 //
-//    Scaffold(
-//        topBar = {
-//            TopBar()
-//        },
-//        bottomBar = {
-//            BottomBar(4)
-//        }
-//    ) { innerPadding ->
-//        viewModel.getUserData(myProfile)
+//    val listState = rememberLazyListState()
 //
-//        val listState = rememberLazyListState()
-//
-//        LazyColumn(
-//            state = listState,
-//            modifier = Modifier
-//                .fillMaxSize()
-//                .padding(innerPadding),
-//            verticalArrangement = Arrangement.Top,
-//            horizontalAlignment = Alignment.CenterHorizontally
-//        ) {
-//            item {
-//                //Box with Profile Photo, Username and Logout, Back and Edit icons
-//                Box(modifier =
+//    LazyColumn(
+//        state = listState,
+//        modifier = Modifier
+//            .fillMaxSize()
+////        verticalArrangement = Arrangement.Top,
+////        horizontalAlignment = Alignment.CenterHorizontally
+//    ) {
+//        item {
+//            //Box with Profile Photo, Username and Logout, Back and Edit icons
+//            Box(modifier =
 //                Modifier
 //                    .fillMaxWidth()
 //                    .height(300.dp)
 //                    .background(Color(0xdf, 0xd1, 0xe0, 255), shape = RectangleShape)) {
 //
-//                    Image(painter = painterLogout, "logout", modifier = Modifier
-//                        .size(60.dp)
-//                        .align(alignment = Alignment.TopEnd)
-//                        .padding(16.dp)
-//                        .clickable {/*TODO*/}
-//                    )
+//                Image(painter = painterLogout, "logout", modifier = Modifier
+//                    .size(60.dp)
+//                    .align(alignment = Alignment.TopEnd)
+//                    .padding(16.dp)
+//                    .clickable {/*TODO*/}
+//                )
 //
-//                    Image(painter = painterEdit, "edit", modifier = Modifier
-//                        .size(60.dp)
-//                        .align(alignment = Alignment.BottomEnd)
-//                        .padding(16.dp)
-//                        .offset(y = (-30).dp)
-//                        .clickable {  navController.navigate("edit_profile") }
-//                    )
+//                Image(painter = painterEdit, "edit", modifier = Modifier
+//                    .size(60.dp)
+//                    .align(alignment = Alignment.BottomEnd)
+//                    .padding(16.dp)
+//                    .offset(y = (-30).dp)
+//                    .clickable {  navController.navigate("edit_profile") }
+//                )
 //
-//                    val context = LocalContext.current
+//                val context = LocalContext.current
 //
-//                    Icon(Icons.Default.ArrowBackIosNew, "back", modifier = Modifier.padding(16.dp).offset(y = 5.dp)
-//                        .clickable{ (context as? Activity)?.finish() }
-//                    )
+//                Icon(Icons.Default.ArrowBackIosNew, "back", modifier = Modifier.padding(16.dp).offset(y = 5.dp)
+//                    .clickable{ (context as? Activity)?.finish() }
+//                )
 //
-//                    ProfilePhoto(
-//                        user1.name, user1.surname, false, user1.profileImage,
-//                        modifier = Modifier
-//                            .align(Alignment.Center)
-//                            .offset(y = (-50).dp)
-//                    )
-//                    Text(
-//                        text = user1.username,
-//                        style = MaterialTheme.typography.headlineLarge,
-//                        fontWeight = FontWeight.ExtraBold,
-//                        modifier = Modifier
-//                            .align(Alignment.Center)
-//                            .padding(bottom = 10.dp)
-//                            .offset(y = (40).dp)
-//                    )
-//
-//                    Text(
-//                        text = user1.name + " " + user1.surname,
-//                        style = MaterialTheme.typography.headlineSmall,
-//                        fontWeight = FontWeight.Bold,
-//                        modifier = Modifier
-//                            .align(Alignment.BottomCenter)
-//                            .padding(bottom = 10.dp)
-//                            .offset(y = (-50).dp)
-//                    )
-//
-//                    Spacer( Modifier.height(20.dp))
-//
-//                    Text(
-//                        text = user1.country,
-//                        style = MaterialTheme.typography.headlineSmall,
-//                        fontWeight = FontWeight.Normal,
-//                        modifier = Modifier
-//                            .align(Alignment.BottomCenter)
-//                            .padding(bottom = 10.dp)
-//                            .offset(y = (-20).dp)
-//                    )
-//                }
-//            }
-//
-//            item {
-//                //Row with rating and reliability
-//                Row(
+//                ProfilePhoto(
+//                    user1.firstname, user1.surname, false, user1.profilePicture,
 //                    modifier = Modifier
-//                        .offset(y = (-25).dp),
-//                    verticalAlignment = Alignment.CenterVertically,
-//                    horizontalArrangement = Arrangement.Center
-//                ) {
-//                    RatingAndReliability(
-//                        user1.approvalRate,
-//                        user1.reliability
-//                    )
-//                }
-//            }
+//                        .align(Alignment.Center)
+//                        .offset(y = (-50).dp)
+//                )
+//                Text(
+//                    text = user1.username,
+//                    style = MaterialTheme.typography.headlineLarge,
+//                    fontWeight = FontWeight.ExtraBold,
+//                    modifier = Modifier
+//                        .align(Alignment.Center)
+//                        .padding(bottom = 10.dp)
+//                        .offset(y = (40).dp)
+//                )
 //
-//            item {
-//                //Tab About, My Trips, Review
-//                TabAboutTripsReview(user1)
+//                Text(
+//                    text = user1.firstname + " " + user1.surname,
+//                    style = MaterialTheme.typography.headlineSmall,
+//                    fontWeight = FontWeight.Bold,
+//                    modifier = Modifier
+//                        .align(Alignment.BottomCenter)
+//                        .padding(bottom = 10.dp)
+//                        .offset(y = (-50).dp)
+//                )
+//
+//                Spacer( Modifier.height(20.dp))
+//
+//                Text(
+//                    text = user1.country,
+//                    style = MaterialTheme.typography.headlineSmall,
+//                    fontWeight = FontWeight.Normal,
+//                    modifier = Modifier
+//                        .align(Alignment.BottomCenter)
+//                        .padding(bottom = 10.dp)
+//                        .offset(y = (-20).dp)
+//                )
 //            }
+//        }
+//
+//        item {
+//            //Row with rating and reliability
+//            Row(
+//                modifier = Modifier
+//                    .offset(y = (-25).dp),
+//                verticalAlignment = Alignment.CenterVertically,
+//                horizontalArrangement = Arrangement.Center
+//            ) {
+//                RatingAndReliability(
+//                    user1.rating,
+//                    user1.reliability
+//                )
+//            }
+//        }
+//
+//        item {
+//            //Tab About, My Trips, Review
+//            TabAboutTripsReview(user1)
 //        }
 //    }
 //}
@@ -234,7 +225,7 @@
 //
 //@OptIn(ExperimentalLayoutApi::class)
 //@Composable
-//fun TabAboutTripsReview(user: LazyUser) {
+//fun TabAboutTripsReview(user: UserData) {
 //
 //    // TAB with About, Trips & Articles, Reviews
 //    val tabs = listOf("About", "Trips & Articles", "Reviews")
@@ -283,7 +274,7 @@
 //                    FlowRow(
 //                        modifier = Modifier.align(Alignment.CenterHorizontally)
 //                    ) {
-//                        user.typeTravelPreferences.forEach { type ->
+//                        user.typeTravel.forEach { type ->
 //                            SuggestionChip(
 //                                onClick = {},
 //                                label = {Text(type.toString().lowercase())},
@@ -303,7 +294,7 @@
 //                    FlowRow(
 //                        modifier = Modifier.align(Alignment.CenterHorizontally)
 //                    ) {
-//                        user.desiredDestinations.forEach { destination ->
+//                        user.desiredDestination.forEach { destination ->
 //                            SuggestionChip(
 //                                onClick = {},
 //                                label = {Text(destination)},
@@ -337,8 +328,8 @@
 //                                .height((3*43).dp)
 //                                .verticalScroll(rememberScrollState())
 //                        ) {
-//                            user.trips.forEach {
-//                                    item -> UITripArticle(item.destination,item.strDate,item.photo)
+//                            user.publicTrips.forEach {
+//                                    item -> UITripArticle(item.destination,item.startDate,item.photo)
 //                            }
 //                        }
 //                    }
@@ -362,7 +353,7 @@
 //                                .verticalScroll(rememberScrollState())
 //                        ) {
 //                            user.articles.forEach {
-//                                    item -> UITripArticle(item.title,item.strDate, item.photo)
+//                                    item -> UITripArticle(item.title,item.date, item.photo)
 //                            }
 //                        }
 //                    }
@@ -387,7 +378,7 @@
 //                                .verticalScroll(rememberScrollState())
 //                        ) {
 //                            user.reviews.forEach {
-//                                    item -> UIReview(item.name, item.surname, item.rating,item.strDate)
+//                                    item -> UIReview(item.title, item.surname, item.rating,item.strDate)
 //                            }
 //                        }
 //                    }
