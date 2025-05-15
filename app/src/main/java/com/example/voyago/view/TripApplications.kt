@@ -48,6 +48,10 @@ fun TripApplications(vm: TripViewModel) {
     val listState = rememberLazyListState()
     val trip = vm.selectedTrip.value
 
+    if (trip != null) {
+        vm.applications.value = vm.getTripApplicants(trip)
+    }
+
     if (trip != null){
         LazyColumn(
             state = listState,
@@ -129,7 +133,7 @@ fun TripApplications(vm: TripViewModel) {
             }
 
             if (trip.appliedUsers.isNotEmpty()) {
-                var applicants = vm.getTripApplicants(trip)
+                var applicants = vm.applications.value
                 items(applicants) { user ->
                     ShowApplications(user, vm)
                 }
@@ -273,7 +277,6 @@ fun ShowApplications(user: UserData, vm: TripViewModel) {
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(start = 16.dp)
             ) {
-                //User information
                 Text("${user.firstname} ${user.surname}")
 
                 if (user.requestedSpots > 1) {

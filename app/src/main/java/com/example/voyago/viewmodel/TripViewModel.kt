@@ -229,6 +229,7 @@ class TripViewModel(val model:Model): ViewModel() {
     //Delete a trip from the database
     fun deleteTrip(id: Int) = model.deleteTrip(id)
 
+    //Mutable list of applications
     var applications = mutableStateOf(emptyList<UserData>())
 
     //List of user that are taking part to the trip

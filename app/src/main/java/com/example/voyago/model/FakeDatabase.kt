@@ -28,12 +28,7 @@ class Model {
                 desiredDestination = listOf("Greece", "Italy", "Japan"),
                 rating = 4.7f,
                 reliability = 90,
-                publicTrips = emptyList(),
                 articles = emptyList(),
-                reviews = emptyList(),
-                privateTrips = emptyList(),
-                tripsAppliedTo = emptyList(),
-                tripsApplicationAccepted = emptyList(),
                 requestedSpots = 1
             ),
 
@@ -52,16 +47,86 @@ class Model {
                 desiredDestination = listOf("Romania", "USA", "South Korea"),
                 rating = 4.3f,
                 reliability = 55,
-                publicTrips = emptyList(),
                 articles = emptyList(),
-                reviews = emptyList(),
-                privateTrips = emptyList(),
-                tripsAppliedTo = emptyList(),
-                tripsApplicationAccepted = emptyList(),
                 requestedSpots = 1
             ),
 
+            UserData(
+                id = 3,
+                firstname = "Liam",
+                surname = "Hunter",
+                username = "globetrotliam",
+                dateOfBirth = Calendar.getInstance().apply { set(1990, 5, 21); stripTime() },
+                country = "Canada",
+                email = "liam.hunter@example.com",
+                password = "canuckTravels123",
+                userDescription = "Adventurer and culture seeker",
+                profilePicture = null,
+                typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.CULTURE),
+                desiredDestination = listOf("Peru", "Nepal", "Morocco"),
+                rating = 4.7f,
+                reliability = 80,
+                articles = emptyList(),
+                requestedSpots = 2
+            ),
+
+            UserData(
+                id = 4,
+                firstname = "Sofia",
+                surname = "Mendoza",
+                username = "sofi_explorer",
+                dateOfBirth = Calendar.getInstance().apply { set(1993, 2, 14); stripTime() },
+                country = "Argentina",
+                email = "sofia.mendoza@example.com",
+                password = "andesLover2021",
+                userDescription = "Love hiking and photographing landscapes",
+                profilePicture = null,
+                typeTravel = listOf(TypeTravel.ADVENTURE),
+                desiredDestination = listOf("New Zealand", "Iceland", "Japan"),
+                rating = 4.5f,
+                reliability = 73,
+                articles = emptyList(),
+                requestedSpots = 3
+            ),
+
+            UserData(
+                id = 5,
+                firstname = "Ethan",
+                surname = "Nguyen",
+                username = "ethan_nomad",
+                dateOfBirth = Calendar.getInstance().apply { set(1988, 7, 9); stripTime() },
+                country = "USA",
+                email = "ethan.nguyen@example.com",
+                password = "secureWay888",
+                userDescription = "Foodie with a passion for street markets",
+                profilePicture = null,
+                typeTravel = listOf(TypeTravel.CULTURE),
+                desiredDestination = listOf("Thailand", "Italy", "Vietnam"),
+                rating = 4.1f,
+                reliability = 67,
+                articles = emptyList(),
+                requestedSpots = 1
+            ),
+
+            UserData(
+                id = 6,
+                firstname = "Aisha",
+                surname = "Khan",
+                username = "aishatravels",
+                dateOfBirth = Calendar.getInstance().apply { set(1995, 12, 3); stripTime() },
+                country = "Pakistan",
+                email = "aisha.khan@example.com",
+                password = "safeJourney999",
+                userDescription = "Solo traveler sharing stories from around the world",
+                profilePicture = null,
+                typeTravel = listOf(TypeTravel.RELAX, TypeTravel.CULTURE),
+                desiredDestination = listOf("Turkey", "Spain", "Malaysia"),
+                rating = 4.8f,
+                reliability = 90,
+                articles = emptyList(),
+                requestedSpots = 4
             )
+        )
     )
     var users: StateFlow<List<UserData>> = _users
 
