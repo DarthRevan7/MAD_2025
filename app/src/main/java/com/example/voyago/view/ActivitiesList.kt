@@ -166,10 +166,10 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
                                             creatorId = vm.newTrip.creatorId,
                                             published = false,
                                             id = vm.newTrip.id,
-                                            participants = emptyList(),
-                                            rejectedUsers = emptyList(),
+                                            participants = emptyMap(),
+                                            rejectedUsers = emptyMap(),
                                             status = Trip.TripStatus.NOT_STARTED,
-                                            appliedUsers = emptyList()
+                                            appliedUsers = emptyMap()
 
                                         )
 

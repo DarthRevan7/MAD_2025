@@ -20,8 +20,7 @@ data class UserData(
     var typeTravel: List<TypeTravel>,
     var desiredDestination: List<String>,
     var rating: Float,
-    var reliability: Int,
-    var requestedSpots: Int
+    var reliability: Int
 
 ) {
     fun age(): String

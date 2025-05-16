@@ -6,7 +6,6 @@ import com.example.voyago.model.Trip.TripStatus
 import com.example.voyago.view.SelectableItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.forEach
 import java.util.Calendar
 
 
@@ -27,8 +26,7 @@ class Model {
                 typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.ADVENTURE),
                 desiredDestination = listOf("Greece", "Italy", "Japan"),
                 rating = 4.7f,
-                reliability = 90,
-                requestedSpots = 1
+                reliability = 90
             ),
 
             UserData(
@@ -45,8 +43,7 @@ class Model {
                 typeTravel = listOf(TypeTravel.RELAX, TypeTravel.PARTY),
                 desiredDestination = listOf("Romania", "USA", "South Korea"),
                 rating = 4.3f,
-                reliability = 55,
-                requestedSpots = 1
+                reliability = 55
             ),
 
             UserData(
@@ -63,8 +60,7 @@ class Model {
                 typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.CULTURE),
                 desiredDestination = listOf("Peru", "Nepal", "Morocco"),
                 rating = 4.7f,
-                reliability = 80,
-                requestedSpots = 2
+                reliability = 80
             ),
 
             UserData(
@@ -81,8 +77,7 @@ class Model {
                 typeTravel = listOf(TypeTravel.ADVENTURE),
                 desiredDestination = listOf("New Zealand", "Iceland", "Japan"),
                 rating = 4.5f,
-                reliability = 73,
-                requestedSpots = 3
+                reliability = 73
             ),
 
             UserData(
@@ -99,8 +94,7 @@ class Model {
                 typeTravel = listOf(TypeTravel.CULTURE),
                 desiredDestination = listOf("Thailand", "Italy", "Vietnam"),
                 rating = 4.1f,
-                reliability = 67,
-                requestedSpots = 1
+                reliability = 67
             ),
 
             UserData(
@@ -117,8 +111,7 @@ class Model {
                 typeTravel = listOf(TypeTravel.RELAX, TypeTravel.CULTURE),
                 desiredDestination = listOf("Turkey", "Spain", "Malaysia"),
                 rating = 4.8f,
-                reliability = 90,
-                requestedSpots = 4
+                reliability = 90
             )
         )
     )
@@ -137,9 +130,9 @@ class Model {
                 estimatedPrice = 950.0,
                 groupSize = 4,
                 creatorId = 6,
-                participants = listOf(1, 2, 3, 4),
-                appliedUsers = listOf(5, 6),
-                rejectedUsers = emptyList(),
+                participants = mapOf(1 to 1, 2 to 1, 3 to 1, 4 to 1),
+                appliedUsers = mapOf(5 to 1, 6 to 1),
+                rejectedUsers = emptyMap(),
                 published = true,
                 typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.RELAX),
                 status = TripStatus.COMPLETED,
@@ -217,9 +210,9 @@ class Model {
                 estimatedPrice = 1200.0,
                 groupSize = 4,
                 creatorId = 2,
-                participants = listOf(2, 3, 5, 6),
-                appliedUsers = listOf(1, 4),
-                rejectedUsers = emptyList(),
+                participants = mapOf(2 to 1, 3 to 1, 5 to 1, 6 to 1),
+                appliedUsers = mapOf(1 to 1, 4 to 1),
+                rejectedUsers = emptyMap(),
                 published = true,
                 typeTravel = listOf(TypeTravel.PARTY, TypeTravel.RELAX),
                 status = TripStatus.COMPLETED,
@@ -298,9 +291,9 @@ class Model {
                 estimatedPrice = 1100.0,
                 groupSize = 4,
                 creatorId = 3,
-                participants = listOf(1, 3, 4, 5),
-                appliedUsers = listOf(2, 6),
-                rejectedUsers = emptyList(),
+                participants = mapOf(1 to 1, 3 to 1, 4 to 1, 5 to 1),
+                appliedUsers = mapOf(2 to 1, 6 to 1),
+                rejectedUsers = emptyMap(),
                 published = true,
                 typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.CULTURE),
                 status = TripStatus.IN_PROGRESS,
@@ -330,9 +323,9 @@ class Model {
                 estimatedPrice = 1800.0,
                 groupSize = 4,
                 creatorId = 1,
-                participants = listOf(1),
-                appliedUsers = emptyList(),
-                rejectedUsers = emptyList(),
+                participants = mapOf(1 to 1),
+                appliedUsers = emptyMap(),
+                rejectedUsers = emptyMap(),
                 published = false,
                 typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.RELAX),
                 status = TripStatus.NOT_STARTED,
@@ -374,9 +367,9 @@ class Model {
                 estimatedPrice = 1650.0,
                 groupSize = 5,
                 creatorId = 1,
-                participants = listOf(1, 2),
-                appliedUsers = listOf(4, 5),
-                rejectedUsers = emptyList(),
+                participants = mapOf(1 to 1, 2 to 1),
+                appliedUsers = mapOf(4 to 2, 5 to 1),
+                rejectedUsers = emptyMap(),
                 published = true,
                 typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.RELAX),
                 status = TripStatus.NOT_STARTED,
@@ -418,9 +411,9 @@ class Model {
                 estimatedPrice = 1900.0,
                 groupSize = 6,
                 creatorId = 4,
-                participants = listOf(2, 4, 5, 6),
-                appliedUsers = listOf(1, 3),
-                rejectedUsers = emptyList(),
+                participants = mapOf(2 to 1, 4 to 1, 5 to 1, 6 to 1),
+                appliedUsers = mapOf(1 to 1, 3 to 1),
+                rejectedUsers = emptyMap(),
                 published = true,
                 typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.PARTY),
                 status = TripStatus.NOT_STARTED,
@@ -462,9 +455,9 @@ class Model {
                 estimatedPrice = 2100.0,
                 groupSize = 6,
                 creatorId = 2,
-                participants = listOf(1, 2, 3, 5),
-                appliedUsers = listOf(4, 6),
-                rejectedUsers = emptyList(),
+                participants = mapOf(1 to 1, 2 to 1, 3 to 1, 5 to 1),
+                appliedUsers = mapOf(4 to 1, 6 to 1),
+                rejectedUsers = emptyMap(),
                 published = true,
                 typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.PARTY),
                 status = TripStatus.NOT_STARTED,
@@ -692,9 +685,9 @@ class Model {
                 estimatedPrice = 4600.0,
                 groupSize = 4,
                 creatorId = 6,
-                participants = listOf(2, 4, 6),
-                appliedUsers = listOf(1, 5),
-                rejectedUsers = emptyList(),
+                participants = mapOf(2 to 1, 4 to 1, 6 to 1),
+                appliedUsers = mapOf(1 to 1, 5 to 1),
+                rejectedUsers = emptyMap(),
                 published = true,
                 typeTravel = listOf(TypeTravel.RELAX, TypeTravel.CULTURE),
                 status = TripStatus.NOT_STARTED,
@@ -1027,13 +1020,13 @@ class Model {
             endDate = endDate,
             estimatedPrice = estimatedPrice,
             groupSize = groupSize,
-            participants = listOf(creatorId),
+            participants = mapOf(creatorId to 1),
             activities = activities,
             status = TripStatus.NOT_STARTED,
             typeTravel = typeTravel,
             creatorId = creatorId,
-            appliedUsers = emptyList(),
-            rejectedUsers = emptyList(),
+            appliedUsers = emptyMap(),
+            rejectedUsers = emptyMap(),
             published = published
         )
         _tripList.value = _tripList.value + newTrip
@@ -1148,10 +1141,6 @@ class Model {
         return updatedTrip
     }
 
-
-
-
-
     fun toggleAskToJoin(tripId: Int) {
         _askedTrips.value = if (_askedTrips.value.contains(tripId)) {
             _askedTrips.value - tripId
@@ -1255,7 +1244,7 @@ class Model {
     }
 
     // Get reviews list of a trip
-    fun getTripRewiews(id: Int): List<Review> {
+    fun getTripReviews(id: Int): List<Review> {
         return _reviews.value.filter { it.isTripReview && it.reviewedId == id }
     }
 

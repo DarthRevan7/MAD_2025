@@ -12,7 +12,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.voyago.model.*
 import com.example.voyago.model.Trip.Activity
-import com.example.voyago.viewmodel.*
 import com.example.voyago.view.*
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -230,60 +229,81 @@ class TripViewModel(val model:Model): ViewModel() {
     fun deleteTrip(id: Int) = model.deleteTrip(id)
 
     //Mutable list of applications
-    var applications = mutableStateOf(emptyList<UserData>())
+    var applications = mutableStateOf(emptyMap<UserData, Int>())
 
-    //List of user that are taking part to the trip
-    fun getTripParticipants(trip: Trip): List<UserData> = model.getUsers(trip.participants)
+    // Participants with spots taken
+    fun getTripParticipants(trip: Trip): Map<UserData, Int> {
+        return trip.participants.mapNotNull { (userId, spots) ->
+            model.getUsers(listOf(userId)).firstOrNull()?.let { user -> user to spots }
+        }.toMap()
+    }
 
-    //List of user that asked to join the trip
-    fun getTripApplicants(trip: Trip): List<UserData> = model.getUsers(trip.appliedUsers)
+    // Applicants with requested spots
+    fun getTripApplicants(trip: Trip): Map<UserData, Int> {
+        return trip.appliedUsers.mapNotNull { (userId, spots) ->
+            model.getUsers(listOf(userId)).firstOrNull()?.let { user -> user to spots }
+        }.toMap()
+    }
 
-    //List of user that asked to join and had been rejected
-    fun getTripRejectedUsers(trip: Trip): List<UserData> = model.getUsers(trip.rejectedUsers)
+    // Rejected users with requested spots
+    fun getTripRejectedUsers(trip: Trip): Map<UserData, Int> {
+        return trip.rejectedUsers.mapNotNull { (userId, spots) ->
+            model.getUsers(listOf(userId)).firstOrNull()?.let { user -> user to spots }
+        }.toMap()
+    }
+
 
     //Approve an application
     fun acceptApplication(trip: Trip?, userId: Int) {
         if (trip == null || userId !in trip.appliedUsers) return
 
-        val applicant = getTripApplicants(trip).find { it.id == userId } ?: return
-        val requestedSpots = applicant.requestedSpots
-        val usedSpots = trip.groupSize - trip.availableSpots()
+        val requestedSpots = trip.appliedUsers[userId] ?: return
 
-        if (usedSpots + requestedSpots > trip.groupSize) {
-            return
-        }
+        // Optionally get applicant UserData if you need it
+        val applicantEntry = getTripApplicants(trip).entries.find { it.key.id == userId } ?: return
+        val applicant = applicantEntry.key
+
+        val usedSpots = trip.participants.values.sum()
+
+        if (usedSpots + requestedSpots > trip.groupSize) return
 
         // Accept applicant
-        trip.appliedUsers -= userId
-        repeat(applicant.requestedSpots) {
-            trip.participants += userId
-        }
+        trip.participants = trip.participants + (userId to requestedSpots)
+        trip.appliedUsers = trip.appliedUsers - userId
 
-        // Recalculate used spots after acceptance
-        val remainingApplicants = getTripApplicants(trip)
-        val updatedUsedSpots = usedSpots + requestedSpots
+        // Recalculate used spots
+        val updatedUsedSpots = trip.participants.values.sum()
         val remainingSpots = trip.groupSize - updatedUsedSpots
 
         // Reject remaining applicants who can't fit
-        remainingApplicants.forEach {
-            if (it.requestedSpots > remainingSpots) {
-                trip.appliedUsers -= it.id
-                trip.rejectedUsers += it.id
+        val remainingApplicants = trip.appliedUsers.toMap() // Snapshot to avoid concurrent modification
+        for ((id, spots) in remainingApplicants) {
+            if (spots > remainingSpots) {
+                trip.appliedUsers = trip.appliedUsers - id
+                trip.rejectedUsers = trip.rejectedUsers + (id to spots)
             }
         }
 
+        // Update your applications value accordingly
         applications.value = getTripApplicants(trip)
+
     }
 
 
     //Reject an application
     fun rejectApplication(trip: Trip?, userId: Int) {
         if (trip != null && userId in trip.appliedUsers) {
-            trip.appliedUsers -= userId
-            trip.rejectedUsers += userId
+            val requestedSpots = trip.appliedUsers[userId] ?: return
+
+            trip.appliedUsers = trip.appliedUsers - userId
+            trip.rejectedUsers = trip.rejectedUsers + (userId to requestedSpots)
+
+            // Assign just the list of users, ignoring requestedSpots here
             applications.value = getTripApplicants(trip)
         }
     }
+
+
 
     //Add new trip to the database
     fun addNewTrip(newTrip: Trip): Trip {
@@ -363,7 +383,7 @@ class TripViewModel(val model:Model): ViewModel() {
         return model.getUserDataById(id)
     }
 
-    fun getTripReviews(id: Int): List<Review> = model.getTripRewiews(id)
+    fun getTripReviews(id: Int): List<Review> = model.getTripReviews(id)
 
     // Initialize ViewModel, fetching min and max price from model
     init {
