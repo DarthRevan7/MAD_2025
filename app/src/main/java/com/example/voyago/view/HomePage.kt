@@ -91,7 +91,11 @@ fun HomePageScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(180.dp),
-            onTripClick = { /* 在预览里不需要点击响应 */ }
+
+            onTripClick = { trip ->
+                vm1.setSelectedTrip(trip)
+                navController.navigate("trip_details")
+            }
         )
         SectionTag(text = "Popular Completed Trips",  modifier = Modifier
             .width(190.dp)
@@ -104,7 +108,11 @@ fun HomePageScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(180.dp),
-            onTripClick = { /* 在预览里不需要点击响应 */ }
+
+            onTripClick = { trip ->
+                vm1.setSelectedTrip(trip)
+                navController.navigate("trip_details")
+            }
         )
         SectionTag(text = "Article",  modifier = Modifier
             .width(82.dp)
@@ -220,9 +228,15 @@ fun PopularTravel(
                 .fillMaxSize()
                 .clip(MaterialTheme.shapes.medium)
                 .clickable { onTripClick(proposal) }
+
         ) {
             // 你自己的卡片实现，比如：
-            TripCard(proposal = proposal, modifier = Modifier.matchParentSize(), onClick  = onTripClick)
+            TripCard(
+
+                proposal = proposal,
+                modifier = Modifier.matchParentSize(),
+
+                )
         }
     }
 }
@@ -232,9 +246,10 @@ fun PopularTravel(
 
 @Composable
 private fun TripCard(
+
     proposal: Trip,
     modifier: Modifier = Modifier,         // ← 默认值
-    onClick: (Trip) -> Unit
+
 ) {
     val context = LocalContext.current
     val resId = remember(proposal.photo) {
@@ -244,7 +259,7 @@ private fun TripCard(
         modifier = Modifier
             .size(width = 280.dp, height = 160.dp)
             .clip(RoundedCornerShape(16.dp))
-            .clickable { onClick(proposal) }
+
     ) {
         // 1. 背景图层
         if (proposal.photo.isNotEmpty()) {
@@ -338,4 +353,3 @@ fun ArticleShow(
         }
     }
 }
-

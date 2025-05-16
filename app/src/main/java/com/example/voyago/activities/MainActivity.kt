@@ -286,20 +286,45 @@ fun NavGraphBuilder.homeNavGraph(
     //vm1: TripListViewModel,
     vm2: ArticleViewModel
 ) {
-    composable(Screen.Home.route) { entry ->
-        val exploreGraphEntry = remember(entry) {
-            navController.getBackStackEntry(Screen.Home.route)
+    navigation(
+        startDestination = "home_main",
+        route = Screen.Home.route
+    ) {
+        // 1) 首页
+        composable("home_main") { entry ->
+            // 取同一个 HomeGraph 的 VM
+            val homeEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Home.route)
+            }
+            val homeVm: TripViewModel = viewModel(
+                viewModelStoreOwner = homeEntry,
+                factory = Factory
+            )
+            HomePageScreen(
+                navController = navController,
+                vm1 = homeVm,
+                vm2 = vm2,
+                onTripClick = { trip ->
+                    homeVm.setSelectedTrip(trip)
+                    navController.navigate("trip_details")
+                }
+            )
         }
-        val tripViewModel: TripViewModel = viewModel(
-            viewModelStoreOwner = exploreGraphEntry,
-            factory = Factory
-        )
-
-        HomePageScreen(
-            navController = navController,
-            vm1 = tripViewModel,
-            vm2 = vm2
-        )
+        // 2) 详情页，同样用 HomeGraph 的 VMScope
+        composable("trip_details") { entry ->
+            val homeEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Home.route)
+            }
+            val homeVm: TripViewModel = viewModel(
+                viewModelStoreOwner = homeEntry,
+                factory = Factory
+            )
+            TripDetails(
+                navController = navController,
+                vm = homeVm,
+                owner = false
+            )
+        }
     }
 }
 

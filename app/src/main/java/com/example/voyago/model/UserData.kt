@@ -16,7 +16,7 @@ data class UserData(
     var userDescription: String,
     var dateOfBirth: Calendar,
     var password: String,
-    var profilePicture: Image?,
+    var profilePicture: String,
     var typeTravel: List<TypeTravel>,
     var desiredDestination: List<String>,
     var rating: Float,
