@@ -1,8 +1,10 @@
+<<<<<<< Updated upstream:app/src/main/java/com/example/voyago/model/UserData.kt
 package com.example.voyago.model
+=======
+package com.example.voyago.model.domain
+>>>>>>> Stashed changes:app/src/main/java/com/example/voyago/model/domain/UserData.kt
 
 import android.media.Image
-import com.example.voyago.model.Article
-import com.example.voyago.model.Review
 import java.util.Calendar
 
 data class UserData(

@@ -1,6 +1,10 @@
-package com.example.voyago.model
+package com.example.voyago.model.domain
 
+<<<<<<< Updated upstream:app/src/main/java/com/example/voyago/model/Review.kt
 import android.media.Image
+=======
+import android.net.Uri
+>>>>>>> Stashed changes:app/src/main/java/com/example/voyago/model/domain/Review.kt
 import java.util.Calendar
 
 data class Review(

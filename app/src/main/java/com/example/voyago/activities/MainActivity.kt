@@ -7,6 +7,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -48,15 +49,62 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
+<<<<<<< Updated upstream
 import com.example.voyago.NavItem
 import com.example.voyago.R
 import com.example.voyago.view.TravelProposalScreen
 import com.example.voyago.view.UserProfileScreen
+=======
+import com.example.voyago.model.domain.NavItem
+import com.example.voyago.R
+import com.example.voyago.view.ActivitiesList
+import com.example.voyago.view.CreateNewTrip
+import com.example.voyago.view.EditActivity
+import com.example.voyago.view.EditTrip
+import com.example.voyago.view.ExplorePage
+import com.example.voyago.view.FiltersSelection
+import com.example.voyago.view.HomePageScreen
+import com.example.voyago.view.MyTripsPage
+import com.example.voyago.view.NewActivity
+import com.example.voyago.view.TripApplications
+import com.example.voyago.view.TripDetails
+import com.example.voyago.viewmodel.ArticleViewModel
+import com.example.voyago.viewmodel.TripViewModelFactory
+import com.example.voyago.viewmodel.TripViewModel
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import com.example.voyago.model.data.ArticleRepository
+import com.example.voyago.model.data.TripRepository
+import com.example.voyago.model.data.UserRepository
+import com.example.voyago.viewmodel.ArticleViewModelFactory
+
+
+
+
+sealed class Screen(val route: String) {
+    object Explore : Screen("explore_root")
+    object MyTrips : Screen("my_trips_root")
+    object Home : Screen("home_root")
+    object Chats : Screen("chats_root")
+    object Profile : Screen("profile_root")
+}
+>>>>>>> Stashed changes
+
+
 
 class MainActivity : ComponentActivity() {
+    private val tripRepo    = TripRepository(Firebase.firestore)
+    private val userRepo    = UserRepository(Firebase.firestore)
+    private val tripFactory = TripViewModelFactory(tripRepo, userRepo)
+
+    // —— 手动创建 Article 的依赖 ——
+    private val articleRepo    = ArticleRepository(Firebase.firestore)
+    private val articleFactory = ArticleViewModelFactory(articleRepo)
+    private val articleVm: ArticleViewModel by viewModels { articleFactory }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+<<<<<<< Updated upstream
         setContent {
 
             val navController = rememberNavController()
@@ -64,6 +112,65 @@ class MainActivity : ComponentActivity() {
                 composable("main_page"){
                     val context = LocalContext.current
                     MainPage(navController, context)
+=======
+        setContent { MainScreen(
+                articleVm   = articleVm,
+            tripFactory = tripFactory
+        ) }
+    }
+
+}
+
+
+@Composable
+fun MainScreen(
+    articleVm: ArticleViewModel,  // ← 新增这一行
+    tripFactory: TripViewModelFactory    // ← new parameter
+) {
+    val navController = rememberNavController()
+    Scaffold(
+        topBar = { TopBar() },
+        bottomBar = { BottomBar(navController) }
+    ) { innerPadding ->
+        NavigationGraph(navController = navController, modifier = Modifier.padding(innerPadding), articleVm = articleVm, tripFactory   = tripFactory)
+    }
+}
+
+
+@Composable
+fun BottomBar(navController: NavHostController) {
+    val items = listOf(
+        NavItem("Explore", Icons.Filled.LocationOn, Screen.Explore.route, "explore_main"),
+        NavItem("My Trips", Icons.Filled.Commute, Screen.MyTrips.route, "my_trips_main"),
+        NavItem("Home", Icons.Filled.Language, Screen.Home.route, Screen.Home.route),
+        NavItem("Chats", Icons.Filled.ChatBubble, Screen.Chats.route, "chats_list"),
+        NavItem("Profile", Icons.Filled.AccountCircle, Screen.Profile.route, "profile_overview")
+    )
+
+    NavigationBar {
+        val navBackStackEntry = navController.currentBackStackEntryAsState().value
+        val currentDestination = navBackStackEntry?.destination
+
+        items.forEach { item ->
+            val selected = currentDestination
+                ?.hierarchy
+                ?.any { it.route == item.rootRoute } == true
+
+            NavigationBarItem(
+                icon = { Icon(item.icon, contentDescription = item.label) },
+                label = { Text(item.label) },
+                selected = selected,
+                onClick = {
+                    navController.navigate(item.startRoute) {
+                        navController.graph.startDestinationRoute?.let { screenRoute ->
+                            popUpTo(screenRoute) {
+                                saveState = true
+                            }
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+>>>>>>> Stashed changes
                 }
                 composable("user_profile") {
                     UserProfileScreen()
@@ -77,6 +184,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
+<<<<<<< Updated upstream
 fun MainPage(navController: NavController, context: Context) {
     Column (
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -92,6 +200,194 @@ fun MainPage(navController: NavController, context: Context) {
             navController.navigate("user_profile")
         }) {
             Text("Go To Other Profile")
+=======
+fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modifier, articleVm: ArticleViewModel, tripFactory: TripViewModelFactory) {
+
+    NavHost(navController = navController, startDestination = Screen.Home.route, modifier = modifier) {
+        exploreNavGraph(navController,tripFactory)
+        myTripsNavGraph(navController,tripFactory)
+        homeNavGraph(navController, articleVm,tripFactory)
+        chatsNavGraph()
+        profileNavGraph()
+    }
+}
+
+fun NavGraphBuilder.exploreNavGraph(navController: NavController, tripFactory: TripViewModelFactory) {
+    navigation(startDestination = "explore_main", route = Screen.Explore.route) {
+        composable("explore_main") { entry ->
+            val exploreGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Explore.route)
+            }
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = tripFactory
+            )
+            ExplorePage(navController = navController, vm =tripViewModel)
+        }
+
+        composable("trip_details") { entry ->
+            val exploreGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Explore.route)
+            }
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = tripFactory
+            )
+            TripDetails(navController = navController, vm = tripViewModel, owner = false)
+        }
+
+        composable("filters_selection") { entry ->
+            val exploreGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Explore.route)
+            }
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory =tripFactory
+            )
+            FiltersSelection(navController = navController, vm = tripViewModel)
+        }
+    }
+}
+
+
+fun NavGraphBuilder.myTripsNavGraph(navController: NavController, tripFactory: TripViewModelFactory) {
+    navigation(startDestination = "my_trips_main", route = Screen.MyTrips.route) {
+        composable("my_trips_main") { entry ->
+            val exploreGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.MyTrips.route)
+            }
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = tripFactory
+            )
+            MyTripsPage(navController = navController, vm = tripViewModel)
+        }
+
+        composable("trip_details") { entry ->
+            val exploreGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.MyTrips.route)
+            }
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = tripFactory
+            )
+            TripDetails(navController = navController, vm = tripViewModel, owner = true)
+        }
+
+        composable("trip_applications") { entry ->
+            val exploreGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.MyTrips.route)
+            }
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = tripFactory
+            )
+            TripApplications(vm = tripViewModel)
+        }
+
+        composable("edit_trip") { entry ->
+            val exploreGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.MyTrips.route)
+            }
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = tripFactory
+            )
+            EditTrip(navController = navController, vm = tripViewModel)
+        }
+
+        composable("create_new_trip") { entry ->
+            val exploreGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.MyTrips.route)
+            }
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = tripFactory
+            )
+            CreateNewTrip(navController = navController, vm = tripViewModel)
+        }
+
+        composable("activities_list") { entry ->
+            val exploreGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.MyTrips.route)
+            }
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = tripFactory
+            )
+            ActivitiesList(navController = navController, vm = tripViewModel)
+        }
+
+        composable("new_activity") { entry ->
+            val exploreGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.MyTrips.route)
+            }
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = tripFactory
+            )
+            NewActivity(navController = navController, vm = tripViewModel)
+        }
+
+        composable("edit_activity/{activityId}",
+            arguments = listOf(navArgument("activityId") { type = NavType.IntType })) { entry ->
+            val exploreGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.MyTrips.route)
+            }
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = tripFactory
+            )
+            val activityId = entry.arguments?.getInt("activityId") ?: -1
+            EditActivity(navController = navController, vm = tripViewModel, activityId)
+        }
+    }
+}
+
+fun NavGraphBuilder.homeNavGraph(
+    navController: NavHostController,
+    vm2: ArticleViewModel
+    ,tripFactory: TripViewModelFactory
+) {
+    navigation(
+        startDestination = "home_main",
+        route = Screen.Home.route
+    ) {
+        // 1) 首页
+        composable("home_main") { entry ->
+            // 取同一个 HomeGraph 的 VM
+            val homeEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Home.route)
+            }
+            val homeVm: TripViewModel = viewModel(
+                viewModelStoreOwner = homeEntry,
+                factory = tripFactory
+            )
+            HomePageScreen(
+                navController = navController,
+                vm1 = homeVm,
+                vm2 = vm2,
+                onTripClick = { trip ->
+                    homeVm.setSelectedTrip(trip)
+                    navController.navigate("trip_details")
+                }
+            )
+        }
+        // 2) 详情页，同样用 HomeGraph 的 VMScope
+        composable("trip_details") { entry ->
+            val homeEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Home.route)
+            }
+            val homeVm: TripViewModel = viewModel(
+                viewModelStoreOwner = homeEntry,
+                factory = tripFactory
+            )
+            TripDetails(
+                navController = navController,
+                vm = homeVm,
+                owner = false
+            )
+>>>>>>> Stashed changes
         }
         Button(onClick = {
             navController.navigate("travel_proposal")

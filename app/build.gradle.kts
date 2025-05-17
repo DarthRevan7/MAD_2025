@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -76,5 +77,25 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("io.coil-kt.coil3:coil-compose:3.1.0")
 
+<<<<<<< Updated upstream
+=======
+    implementation("androidx.compose.foundation:foundation-layout:1.4.3")
 
+
+    // Firebase BoM
+    implementation(platform("com.google.firebase:firebase-bom:32.1.1"))
+    // Firestore + KTX
+    implementation("com.google.firebase:firebase-firestore-ktx")
+
+
+    // Kotlinx Coroutines core (brings in all the Flow operators, including the multi‐vararg combine)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    // Android dispatcher
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
+>>>>>>> Stashed changes
+
+    // Play-services await() support
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.4")
+
+    
 }
