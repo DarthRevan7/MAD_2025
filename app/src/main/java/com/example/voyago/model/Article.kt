@@ -9,7 +9,7 @@ data class Article(
     var title: String,
     var text: String,
     var authorId: String,  //Todo change to it and vm.getUserData
-    var date: LocalDateTime, //Todo change to Calendar
+    var date: Calendar,
     var photo: String,
     val contentUrl: String,          // 点击后跳转的链接
     val tags: List<String> = emptyList()  // 可选：标签列表

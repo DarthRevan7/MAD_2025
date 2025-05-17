@@ -61,6 +61,7 @@ import com.example.voyago.view.EditTrip
 import com.example.voyago.view.ExplorePage
 import com.example.voyago.view.FiltersSelection
 import com.example.voyago.view.HomePageScreen
+import com.example.voyago.view.MyProfileScreen
 import com.example.voyago.view.MyTripsPage
 import com.example.voyago.view.NewActivity
 import com.example.voyago.view.TripApplications
@@ -145,7 +146,7 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
         myTripsNavGraph(navController)
         homeNavGraph(navController, ArticleViewModel())
         chatsNavGraph()
-        profileNavGraph()
+        profileNavGraph(navController, ArticleViewModel())
     }
 }
 
@@ -341,13 +342,29 @@ fun NavGraphBuilder.chatsNavGraph() {
     }
 }
 
-fun NavGraphBuilder.profileNavGraph() {
-    navigation(startDestination = "profile_overview", route = Screen.Profile.route) {
-        composable("profile_overview") {
-            Text("Profile Overview Screen")
-        }
-        composable("profile_settings") {
-            Text("Profile Settings Screen")
+fun NavGraphBuilder.profileNavGraph(
+    navController: NavHostController,
+    //vm1: TripListViewModel,
+    vm2: ArticleViewModel
+) {
+    navigation(
+        startDestination = "profile_overview",
+        route = Screen.Profile.route
+    ) {
+        composable("profile_overview") { entry ->
+            // 取同一个 HomeGraph 的 VM
+            val profileNavGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Profile.route)
+            }
+            val profileNavGraphEntryVm: TripViewModel = viewModel(
+                viewModelStoreOwner = profileNavGraphEntry,
+                factory = Factory
+            )
+            MyProfileScreen(
+                navController = navController,
+                vm = profileNavGraphEntryVm,
+                vm2 = vm2
+            )
         }
     }
 }

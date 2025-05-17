@@ -22,7 +22,7 @@ class Model {
                 email = "alice@example.com",
                 password = "securePassword123",
                 userDescription = "hi",
-                profilePicture = "",
+                profilePicture = null,
                 typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.ADVENTURE),
                 desiredDestination = listOf("Greece", "Italy", "Japan"),
                 rating = 4.7f,
@@ -39,7 +39,7 @@ class Model {
                 email = "bellalast@example.com",
                 password = "securePassword987",
                 userDescription = "hi",
-                profilePicture = "",
+                profilePicture = null,
                 typeTravel = listOf(TypeTravel.RELAX, TypeTravel.PARTY),
                 desiredDestination = listOf("Romania", "USA", "South Korea"),
                 rating = 4.3f,
@@ -56,7 +56,7 @@ class Model {
                 email = "liam.hunter@example.com",
                 password = "canuckTravels123",
                 userDescription = "Adventurer and culture seeker",
-                profilePicture = "",
+                profilePicture = null,
                 typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.CULTURE),
                 desiredDestination = listOf("Peru", "Nepal", "Morocco"),
                 rating = 4.7f,
@@ -73,7 +73,7 @@ class Model {
                 email = "sofia.mendoza@example.com",
                 password = "andesLover2021",
                 userDescription = "Love hiking and photographing landscapes",
-                profilePicture = "",
+                profilePicture = null,
                 typeTravel = listOf(TypeTravel.ADVENTURE),
                 desiredDestination = listOf("New Zealand", "Iceland", "Japan"),
                 rating = 4.5f,
@@ -90,7 +90,7 @@ class Model {
                 email = "ethan.nguyen@example.com",
                 password = "secureWay888",
                 userDescription = "Foodie with a passion for street markets",
-                profilePicture = "",
+                profilePicture = null,
                 typeTravel = listOf(TypeTravel.CULTURE),
                 desiredDestination = listOf("Thailand", "Italy", "Vietnam"),
                 rating = 4.1f,
@@ -107,7 +107,7 @@ class Model {
                 email = "aisha.khan@example.com",
                 password = "safeJourney999",
                 userDescription = "Solo traveler sharing stories from around the world",
-                profilePicture = "",
+                profilePicture = null,
                 typeTravel = listOf(TypeTravel.RELAX, TypeTravel.CULTURE),
                 desiredDestination = listOf("Turkey", "Spain", "Malaysia"),
                 rating = 4.8f,
@@ -888,7 +888,8 @@ class Model {
                 title = "Amazing trip!",
                 comment = "This trip was absolutely incredible from start to finish. The guided city tour was informative and fun, the food was delicious, and the museum visit was a highlight for me. Everything was well-organized and the group dynamic was awesome. I would recommend this experience to anyone wanting a deep cultural immersion.",
                 score = 9,
-                photos = emptyList()
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2026, 4, 10); stripTime() }
             ),
             Review(
                 reviewId = 2,
@@ -898,7 +899,8 @@ class Model {
                 title = "Great experience",
                 comment = "Barcelona was a dream destination and this trip made it even better. I loved how the itinerary was balanced with both group activities and personal time. The hike on day two was a bit challenging but totally worth it for the views. I came back with great memories and new friends.",
                 score = 8,
-                photos = emptyList()
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2026, 4, 10); stripTime() }
             ),
             Review(
                 reviewId = 3,
@@ -908,7 +910,8 @@ class Model {
                 title = "Would go again",
                 comment = "I’m really impressed by how well this trip was planned. Every activity had a purpose, and even the free time was suggested with local tips. The welcome dinner was a beautiful introduction to Spanish culture, and the entire experience felt authentic and enriching. 10/10 would do it again.",
                 score = 10,
-                photos = emptyList()
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2026, 4, 10); stripTime() }
             ),
             Review(
                 reviewId = 4,
@@ -918,7 +921,8 @@ class Model {
                 title = "Loved it!",
                 comment = "This was the ultimate beach escape. The snorkeling tour showed us some of the most stunning coral reefs I’ve ever seen. The food was delicious, and the beach party was an unforgettable night with music, dancing, and laughter. It struck the perfect balance between adventure and relaxation.",
                 score = 10,
-                photos = emptyList()
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2026, 4, 10); stripTime() }
             ),
             Review(
                 reviewId = 5,
@@ -928,7 +932,8 @@ class Model {
                 title = "Relaxing trip",
                 comment = "I needed a break from work, and this trip delivered. From the moment we arrived, everything was taken care of. The massage session was heavenly, and the sunsets over the ocean were something out of a movie. I left feeling refreshed and truly happy. Would highly recommend for anyone seeking peace.",
                 score = 9,
-                photos = emptyList()
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2026, 4, 10); stripTime() }
             ),
             Review(
                 reviewId = 6,
@@ -938,7 +943,30 @@ class Model {
                 title = "Beautiful place",
                 comment = "Thailand was everything I imagined and more. The island hopping day was packed with activities, yet never felt rushed. The local cuisine tasting opened my eyes to so many flavors, and I even brought some recipes home. A wonderful way to experience the culture while soaking up the sun.",
                 score = 8,
-                photos = emptyList()
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2026, 4, 10); stripTime() }
+            ),
+            Review(
+                reviewId = 7,
+                isTripReview = false,
+                reviewerId = 5,
+                reviewedId = 1,
+                title = "Awesome and funny",
+                comment = "Good travel buddy",
+                score = 8,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2026, 4, 10); stripTime() }
+            ),
+            Review(
+                reviewId = 8,
+                isTripReview = false,
+                reviewerId = 5,
+                reviewedId = 2,
+                title = "Beautiful place",
+                comment = "Thailand was everything I imagined and more. The island hopping day was packed with activities, yet never felt rushed. The local cuisine tasting opened my eyes to so many flavors, and I even brought some recipes home. A wonderful way to experience the culture while soaking up the sun.",
+                score = 8,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2026, 4, 10); stripTime() }
             )
         )
     )
@@ -1246,6 +1274,11 @@ class Model {
     // Get reviews list of a trip
     fun getTripReviews(id: Int): List<Review> {
         return _reviews.value.filter { it.isTripReview && it.reviewedId == id }
+    }
+
+    // Get reviews list of a user
+    fun getUserReviews(id: Int): List<Review> {
+        return _reviews.value.filter { !it.isTripReview && it.reviewedId == id }
     }
 
     fun getUserDataById(id: Int): UserData {

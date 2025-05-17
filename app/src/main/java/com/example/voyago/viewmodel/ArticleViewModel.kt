@@ -5,7 +5,7 @@ import com.example.voyago.model.Article
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.time.LocalDateTime
-
+import java.util.Calendar
 
 
 fun sampleArticles(): List<Article> {
@@ -56,13 +56,19 @@ fun sampleArticles(): List<Article> {
     )
 
     return List(10) { index ->
+        val calendar = Calendar.getInstance().apply {
+            set(2025, Calendar.MAY, 1 + index, 9 + (index % 3) * 3, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+
         Article(
             id = index + 1,
             title = titles[index],
             text = descriptions[index],
             photo = imageNames[index],
             authorId = authors[index],
-            date = LocalDateTime.of(2025, 5, 1 + index, 9 + (index % 3) * 3, 0),
+            date = calendar,
             contentUrl = "https://example.com/articles/${titles[index].lowercase().replace("""[^a-z0-9]+""".toRegex(), "-")}",
             tags = tagsList[index]
         )
