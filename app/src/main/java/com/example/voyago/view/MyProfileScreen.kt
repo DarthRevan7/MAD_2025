@@ -56,9 +56,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import coil3.compose.AsyncImage
 import coil3.compose.rememberAsyncImagePainter
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.example.voyago.R
 import com.example.voyago.activities.*
 import com.example.voyago.*
@@ -114,9 +118,7 @@ fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: Articl
 
                 val context = LocalContext.current
 
-                Icon(Icons.Default.ArrowBackIosNew, "back", modifier = Modifier.padding(16.dp).offset(y = 5.dp)
-                    .clickable{ (context as? Activity)?.finish() }
-                )
+
 
                 ProfilePhoto(
                     user1.firstname, user1.surname, false, user1.profilePicture,
@@ -431,66 +433,68 @@ fun TabAboutTripsReview(user: UserData, vm: TripViewModel, vm2: ArticleViewModel
     }
 }
 
+
 @Composable
 fun UITripArticle(destination: String, date: Calendar, photo: String?) {
     val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
     val formattedDate = dateFormat.format(date.time)
 
     Row(
-        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .height(43.dp)
-            .background(Color(0xf9, 0xf6, 0xf9, 255), shape = RectangleShape)
-            .padding(5.dp)
+            .height(60.dp)
+            .background(Color(0xf9, 0xf6, 0xf9, 255))
+            .padding(horizontal = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxSize()
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .clip(CircleShape)
+                .background(Color.Gray) // fallback background
         ) {
-            Row(
-                modifier = Modifier.weight(1f),
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                if (photo == null) {
-                    Box(
-                        //contentAlignment = Alignment.CenterStart,
-                        modifier = Modifier
-                            .size(30.dp)
-                            .background(Color.Gray, shape = CircleShape)
-                    )
+            if (!photo.isNullOrBlank()) {
+                val context = LocalContext.current
+
+                val imageModel = if (!photo.isUriString()) {
+                    // Local drawable resource
+                    context.resources.getIdentifier(photo, "drawable", context.packageName)
                 } else {
-                    Box(
-                        contentAlignment = Alignment.CenterStart,
-                        modifier = Modifier.size(30.dp)
-                    ) {
-                        Image(
-                            painter = rememberAsyncImagePainter(photo),
-                            contentDescription = "photo",
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(CircleShape)
-                                .border(0.dp, Color.White, CircleShape),
-                            contentScale = ContentScale.Crop
-                        )
-                    }
+                    // URI string
+                    photo
                 }
 
-                Text(destination, modifier = Modifier.padding(start = 16.dp))
-            }
-
-            Row(
-                modifier = Modifier.weight(1f),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(formattedDate)
+                AsyncImage(
+                    model = ImageRequest.Builder(context)
+                        .data(imageModel)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "Trip or Article Image",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape)
+                )
             }
         }
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = destination, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+
+        Text(
+            text = formattedDate,
+            style = MaterialTheme.typography.bodySmall,
+            textAlign = TextAlign.End
+        )
     }
 }
+
+
+
+
 
 @Composable
 fun UIReview(name: String, surname: String, rating: Int, date: Calendar) {
