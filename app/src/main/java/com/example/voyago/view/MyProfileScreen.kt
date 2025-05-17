@@ -28,7 +28,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.StarHalf
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -66,6 +68,7 @@ import coil3.request.crossfade
 import com.example.voyago.R
 import com.example.voyago.activities.*
 import com.example.voyago.*
+import com.example.voyago.model.Review
 import com.example.voyago.model.UserData
 import com.example.voyago.viewmodel.*
 import java.text.SimpleDateFormat
@@ -421,9 +424,10 @@ fun TabAboutTripsReview(user: UserData, vm: TripViewModel, vm2: ArticleViewModel
                                 .verticalScroll(rememberScrollState())
                         ) {
                             vm.getUserReviews(user.id).forEach {
-                                    item ->
-                                val reviewer = vm.getUserData(item.reviewerId)
-                                UIReview(item.title, reviewer.username, item.score,item.date)
+                                    review ->
+                                val reviewer = vm.getUserData(review.reviewerId)
+                                ShowUserReview(review, vm)
+                                //UIReview(item.title, reviewer.firstname, reviewer.surname, item.score,item.date)
                             }
                         }
                     }
@@ -492,62 +496,57 @@ fun UITripArticle(destination: String, date: Calendar, photo: String?) {
     }
 }
 
-
-
-
-
 @Composable
-fun UIReview(name: String, surname: String, rating: Int, date: Calendar) {
-    val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
-    val formattedDate = dateFormat.format(date.time)
-
+fun ShowUserReview(review: Review, vm: TripViewModel) {
+    val reviewer = vm.getUserData(review.reviewerId)
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .height(43.dp)
-            .background(Color(0xf9, 0xf6, 0xf9, 255), shape = RectangleShape)
-            .padding(5.dp)
+            .padding(8.dp)
     ) {
-        Row(
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxSize()
+        //Profile photo of the reviewer
+        Box(
+            contentAlignment = Alignment.CenterStart,
+            modifier = Modifier
+                .size(30.dp)
+                .background(Color.Gray, shape = CircleShape)
         ) {
-            Row(
-                modifier = Modifier.weight(1f),
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    contentAlignment = Alignment.CenterStart,
-                    modifier = Modifier
-                        .size(30.dp)
-                        .background(Color.Gray, shape = CircleShape)
-                ) {
-                    // Profile image or initials
-                    ProfilePhoto(name, surname, true, null)
-                }
-                Text("$name $surname", modifier = Modifier.padding(start = 16.dp))
-            }
+            ProfilePhoto(reviewer.firstname, reviewer.surname,true, null)
+        }
+        Text("${reviewer.firstname} ${reviewer.surname}",
+            modifier = Modifier.padding( start = 16.dp))
 
-            Row(
-                modifier = Modifier.weight(1f),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(Icons.Default.StarBorder, contentDescription = "star")
-                Spacer(modifier = Modifier.width(5.dp))
-                Text(rating.toString())
-            }
-
-            Row(
-                modifier = Modifier.weight(1f),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(formattedDate)
-            }
+        //Stars rating
+        Row(
+            modifier = Modifier
+                .weight(1f),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically)
+        {
+            PrintStars(review.score)
         }
     }
+
+    //Review title
+    Row {
+        Text(
+            text = review.title,
+            modifier = Modifier.padding(start = 50.dp, end = 16.dp),
+            fontWeight = FontWeight.Bold)
+    }
+
+    //Review content
+    Row {
+        Text(
+            text = review.comment,
+            modifier = Modifier.padding(start = 50.dp, end = 16.dp)
+        )
+    }
+
+    Spacer(Modifier.padding(16.dp))
 }
+
+
+
+
