@@ -184,51 +184,63 @@ fun RatingAndReliability(rating: Float, reliability: Int) {
     val painterStar = painterResource(R.drawable.star)
     val painterMobile = painterResource(R.drawable.mobile)
 
-    //Box with rating
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier.size(149.dp, 44.dp)
-            .background(Color(0xc1, 0xa5, 0xc3, 255), shape = RoundedCornerShape(10.dp))
-            .border(2.dp, color = Color.White, shape = RoundedCornerShape(10.dp))
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxWidth() // Ensure the row uses full width to allow centering
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
+        //Box with rating
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(149.dp, 44.dp)
+                .background(Color(0xc1, 0xa5, 0xc3, 255), shape = RoundedCornerShape(10.dp))
+                .border(2.dp, color = Color.White, shape = RoundedCornerShape(10.dp))
         ) {
-            Image(painter = painterStar, "star", modifier = Modifier
-                .size(40.dp)
-            )
-            Text(
-                text = "$rating approval",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Bold
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                Image(
+                    painter = painterStar, contentDescription = "star",
+                    modifier = Modifier.size(40.dp)
+                )
+                Text(
+                    text = "$rating approval",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
-    }
-    Spacer(modifier = Modifier.width(16.dp))
 
-    //Box with reliability
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier.size(149.dp, 44.dp)
-            .background(Color(0xc1, 0xa5, 0xc3, 255), shape = RoundedCornerShape(10.dp))
-            .border(2.dp, color = Color.White, shape = RoundedCornerShape(10.dp))
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
+        Spacer(modifier = Modifier.width(16.dp))
+
+        //Box with reliability
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(149.dp, 44.dp)
+                .background(Color(0xc1, 0xa5, 0xc3, 255), shape = RoundedCornerShape(10.dp))
+                .border(2.dp, color = Color.White, shape = RoundedCornerShape(10.dp))
         ) {
-            Image(painter = painterMobile, "mobile", modifier = Modifier
-                .size(30.dp)
-            )
-            Text(
-                text = "${reliability}% reliable",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Bold
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                Image(
+                    painter = painterMobile, contentDescription = "mobile",
+                    modifier = Modifier.size(30.dp)
+                )
+                Text(
+                    text = "$reliability% reliable",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }
+
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
