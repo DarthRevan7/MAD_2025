@@ -40,6 +40,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -54,6 +55,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil3.compose.rememberAsyncImagePainter
@@ -254,6 +256,11 @@ fun TabAboutTripsReview(user: UserData, vm: TripViewModel, vm2: ArticleViewModel
     //List of trip created, but not published by the logged in user (id=1)
     val privateTrips by vm.privateTrips.collectAsState()
 
+    LaunchedEffect(Unit) {
+        vm.creatorPublicFilter()
+        vm.creatorPrivateFilter()
+    }
+
     var selectedTabIndex by remember {
         mutableIntStateOf(0)
     }
@@ -334,26 +341,35 @@ fun TabAboutTripsReview(user: UserData, vm: TripViewModel, vm2: ArticleViewModel
 
             1 -> {
                 Column {
-                    Text(text = "Trips:",
+                    Text(
+                        text = "Trips:",
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(top = 16.dp, bottom = 10.dp)
                     )
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
-                            .wrapContentWidth()
+                            .fillMaxWidth()
                             .height(140.dp)
                             .background(Color(0xdf, 0xd1, 0xe0, 255), shape = RoundedCornerShape(10.dp))
                             .padding(10.dp)
                     ) {
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(5.dp),
-                            modifier = Modifier
-                                .height((3*43).dp)
-                                .verticalScroll(rememberScrollState())
-                        ) {
-                            publishedTrips.forEach {
-                                    item -> UITripArticle(item.destination,item.startDate,item.photo)
+                        if (publishedTrips.isEmpty()) {
+                            Text(
+                                text = "No published trip yet",
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        } else {
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(5.dp),
+                                modifier = Modifier
+                                    .height((3 * 43).dp)
+                                    .verticalScroll(rememberScrollState())
+                            ) {
+                                publishedTrips.forEach { item ->
+                                    UITripArticle(item.destination, item.startDate, item.photo)
+                                }
                             }
                         }
                     }
