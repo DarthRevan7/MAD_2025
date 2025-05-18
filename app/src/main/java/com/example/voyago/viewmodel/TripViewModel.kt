@@ -155,10 +155,15 @@ class TripViewModel(val model:Model): ViewModel() {
     }
 
 
-    //Trips you can no longer join filter
-    var filterUpcomingTrips: Boolean by mutableStateOf(true)
+    //Trips you can join filter
+    var filterUpcomingTrips: Boolean by mutableStateOf(false)
         private set
 
+    fun updateUpcomingTripsFilter(isSelected: Boolean) {
+        filterUpcomingTrips = isSelected
+    }
+
+    //Trips that already happened
     var filterCompletedTrips: Boolean by mutableStateOf(false)
         private set
 
@@ -176,7 +181,7 @@ class TripViewModel(val model:Model): ViewModel() {
 
     //Apply selected filters
     fun applyFilters() = model.filterFunction(tripList, filterDestination, filterMinPrice, filterMaxPrice,
-        filterDuration, filterGroupSize, filtersTripType, filterCompletedTrips, filterBySeats)
+        filterDuration, filterGroupSize, filtersTripType, filterUpcomingTrips, filterCompletedTrips, filterBySeats)
 
     //Reset filters
     fun resetFilters() {

@@ -73,15 +73,19 @@ fun FiltersSelection(navController: NavController, vm: TripViewModel = viewModel
     var query by remember { mutableStateOf("") }
     var selectedDestination by remember { mutableStateOf<String?>(null) }
 
+    //List of all the destinations present in the database
     var allDestinations = vm.allDestinations()
 
+    //Suggestions the appear when you search
     val filteredSuggestions = remember(query) {
         allDestinations.filter {
             it.contains(query, ignoreCase = true)
         }
     }
 
-    val isSelected = vm.filterCompletedTrips
+
+    val isCompletedSelected = vm.filterCompletedTrips
+    val isCanJoinSelected = vm.filterUpcomingTrips
 
     vm.setMaxMinPrice()
 
@@ -92,6 +96,7 @@ fun FiltersSelection(navController: NavController, vm: TripViewModel = viewModel
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.Start
     ) {
+        //Destination Search Bar
         item {
             Box(
                 Modifier
@@ -114,6 +119,7 @@ fun FiltersSelection(navController: NavController, vm: TripViewModel = viewModel
             }
         }
 
+        //Price Range Slider
         item {
             Text(
                 text = "Price Range:",
@@ -121,7 +127,6 @@ fun FiltersSelection(navController: NavController, vm: TripViewModel = viewModel
                 fontWeight = FontWeight.Bold
             )
         }
-
         item {
             RangeSlider(vm)
         }
@@ -130,6 +135,7 @@ fun FiltersSelection(navController: NavController, vm: TripViewModel = viewModel
             Spacer(modifier = Modifier.padding(16.dp))
         }
 
+        //Duration dropdown
         item {
             Box(
                 modifier = Modifier
@@ -145,6 +151,7 @@ fun FiltersSelection(navController: NavController, vm: TripViewModel = viewModel
             }
         }
 
+        //Group Size Dropdown
         item {
             Box(
                 modifier = Modifier
@@ -160,6 +167,7 @@ fun FiltersSelection(navController: NavController, vm: TripViewModel = viewModel
             }
         }
 
+        //Trip Type Dropdown
         item {
             Box(
                 modifier = Modifier
@@ -179,35 +187,73 @@ fun FiltersSelection(navController: NavController, vm: TripViewModel = viewModel
             Spacer(Modifier.padding(2.dp))
         }
 
-        item {
-            Row(
-                modifier = Modifier.padding(start = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(
-                    onClick = {
-                        vm.updateCompletedTripsFilter(!vm.filterCompletedTrips)
-                    }
+        if (!isCompletedSelected) {
+            //Search in trips you can join
+            item {
+                Row(
+                    modifier = Modifier.padding(start = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = if (isSelected) {
-                            Icons.Default.CheckBox
-                        } else {
-                            Icons.Default.CheckBoxOutlineBlank
-                        },
-                        contentDescription = if (isSelected) {
-                            "Selected"
-                        } else {
-                            "NotSelected"
-                        },
-                        tint = if (isSelected) {
-                            Color(0x65, 0x55, 0x8f, 255)
-                        } else {
-                            Color.Black
+                    IconButton(
+                        onClick = {
+                            vm.updateUpcomingTripsFilter(!vm.filterUpcomingTrips)
                         }
-                    )
+                    ) {
+                        Icon(
+                            imageVector = if (isCanJoinSelected) {
+                                Icons.Default.CheckBox
+                            } else {
+                                Icons.Default.CheckBoxOutlineBlank
+                            },
+                            contentDescription = if (isCanJoinSelected) {
+                                "Selected"
+                            } else {
+                                "NotSelected"
+                            },
+                            tint = if (isCanJoinSelected) {
+                                Color(0x65, 0x55, 0x8f, 255)
+                            } else {
+                                Color.Black
+                            }
+                        )
+                    }
+                    Text("Show only trips you can join")
                 }
-                Text("Search in completed trips")
+            }
+        }
+
+        if (!isCanJoinSelected) {
+            //Search in completed trips
+            item {
+                Row(
+                    modifier = Modifier.padding(start = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        onClick = {
+                            vm.updateCompletedTripsFilter(!vm.filterCompletedTrips)
+                        }
+                    ) {
+                        Icon(
+                            imageVector = if (isCompletedSelected) {
+                                Icons.Default.CheckBox
+                            } else {
+                                Icons.Default.CheckBoxOutlineBlank
+                            },
+                            contentDescription = if (isCompletedSelected) {
+                                "Selected"
+                            } else {
+                                "NotSelected"
+                            },
+                            tint = if (isCompletedSelected) {
+                                Color(0x65, 0x55, 0x8f, 255)
+                            } else {
+                                Color.Black
+                            }
+                        )
+                    }
+                    Text("Show only in completed trips")
+                }
             }
         }
 
@@ -215,7 +261,8 @@ fun FiltersSelection(navController: NavController, vm: TripViewModel = viewModel
             Spacer(Modifier.padding(4.dp))
         }
 
-        if (!isSelected) {
+        if (!isCompletedSelected) {
+            //Seats filter
             item {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -261,6 +308,7 @@ fun FiltersSelection(navController: NavController, vm: TripViewModel = viewModel
             }
         }
 
+        //Search Button
         item {
             Box(
                 modifier = Modifier

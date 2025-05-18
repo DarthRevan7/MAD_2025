@@ -120,6 +120,15 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel) {
                     }
                 }
             }
+
+            //List of trips the logged in user (id=1) joined
+            item {
+                Text(
+                    text = "Trips I joined:",
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp),
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }

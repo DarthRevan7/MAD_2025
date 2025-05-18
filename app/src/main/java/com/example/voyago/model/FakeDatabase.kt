@@ -1465,7 +1465,8 @@ class Model {
     fun filterFunction(list: List<Trip>, filterDestination: String, filterMinPrice: Double,
                        filterMaxPrice: Double, filterDuration: Pair<Int,Int>,
                        filterGroupSize: Pair<Int,Int>, filtersTripType: List<SelectableItem>,
-                       filterCompletedTrips: Boolean, filterBySeats: Int) {
+                       filterUpcomingTrips: Boolean, filterCompletedTrips: Boolean,
+                       filterBySeats: Int) {
         Log.d("FilterFunction", "Filtering with destination: $filterDestination, minPrice: $filterMinPrice, maxPrice: $filterMaxPrice, filterDuration: $filterDuration, filterGroupSize: $filterGroupSize, filterTripType: $filtersTripType")
         var filtered = list.filter { trip ->
             Log.d("FilterFunction", "Checking trip: ${trip.title}")
@@ -1487,12 +1488,13 @@ class Model {
             Log.d("FilterFunction", "Checking price for trip ${trip.title}: estimatedPrice=${trip.estimatedPrice}, filterMinPrice=$filterMinPrice, filterMaxPrice=$filterMaxPrice, priceCondition=$price")
 
 
-            val completed = !filterCompletedTrips || !trip.canJoin()
+            val completed = !filterCompletedTrips || trip.status == TripStatus.COMPLETED//|| !trip.canJoin()
+            val canJoin = !filterUpcomingTrips || trip.canJoin()
             val spots = trip.availableSpots() >= filterBySeats
 
             Log.d("FilterFunction", "Conditions: destination=$destination, price=$price, duration=$duration, groupSize=$groupSize, completed=$completed, spots=$spots")
 
-            trip.published && destination && price && duration && groupSize && completed
+            trip.published && destination && price && duration && groupSize && canJoin && completed
                     && spots
         }
         Log.d("FilterFunction", "Filtered trips: $filtered")
