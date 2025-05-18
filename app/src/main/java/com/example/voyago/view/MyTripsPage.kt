@@ -120,6 +120,15 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel) {
                     }
                 }
             }
+
+            //List of trips the logged in user (id=1) joined
+            item {
+                Text(
+                    text = "Trips I joined:",
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp),
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }
@@ -159,6 +168,35 @@ fun CompletedBanner(modifier: Modifier) {
             Spacer(Modifier.padding(3.dp))
             Text(
                 text = "Completed",
+                color = Color.White
+            )
+        }
+    }
+}
+
+@Composable
+fun BookedBanner(modifier: Modifier) {
+    Box(
+        modifier = modifier
+            .padding(vertical = 10.dp, horizontal = 10.dp)
+            .wrapContentSize()
+            .clip(RoundedCornerShape(16.dp))
+            .background(
+                color = Color(0xfa, 0xa2, 0x61, 255)
+            ),
+    ) {
+        Row(
+            modifier = Modifier.padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.TaskAlt,
+                contentDescription = "booked",
+                tint = Color.White
+            )
+            Spacer(Modifier.padding(3.dp))
+            Text(
+                text = "Fully booked",
                 color = Color.White
             )
         }
