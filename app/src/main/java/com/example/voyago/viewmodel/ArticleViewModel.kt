@@ -2,6 +2,7 @@ package com.example.voyago.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.example.voyago.model.Article
+import com.example.voyago.model.Review
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.time.LocalDateTime
@@ -76,11 +77,19 @@ fun sampleArticles(): List<Article> {
 }
 
 
+
+
 class ArticleViewModel : ViewModel() {
 
 
     private val _articleList = MutableStateFlow<List<Article>>(emptyList())
     val articleList: StateFlow<List<Article>> = _articleList
+
+    // Get articles list of a user
+//    fun getUserArticles(id: Int): List<Article> {
+//        return _articleList.value.filter { it.authorId == id }
+//    }
+
     init {
         _articleList.value = sampleArticles()
     }

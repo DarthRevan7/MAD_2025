@@ -180,7 +180,7 @@ fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: Articl
 
         item {
             //Tab About, My Trips, Review
-            TabAboutTripsReview(user1, vm, vm2)
+            TabAboutTripsReview(user1, vm, vm2, navController)
         }
     }
 }
@@ -251,7 +251,7 @@ fun RatingAndReliability(rating: Float, reliability: Int) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun TabAboutTripsReview(user: UserData, vm: TripViewModel, vm2: ArticleViewModel) {
+fun TabAboutTripsReview(user: UserData, vm: TripViewModel, vm2: ArticleViewModel, navController: NavController) {
 
     // TAB with About, Trips & Articles, Reviews
     val tabs = listOf("About", "Trips & Articles", "Reviews")
@@ -423,11 +423,17 @@ fun TabAboutTripsReview(user: UserData, vm: TripViewModel, vm2: ArticleViewModel
                                 .height((7*43).dp)
                                 .verticalScroll(rememberScrollState())
                         ) {
-                            vm.getUserReviews(user.id).forEach {
-                                    review ->
-                                val reviewer = vm.getUserData(review.reviewerId)
-                                ShowUserReview(review, vm)
-                                //UIReview(item.title, reviewer.firstname, reviewer.surname, item.score,item.date)
+                            val reviewsList = vm.getUserReviews(user.id)
+                            if (reviewsList.isEmpty()){
+                                Text("No reviews yet")
+                            } else {
+                                reviewsList.forEach { review ->
+                                    val reviewer = vm.getUserData(review.reviewerId)
+                                    ShowUserReview(review, vm, navController)
+
+
+                                    //UIReview(item.title, reviewer.firstname, reviewer.surname, item.score,item.date)
+                                }
                             }
                         }
                     }
@@ -497,55 +503,74 @@ fun UITripArticle(destination: String, date: Calendar, photo: String?) {
 }
 
 @Composable
-fun ShowUserReview(review: Review, vm: TripViewModel) {
+fun ShowUserReview(review: Review, vm: TripViewModel, navController: NavController) {
     val reviewer = vm.getUserData(review.reviewerId)
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-    ) {
-        //Profile photo of the reviewer
-        Box(
-            contentAlignment = Alignment.CenterStart,
-            modifier = Modifier
-                .size(30.dp)
-                .background(Color.Gray, shape = CircleShape)
-        ) {
-            ProfilePhoto(reviewer.firstname, reviewer.surname,true, null)
-        }
-        Text("${reviewer.firstname} ${reviewer.surname}",
-            modifier = Modifier.padding( start = 16.dp))
 
-        //Stars rating
+    Column {
+        // Reviewer Row (photo + name)
         Row(
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .weight(1f),
-            horizontalArrangement = Arrangement.End,
-            verticalAlignment = Alignment.CenterVertically)
-        {
-            PrintStars(review.score)
+                .fillMaxWidth()
+                .padding(8.dp)
+        ) {
+            // Clickable area for photo + name
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .clickable {
+
+                        navController.navigate("user_profile/${review.reviewerId}")
+                    }
+            ) {
+                // Profile photo
+                Box(
+                    contentAlignment = Alignment.CenterStart,
+                    modifier = Modifier
+                        .size(30.dp)
+                        .background(Color.Gray, shape = CircleShape)
+                ) {
+                    ProfilePhoto(reviewer.firstname, reviewer.surname, true, null)
+                }
+
+                // Reviewer name
+                Text(
+                    text = "${reviewer.firstname} ${reviewer.surname}",
+                    modifier = Modifier.padding(start = 16.dp)
+                )
+            }
+
+            // Stars rating aligned to end
+            Row(
+                modifier = Modifier.weight(1f),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                PrintStars(review.score)
+            }
         }
-    }
 
-    //Review title
-    Row {
-        Text(
-            text = review.title,
-            modifier = Modifier.padding(start = 50.dp, end = 16.dp),
-            fontWeight = FontWeight.Bold)
-    }
+        // Review title
+        Row {
+            Text(
+                text = review.title,
+                modifier = Modifier.padding(start = 50.dp, end = 16.dp),
+                fontWeight = FontWeight.Bold
+            )
+        }
 
-    //Review content
-    Row {
-        Text(
-            text = review.comment,
-            modifier = Modifier.padding(start = 50.dp, end = 16.dp)
-        )
-    }
+        // Review content
+        Row {
+            Text(
+                text = review.comment,
+                modifier = Modifier.padding(start = 50.dp, end = 16.dp)
+            )
+        }
 
-    Spacer(Modifier.padding(16.dp))
+        Spacer(Modifier.padding(16.dp))
+    }
 }
+
 
 
 

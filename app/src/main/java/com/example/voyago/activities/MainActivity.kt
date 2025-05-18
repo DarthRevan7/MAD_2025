@@ -66,6 +66,7 @@ import com.example.voyago.view.MyTripsPage
 import com.example.voyago.view.NewActivity
 import com.example.voyago.view.TripApplications
 import com.example.voyago.view.TripDetails
+import com.example.voyago.view.UserProfileScreen
 import com.example.voyago.viewmodel.ArticleViewModel
 import com.example.voyago.viewmodel.Factory
 import com.example.voyago.viewmodel.TripViewModel
@@ -143,7 +144,7 @@ fun BottomBar(navController: NavHostController) {
 fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modifier) {
     NavHost(navController = navController, startDestination = Screen.Home.route, modifier = modifier) {
         exploreNavGraph(navController)
-        myTripsNavGraph(navController)
+        myTripsNavGraph(navController, ArticleViewModel())
         homeNavGraph(navController, ArticleViewModel())
         chatsNavGraph()
         profileNavGraph(navController, ArticleViewModel())
@@ -188,7 +189,7 @@ fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
 }
 
 
-fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
+fun NavGraphBuilder.myTripsNavGraph(navController: NavController, vm2: ArticleViewModel) {
     navigation(startDestination = "my_trips_main", route = Screen.MyTrips.route) {
         composable("my_trips_main") { entry ->
             val exploreGraphEntry = remember(entry) {
@@ -279,6 +280,24 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
             val activityId = entry.arguments?.getInt("activityId") ?: -1
             EditActivity(navController = navController, vm = tripViewModel, activityId)
         }
+
+//        composable("user_profile/{userId}",
+//            arguments = listOf(navArgument("userId") { type = NavType.IntType })) { entry ->
+//            val exploreGraphEntry = remember(entry) {
+//                navController.getBackStackEntry(Screen.MyTrips.route)
+//            }
+//            val tripViewModel: TripViewModel = viewModel(
+//                viewModelStoreOwner = exploreGraphEntry,
+//                factory = Factory
+//            )
+//            val userId = entry.arguments?.getInt("userId") ?: 1
+//            UserProfileScreen(
+//                navController = navController,
+//                vm = tripViewModel,
+//                vm2 = vm2,
+//                userId = userId
+//            )
+//        }
     }
 }
 
@@ -366,6 +385,27 @@ fun NavGraphBuilder.profileNavGraph(
                 vm2 = vm2
             )
         }
+
+        composable("user_profile/{userId}",
+            arguments = listOf(navArgument("userId") { type = NavType.IntType })) { entry ->
+            val profileNavGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Profile.route)
+            }
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = profileNavGraphEntry,
+                factory = Factory
+            )
+            val userId = entry.arguments?.getInt("userId") ?: 1
+            UserProfileScreen(
+                navController = navController,
+                vm = tripViewModel,
+                vm2 = vm2,
+                userId = userId
+            )
+
+
+        }
+
     }
 }
 
