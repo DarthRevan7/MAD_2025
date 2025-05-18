@@ -81,6 +81,11 @@ data class Trip(
         return this.status == TripStatus.NOT_STARTED && hasAvailableSpots()
     }
 
+    fun loggedInUserCanJoin(id: Int): Boolean {
+        return this.status == TripStatus.NOT_STARTED && hasAvailableSpots() && creatorId != id
+                && !participants.containsKey(id) && !appliedUsers.containsKey(id)
+    }
+
     fun hasAvailableSpots():Boolean {
         return availableSpots() > 0
     }

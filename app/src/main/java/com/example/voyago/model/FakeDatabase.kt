@@ -1489,7 +1489,7 @@ class Model {
 
 
             val completed = !filterCompletedTrips || trip.status == TripStatus.COMPLETED//|| !trip.canJoin()
-            val canJoin = !filterUpcomingTrips || trip.canJoin()
+            val canJoin = !filterUpcomingTrips || trip.loggedInUserCanJoin(1)
             val spots = trip.availableSpots() >= filterBySeats
 
             Log.d("FilterFunction", "Conditions: destination=$destination, price=$price, duration=$duration, groupSize=$groupSize, completed=$completed, spots=$spots")
