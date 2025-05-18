@@ -141,7 +141,7 @@ fun TripApplications(vm: TripViewModel, navController: NavController) {
 
                 items(applicantsList) { user ->
                     val requestedSpots = applicantsMap[user] ?: 1 // fallback to 1 if missing
-                    ShowApplications(user, requestedSpots, vm)
+                    ShowApplications(user, requestedSpots, vm, navController)
                 }
 
             } else {
@@ -267,7 +267,7 @@ fun ShowParticipants(user: UserData, requestedSpots: Int, navController: NavCont
 }
 
 @Composable
-fun ShowApplications(user: UserData, requestedSpots: Int, vm: TripViewModel) {
+fun ShowApplications(user: UserData, requestedSpots: Int, vm: TripViewModel, navController: NavController) {
     var showDialog by remember { mutableStateOf(false) }
     var isAcceptAction by remember { mutableStateOf(true) }
 
@@ -293,7 +293,12 @@ fun ShowApplications(user: UserData, requestedSpots: Int, vm: TripViewModel) {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(start = 16.dp)
         ) {
-            Text("${user.firstname} ${user.surname}")
+            Text(modifier = Modifier
+                .clickable {
+
+                    navController.navigate("user_profile/${user.id}")
+                },
+                text = "${user.firstname} ${user.surname}")
 
             if (requestedSpots > 1) {
                 Spacer(modifier = Modifier.width(8.dp))
