@@ -38,12 +38,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.voyago.activities.ProfilePhoto
 import com.example.voyago.model.UserData
 import com.example.voyago.viewmodel.TripViewModel
 
 @Composable
-fun TripApplications(vm: TripViewModel) {
+fun TripApplications(vm: TripViewModel, navController: NavController) {
 
     val listState = rememberLazyListState()
     val trip = vm.selectedTrip.value
@@ -109,7 +110,7 @@ fun TripApplications(vm: TripViewModel) {
                     val user = entry.key
                     val spots = entry.value
                     if (user.id != 1) {
-                        ShowParticipants(user, spots)
+                        ShowParticipants(user, spots, navController)
                     }
                 }
 
@@ -175,7 +176,7 @@ fun TripApplications(vm: TripViewModel) {
                     val user = entry.key
                     val spots = entry.value
                     if (user.id != 1) {
-                        ShowParticipants(user, spots)
+                        ShowParticipants(user, spots, navController)
                     }
                 }
 
@@ -194,7 +195,7 @@ fun TripApplications(vm: TripViewModel) {
 }
 
 @Composable
-fun ShowParticipants(user: UserData, requestedSpots: Int) {
+fun ShowParticipants(user: UserData, requestedSpots: Int, navController: NavController) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -216,10 +217,17 @@ fun ShowParticipants(user: UserData, requestedSpots: Int) {
         // Participant information
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(start = 16.dp)
+            modifier = Modifier
+                .padding(start = 16.dp),
+
         ) {
             // User information
-            Text("${user.firstname} ${user.surname}")
+            Text(modifier = Modifier
+                .clickable {
+
+                    navController.navigate("user_profile/${user.id}")
+                },
+                text ="${user.firstname} ${user.surname}")
 
             if (requestedSpots > 1) {
                 Spacer(modifier = Modifier.width(8.dp))

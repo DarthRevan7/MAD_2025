@@ -221,7 +221,7 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController, vm2: ArticleVi
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = Factory
             )
-            TripApplications(vm = tripViewModel)
+            TripApplications(vm = tripViewModel, navController)
         }
 
         composable("edit_trip") { entry ->
@@ -281,23 +281,23 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController, vm2: ArticleVi
             EditActivity(navController = navController, vm = tripViewModel, activityId)
         }
 
-//        composable("user_profile/{userId}",
-//            arguments = listOf(navArgument("userId") { type = NavType.IntType })) { entry ->
-//            val exploreGraphEntry = remember(entry) {
-//                navController.getBackStackEntry(Screen.MyTrips.route)
-//            }
-//            val tripViewModel: TripViewModel = viewModel(
-//                viewModelStoreOwner = exploreGraphEntry,
-//                factory = Factory
-//            )
-//            val userId = entry.arguments?.getInt("userId") ?: 1
-//            UserProfileScreen(
-//                navController = navController,
-//                vm = tripViewModel,
-//                vm2 = vm2,
-//                userId = userId
-//            )
-//        }
+        composable("user_profile/{userId}",
+            arguments = listOf(navArgument("userId") { type = NavType.IntType })) { entry ->
+            val exploreGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.MyTrips.route)
+            }
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = Factory
+            )
+            val userId = entry.arguments?.getInt("userId") ?: 1
+            UserProfileScreen(
+                navController = navController,
+                vm = tripViewModel,
+                vm2 = vm2,
+                userId = userId
+            )
+        }
     }
 }
 
