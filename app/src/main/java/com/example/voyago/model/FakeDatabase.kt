@@ -21,7 +21,7 @@ class Model {
                 country = "USA",
                 email = "alice@example.com",
                 password = "securePassword123",
-                userDescription = "hi",
+                userDescription = "Globetrotter and sunset chaser. Always looking for the next quiet beach or bustling city",
                 profilePicture = null,
                 typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.ADVENTURE),
                 desiredDestination = listOf("Greece", "Italy", "Japan"),
@@ -38,7 +38,7 @@ class Model {
                 country = "UK",
                 email = "bellalast@example.com",
                 password = "securePassword987",
-                userDescription = "hi",
+                userDescription = "Spa days or city lights—I do both. Always chasing good vibes, bold flavors, and unforgettable nights. Let’s dance, then unwind in style.",
                 profilePicture = null,
                 typeTravel = listOf(TypeTravel.RELAX, TypeTravel.PARTY),
                 desiredDestination = listOf("Romania", "USA", "South Korea"),
@@ -125,73 +125,73 @@ class Model {
                 photo = "barcelona",
                 title = "Cultural Wonders of Spain",
                 destination = "Barcelona",
-                startDate = Calendar.getInstance().apply { set(2025, 6, 10); stripTime() },
-                endDate = Calendar.getInstance().apply { set(2025, 6, 11); stripTime() },
+                startDate = Calendar.getInstance().apply { set(2024, 6, 10); stripTime() },
+                endDate = Calendar.getInstance().apply { set(2024, 6, 11); stripTime() },
                 estimatedPrice = 950.0,
                 groupSize = 4,
                 creatorId = 6,
-                participants = mapOf(1 to 1, 2 to 1, 3 to 1, 4 to 1),
-                appliedUsers = mapOf(5 to 1, 6 to 1),
-                rejectedUsers = emptyMap(),
+                participants = mapOf(6 to 1, 2 to 1, 3 to 1, 1 to 1),
+                appliedUsers = emptyMap(),
+                rejectedUsers = mapOf(5 to 1, 4 to 1),
                 published = true,
                 typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.RELAX),
                 status = TripStatus.COMPLETED,
                 activities = mapOf(
-                    Calendar.getInstance().apply { set(2025, 6, 10); stripTime() } to listOf(
+                    Calendar.getInstance().apply { set(2024, 6, 10); stripTime() } to listOf(
                         Activity(
                             1,
-                            Calendar.getInstance().apply { set(2025, 6, 10); stripTime() },
+                            Calendar.getInstance().apply { set(2024, 6, 10); stripTime() },
                             "09:00 AM",
                             true,
                             "City tour"
                         ),
                         Activity(
                             2,
-                            Calendar.getInstance().apply { set(2025, 6, 10); stripTime() },
+                            Calendar.getInstance().apply { set(2024, 6, 10); stripTime() },
                             "02:00 PM",
                             false,
                             "Lunch at market"
                         ),
                         Activity(
                             3,
-                            Calendar.getInstance().apply { set(2025, 6, 10); stripTime() },
+                            Calendar.getInstance().apply { set(2024, 6, 10); stripTime() },
                             "03:00 PM",
                             true,
                             "Museum visit"
                         ),
                         Activity(
                             4,
-                            Calendar.getInstance().apply { set(2025, 6, 10); stripTime() },
+                            Calendar.getInstance().apply { set(2024, 6, 10); stripTime() },
                             "08:00 PM",
                             true,
                             "Welcome dinner"
                         )
                     ),
-                    Calendar.getInstance().apply { set(2025, 6, 11); stripTime() } to listOf(
+                    Calendar.getInstance().apply { set(2024, 6, 11); stripTime() } to listOf(
                         Activity(
                             5,
-                            Calendar.getInstance().apply { set(2025, 6, 11); stripTime() },
+                            Calendar.getInstance().apply { set(2024, 6, 11); stripTime() },
                             "08:00 AM",
                             true,
                             "Hiking trip"
                         ),
                         Activity(
                             6,
-                            Calendar.getInstance().apply { set(2025, 6, 11); stripTime() },
+                            Calendar.getInstance().apply { set(2024, 6, 11); stripTime() },
                             "01:00 PM",
                             true,
                             "Mountain picnic"
                         ),
                         Activity(
                             7,
-                            Calendar.getInstance().apply { set(2025, 6, 11); stripTime() },
+                            Calendar.getInstance().apply { set(2024, 6, 11); stripTime() },
                             "05:00 PM",
                             false,
                             "Free time"
                         ),
                         Activity(
                             8,
-                            Calendar.getInstance().apply { set(2025, 6, 11); stripTime() },
+                            Calendar.getInstance().apply { set(2024, 6, 11); stripTime() },
                             "09:00 PM",
                             true,
                             "Campfire stories"
@@ -205,73 +205,73 @@ class Model {
                 photo = "phuket",
                 title = "Beach Escape in Thailand",
                 destination = "Phuket",
-                startDate = Calendar.getInstance().apply { set(2025, 7, 20); stripTime() },
-                endDate = Calendar.getInstance().apply { set(2025, 7, 21); stripTime() },
+                startDate = Calendar.getInstance().apply { set(2025, 5, 20); stripTime() },
+                endDate = Calendar.getInstance().apply { set(2025, 5, 21); stripTime() },
                 estimatedPrice = 1200.0,
                 groupSize = 4,
                 creatorId = 2,
-                participants = mapOf(2 to 1, 3 to 1, 5 to 1, 6 to 1),
-                appliedUsers = mapOf(1 to 1, 4 to 1),
-                rejectedUsers = emptyMap(),
+                participants = mapOf(2 to 1, 3 to 1, 5 to 1, 1 to 1),
+                appliedUsers = emptyMap(),
+                rejectedUsers = mapOf(6 to 1, 4 to 1),
                 published = true,
                 typeTravel = listOf(TypeTravel.PARTY, TypeTravel.RELAX),
                 status = TripStatus.COMPLETED,
                 activities = mapOf(
-                    Calendar.getInstance().apply { set(2025, 7, 20); stripTime() } to listOf(
+                    Calendar.getInstance().apply { set(2025, 5, 20); stripTime() } to listOf(
                         Activity(
                             9,
-                            Calendar.getInstance().apply { set(2025, 7, 20); stripTime() },
+                            Calendar.getInstance().apply { set(2025, 5, 20); stripTime() },
                             "10:00 AM",
                             true,
                             "Snorkeling tour"
                         ),
                         Activity(
                             10,
-                            Calendar.getInstance().apply { set(2025, 7, 20); stripTime() },
+                            Calendar.getInstance().apply { set(2025, 5, 20); stripTime() },
                             "01:00 PM",
                             true,
                             "Beach lunch"
                         ),
                         Activity(
                             11,
-                            Calendar.getInstance().apply { set(2025, 7, 20); stripTime() },
+                            Calendar.getInstance().apply { set(2025, 5, 20); stripTime() },
                             "04:00 PM",
                             false,
                             "Massage session"
                         ),
                         Activity(
                             12,
-                            Calendar.getInstance().apply { set(2025, 7, 20); stripTime() },
+                            Calendar.getInstance().apply { set(2025, 5, 20); stripTime() },
                             "07:00 PM",
                             true,
                             "Sunset cruise"
                         )
                     ),
-                    Calendar.getInstance().apply { set(2025, 7, 21); stripTime() } to listOf(
+                    Calendar.getInstance().apply { set(2025, 5, 21); stripTime() } to listOf(
                         Activity(
                             13,
-                            Calendar.getInstance().apply { set(2025, 7, 21); stripTime() },
+                            Calendar.getInstance().apply { set(2025, 5, 21); stripTime() },
                             "09:00 AM",
                             true,
                             "Island hopping"
                         ),
                         Activity(
                             14,
-                            Calendar.getInstance().apply { set(2025, 7, 21); stripTime() },
+                            Calendar.getInstance().apply { set(2025, 5, 21); stripTime() },
                             "02:00 PM",
                             true,
                             "Cuisine tasting"
                         ),
                         Activity(
                             15,
-                            Calendar.getInstance().apply { set(2025, 7, 21); stripTime() },
+                            Calendar.getInstance().apply { set(2025, 5, 21); stripTime() },
                             "03:00 PM",
                             false,
                             "Shopping"
                         ),
                         Activity(
                             16,
-                            Calendar.getInstance().apply { set(2025, 7, 21); stripTime() },
+                            Calendar.getInstance().apply { set(2025, 5, 21); stripTime() },
                             "08:00 PM",
                             true,
                             "Beach party"
@@ -291,12 +291,12 @@ class Model {
                 estimatedPrice = 1100.0,
                 groupSize = 4,
                 creatorId = 3,
-                participants = mapOf(1 to 1, 3 to 1, 4 to 1, 5 to 1),
-                appliedUsers = mapOf(2 to 1, 6 to 1),
-                rejectedUsers = emptyMap(),
+                participants = mapOf(3 to 1, 1 to 1, 4 to 1, 5 to 1),
+                appliedUsers = emptyMap(),
+                rejectedUsers = mapOf(2 to 1, 6 to 1),
                 published = true,
                 typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.CULTURE),
-                status = TripStatus.IN_PROGRESS,
+                status = TripStatus.NOT_STARTED,
                 activities = mapOf(
                     Calendar.getInstance().apply { set(2025, 9, 5); stripTime() } to listOf(
                         Activity(17, Calendar.getInstance().apply { set(2025, 9, 5); stripTime() }, "08:00 AM", true, "Guided trek through Sacred Valley"),
@@ -362,8 +362,8 @@ class Model {
                 photo = "kyoto",
                 title = "Kyoto Zen Retreat",
                 destination = "Kyoto",
-                startDate = Calendar.getInstance().apply { set(2025, 12, 1); stripTime() },
-                endDate = Calendar.getInstance().apply { set(2025, 12, 4); stripTime() },
+                startDate = Calendar.getInstance().apply { set(2025, 10, 1); stripTime() },
+                endDate = Calendar.getInstance().apply { set(2025, 10, 4); stripTime() },
                 estimatedPrice = 1650.0,
                 groupSize = 5,
                 creatorId = 1,
@@ -374,29 +374,29 @@ class Model {
                 typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.RELAX),
                 status = TripStatus.NOT_STARTED,
                 activities = mapOf(
-                    Calendar.getInstance().apply { set(2025, 12, 1); stripTime() } to listOf(
-                        Activity(65, Calendar.getInstance().apply { set(2025, 12, 1); stripTime() }, "08:00 AM", true, "Zen meditation at Ryōan-ji"),
-                        Activity(66, Calendar.getInstance().apply { set(2025, 12, 1); stripTime() }, "11:00 AM", true, "Stroll through Philosopher’s Path"),
-                        Activity(67, Calendar.getInstance().apply { set(2025, 12, 1); stripTime() }, "02:00 PM", false, "Matcha tasting"),
-                        Activity(68, Calendar.getInstance().apply { set(2025, 12, 1); stripTime() }, "06:00 PM", true, "Kaiseki dinner at local ryokan")
+                    Calendar.getInstance().apply { set(2025, 10, 1); stripTime() } to listOf(
+                        Activity(65, Calendar.getInstance().apply { set(2025, 10, 1); stripTime() }, "08:00 AM", true, "Zen meditation at Ryōan-ji"),
+                        Activity(66, Calendar.getInstance().apply { set(2025, 10, 1); stripTime() }, "11:00 AM", true, "Stroll through Philosopher’s Path"),
+                        Activity(67, Calendar.getInstance().apply { set(2025, 10, 1); stripTime() }, "02:00 PM", false, "Matcha tasting"),
+                        Activity(68, Calendar.getInstance().apply { set(2025, 10, 1); stripTime() }, "06:00 PM", true, "Kaiseki dinner at local ryokan")
                     ),
-                    Calendar.getInstance().apply { set(2025, 12, 2); stripTime() } to listOf(
-                        Activity(69, Calendar.getInstance().apply { set(2025, 12, 2); stripTime() }, "09:00 AM", true, "Visit Fushimi Inari shrine"),
-                        Activity(70, Calendar.getInstance().apply { set(2025, 12, 2); stripTime() }, "02:00 PM", true, "Tofu lunch in Gion"),
-                        Activity(71, Calendar.getInstance().apply { set(2025, 12, 2); stripTime() }, "03:00 PM", false, "Tea ceremony workshop"),
-                        Activity(72, Calendar.getInstance().apply { set(2025, 12, 2); stripTime() }, "07:00 PM", true, "Night walk in Gion district")
+                    Calendar.getInstance().apply { set(2025, 10, 2); stripTime() } to listOf(
+                        Activity(69, Calendar.getInstance().apply { set(2025, 10, 2); stripTime() }, "09:00 AM", true, "Visit Fushimi Inari shrine"),
+                        Activity(70, Calendar.getInstance().apply { set(2025, 10, 2); stripTime() }, "02:00 PM", true, "Tofu lunch in Gion"),
+                        Activity(71, Calendar.getInstance().apply { set(2025, 10, 2); stripTime() }, "03:00 PM", false, "Tea ceremony workshop"),
+                        Activity(72, Calendar.getInstance().apply { set(2025, 10, 2); stripTime() }, "07:00 PM", true, "Night walk in Gion district")
                     ),
-                    Calendar.getInstance().apply { set(2025, 12, 3); stripTime() } to listOf(
-                        Activity(73, Calendar.getInstance().apply { set(2025, 12, 3); stripTime() }, "08:00 AM", true, "Arashiyama Bamboo Grove walk"),
-                        Activity(74, Calendar.getInstance().apply { set(2025, 12, 3); stripTime() }, "11:00 AM", true, "River boat ride"),
-                        Activity(75, Calendar.getInstance().apply { set(2025, 12, 3); stripTime() }, "02:00 PM", false, "Zen garden journaling"),
-                        Activity(76, Calendar.getInstance().apply { set(2025, 12, 3); stripTime() }, "06:00 PM", true, "Dinner & sake tasting")
+                    Calendar.getInstance().apply { set(2025, 10, 3); stripTime() } to listOf(
+                        Activity(73, Calendar.getInstance().apply { set(2025, 10, 3); stripTime() }, "08:00 AM", true, "Arashiyama Bamboo Grove walk"),
+                        Activity(74, Calendar.getInstance().apply { set(2025, 10, 3); stripTime() }, "11:00 AM", true, "River boat ride"),
+                        Activity(75, Calendar.getInstance().apply { set(2025, 10, 3); stripTime() }, "02:00 PM", false, "Zen garden journaling"),
+                        Activity(76, Calendar.getInstance().apply { set(2025, 10, 3); stripTime() }, "06:00 PM", true, "Dinner & sake tasting")
                     ),
-                    Calendar.getInstance().apply { set(2025, 12, 4); stripTime() } to listOf(
-                        Activity(77, Calendar.getInstance().apply { set(2025, 12, 4); stripTime() }, "09:00 AM", true, "Kinkaku-ji visit"),
-                        Activity(78, Calendar.getInstance().apply { set(2025, 12, 4); stripTime() }, "02:00 PM", true, "Farewell sushi lunch"),
-                        Activity(79, Calendar.getInstance().apply { set(2025, 12, 4); stripTime() }, "03:00 PM", false, "Free time & shopping"),
-                        Activity(80, Calendar.getInstance().apply { set(2025, 12, 4); stripTime() }, "06:00 PM", true, "Closing circle reflection")
+                    Calendar.getInstance().apply { set(2025, 10, 4); stripTime() } to listOf(
+                        Activity(77, Calendar.getInstance().apply { set(2025, 10, 4); stripTime() }, "09:00 AM", true, "Kinkaku-ji visit"),
+                        Activity(78, Calendar.getInstance().apply { set(2025, 10, 4); stripTime() }, "02:00 PM", true, "Farewell sushi lunch"),
+                        Activity(79, Calendar.getInstance().apply { set(2025, 10, 4); stripTime() }, "03:00 PM", false, "Free time & shopping"),
+                        Activity(80, Calendar.getInstance().apply { set(2025, 10, 4); stripTime() }, "06:00 PM", true, "Closing circle reflection")
                     )
                 )
             ),
@@ -406,41 +406,41 @@ class Model {
                 photo = "sydney",
                 title = "Sydney Coastal Explorer",
                 destination = "Sydney",
-                startDate = Calendar.getInstance().apply { set(2025, 12, 10); stripTime() },
-                endDate = Calendar.getInstance().apply { set(2025, 12, 13); stripTime() },
+                startDate = Calendar.getInstance().apply { set(2025, 11, 10); stripTime() },
+                endDate = Calendar.getInstance().apply { set(2025, 11, 13); stripTime() },
                 estimatedPrice = 1900.0,
                 groupSize = 6,
                 creatorId = 4,
-                participants = mapOf(2 to 1, 4 to 1, 5 to 1, 6 to 1),
+                participants = mapOf(4 to 1, 2 to 1, 5 to 1, 6 to 1),
                 appliedUsers = mapOf(1 to 1, 3 to 1),
                 rejectedUsers = emptyMap(),
                 published = true,
                 typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.PARTY),
                 status = TripStatus.NOT_STARTED,
                 activities = mapOf(
-                    Calendar.getInstance().apply { set(2025, 12, 10) } to listOf(
-                        Activity(81, Calendar.getInstance().apply { set(2025, 12, 10); stripTime() }, "09:00 AM", true, "Bondi to Coogee coastal walk"),
-                        Activity(82, Calendar.getInstance().apply { set(2025, 12, 10); stripTime() }, "02:00 PM", true, "Beachside BBQ lunch"),
-                        Activity(83, Calendar.getInstance().apply { set(2025, 12, 10); stripTime() }, "03:00 PM", false, "Surfing intro class"),
-                        Activity(84, Calendar.getInstance().apply { set(2025, 12, 10); stripTime() }, "08:00 PM", true, "Rooftop drinks downtown")
+                    Calendar.getInstance().apply { set(2025, 11, 10) } to listOf(
+                        Activity(81, Calendar.getInstance().apply { set(2025, 11, 10); stripTime() }, "09:00 AM", true, "Bondi to Coogee coastal walk"),
+                        Activity(82, Calendar.getInstance().apply { set(2025, 11, 10); stripTime() }, "02:00 PM", true, "Beachside BBQ lunch"),
+                        Activity(83, Calendar.getInstance().apply { set(2025, 11, 10); stripTime() }, "03:00 PM", false, "Surfing intro class"),
+                        Activity(84, Calendar.getInstance().apply { set(2025, 11, 10); stripTime() }, "08:00 PM", true, "Rooftop drinks downtown")
                     ),
-                    Calendar.getInstance().apply { set(2025, 12, 11) } to listOf(
-                        Activity(85, Calendar.getInstance().apply { set(2025, 12, 11); stripTime() }, "08:00 AM", true, "Harbour Bridge climb"),
-                        Activity(86, Calendar.getInstance().apply { set(2025, 12, 11); stripTime() }, "11:00 AM", true, "Opera House guided tour"),
-                        Activity(87, Calendar.getInstance().apply { set(2025, 12, 11); stripTime() }, "02:00 PM", false, "Museum of Contemporary Art visit"),
-                        Activity(88, Calendar.getInstance().apply { set(2025, 12, 11); stripTime() }, "07:00 PM", true, "Sunset dinner cruise")
+                    Calendar.getInstance().apply { set(2025, 11, 11) } to listOf(
+                        Activity(85, Calendar.getInstance().apply { set(2025, 11, 11); stripTime() }, "08:00 AM", true, "Harbour Bridge climb"),
+                        Activity(86, Calendar.getInstance().apply { set(2025, 11, 11); stripTime() }, "11:00 AM", true, "Opera House guided tour"),
+                        Activity(87, Calendar.getInstance().apply { set(2025, 11, 11); stripTime() }, "02:00 PM", false, "Museum of Contemporary Art visit"),
+                        Activity(88, Calendar.getInstance().apply { set(2025, 11, 11); stripTime() }, "07:00 PM", true, "Sunset dinner cruise")
                     ),
-                    Calendar.getInstance().apply { set(2025, 12, 12) } to listOf(
-                        Activity(89, Calendar.getInstance().apply { set(2025, 12, 12); stripTime() }, "10:00 AM", true, "Ferry to Manly Beach"),
-                        Activity(90, Calendar.getInstance().apply { set(2025, 12, 12); stripTime() }, "01:00 PM", true, "Seafood lunch at the wharf"),
-                        Activity(91, Calendar.getInstance().apply { set(2025, 12, 12); stripTime() }, "04:00 PM", false, "Relax on the sand"),
-                        Activity(92, Calendar.getInstance().apply { set(2025, 12, 12); stripTime() }, "09:00 PM", true, "Beach party")
+                    Calendar.getInstance().apply { set(2025, 11, 12) } to listOf(
+                        Activity(89, Calendar.getInstance().apply { set(2025, 11, 12); stripTime() }, "10:00 AM", true, "Ferry to Manly Beach"),
+                        Activity(90, Calendar.getInstance().apply { set(2025, 11, 12); stripTime() }, "01:00 PM", true, "Seafood lunch at the wharf"),
+                        Activity(91, Calendar.getInstance().apply { set(2025, 11, 12); stripTime() }, "04:00 PM", false, "Relax on the sand"),
+                        Activity(92, Calendar.getInstance().apply { set(2025, 11, 12); stripTime() }, "09:00 PM", true, "Beach party")
                     ),
-                    Calendar.getInstance().apply { set(2025, 12, 13) } to listOf(
-                        Activity(93, Calendar.getInstance().apply { set(2025, 12, 13); stripTime() }, "08:00 AM", true, "Morning yoga by the bay"),
-                        Activity(94, Calendar.getInstance().apply { set(2025, 12, 13); stripTime() }, "11:00 AM", true, "Brunch & recap session"),
-                        Activity(95, Calendar.getInstance().apply { set(2025, 12, 13); stripTime() }, "02:00 PM", false, "Last-minute shopping"),
-                        Activity(96, Calendar.getInstance().apply { set(2025, 12, 13); stripTime() }, "05:00 PM", true, "Farewell drinks")
+                    Calendar.getInstance().apply { set(2025, 11, 13) } to listOf(
+                        Activity(93, Calendar.getInstance().apply { set(2025, 11, 13); stripTime() }, "08:00 AM", true, "Morning yoga by the bay"),
+                        Activity(94, Calendar.getInstance().apply { set(2025, 11, 13); stripTime() }, "11:00 AM", true, "Brunch & recap session"),
+                        Activity(95, Calendar.getInstance().apply { set(2025, 11, 13); stripTime() }, "02:00 PM", false, "Last-minute shopping"),
+                        Activity(96, Calendar.getInstance().apply { set(2025, 11, 13); stripTime() }, "05:00 PM", true, "Farewell drinks")
                     )
                 )
             ),
@@ -455,7 +455,7 @@ class Model {
                 estimatedPrice = 2100.0,
                 groupSize = 6,
                 creatorId = 2,
-                participants = mapOf(1 to 1, 2 to 1, 3 to 1, 5 to 1),
+                participants = mapOf(2 to 1, 3 to 1, 5 to 1),
                 appliedUsers = mapOf(4 to 1, 6 to 1),
                 rejectedUsers = emptyMap(),
                 published = true,
@@ -686,7 +686,7 @@ class Model {
                 groupSize = 4,
                 creatorId = 6,
                 participants = mapOf(2 to 1, 4 to 1, 6 to 1),
-                appliedUsers = mapOf(1 to 1, 5 to 1),
+                appliedUsers = mapOf(5 to 1),
                 rejectedUsers = emptyMap(),
                 published = true,
                 typeTravel = listOf(TypeTravel.RELAX, TypeTravel.CULTURE),
@@ -916,6 +916,149 @@ class Model {
             Review(
                 reviewId = 4,
                 isTripReview = true,
+                reviewerId = 6,
+                reviewedId = 1,
+                title = "A Deep Dive into Barcelona’s Culture",
+                comment = "This trip was an unforgettable experience! The balance between group activities and personal time was just right. From the rich history of the Gothic Quarter to the vibrant energy of the local markets, I felt immersed in the heart of Catalonia. The museum visit was a standout moment, and the hike followed by the mountain picnic on the second day was so refreshing. Our guide was knowledgeable, friendly, and kept the group engaged. I especially appreciated the campfire stories to end the trip — it gave everyone a chance to bond and reflect. Highly recommend this trip to anyone who enjoys a mix of culture, nature, and great company.",
+                score = 9,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2024, 6, 15) }
+            ),
+            Review(
+                reviewId = 5,
+                isTripReview = false,
+                reviewerId = 6,
+                reviewedId = 1,
+                title = "Thoughtful and adventurous companion",
+                comment = "Traveling with Alice was such a joy. She’s incredibly respectful of group dynamics and always made insightful observations about the places we visited. Whether we were exploring museums or hiking together, she brought a calm energy that was deeply appreciated. I especially loved our conversations during free time — she has a way of turning every small moment into something memorable. Would definitely travel with her again!",
+                score = 10,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2024, 6, 14) }
+            ),
+            Review(
+                reviewId = 6,
+                isTripReview = false,
+                reviewerId = 6,
+                reviewedId = 2,
+                title = "Fun and high-spirited",
+                comment = "Bella brought a lot of energy and spontaneity to the group. She was always up for trying new things and encouraged others to loosen up and enjoy the moment. I appreciated her bold spirit during our group dinner and how she kept conversations light and joyful. While she sometimes did her own thing, it never felt disruptive — in fact, her independence added flavor to the trip. Great to have her in a travel crew.",
+                score = 8,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2024, 6, 14) }
+            ),
+            Review(
+                reviewId = 7,
+                isTripReview = false,
+                reviewerId = 6,
+                reviewedId = 3,
+                title = "Reliable and engaging traveler",
+                comment = "Liam was a solid and dependable member of the trip. Always on time, always helpful, and always curious about the culture we were immersed in. I admired how he engaged with the local guides and asked thoughtful questions that enriched the experience for all of us. He’s the kind of travel partner who makes planning smoother and shared moments more meaningful. A true team player with a curious mind.",
+                score = 9,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2024, 6, 14) }
+            ),
+            Review(
+                reviewId = 8,
+                isTripReview = false,
+                reviewerId = 1,
+                reviewedId = 6,
+                title = "Graceful and grounded",
+                comment = "Aisha has a wonderfully calming presence and was such a delight to travel with. She brought depth to our group chats and was always genuinely interested in everyone’s perspectives. Whether we were exploring local markets or sharing stories around the campfire, she listened with intent and offered thoughtful reflections. She’s a solo traveler by heart, but she made our group feel like a close-knit circle.",
+                score = 10,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2024, 6, 14) }
+            ),
+            Review(
+                reviewId = 9,
+                isTripReview = false,
+                reviewerId = 1,
+                reviewedId = 2,
+                title = "Vibrant and social",
+                comment = "Bella added an exciting spark to the trip! She was always the first to start a conversation and bring some humor into the mix. Her energy helped us all feel more relaxed, and she never shied away from suggesting fun detours or photo ops. Even if we had slightly different travel styles, I appreciated her spontaneity and joyfulness.",
+                score = 8,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2024, 6, 14) }
+            ),
+            Review(
+                reviewId = 10,
+                isTripReview = false,
+                reviewerId = 1,
+                reviewedId = 3,
+                title = "Passionate and thoughtful traveler",
+                comment = "Liam has a true explorer’s heart. He brought so much knowledge and enthusiasm to every activity, especially during the museum visit and the hike. He was always courteous, helped others when needed, and sparked interesting conversations about history and culture. I really valued having him in the group — he made every shared experience richer.",
+                score = 9,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2024, 6, 14) }
+            ),
+            Review(
+                reviewId = 11,
+                isTripReview = false,
+                reviewerId = 2,
+                reviewedId = 6,
+                title = "Kind and composed travel partner",
+                comment = "Aisha was super sweet and always had something meaningful to say. She brought a lot of calm energy to the group and was really open to sharing stories. Loved having her around.",
+                score = 9,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2024, 6, 14) }
+            ),
+            Review(
+                reviewId = 12,
+                isTripReview = false,
+                reviewerId = 2,
+                reviewedId = 1,
+                title = "Cool and observant",
+                comment = "Alice was more quiet but always super friendly. She had great taste in spots to explore and was really easy to get along with. Would definitely hang out with her again on another trip.",
+                score = 8,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2024, 6, 14) }
+            ),
+            Review(
+                reviewId = 13,
+                isTripReview = false,
+                reviewerId = 2,
+                reviewedId = 3,
+                title = "Adventurous and smart",
+                comment = "Liam was super into the cultural parts of the trip and always asked cool questions. You could tell he really cared about learning and connecting with the places we visited. Great vibe.",
+                score = 9,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2024, 6, 14) }
+            ),
+            Review(
+                reviewId = 14,
+                isTripReview = false,
+                reviewerId = 3,
+                reviewedId = 6,
+                title = "Inspiring travel companion",
+                comment = "Aisha was calm, reflective, and brought a meaningful perspective to every moment of the trip. She was someone I found myself looking forward to chatting with at the end of each day. Truly one of the most insightful people I’ve met while traveling.",
+                score = 9,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2024, 6, 14) }
+            ),
+            Review(
+                reviewId = 15,
+                isTripReview = false,
+                reviewerId = 3,
+                reviewedId = 1,
+                title = "Adventurous and dependable",
+                comment = "Alice was organized, easygoing, and always ready to explore. She kept the group on track during our hike and shared great insights during our city walk. A reliable and fun person to travel with.",
+                score = 10,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2024, 6, 14) }
+            ),
+            Review(
+                reviewId = 16,
+                isTripReview = false,
+                reviewerId = 3,
+                reviewedId = 2,
+                title = "Lively and social",
+                comment = "Bella kept the energy high and made sure no one felt left out. She was full of creative ideas and always ready to enjoy the moment. If you're looking for someone who brings positive vibes to a group, she's it.",
+                score = 8,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2024, 6, 14) }
+            ),
+            Review(
+                reviewId = 17,
+                isTripReview = true,
                 reviewerId = 2,
                 reviewedId = 2,
                 title = "Loved it!",
@@ -925,9 +1068,9 @@ class Model {
                 date = Calendar.getInstance().apply { set(2026, 4, 10); stripTime() }
             ),
             Review(
-                reviewId = 5,
+                reviewId = 18,
                 isTripReview = true,
-                reviewerId = 4,
+                reviewerId = 3,
                 reviewedId = 2,
                 title = "Relaxing trip",
                 comment = "I needed a break from work, and this trip delivered. From the moment we arrived, everything was taken care of. The massage session was heavenly, and the sunsets over the ocean were something out of a movie. I left feeling refreshed and truly happy. Would highly recommend for anyone seeking peace.",
@@ -936,7 +1079,7 @@ class Model {
                 date = Calendar.getInstance().apply { set(2026, 4, 10); stripTime() }
             ),
             Review(
-                reviewId = 6,
+                reviewId = 19,
                 isTripReview = true,
                 reviewerId = 5,
                 reviewedId = 2,
@@ -947,7 +1090,7 @@ class Model {
                 date = Calendar.getInstance().apply { set(2026, 4, 10); stripTime() }
             ),
             Review(
-                reviewId = 7,
+                reviewId = 20,
                 isTripReview = false,
                 reviewerId = 5,
                 reviewedId = 1,
@@ -958,7 +1101,7 @@ class Model {
                 date = Calendar.getInstance().apply { set(2026, 4, 10); stripTime() }
             ),
             Review(
-                reviewId = 8,
+                reviewId = 21,
                 isTripReview = false,
                 reviewerId = 5,
                 reviewedId = 2,
@@ -967,6 +1110,105 @@ class Model {
                 score = 8,
                 photos = emptyList(),
                 date = Calendar.getInstance().apply { set(2026, 4, 10); stripTime() }
+            ),
+            Review(
+                reviewId = 22,
+                isTripReview = false,
+                reviewerId = 2,
+                reviewedId = 1,
+                title = "Reliable and energetic",
+                comment = "Alice brought a nice balance to the group. She was always on time, enthusiastic, and had a real curiosity for the local culture. Definitely someone I’d travel with again.",
+                score = 9,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2025, 5, 22) }
+            ),
+            Review(
+                reviewId = 23,
+                isTripReview = false,
+                reviewerId = 2,
+                reviewedId = 3,
+                title = "Adventurous spirit",
+                comment = "Liam was up for anything—snorkeling, island hopping, you name it. His energy made the trip more exciting. Great vibe and very respectful of everyone’s pace.",
+                score = 8,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2025, 5, 22) }
+            ),
+            Review(
+                reviewId = 24,
+                isTripReview = false,
+                reviewerId = 2,
+                reviewedId = 5,
+                title = "Quiet but curious",
+                comment = "Ethan was observant and kind. He had great recommendations for food stops and local snacks. While he was more reserved, he always participated meaningfully.",
+                score = 7,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2025, 5, 22) }
+            ),
+            Review(
+                reviewId = 25,
+                isTripReview = false,
+                reviewerId = 3,
+                reviewedId = 1,
+                title = "Uplifting and organized",
+                comment = "Alice had a clear plan in mind and was always prepared, which helped the group move smoothly. Her positivity made the beach party even better. A great teammate.",
+                score = 10,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2025, 5, 22) }
+            ),
+            Review(
+                reviewId = 26,
+                isTripReview = false,
+                reviewerId = 3,
+                reviewedId = 2,
+                title = "Fun and free-spirited",
+                comment = "Bella brought all the fun to the Phuket nights. She danced, laughed, and made sure the group was enjoying themselves. Always up for a party, but never overstepped.",
+                score = 9,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2025, 5, 22) }
+            ),
+            Review(
+                reviewId = 27,
+                isTripReview = false,
+                reviewerId = 3,
+                reviewedId = 5,
+                title = "Excellent food scout",
+                comment = "Ethan was quiet but had an incredible sense for finding good food. He introduced us to amazing dishes during the cuisine tasting and was very thoughtful throughout.",
+                score = 8,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2025, 5, 22) }
+            ),
+            Review(
+                reviewId = 28,
+                isTripReview = false,
+                reviewerId = 5,
+                reviewedId = 1,
+                title = "Supportive and attentive",
+                comment = "Alice always checked in on everyone and made sure things were going well. She made the group feel connected and supported. I appreciated her calm attitude.",
+                score = 9,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2025, 5, 22) }
+            ),
+            Review(
+                reviewId = 29,
+                isTripReview = false,
+                reviewerId = 5,
+                reviewedId = 2,
+                title = "Lively and fearless",
+                comment = "Bella had a wild but enjoyable energy. From leading the dancing to cracking jokes during the cruise, she was a strong presence. Definitely made things more fun.",
+                score = 8,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2025, 5, 22) }
+            ),
+            Review(
+                reviewId = 30,
+                isTripReview = false,
+                reviewerId = 5,
+                reviewedId = 3,
+                title = "Chill and reliable",
+                comment = "Liam was super friendly and approachable. He was always open to conversations and helped organize our snorkeling gear when things got messy. Would travel with him again.",
+                score = 9,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2025, 5, 22) }
             )
         )
     )
