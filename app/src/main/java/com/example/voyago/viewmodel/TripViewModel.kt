@@ -324,6 +324,14 @@ class TripViewModel(val model:Model): ViewModel() {
         return updatedList
     }
 
+    //Edit user profile
+    fun editUserData(updatedUserData: UserData): List<UserData> {
+        val updatedList = model.editUserData(updatedUserData)
+        return updatedList
+    }
+
+
+
     //Ask to join a trip or cancel application
     fun toggleAskToJoin(tripId: Int) = model.toggleAskToJoin(tripId)
 

@@ -1540,6 +1540,15 @@ class Model {
         return _tripList.value.filter { it.status == TripStatus.NOT_STARTED }
     }
 
+    fun editUserData(updatedUserData: UserData): List<UserData> {
+        _users.value = _users.value.map {
+            if (it.id == updatedUserData.id) updatedUserData else it
+        }
+        return _users.value
+    }
+
+
+
 
 
 
