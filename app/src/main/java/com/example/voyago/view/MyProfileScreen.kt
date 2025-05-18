@@ -262,8 +262,8 @@ fun TabAboutTripsReview(user: UserData, vm: TripViewModel, vm2: ArticleViewModel
     val privateTrips by vm.privateTrips.collectAsState()
 
     LaunchedEffect(Unit) {
-        vm.creatorPublicFilter()
-        vm.creatorPrivateFilter()
+        vm.creatorPublicFilter(user.id)
+        vm.creatorPrivateFilter(user.id)
     }
 
     var selectedTabIndex by remember {
@@ -425,7 +425,8 @@ fun TabAboutTripsReview(user: UserData, vm: TripViewModel, vm2: ArticleViewModel
                         ) {
                             val reviewsList = vm.getUserReviews(user.id)
                             if (reviewsList.isEmpty()){
-                                Text("No reviews yet")
+                                Text(text = "No reviews yet",
+                                    textAlign = TextAlign.Center)
                             } else {
                                 reviewsList.forEach { review ->
                                     val reviewer = vm.getUserData(review.reviewerId)

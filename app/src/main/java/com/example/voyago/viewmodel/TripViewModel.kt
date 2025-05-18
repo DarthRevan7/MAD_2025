@@ -212,11 +212,11 @@ class TripViewModel(val model:Model): ViewModel() {
         applyFilters()
     }
 
-    //List of trips created and published by the logged in user (id=1)
-    fun creatorPublicFilter() = model.filterPublishedByCreator(1)
+    //List of trips created and published by the logged in user
+    fun creatorPublicFilter(id: Int) = model.filterPublishedByCreator(id)
 
-    //List of trips created, but not published by the logged in user (id=1)
-    fun creatorPrivateFilter() = model.filterPrivateByCreator(1)
+    //List of trips created, but not published by the logged in user
+    fun creatorPrivateFilter(id: Int) = model.filterPrivateByCreator(id)
 
     //Import an already published trip as a private trip of the logged in user (id=1)
     fun addImportedTrip(photo: String, title: String, destination: String, startDate: Calendar,

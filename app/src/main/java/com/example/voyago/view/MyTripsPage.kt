@@ -46,8 +46,8 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel) {
     val privateTrips by vm.privateTrips.collectAsState()
 
     LaunchedEffect(Unit) {
-        vm.creatorPublicFilter()
-        vm.creatorPrivateFilter()
+        vm.creatorPublicFilter(1)
+        vm.creatorPrivateFilter(1)
     }
 
     Scaffold(
