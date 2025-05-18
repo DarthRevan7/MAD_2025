@@ -164,3 +164,32 @@ fun CompletedBanner(modifier: Modifier) {
         }
     }
 }
+
+@Composable
+fun BookedBanner(modifier: Modifier) {
+    Box(
+        modifier = modifier
+            .padding(vertical = 10.dp, horizontal = 10.dp)
+            .wrapContentSize()
+            .clip(RoundedCornerShape(16.dp))
+            .background(
+                color = Color(0xfa, 0xa2, 0x61, 255)
+            ),
+    ) {
+        Row(
+            modifier = Modifier.padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.TaskAlt,
+                contentDescription = "booked",
+                tint = Color.White
+            )
+            Spacer(Modifier.padding(3.dp))
+            Text(
+                text = "Fully booked",
+                color = Color.White
+            )
+        }
+    }
+}

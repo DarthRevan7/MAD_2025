@@ -449,8 +449,12 @@ fun Hero(trip: Trip) {
             )
         }
 
-        if (!trip.canJoin()) {
+        if (trip.status == Trip.TripStatus.COMPLETED) {
+            //Banner that indicated that the trip has already happened
             CompletedBanner(Modifier.align(Alignment.TopEnd))
+        } else if (!trip.canJoin()) {
+            //Banner that shows that nobody can join the trip anymore
+            BookedBanner(Modifier.align(Alignment.TopEnd))
         }
     }
 }
