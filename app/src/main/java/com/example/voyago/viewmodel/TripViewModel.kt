@@ -205,7 +205,10 @@ class TripViewModel(val model:Model): ViewModel() {
 
     //Ask to join a trip or cancel application
     val askedTrips = model.askedTrips
-    fun toggleAskToJoin(tripId: Int) = model.toggleAskToJoin(tripId)
+    //fun toggleAskToJoin(tripId: Int) = model.toggleAskToJoin(tripId)
+    fun askToJoin(trip: Trip, userId: Int, spots: Int) = model.requestToJoin(trip, userId, spots)
+    fun cancelAskToJoin(trip: Trip, userId: Int) = model.cancelRequestToJoin(trip, userId)
+    fun syncAskedTrips() = model.syncAskedTripsWithAppliedUsers(1)
 
     //MY TRIPS
 

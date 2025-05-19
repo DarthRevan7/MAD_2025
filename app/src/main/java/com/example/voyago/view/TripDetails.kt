@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -42,16 +44,21 @@ import java.util.Locale
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.StarHalf
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckBox
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.setValue
 import com.example.voyago.activities.ProfilePhoto
 import com.example.voyago.model.Review
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -66,6 +73,7 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean) {
+    //Trip that we are showing
     val trip by vm.selectedTrip
     println("selected trip = ${vm.selectedTrip}")
 
@@ -76,10 +84,18 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean)
 
     val nonNullTrip = trip!!
 
+    //Delete confirmation trip
     var showPopup by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
-    val askedTrips: Set<Int> by vm.askedTrips.collectAsState()
-    val hasAsked = askedTrips.contains(trip?.id)
+
+    //Manage join request
+    val askedTrips: Map<Int, Int> by vm.askedTrips.collectAsState()
+    vm.syncAskedTrips()
+    val requestedSpots = trip?.id?.let { askedTrips[it] } ?: 0
+    val hasAsked = requestedSpots > 0
+    var showDialog by remember { mutableStateOf(false) }
+    var selectedSpots by remember { mutableIntStateOf(1) }
+
 
     val listState = rememberLazyListState()
 
@@ -291,23 +307,28 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean)
                             //Ask to Join/Asked to Join Button
                             Button(
                                 onClick = {
-                                    vm.toggleAskToJoin(nonNullTrip.id)
+                                    if (hasAsked) {
+                                        vm.cancelAskToJoin(nonNullTrip, 1)
+                                    } else {
+                                        selectedSpots = 1
+                                        showDialog = true
+                                    }
                                 },
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor =
-                                        if (hasAsked)
-                                            Color(0x65, 0xa9, 0x8b, 255)
-                                        else
-                                            Color(0x14, 0xa1, 0x55, 255)
+                                    containerColor = if (hasAsked)
+                                        Color(0x65, 0xa9, 0x8b, 255)
+                                    else
+                                        Color(0x14, 0xa1, 0x55, 255)
                                 )
                             ) {
                                 if (hasAsked) {
                                     Icon(Icons.Default.Check, "check")
-                                    Text("Asked to Join")
+                                    Text("Asked to Join ($requestedSpots spot${if (requestedSpots > 1) "s" else ""})")
                                 } else {
                                     Text("Ask to Join")
                                 }
                             }
+
                         } else if (nonNullTrip.participants.containsKey(1)
                             && nonNullTrip.status != Trip.TripStatus.COMPLETED
                             && nonNullTrip.creatorId != 1) {
@@ -419,8 +440,57 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean)
                 }
             }
         }
-    }
 
+        //PopUp that appears when the user ask to join a trip
+        if (showDialog) {
+            val maxSpots = nonNullTrip.availableSpots()
+
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                title = { Text("Select number of spots") },
+                text = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        IconButton(
+                            onClick = { if (selectedSpots > 1) selectedSpots-- },
+                            enabled = selectedSpots > 1
+                        ) {
+                            Icon(Icons.Default.Remove, contentDescription = "Decrease")
+                        }
+
+                        Text(
+                            "$selectedSpots",
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            style = MaterialTheme.typography.headlineMedium
+                        )
+
+                        IconButton(
+                            onClick = { if (selectedSpots < maxSpots) selectedSpots++ },
+                            enabled = selectedSpots < maxSpots
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = "Increase")
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        vm.askToJoin(nonNullTrip, 1, selectedSpots)
+                        showDialog = false
+                    }) {
+                        Text("Confirm")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
+    }
 }
 
 @SuppressLint("DiscouragedApi")

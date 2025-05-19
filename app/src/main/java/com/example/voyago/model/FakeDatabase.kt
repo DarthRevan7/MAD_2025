@@ -6,6 +6,7 @@ import com.example.voyago.model.Trip.TripStatus
 import com.example.voyago.view.SelectableItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.filter
 import java.util.Calendar
 
 
@@ -1541,6 +1542,7 @@ class Model {
 
     //MANAGEMENT OF APPLICATIONS TO TRIPS
 
+    /*
     private val _askedTrips = MutableStateFlow<Set<Int>>(emptySet())
     val askedTrips: StateFlow<Set<Int>> = _askedTrips
 
@@ -1551,6 +1553,36 @@ class Model {
             _askedTrips.value + tripId
         }
     }
+     */
+
+    private val _askedTrips = MutableStateFlow<Map<Int, Int>>(emptyMap())
+    val askedTrips: StateFlow<Map<Int, Int>> = _askedTrips
+
+    fun requestToJoin(trip: Trip, userId :Int, spots: Int) {
+        val updatedAppliedUsers = trip.appliedUsers.toMutableMap()
+        updatedAppliedUsers[userId] = spots
+
+        trip.appliedUsers = updatedAppliedUsers
+        _askedTrips.value = _askedTrips.value + (trip.id to spots)
+    }
+
+    fun cancelRequestToJoin(trip: Trip, userId: Int) {
+        val updatedAppliedUsers = trip.appliedUsers.toMutableMap()
+        updatedAppliedUsers.remove(userId)
+
+        trip.appliedUsers = updatedAppliedUsers
+        _askedTrips.value = _askedTrips.value - trip.id
+    }
+
+    fun syncAskedTripsWithAppliedUsers(userId: Int) {
+        val askedMap = _tripList.value
+            .filter { trip -> trip.appliedUsers.containsKey(userId) }
+            .associate { trip -> trip.id to (trip.appliedUsers[userId] ?: 0) }
+        _askedTrips.value = askedMap
+    }
+
+
+
 
 
     // ------------         USER MODEL        --------------
