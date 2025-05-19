@@ -31,11 +31,10 @@ class TripViewModel(val model:Model): ViewModel() {
         _selectedTrip.value = trip
     }
 
-
     //Identify what the user is doing
     var userAction:UserAction = UserAction.NOTHING
 
-    public enum class UserAction {
+    enum class UserAction {
         EDIT_TRIP, CREATE_TRIP, VIEW_TRIP, NOTHING, SEARCHING, FILTER_SELECTION
     }
 

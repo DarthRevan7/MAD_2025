@@ -10,6 +10,9 @@ import java.util.Calendar
 
 
 class Model {
+    //LISTS OF DATA PLACEHOLDER
+
+    //User list
     private var _users = MutableStateFlow<List<UserData>>(
         listOf(
             UserData(
@@ -117,7 +120,7 @@ class Model {
     )
     var users: StateFlow<List<UserData>> = _users
 
-
+    //Trip list
     private var _tripList = MutableStateFlow<List<Trip>>(
         listOf(
             Trip(
@@ -878,6 +881,7 @@ class Model {
     )
     var tripList: StateFlow<List<Trip>> = _tripList
 
+    //Review list
     private var _reviews = MutableStateFlow<List<Review>>(
         listOf(
             Review(
@@ -1215,252 +1219,41 @@ class Model {
 
     var reviews: StateFlow<List<Review>> = _reviews
 
-    private var nextId = 9
+    // --------------  TRIP MODEL   -----------------
 
+    //SUBSET OF THE TRIP LIST
+
+    //Trips published by the logged in user
     private val _publishedTrips = MutableStateFlow<List<Trip>>(emptyList())
     val publishedTrips: StateFlow<List<Trip>> = _publishedTrips
-
-    private val _privateTrips = MutableStateFlow<List<Trip>>(emptyList())
-    val privateTrips: StateFlow<List<Trip>> = _privateTrips
-
-    private val _allPublishedTrips = MutableStateFlow<List<Trip>>(emptyList())
-    val allPublishedTrips: StateFlow<List<Trip>> = _allPublishedTrips
-
-    private val _askedTrips = MutableStateFlow<Set<Int>>(emptySet())
-    val askedTrips: StateFlow<Set<Int>> = _askedTrips
-
-    private val _minPrice = Double.MAX_VALUE
-    var minPrice: Double = _minPrice
-
-    private val _maxPrice = Double.MIN_VALUE
-    var maxPrice: Double = _maxPrice
-
-    private val _filteredList = MutableStateFlow<List<Trip>>(emptyList())
-    val filteredList: StateFlow<List<Trip>> = _filteredList
-
-    //User Business Logic
-    fun getUsers(ids: List<Int>): List<UserData> {
-        return _users.value.filter { it.id in ids }
-    }
-
-    //TripList Business Logic
-    fun getAllPublishedTrips(): List<Trip> {
-        val published = _tripList.value.filter { it.published }
-        _allPublishedTrips.value = published
-        return published
-    }
 
     fun filterPublishedByCreator(id: Int): List<Trip> {
         _publishedTrips.value = _tripList.value.filter { it.creatorId == id && it.published }
         return _publishedTrips.value
     }
 
+    //Trips created by the user but not published
+    private val _privateTrips = MutableStateFlow<List<Trip>>(emptyList())
+    val privateTrips: StateFlow<List<Trip>> = _privateTrips
+
     fun filterPrivateByCreator(id: Int): List<Trip> {
         _privateTrips.value = _tripList.value.filter { it.creatorId == id && !it.published }
         return _privateTrips.value
     }
 
-    fun changePublishedStatus(id: Int) {
-        _tripList.value = _tripList.value.map {
-            if (it.id == id) {
-                it.copy(published = !it.published)  // Toggle the published status
-            } else {
-                it
-            }
-        }
+    //List of all the published trips
+    private val _allPublishedTrips = MutableStateFlow<List<Trip>>(emptyList())
+    val allPublishedTrips: StateFlow<List<Trip>> = _allPublishedTrips
+
+    fun getAllPublishedTrips(): List<Trip> {
+        val published = _tripList.value.filter { it.published }
+        _allPublishedTrips.value = published
+        return published
     }
 
-    fun deleteTrip(id: Int) {
-        _tripList.value = _tripList.value.filter { it.id != id }
-    }
-
-    fun importTrip(
-        photo: String, title: String, destination: String, startDate: Calendar,
-        endDate: Calendar, estimatedPrice: Double, groupSize: Int,
-        activities: Map<Calendar, List<Activity>>,
-        typeTravel: List<TypeTravel>, creatorId: Int,
-        published: Boolean
-    ): List<Trip> {
-        val newTrip = Trip(
-            id = nextId++,
-            photo = photo,
-            title = title,
-            destination = destination,
-            startDate = startDate,
-            endDate = endDate,
-            estimatedPrice = estimatedPrice,
-            groupSize = groupSize,
-            participants = mapOf(creatorId to 1),
-            activities = activities,
-            status = TripStatus.NOT_STARTED,
-            typeTravel = typeTravel,
-            creatorId = creatorId,
-            appliedUsers = emptyMap(),
-            rejectedUsers = emptyMap(),
-            published = published
-        )
-        _tripList.value = _tripList.value + newTrip
-
-        return _tripList.value
-    }
-
-    fun createNewTrip(newTrip: Trip): Trip {
-        val tripWithId = newTrip.copy(
-            id = nextId++,
-        )
-        _tripList.value = _tripList.value + tripWithId
-        return tripWithId
-    }
-
-    fun editTrip(updatedTrip: Trip): List<Trip> {
-        _tripList.value = _tripList.value.map {
-            if (it.id == updatedTrip.id) updatedTrip else it
-        }
-        return _tripList.value
-    }
-
-    fun removeActivityFromTrip(activity: Activity, trip: Trip?): Trip? {
-        if (trip == null) return null
-
-        val dateKey = activity.date
-        val updatedActivities = trip.activities
-            .toMutableMap()
-            .apply {
-                val updatedList = getOrDefault(dateKey, emptyList()) - activity
-                if (updatedList.isEmpty()) {
-                    remove(dateKey)
-                } else {
-                    put(dateKey, updatedList)
-                }
-            }
-            .toMap()
-
-        val updatedTrip = trip.copy(activities = updatedActivities)
-
-        _tripList.value = _tripList.value.map {
-            if (it.id == updatedTrip.id) updatedTrip else it
-        }
-
-        return updatedTrip
-    }
-
-
-
-
-    fun editActivityInSelectedTrip(
-        activityId: Int,
-        updatedActivity: Activity,
-        trip: Trip?
-    ): Trip? {
-        if (trip == null) return null
-
-        val originalActivities = trip.activities.toMutableMap()
-
-        //Find and remove the old activity
-        var found = false
-        for ((date, activities) in originalActivities) {
-            if (activities.any { it.id == activityId }) {
-                val newList = activities.filter { it.id != activityId }
-                if (newList.isEmpty()) {
-                    originalActivities.remove(date)
-                } else {
-                    originalActivities[date] = newList
-                }
-                found = true
-                break
-            }
-        }
-
-        if (!found) return trip // nothing changed
-
-        //Add the updated activity to the new date key
-        val newDateKey = updatedActivity.date
-        val updatedList = originalActivities.getOrDefault(newDateKey, emptyList()) + updatedActivity
-        originalActivities[newDateKey] = updatedList
-
-        val updatedTrip = trip.copy(activities = originalActivities)
-
-        _tripList.value = _tripList.value.map {
-            if (it.id == updatedTrip.id) updatedTrip else it
-        }
-
-        return updatedTrip
-    }
-
-
-
-
-
-    fun addActivityToTrip(activity: Activity, trip: Trip?): Trip? {
-        if (trip == null) return null
-
-        val updatedTrip = trip.copy(
-            activities = trip.activities
-                .toMutableMap()
-                .apply {
-                    val dateKey = activity.date
-                    val updatedList = getOrDefault(dateKey, emptyList()) + activity
-                    put(dateKey, updatedList)
-                }
-        )
-
-        _tripList.value = _tripList.value.map {
-            if (it.id == updatedTrip.id) updatedTrip else it
-        }
-
-        return updatedTrip
-    }
-
-    fun toggleAskToJoin(tripId: Int) {
-        _askedTrips.value = if (_askedTrips.value.contains(tripId)) {
-            _askedTrips.value - tripId
-        } else {
-            _askedTrips.value + tripId
-        }
-    }
-
-    fun getDestinations(): List<String> {
-        return _tripList.value.map { it.destination }.distinct()
-    }
-
-    fun setMaxMinPrice() {
-        _tripList.value.forEach { trip ->
-            if (trip.estimatedPrice < minPrice) {
-                minPrice = trip.estimatedPrice
-            }
-            if (trip.estimatedPrice > maxPrice) {
-                maxPrice = trip.estimatedPrice
-            }
-        }
-    }
-
-    fun setRange(list: List<SelectableItem>): Pair<Int, Int> {
-        var min = Int.MAX_VALUE
-        var max = Int.MIN_VALUE
-
-        list.forEach { item ->
-            if (item.isSelected) {
-                if (item.min < min) {
-                    min = item.min
-                }
-                if (item.max > max) {
-                    max = item.max
-                }
-            }
-        }
-
-        if(min == Int.MAX_VALUE && max == Int.MIN_VALUE) {
-            min = -1
-            max = -1
-        }
-
-        println("SetRange min = $min")
-        println("SetRange max = $max")
-
-
-
-        return Pair(min, max)
-    }
+    //List of trips after the application of the filters
+    private val _filteredList = MutableStateFlow<List<Trip>>(emptyList())
+    val filteredList: StateFlow<List<Trip>> = _filteredList
 
     fun filterFunction(list: List<Trip>, filterDestination: String, filterMinPrice: Double,
                        filterMaxPrice: Double, filterDuration: Pair<Int,Int>,
@@ -1515,19 +1308,56 @@ class Model {
         _filteredList.value = filtered
     }
 
-    // Get reviews list of a trip
-    fun getTripReviews(id: Int): List<Review> {
-        return _reviews.value.filter { it.isTripReview && it.reviewedId == id }
+    //FUNCTION FOR THE APPLICATION OF THE FILTERS
+
+    //Get the list of all the destinations present in the database for the search bar
+    fun getDestinations(): List<String> {
+        return _tripList.value.map { it.destination }.distinct()
     }
 
-    // Get reviews list of a user
-    fun getUserReviews(id: Int): List<Review> {
-        return _reviews.value.filter { !it.isTripReview && it.reviewedId == id }
+    //MaxPrice and min Price of the database
+    private val _minPrice = Double.MAX_VALUE
+    var minPrice: Double = _minPrice
+
+    private val _maxPrice = Double.MIN_VALUE
+    var maxPrice: Double = _maxPrice
+
+    fun setMaxMinPrice() {
+        _tripList.value.forEach { trip ->
+            if (trip.estimatedPrice < minPrice) {
+                minPrice = trip.estimatedPrice
+            }
+            if (trip.estimatedPrice > maxPrice) {
+                maxPrice = trip.estimatedPrice
+            }
+        }
     }
 
-    fun getUserDataById(id: Int): UserData {
-        return _users.value.find { it.id == id }
-            ?: throw NoSuchElementException("User with ID $id not found")
+    //Range of the Price slider
+    fun setRange(list: List<SelectableItem>): Pair<Int, Int> {
+        var min = Int.MAX_VALUE
+        var max = Int.MIN_VALUE
+
+        list.forEach { item ->
+            if (item.isSelected) {
+                if (item.min < min) {
+                    min = item.min
+                }
+                if (item.max > max) {
+                    max = item.max
+                }
+            }
+        }
+
+        if(min == Int.MAX_VALUE && max == Int.MIN_VALUE) {
+            min = -1
+            max = -1
+        }
+
+        println("SetRange min = $min")
+        println("SetRange max = $max")
+
+        return Pair(min, max)
     }
 
     //Get list of completed trips
@@ -1540,6 +1370,214 @@ class Model {
         return _tripList.value.filter { it.status == TripStatus.NOT_STARTED }
     }
 
+    //CREATE A TRIP
+
+    private var nextId = 9
+
+    //Create a new trip
+    fun createNewTrip(newTrip: Trip): Trip {
+        val tripWithId = newTrip.copy(
+            id = nextId++,
+        )
+        _tripList.value = _tripList.value + tripWithId
+        return tripWithId
+    }
+
+    //A copy of the trip gets created in "My Trips" section as a private trip
+    fun importTrip(
+        photo: String, title: String, destination: String, startDate: Calendar,
+        endDate: Calendar, estimatedPrice: Double, groupSize: Int,
+        activities: Map<Calendar, List<Activity>>,
+        typeTravel: List<TypeTravel>, creatorId: Int,
+        published: Boolean
+    ): List<Trip> {
+        val newTrip = Trip(
+            id = nextId++,
+            photo = photo,
+            title = title,
+            destination = destination,
+            startDate = startDate,
+            endDate = endDate,
+            estimatedPrice = estimatedPrice,
+            groupSize = groupSize,
+            participants = mapOf(creatorId to 1),
+            activities = activities,
+            status = TripStatus.NOT_STARTED,
+            typeTravel = typeTravel,
+            creatorId = creatorId,
+            appliedUsers = emptyMap(),
+            rejectedUsers = emptyMap(),
+            published = published
+        )
+        _tripList.value = _tripList.value + newTrip
+
+        return _tripList.value
+    }
+
+    //EDIT TRIP
+
+    //Edit trip information
+    fun editTrip(updatedTrip: Trip): List<Trip> {
+        _tripList.value = _tripList.value.map {
+            if (it.id == updatedTrip.id) updatedTrip else it
+        }
+        return _tripList.value
+    }
+
+    //Change the published status of a trip
+    fun changePublishedStatus(id: Int) {
+        _tripList.value = _tripList.value.map {
+            if (it.id == id) {
+                it.copy(published = !it.published)  // Toggle the published status
+            } else {
+                it
+            }
+        }
+    }
+
+    //ACTIVITY MANAGEMENT
+
+    //Add an activity
+    fun addActivityToTrip(activity: Activity, trip: Trip?): Trip? {
+        if (trip == null) return null
+
+        val updatedTrip = trip.copy(
+            activities = trip.activities
+                .toMutableMap()
+                .apply {
+                    val dateKey = activity.date
+                    val updatedList = getOrDefault(dateKey, emptyList()) + activity
+                    put(dateKey, updatedList)
+                }
+        )
+
+        _tripList.value = _tripList.value.map {
+            if (it.id == updatedTrip.id) updatedTrip else it
+        }
+
+        return updatedTrip
+    }
+
+    //Edit an Activity
+    fun editActivityInSelectedTrip(
+        activityId: Int,
+        updatedActivity: Activity,
+        trip: Trip?
+    ): Trip? {
+        if (trip == null) return null
+
+        val originalActivities = trip.activities.toMutableMap()
+
+        //Find and remove the old activity
+        var found = false
+        for ((date, activities) in originalActivities) {
+            if (activities.any { it.id == activityId }) {
+                val newList = activities.filter { it.id != activityId }
+                if (newList.isEmpty()) {
+                    originalActivities.remove(date)
+                } else {
+                    originalActivities[date] = newList
+                }
+                found = true
+                break
+            }
+        }
+
+        if (!found) return trip // nothing changed
+
+        //Add the updated activity to the new date key
+        val newDateKey = updatedActivity.date
+        val updatedList = originalActivities.getOrDefault(newDateKey, emptyList()) + updatedActivity
+        originalActivities[newDateKey] = updatedList
+
+        val updatedTrip = trip.copy(activities = originalActivities)
+
+        _tripList.value = _tripList.value.map {
+            if (it.id == updatedTrip.id) updatedTrip else it
+        }
+
+        return updatedTrip
+    }
+
+    //Delete an activity
+    fun removeActivityFromTrip(activity: Activity, trip: Trip?): Trip? {
+        if (trip == null) return null
+
+        val dateKey = activity.date
+        val updatedActivities = trip.activities
+            .toMutableMap()
+            .apply {
+                val updatedList = getOrDefault(dateKey, emptyList()) - activity
+                if (updatedList.isEmpty()) {
+                    remove(dateKey)
+                } else {
+                    put(dateKey, updatedList)
+                }
+            }
+            .toMap()
+
+        val updatedTrip = trip.copy(activities = updatedActivities)
+
+        _tripList.value = _tripList.value.map {
+            if (it.id == updatedTrip.id) updatedTrip else it
+        }
+
+        return updatedTrip
+    }
+
+    //DELETE A TRIP
+
+    //Delete a trip
+    fun deleteTrip(id: Int) {
+        _tripList.value = _tripList.value.filter { it.id != id }
+    }
+
+    //GET TRIP INFORMATION
+
+    // Get reviews list of a trip
+    fun getTripReviews(id: Int): List<Review> {
+        return _reviews.value.filter { it.isTripReview && it.reviewedId == id }
+    }
+
+    //MANAGEMENT OF APPLICATIONS TO TRIPS
+
+    private val _askedTrips = MutableStateFlow<Set<Int>>(emptySet())
+    val askedTrips: StateFlow<Set<Int>> = _askedTrips
+
+    fun toggleAskToJoin(tripId: Int) {
+        _askedTrips.value = if (_askedTrips.value.contains(tripId)) {
+            _askedTrips.value - tripId
+        } else {
+            _askedTrips.value + tripId
+        }
+    }
+    
+
+    // ------------         USER MODEL        --------------
+
+    //SUBSET OF USER LIST
+
+    //Get a list of user given their ids
+    fun getUsers(ids: List<Int>): List<UserData> {
+        return _users.value.filter { it.id in ids }
+    }
+
+    //GET USER INFORMATION
+
+    //Get a user given its id
+    fun getUserDataById(id: Int): UserData {
+        return _users.value.find { it.id == id }
+            ?: throw NoSuchElementException("User with ID $id not found")
+    }
+
+    // Get reviews list of a user
+    fun getUserReviews(id: Int): List<Review> {
+        return _reviews.value.filter { !it.isTripReview && it.reviewedId == id }
+    }
+
+    //EDIT USER
+
+    //Edit user information
     fun editUserData(updatedUserData: UserData): List<UserData> {
         _users.value = _users.value.map {
             if (it.id == updatedUserData.id) updatedUserData else it
@@ -1547,18 +1585,16 @@ class Model {
         return _users.value
     }
 
+    // ------------------ OTHER FUNCTIONS -------------------
 
-
-
-
-
-
+    //CALENDAR MANAGEMENT
+    fun Calendar.stripTime(): Calendar {
+        this.set(Calendar.HOUR_OF_DAY, 0)
+        this.set(Calendar.MINUTE, 0)
+        this.set(Calendar.SECOND, 0)
+        this.set(Calendar.MILLISECOND, 0)
+        return this
+    }
 }
 
-fun Calendar.stripTime(): Calendar {
-    this.set(Calendar.HOUR_OF_DAY, 0)
-    this.set(Calendar.MINUTE, 0)
-    this.set(Calendar.SECOND, 0)
-    this.set(Calendar.MILLISECOND, 0)
-    return this
-}
+
