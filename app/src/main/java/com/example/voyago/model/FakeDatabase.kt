@@ -1551,7 +1551,7 @@ class Model {
             _askedTrips.value + tripId
         }
     }
-    
+
 
     // ------------         USER MODEL        --------------
 
