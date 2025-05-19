@@ -1252,6 +1252,16 @@ class Model {
         return published
     }
 
+    //List of trips the logged in user (id=1) joined
+    private val _joinedTrips = MutableStateFlow<List<Trip>>(emptyList())
+    val joinedTrips: StateFlow<List<Trip>> = _joinedTrips
+
+    fun getJoinedTrips(userId :Int): List<Trip> {
+        val joined = _tripList.value.filter { it.participants.containsKey(userId) && it.creatorId != userId }
+        _joinedTrips.value = joined
+        return joined
+    }
+
     //List of trips after the application of the filters
     private val _filteredList = MutableStateFlow<List<Trip>>(emptyList())
     val filteredList: StateFlow<List<Trip>> = _filteredList
@@ -1540,20 +1550,15 @@ class Model {
         return _reviews.value.filter { it.isTripReview && it.reviewedId == id }
     }
 
-    //MANAGEMENT OF APPLICATIONS TO TRIPS
-
-    /*
-    private val _askedTrips = MutableStateFlow<Set<Int>>(emptySet())
-    val askedTrips: StateFlow<Set<Int>> = _askedTrips
-
-    fun toggleAskToJoin(tripId: Int) {
-        _askedTrips.value = if (_askedTrips.value.contains(tripId)) {
-            _askedTrips.value - tripId
-        } else {
-            _askedTrips.value + tripId
+    //Tells if the logged in user reviewed the trip
+    fun isReviewed(userId: Int, tripId: Int) :Boolean {
+        return _reviews.value.any {
+            it.isTripReview == true && it.reviewerId == userId
+                    && it.reviewedId == tripId
         }
     }
-     */
+
+    //MANAGEMENT OF APPLICATIONS TO TRIPS
 
     private val _askedTrips = MutableStateFlow<Map<Int, Int>>(emptyMap())
     val askedTrips: StateFlow<Map<Int, Int>> = _askedTrips

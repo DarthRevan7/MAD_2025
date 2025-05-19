@@ -220,6 +220,10 @@ class TripViewModel(val model:Model): ViewModel() {
     val privateTrips = model.privateTrips
     fun creatorPrivateFilter(id: Int) = model.filterPrivateByCreator(id)
 
+    //List of trips the logged in user joined
+    val joinedTrips = model.joinedTrips
+    fun tripUserJoined(userId: Int) = model.getJoinedTrips(userId)
+
     //Import an already published trip as a private trip of the logged in user (id=1)
     fun addImportedTrip(photo: String, title: String, destination: String, startDate: Calendar,
                         endDate: Calendar, estimatedPrice: Double, groupSize: Int,
@@ -375,6 +379,9 @@ class TripViewModel(val model:Model): ViewModel() {
 
     //Get Trip reviews
     fun getTripReviews(id: Int): List<Review> = model.getTripReviews(id)
+
+    //See if a user reviewed a trip
+    fun isReviewed(userId: Int, tripId: Int) = model.isReviewed(userId,tripId)
 
 
     // -------------- PROFILE VIEWMODEL ------------ (?)

@@ -44,10 +44,13 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel) {
     val publishedTrips by vm.publishedTrips.collectAsState()
     //List of trip created, but not published by the logged in user (id=1)
     val privateTrips by vm.privateTrips.collectAsState()
+    //List of trip the logged in user (id=1) joined
+    val joinedTrips by vm.joinedTrips.collectAsState()
 
     LaunchedEffect(Unit) {
         vm.creatorPublicFilter(1)
         vm.creatorPrivateFilter(1)
+        vm.tripUserJoined(1)
     }
 
     Scaffold(
@@ -128,6 +131,13 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel) {
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp),
                     fontWeight = FontWeight.Bold
                 )
+            }
+
+            if (joinedTrips.isNotEmpty()) {
+                items(joinedTrips, key = { it.id }) { trip ->
+                    vm.userAction = TripViewModel.UserAction.VIEW_TRIP
+                    TripCard(trip, navController, vm, vm.userAction == TripViewModel.UserAction.VIEW_TRIP)
+                }
             }
         }
     }

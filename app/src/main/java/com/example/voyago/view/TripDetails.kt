@@ -1,10 +1,10 @@
 package com.example.voyago.view
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -61,7 +60,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.window.Popup
 import androidx.core.net.toUri
@@ -83,6 +81,9 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean)
     }
 
     val nonNullTrip = trip!!
+
+    //The user joined the trip but didn't created
+    val joined = nonNullTrip.participants.containsKey(1) && nonNullTrip.creatorId != 1
 
     //Delete confirmation trip
     var showPopup by remember { mutableStateOf(false) }
@@ -153,7 +154,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean)
             //The logged in user see a trip created by them in the "My Trip" section
             if (owner) {
                 //The trip created by the logged in user is published
-                if (nonNullTrip.published) {
+                if (nonNullTrip.published && nonNullTrip.status == Trip.TripStatus.NOT_STARTED) {
                     item {
                         Row(
                             modifier = Modifier
@@ -204,6 +205,73 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean)
 
                             //Delete button with popup for confirmation
                             DeleteButtonWithConfirmation(nonNullTrip, navController, vm)
+                        }
+                    }
+                }
+
+                if (joined) {
+
+                    item {
+                        Row(
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            Box {
+                                //Applications Button
+                                Button(
+                                    onClick = {},
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0xd9, 0x24, 0xd6, 255)
+                                    )
+                                ) {
+                                    Text("My Reviews")
+                                }
+
+
+                                if (!vm.isReviewed(1, nonNullTrip.id)) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(15.dp)
+                                            .background(Color(0xFF448AFF), CircleShape)
+                                            .align(Alignment.TopEnd)
+                                    )
+                                }
+                            }
+
+                            Spacer(Modifier.weight(1f))
+
+                            //"Create a Copy" Button (creates a copy of the trip in the logged in user private trips)
+                            Button(
+                                onClick = {
+                                    vm.addImportedTrip(
+                                        nonNullTrip.photo,
+                                        nonNullTrip.title,
+                                        nonNullTrip.destination,
+                                        nonNullTrip.startDate,
+                                        nonNullTrip.endDate,
+                                        nonNullTrip.estimatedPrice,
+                                        nonNullTrip.groupSize,
+                                        nonNullTrip.activities,
+                                        nonNullTrip.typeTravel,
+                                        1,
+                                        false
+                                    )
+                                    vm.updatePublishedTrip()
+
+                                    showPopup = true
+                                    coroutineScope.launch {
+                                        delay(2000)
+                                        showPopup = false
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0x65, 0x55, 0x8f, 255)
+                                )
+                            ) {
+                                Text("Create a Copy")
+                            }
                         }
                     }
                 }
@@ -638,30 +706,6 @@ fun ItineraryText(trip: Trip, modifier: Modifier = Modifier) {
         modifier = modifier
     )
 }
-
-
-
-/*
-@Composable
-fun ItineraryText(trip: Trip, modifier: Modifier = Modifier) {
-    val itineraryString = trip.activities.entries.joinToString("\n\n") { (day, activities) ->
-        val dayIndex = ((day.timeInMillis - trip.startDate.timeInMillis) / (1000 * 60 * 60 * 24)).toInt() + 1
-        val dayHeader = "Day $dayIndex:\n"
-        val activityDescriptions = activities.joinToString("\n") {activity ->
-            val groupActivity = if (activity.isGroupActivity) "(group activity)" else ""
-            "- ${activity.time} → ${activity.description} $groupActivity"
-        }
-        dayHeader + activityDescriptions
-    }
-
-    Text(
-        text = itineraryString,
-        style = MaterialTheme.typography.bodySmall,
-        fontWeight = FontWeight.Bold,
-        modifier = modifier
-    )
-}
- */
 
 @Composable
 fun DeleteButtonWithConfirmation(trip: Trip, navController: NavController, vm: TripViewModel) {
