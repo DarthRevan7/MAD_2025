@@ -400,7 +400,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean)
                 items(participantsMap.entries.toList()) { entry ->
                     val user = entry.key
                     val spots = entry.value
-                    if (nonNullTrip.creatorId != 1) {
+                    if (nonNullTrip.creatorId != user.id) {
                         ShowParticipants(user, spots, navController)
                     }
                 }
