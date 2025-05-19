@@ -60,6 +60,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -95,6 +96,8 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import androidx.compose.runtime.getValue
+
 
 sealed class Screen(val route: String) {
     object Explore : Screen("explore_root")
@@ -283,7 +286,7 @@ fun BottomBar(navController: NavHostController) {
     )
 
     NavigationBar {
-        val navBackStackEntry = navController.currentBackStackEntryAsState().value
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentDestination = navBackStackEntry?.destination
 
         items.forEach { item ->
@@ -297,10 +300,9 @@ fun BottomBar(navController: NavHostController) {
                 selected = selected,
                 onClick = {
                     navController.navigate(item.startRoute) {
-                        navController.graph.startDestinationRoute?.let { screenRoute ->
-                            popUpTo(screenRoute) {
-                                saveState = true
-                            }
+                        // Pop up to the root of the graph to prevent stacking
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
                         }
                         launchSingleTop = true
                         restoreState = true
@@ -310,6 +312,7 @@ fun BottomBar(navController: NavHostController) {
         }
     }
 }
+
 
 
 @Composable
