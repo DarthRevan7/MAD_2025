@@ -134,7 +134,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean)
                 }
             }
 
-            //The logged in user see a trip created by them
+            //The logged in user see a trip created by them in the "My Trip" section
             if (owner) {
                 //The trip created by the logged in user is published
                 if (nonNullTrip.published) {
@@ -244,7 +244,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean)
                     TitleBox("My Itinerary")
                 }
             }
-            //The logged in user see a published trip
+            //The logged in user see a published trip in the "Explore" section
             else {
                 item {
                     Row(
@@ -253,7 +253,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean)
                             .fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
                     ) {
-                        //Create a Copy Button (creates a copy of the trip in the logged in user private trips)
+                        //"Create a Copy" Button (creates a copy of the trip in the logged in user private trips)
                         Button(
                             onClick = {
                                 vm.addImportedTrip(
@@ -308,6 +308,17 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean)
                                     Text("Ask to Join")
                                 }
                             }
+                        } else if (nonNullTrip.participants.containsKey(1)
+                            && nonNullTrip.status != Trip.TripStatus.COMPLETED
+                            && nonNullTrip.creatorId != 1) {
+                            Button(
+                                onClick = {},
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0x2E, 0x7D, 0x32, 255)
+                                )
+                            ) {
+                                Text("Already Joined")
+                            }
                         }
                     }
                 }
@@ -334,6 +345,14 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean)
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
+            item {
+                TitleBox("Created by:")
+            }
+
+            item {
+                ShowParticipants(vm.getUserData(nonNullTrip.creatorId), 1, navController)
+            }
+
             //Reviews section
             if (vm.getTripReviews(nonNullTrip.id).isNotEmpty()) {
                 item {
@@ -349,6 +368,23 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean)
                     ShowReview(review, vm)
                 }
             }
+
+            if (nonNullTrip.participants.size > 1) {
+                item {
+                    TitleBox("Participants:")
+                }
+
+                val participantsMap = vm.getTripParticipants(nonNullTrip)
+
+                items(participantsMap.entries.toList()) { entry ->
+                    val user = entry.key
+                    val spots = entry.value
+                    if (nonNullTrip.creatorId != 1) {
+                        ShowParticipants(user, spots, navController)
+                    }
+                }
+            }
+
         }
 
         //PopUp that appears when the user creates a copy of the trip
