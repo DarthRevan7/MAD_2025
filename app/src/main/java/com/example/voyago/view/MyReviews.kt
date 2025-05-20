@@ -1,8 +1,8 @@
 package com.example.voyago.view
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,34 +21,30 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.StarHalf
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
-import androidx.compose.material.icons.filled.StarHalf
-import androidx.compose.material.icons.filled.StarRate
-import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.voyago.activities.ProfilePhoto
+import com.example.voyago.model.Review
+import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
-import kotlin.math.roundToInt
+import java.util.Calendar
 
 @Composable
-fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewModel) {
+fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewModel, rvm: ReviewViewModel) {
     val trip by vm.selectedTrip
     println("selected trip = ${vm.selectedTrip}")
 
@@ -64,25 +60,31 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
 
     val hasReviews = vm.isReviewed(uvm.loggedUser.id, nonNullTrip.id)
 
-    var title by rememberSaveable { mutableStateOf("") }
-    val titleTouched = remember {mutableStateOf(false)}
-    var titleError by rememberSaveable { mutableStateOf(false) }
 
-    var review by rememberSaveable { mutableStateOf("") }
-    val reviewTouched = remember {mutableStateOf(false)}
-    var reviewError by rememberSaveable { mutableStateOf(false) }
+    val titleMap = remember { mutableStateMapOf<String, String>() }
+    val reviewMap = remember { mutableStateMapOf<String, String>() }
+    val ratingMap = remember { mutableStateMapOf<String, Float>() }
 
-    val numPart = nonNullTrip.participants.size
+    val titleTouchedMap = remember { mutableStateMapOf<String, Boolean>() }
+    val reviewTouchedMap = remember { mutableStateMapOf<String, Boolean>() }
+    val ratingTouchedMap = remember { mutableStateMapOf<String, Boolean>() }
 
-    val errList: List<Boolean> = List(numPart, init = { item -> false })
 
-    var errorList = rememberSaveable { mutableStateOf(errList) }
-    
-    var boolCheck: Boolean = true
-    boolCheck = !titleError && !reviewError
+    fun isTitleInvalid(key: String): Boolean {
+        val title = titleMap[key].orEmpty()
+        return (titleTouchedMap[key] == true) &&
+                (title.isBlank() || !title.any { it.isLetter() })
+    }
 
-    errorList.value.forEach { item ->
-        boolCheck = boolCheck && !item
+    fun isReviewInvalid(key: String): Boolean {
+        val review = reviewMap[key].orEmpty()
+        return (reviewTouchedMap[key] == true) &&
+                (review.isBlank() || !review.any { it.isLetter() })
+    }
+
+    fun isRatingInvalid(key: String): Boolean {
+        val rating = ratingMap[key] ?: 0f
+        return (ratingTouchedMap[key] == true) && rating < 0.5f
     }
 
     //Start composable environment
@@ -150,7 +152,8 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
                 }
             } else {
                 item {
-                    var rating by remember { mutableFloatStateOf(0f) }
+                    val key = "trip"
+                    val rating = ratingMap.getOrElse(key) { 0f }
 
                     Column(
                         modifier = Modifier
@@ -162,39 +165,47 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
                         Text("Rate your experience:", fontSize = 20.sp)
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        RatingBar(rating = rating, onRatingChanged = { rating = it })
+                        RatingBar(
+                            rating = rating,
+                            onRatingChanged = {
+                                ratingMap[key] = it
+                                ratingTouchedMap[key] = true
+                            }
+                        )
 
                         Spacer(modifier = Modifier.height(16.dp))
                         Text("Your rating: $rating")
 
-                        //Title field
-                        titleError = titleTouched.value && (title.toString().isBlank() ||
-                                !title.toString().any { it.isLetter() })
+                        Log.d("Rating", "Trip error=${isRatingInvalid(key)}")
+                        if (isRatingInvalid(key)) {
+                            Text(
+                                "Rating must be at least 0.5",
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+
+                        val title = titleMap.getOrElse(key) { "" }
                         ValidatingInputTextField(
                             title,
-                            {title = it
-                                if(!titleTouched.value) {
-                                    titleTouched.value = true
-                                }
+                            {
+                                titleMap[key] = it
+                                titleTouchedMap[key] = true
                             },
-                            titleError,
+                            isTitleInvalid(key),
                             "Title"
                         )
 
-                        //Review Field
-                        reviewError = reviewTouched.value && (review.toString().isBlank() ||
-                                !review.toString().any { it.isLetter() })
+                        val review = reviewMap.getOrElse(key) { "" }
                         ValidatingInputTextField(
                             review,
-                            {review = it
-                                if(!reviewTouched.value) {
-                                    reviewTouched.value = true
-                                }
+                            {
+                                reviewMap[key] = it
+                                reviewTouchedMap[key] = true
                             },
-                            reviewError,
+                            isReviewInvalid(key),
                             "Review"
                         )
-
                     }
                 }
             }
@@ -243,8 +254,8 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
 
                             )
                         }
-
-                        var rating by remember { mutableFloatStateOf(0f) }
+                        val key = user.id
+                        val rating = ratingMap.getOrElse(key.toString()) { 0f }
 
                         Column(
                             modifier = Modifier
@@ -256,38 +267,45 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
                             Text("Rate your Travel Buddy:", fontSize = 20.sp)
                             Spacer(modifier = Modifier.height(16.dp))
 
-                            RatingBar(rating = rating, onRatingChanged = { rating = it })
+                            RatingBar(
+                                rating = rating,
+                                onRatingChanged = {
+                                    ratingMap[key.toString()] = it
+                                    ratingTouchedMap[key.toString()] = true
+                                }
+                            )
 
                             Spacer(modifier = Modifier.height(16.dp))
                             Text("Your rating: $rating")
 
-                            //Title field
-                            titleError = titleTouched.value && (title.toString().isBlank() ||
-                                    !title.toString().any { it.isLetter() })
+                            Log.d("Rating", "User error=${isRatingInvalid(key.toString())}")
+                            if (isRatingInvalid(key.toString())) {
+                                Text(
+                                    "Rating must be at least 0.5",
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+
+                            val title = titleMap.getOrElse(key.toString()) { "" }
                             ValidatingInputTextField(
                                 title,
                                 {
-                                    title = it
-                                    if (!titleTouched.value) {
-                                        titleTouched.value = true
-                                    }
+                                    titleMap[key.toString()] = it
+                                    titleTouchedMap[key.toString()] = true
                                 },
-                                titleError,
+                                isTitleInvalid(key.toString()),
                                 "Title"
                             )
 
-                            //Review Field
-                            reviewError = reviewTouched.value && (review.toString().isBlank() ||
-                                    !review.toString().any { it.isLetter() })
+                            val review = reviewMap.getOrElse(key.toString()) { "" }
                             ValidatingInputTextField(
                                 review,
                                 {
-                                    review = it
-                                    if (!reviewTouched.value) {
-                                        reviewTouched.value = true
-                                    }
+                                    reviewMap[key.toString()] = it
+                                    reviewTouchedMap[key.toString()] = true
                                 },
-                                reviewError,
+                                isReviewInvalid(key.toString()),
                                 "Review"
                             )
                         }
@@ -301,7 +319,66 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Button(
-                            onClick = {},
+                            onClick = {
+                                val allKeys = mutableListOf("trip")
+                                val participants = vm.getTripParticipants(nonNullTrip)
+                                for (user in participants.keys) {
+                                    if (user.id != uvm.loggedUser.id) {
+                                        allKeys.add(user.id.toString())
+                                    }
+                                }
+
+                                var allValid = true
+
+                                for (key in allKeys) {
+                                    titleTouchedMap[key] = true
+                                    reviewTouchedMap[key] = true
+                                    ratingTouchedMap[key] = true
+
+                                    val titleInvalid = isTitleInvalid(key)
+                                    val reviewInvalid = isReviewInvalid(key)
+                                    val ratingInvalid = isRatingInvalid(key)
+
+                                    if (titleInvalid || reviewInvalid || ratingInvalid) {
+                                        allValid = false
+                                    }
+                                }
+
+
+                                if (allValid) {
+                                    val reviewsToSubmit = mutableListOf<Review>()
+                                    val currentDate = Calendar.getInstance()
+
+                                    for (key in allKeys) {
+                                        val isTripReview = key == "trip"
+                                        val reviewedUserId = if (isTripReview) -1 else key.toInt()
+                                        val title = titleMap[key].orEmpty()
+                                        val comment = reviewMap[key].orEmpty()
+                                        val rawScore = ratingMap[key] ?: 0f
+                                        val score = (rawScore * 2).toInt()
+
+                                        val review = Review(
+                                            reviewId = -1,
+                                            tripId = nonNullTrip.id,
+                                            isTripReview = isTripReview,
+                                            reviewerId = uvm.loggedUser.id,
+                                            reviewedUserId = reviewedUserId,
+                                            title = title,
+                                            comment = comment,
+                                            score = score,
+                                            photos = emptyList(),
+                                            date = currentDate
+                                        )
+
+                                        reviewsToSubmit.add(review)
+                                    }
+
+                                    rvm.addAllTripReviews(reviewsToSubmit)
+
+                                    navController.popBackStack()
+                                }
+
+                            },
                             modifier = Modifier
                                 .width(160.dp)
                                 .height(60.dp)

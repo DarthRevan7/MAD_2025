@@ -98,6 +98,8 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import androidx.compose.runtime.getValue
 import com.example.voyago.view.MyReviews
+import com.example.voyago.viewmodel.ReviewFactory
+import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.UserFactory
 import com.example.voyago.viewmodel.UserViewModel
 
@@ -403,7 +405,12 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController, vm2: ArticleVi
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = UserFactory
             )
-            MyReviews(navController = navController, vm = tripViewModel, uvm = userViewModel)
+            val reviewViewModel: ReviewViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = ReviewFactory
+            )
+            MyReviews(navController = navController, vm = tripViewModel, uvm = userViewModel,
+                rvm = reviewViewModel)
         }
 
         composable("trip_applications") { entry ->

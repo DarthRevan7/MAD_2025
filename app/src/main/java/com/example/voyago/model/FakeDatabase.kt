@@ -1413,12 +1413,12 @@ class Model {
 
     //CREATE A TRIP
 
-    private var nextId = 9
+    private var nextTripId = 9
 
     //Create a new trip
     fun createNewTrip(newTrip: Trip): Trip {
         val tripWithId = newTrip.copy(
-            id = nextId++,
+            id = nextTripId++,
         )
         _tripList.value = _tripList.value + tripWithId
         return tripWithId
@@ -1433,7 +1433,7 @@ class Model {
         published: Boolean
     ): List<Trip> {
         val newTrip = Trip(
-            id = nextId++,
+            id = nextTripId++,
             photo = photo,
             title = title,
             destination = destination,
@@ -1664,6 +1664,19 @@ class Model {
             if (it.id == updatedUserData.id) updatedUserData else it
         }
         return _users.value
+    }
+
+    // ------------         REVIEW MODEL        --------------
+
+    private var nextReviewId = 31
+
+    //Create a new trip
+    fun createNewReview(newReview: Review): Review {
+        val reviewWithId = newReview.copy(
+            reviewId = nextReviewId++,
+        )
+        _reviews.value = _reviews.value + reviewWithId
+        return reviewWithId
     }
 
     // ------------------ OTHER FUNCTIONS -------------------
