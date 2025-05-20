@@ -59,8 +59,10 @@ fun EditProfileScreen(navController: NavController, context:Context, vm: TripVie
 
     val user = vm.getUserData(1)
 
+    var profileImageUri = vm.profileImageUri.value
+
     // Use rememberSaveable to persist the profile image URI across configuration changes
-    var profileImageUri by rememberSaveable { mutableStateOf<Uri?>(user.profilePicture) }
+    var oldProfileImageUri by rememberSaveable { mutableStateOf<Uri?>(user.profilePicture) }
 
     // Use rememberSaveable for dialog visibility
     var showPopup by rememberSaveable { mutableStateOf(false) }
@@ -318,6 +320,10 @@ fun EditProfileScreen(navController: NavController, context:Context, vm: TripVie
                     onClick = {
                         if(!errors.any{it}) {
 
+                            if(profileImageUri == null){
+                                profileImageUri = user.profilePicture
+                            }
+
                             val updatedUser = UserData(
                                 id = 1,
                                 firstname = fieldValues[0],
@@ -328,7 +334,7 @@ fun EditProfileScreen(navController: NavController, context:Context, vm: TripVie
                                 userDescription = fieldValues[5],
                                 dateOfBirth = user.dateOfBirth,
                                 password = user.password,
-                                profilePicture = user.profilePicture,
+                                profilePicture = profileImageUri,
                                 typeTravel = selected,
                                 desiredDestination = selectedDestinations.toList(),
                                 rating = user.rating,
@@ -362,12 +368,15 @@ if(showPopup) {
         onDismissRequest = { showPopup = false },
         onImageSelectedFromGallery = { uri ->
             profileImageUri = uri
+            vm.setProfileImageUri(uri)
             user.profilePicture = uri
             showPopup = false
         },
         onTakePhotoClick = {
             // Launch the camera activity
+            showPopup = false
             navController.navigate("camera")
+            //profileImageUri = vm.profileImageUri.value
             //val intent = Intent(context, MainActivity::class.java)
             //takePhotoLauncher.launch(intent)
         }

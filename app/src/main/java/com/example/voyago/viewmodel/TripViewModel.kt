@@ -1,5 +1,6 @@
 package com.example.voyago.viewmodel
 
+import android.net.Uri
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
@@ -384,7 +385,7 @@ class TripViewModel(val model:Model): ViewModel() {
     fun isReviewed(userId: Int, tripId: Int) = model.isReviewed(userId,tripId)
 
 
-    // -------------- PROFILE VIEWMODEL ------------ (?)
+    // -------------- PROFILE VIEWMODEL ------------
 
     //PROFILE
 
@@ -401,6 +402,15 @@ class TripViewModel(val model:Model): ViewModel() {
 
     //Get user reviews
     fun getUserReviews(id: Int): List<Review> = model.getUserReviews(id)
+
+    // Camera
+    private val _profileImageUri = mutableStateOf<Uri?>(null)
+    var profileImageUri: State<Uri?> = _profileImageUri
+
+    fun setProfileImageUri(uri: Uri?) {
+        _profileImageUri.value = uri
+    }
+
 
 
     //INITIALIZE VIEWMODEL

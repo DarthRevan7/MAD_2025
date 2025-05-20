@@ -143,41 +143,43 @@ class MainActivity : ComponentActivity() {
 //        viewBinding.imageCaptureButton.setOnClickListener { takePhoto() }
     }
 
-    private fun takePhoto() {
-        val imageCapture = imageCapture ?: return
-
-        val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
-            .format(System.currentTimeMillis())
-        val contentValues = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
-            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX-Image")
-            }
-        }
-
-        val outputOptions = ImageCapture.OutputFileOptions
-            .Builder(contentResolver,
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                contentValues)
-            .build()
-
-        imageCapture.takePicture(
-            outputOptions,
-            ContextCompat.getMainExecutor(this),
-            object : ImageCapture.OnImageSavedCallback {
-                override fun onError(exc: ImageCaptureException) {
-                    Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
-                }
-
-                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    val msg = "Photo capture succeeded: ${output.savedUri}"
-                    Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
-                    Log.d(TAG, msg)
-                }
-            }
-        )
-    }
+//    private fun takePhoto() {
+//        val imageCapture = imageCapture ?: return
+//
+//        val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
+//            .format(System.currentTimeMillis())
+//        val contentValues = ContentValues().apply {
+//            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+//            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+//            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+//                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX-Image")
+//            }
+//        }
+//
+//        val outputOptions = ImageCapture.OutputFileOptions
+//            .Builder(contentResolver,
+//                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+//                contentValues)
+//            .build()
+//
+//        imageCapture.takePicture(
+//            outputOptions,
+//            ContextCompat.getMainExecutor(this),
+//            object : ImageCapture.OnImageSavedCallback {
+//                override fun onError(exc: ImageCaptureException) {
+//                    Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
+//                }
+//
+//                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+//                    val msg = "Photo capture succeeded: ${output.savedUri}"
+//                    Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
+//                    Log.d(TAG, msg)
+//
+//                    onImageCaptured(output.savedUri)
+//                }
+//            }
+//        )
+//    }
 
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
@@ -331,10 +333,14 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
         profileNavGraph(navController, ArticleViewModel())
         composable("camera") {
             val context = LocalContext.current
-            CameraScreen(context = context, onImageCaptured = { uri ->
-                Toast.makeText(context, "Saved to: $uri", Toast.LENGTH_SHORT).show()
-                navController.popBackStack()
-            })
+            CameraScreen(
+                context = context,
+                //modifier = Modifier.fillMaxSize(),
+                onImageCaptured = { uri ->
+                    Toast.makeText(context, "Saved to: $uri", Toast.LENGTH_SHORT).show()
+                    navController.popBackStack()
+                }
+            )
         }
     }
 }
@@ -610,6 +616,24 @@ fun NavGraphBuilder.profileNavGraph(
             )
         }
 
+        composable("camera") {entry ->
+
+            val profileNavGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Profile.route)
+            }
+            val profileNavGraphEntryVm: TripViewModel = viewModel(
+                viewModelStoreOwner = profileNavGraphEntry,
+                factory = Factory
+            )
+            CameraScreen(
+                context = LocalContext.current,
+                onImageCaptured = { uri ->
+                    profileNavGraphEntryVm.setProfileImageUri(uri)
+                    navController.popBackStack()
+                }
+            )
+        }
+
 
 
     }
@@ -713,47 +737,35 @@ fun TopBar() {
 }
 
 @Composable
-fun CameraScreen(
-    modifier: Modifier = Modifier,
-    context: Context = LocalContext.current,
-    onImageCaptured: (Uri) -> Unit = {},
-    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
-) {
+fun CameraScreen(context: Context, onImageCaptured: (Uri?) -> Unit) {
+    val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
     val previewView = remember { PreviewView(context) }
     val imageCapture = remember { ImageCapture.Builder().build() }
-    val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
-
-    val cameraExecutor = remember { Executors.newSingleThreadExecutor() }
 
     LaunchedEffect(Unit) {
-        val cameraProvider = cameraProviderFuture.get()
-
-        val preview = Preview.Builder().build().apply {
-            setSurfaceProvider(previewView.surfaceProvider)
-        }
-
-        val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-
-        try {
-            cameraProvider.unbindAll()
-            cameraProvider.bindToLifecycle(
-                lifecycleOwner, cameraSelector, preview, imageCapture
-            )
-        } catch (exc: Exception) {
-            Log.e("Camera", "Binding failed", exc)
-        }
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
+        cameraProviderFuture.addListener({
+            val cameraProvider = cameraProviderFuture.get()
+            val preview = Preview.Builder().build().also {
+                it.setSurfaceProvider(previewView.surfaceProvider)
+            }
+            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+            try {
+                cameraProvider.unbindAll()
+                cameraProvider.bindToLifecycle(
+                    lifecycleOwner, cameraSelector, preview, imageCapture
+                )
+            } catch (exc: Exception) {
+                Log.e("Camera", "Use case binding failed", exc)
+            }
+        }, ContextCompat.getMainExecutor(context))
     }
 
-    Column(
-        modifier = modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        AndroidView(factory = { previewView }, modifier = Modifier.weight(1f))
-
+    Box(Modifier.fillMaxSize()) {
+        AndroidView({ previewView }, modifier = Modifier.fillMaxSize())
         IconButton(
             onClick = {
-                val name = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US)
-                    .format(System.currentTimeMillis())
+                val name = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US).format(System.currentTimeMillis())
                 val contentValues = ContentValues().apply {
                     put(MediaStore.MediaColumns.DISPLAY_NAME, name)
                     put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
@@ -761,7 +773,6 @@ fun CameraScreen(
                         put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX-Image")
                     }
                 }
-
                 val outputOptions = ImageCapture.OutputFileOptions.Builder(
                     context.contentResolver,
                     MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
@@ -773,29 +784,113 @@ fun CameraScreen(
                     ContextCompat.getMainExecutor(context),
                     object : ImageCapture.OnImageSavedCallback {
                         override fun onError(exc: ImageCaptureException) {
-                            Log.e("Camera", "Capture failed: ${exc.message}", exc)
+                            Log.e("Camera", "Photo capture failed: ${exc.message}", exc)
                         }
 
                         override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                            val msg = "Photo captured: ${output.savedUri}"
-                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                            Log.d("Camera", msg)
+                            Log.d("Camera", "Photo capture succeeded: ${output.savedUri}")
+                            onImageCaptured(output.savedUri)
                         }
                     }
                 )
             },
             modifier = Modifier
+                .align(Alignment.BottomCenter)
                 .padding(16.dp)
                 .size(72.dp)
                 .clip(CircleShape)
                 .background(Color.White)
-                .shadow(8.dp)
+                .border(2.dp, Color.Gray, CircleShape)
         ) {
             Icon(
                 imageVector = Icons.Default.Camera,
-                contentDescription = "Take Photo"
+                contentDescription = "Capture",
+                tint = Color.Black
             )
-
         }
     }
 }
+
+//@Composable
+//fun CameraScreen(context: Context, onImageCaptured: (Uri?) -> Unit) {
+//    val lifecycleOwner = LocalLifecycleOwner.current
+//    val previewView = remember { PreviewView(context) }
+//    val imageCapture = remember { ImageCapture.Builder().build() }
+//    val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
+//
+//    val cameraExecutor = remember { Executors.newSingleThreadExecutor() }
+//
+//    LaunchedEffect(Unit) {
+//        val cameraProvider = cameraProviderFuture.get()
+//
+//        val preview = Preview.Builder().build().apply {
+//            setSurfaceProvider(previewView.surfaceProvider)
+//        }
+//
+//        val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+//
+//        try {
+//            cameraProvider.unbindAll()
+//            cameraProvider.bindToLifecycle(
+//                lifecycleOwner, cameraSelector, preview, imageCapture
+//            )
+//        } catch (exc: Exception) {
+//            Log.e("Camera", "Binding failed", exc)
+//        }
+//    }
+//
+//    Column(
+//        modifier = modifier.fillMaxSize(),
+//        horizontalAlignment = Alignment.CenterHorizontally
+//    ) {
+//        AndroidView(factory = { previewView }, modifier = Modifier.weight(1f))
+//
+//        IconButton(
+//            onClick = {
+//                val name = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US)
+//                    .format(System.currentTimeMillis())
+//                val contentValues = ContentValues().apply {
+//                    put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+//                    put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+//                    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+//                        put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX-Image")
+//                    }
+//                }
+//
+//                val outputOptions = ImageCapture.OutputFileOptions.Builder(
+//                    context.contentResolver,
+//                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+//                    contentValues
+//                ).build()
+//
+//                imageCapture.takePicture(
+//                    outputOptions,
+//                    ContextCompat.getMainExecutor(context),
+//                    object : ImageCapture.OnImageSavedCallback {
+//                        override fun onError(exc: ImageCaptureException) {
+//                            Log.e("Camera", "Capture failed: ${exc.message}", exc)
+//                        }
+//
+//                        override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+//                            val msg = "Photo captured: ${output.savedUri}"
+//                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+//                            Log.d("Camera", msg)
+//                        }
+//                    }
+//                )
+//            },
+//            modifier = Modifier
+//                .padding(16.dp)
+//                .size(72.dp)
+//                .clip(CircleShape)
+//                .background(Color.White)
+//                .shadow(8.dp)
+//        ) {
+//            Icon(
+//                imageVector = Icons.Default.Camera,
+//                contentDescription = "Take Photo"
+//            )
+//
+//        }
+//    }
+//}
