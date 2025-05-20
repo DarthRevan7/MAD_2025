@@ -221,14 +221,13 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean)
                                 Box {
                                     //Applications Button
                                     Button(
-                                        onClick = {},
+                                        onClick = { navController.navigate("my_reviews") },
                                         colors = ButtonDefaults.buttonColors(
                                             containerColor = Color(0xd9, 0x24, 0xd6, 255)
                                         )
                                     ) {
                                         Text("My Reviews")
                                     }
-
 
                                     if (!vm.isReviewed(1, nonNullTrip.id)) {
                                         Box(
@@ -455,7 +454,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean)
 
                 //List of reviews of the trip
                 items(vm.getTripReviews(nonNullTrip.id)) { review ->
-                    ShowReview(review, vm)
+                    ShowReview(review, vm, false)
                 }
             }
 
@@ -761,7 +760,7 @@ fun DeleteButtonWithConfirmation(trip: Trip, navController: NavController, vm: T
 }
 
 @Composable
-fun ShowReview(review: Review, vm: TripViewModel) {
+fun ShowReview(review: Review, vm: TripViewModel, myTrip: Boolean) {
     val reviewer = vm.getUserData(review.reviewerId)
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -770,16 +769,34 @@ fun ShowReview(review: Review, vm: TripViewModel) {
             .padding(8.dp)
     ) {
         //Profile photo of the reviewer
-        Box(
-            contentAlignment = Alignment.CenterStart,
-            modifier = Modifier
-                .size(30.dp)
-                .background(Color.Gray, shape = CircleShape)
-        ) {
-            ProfilePhoto(reviewer.firstname, reviewer.surname,true, null)
+        if (!myTrip && review.isTripReview) {
+            Box(
+                contentAlignment = Alignment.CenterStart,
+                modifier = Modifier
+                    .size(30.dp)
+                    .background(Color.Gray, shape = CircleShape)
+            ) {
+                ProfilePhoto(reviewer.firstname, reviewer.surname, true, null)
+            }
+            Text(
+                "${reviewer.firstname} ${reviewer.surname}",
+                modifier = Modifier.padding(start = 16.dp)
+            )
+        } else if (myTrip && !review.isTripReview) {
+            val userReviewed = vm.getUserData(review.reviewedUserId)
+            Box(
+                contentAlignment = Alignment.CenterStart,
+                modifier = Modifier
+                    .size(30.dp)
+                    .background(Color.Gray, shape = CircleShape)
+            ) {
+                ProfilePhoto(userReviewed.firstname, userReviewed.surname, true, null)
+            }
+            Text(
+                "${userReviewed.firstname} ${userReviewed.surname}",
+                modifier = Modifier.padding(start = 16.dp)
+            )
         }
-        Text("${reviewer.firstname} ${reviewer.surname}",
-            modifier = Modifier.padding( start = 16.dp))
 
         //Stars rating
         Row(

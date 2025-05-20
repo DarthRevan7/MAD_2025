@@ -383,6 +383,13 @@ class TripViewModel(val model:Model): ViewModel() {
     //See if a user reviewed a trip
     fun isReviewed(userId: Int, tripId: Int) = model.isReviewed(userId,tripId)
 
+    //Get review of a trip created by the logged in user
+    fun tripReview(userId: Int, tripId :Int) = model.getTripReview(model.getUserDataById(userId).id,
+        tripId)
+
+    //Get reviews that a user did for the other participant to a certain trip
+    fun getUsersReviewsTrip(userId: Int, tripId: Int) = model.getUsersReviewsTrip(userId, tripId)
+
 
     // -------------- PROFILE VIEWMODEL ------------ (?)
 
