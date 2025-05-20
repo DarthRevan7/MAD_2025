@@ -508,6 +508,7 @@ fun ShowUserReview(review: Review, vm: TripViewModel, navController: NavControll
     val reviewer = vm.getUserData(review.reviewerId)
 
     Column {
+
         // Reviewer Row (photo + name)
         Row(
             verticalAlignment = Alignment.CenterVertically,

@@ -21,6 +21,7 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
 import androidx.compose.foundation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -30,6 +31,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.ChatBubble
 import androidx.compose.material.icons.filled.Commute
 import androidx.compose.material.icons.filled.Language
@@ -45,6 +47,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -97,6 +100,9 @@ import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 
 
 sealed class Screen(val route: String) {
@@ -126,15 +132,15 @@ class MainActivity : ComponentActivity() {
             MainScreen()
         }
 
-        viewBinding = ActivityCameraBinding.inflate(layoutInflater)
-        //setContentView(viewBinding.root)
-
-        if (!allPermissionsGranted()) {
-            requestPermissions()
-        }
-
-        // Set up the listeners for take photo
-        viewBinding.imageCaptureButton.setOnClickListener { takePhoto() }
+//        viewBinding = ActivityCameraBinding.inflate(layoutInflater)
+//        setContentView(viewBinding.root)
+//
+//        if (!allPermissionsGranted()) {
+//            requestPermissions()
+//        }
+//
+//        // Set up the listeners for take photo
+//        viewBinding.imageCaptureButton.setOnClickListener { takePhoto() }
     }
 
     private fun takePhoto() {
@@ -323,6 +329,13 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
         homeNavGraph(navController, ArticleViewModel())
         chatsNavGraph()
         profileNavGraph(navController, ArticleViewModel())
+        composable("camera") {
+            val context = LocalContext.current
+            CameraScreen(context = context, onImageCaptured = { uri ->
+                Toast.makeText(context, "Saved to: $uri", Toast.LENGTH_SHORT).show()
+                navController.popBackStack()
+            })
+        }
     }
 }
 
@@ -597,6 +610,8 @@ fun NavGraphBuilder.profileNavGraph(
             )
         }
 
+
+
     }
 }
 
@@ -695,4 +710,92 @@ fun TopBar() {
         },
         modifier = Modifier.shadow(8.dp)
     )
+}
+
+@Composable
+fun CameraScreen(
+    modifier: Modifier = Modifier,
+    context: Context = LocalContext.current,
+    onImageCaptured: (Uri) -> Unit = {},
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
+) {
+    val previewView = remember { PreviewView(context) }
+    val imageCapture = remember { ImageCapture.Builder().build() }
+    val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
+
+    val cameraExecutor = remember { Executors.newSingleThreadExecutor() }
+
+    LaunchedEffect(Unit) {
+        val cameraProvider = cameraProviderFuture.get()
+
+        val preview = Preview.Builder().build().apply {
+            setSurfaceProvider(previewView.surfaceProvider)
+        }
+
+        val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+
+        try {
+            cameraProvider.unbindAll()
+            cameraProvider.bindToLifecycle(
+                lifecycleOwner, cameraSelector, preview, imageCapture
+            )
+        } catch (exc: Exception) {
+            Log.e("Camera", "Binding failed", exc)
+        }
+    }
+
+    Column(
+        modifier = modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        AndroidView(factory = { previewView }, modifier = Modifier.weight(1f))
+
+        IconButton(
+            onClick = {
+                val name = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US)
+                    .format(System.currentTimeMillis())
+                val contentValues = ContentValues().apply {
+                    put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+                    put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+                    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+                        put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX-Image")
+                    }
+                }
+
+                val outputOptions = ImageCapture.OutputFileOptions.Builder(
+                    context.contentResolver,
+                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                    contentValues
+                ).build()
+
+                imageCapture.takePicture(
+                    outputOptions,
+                    ContextCompat.getMainExecutor(context),
+                    object : ImageCapture.OnImageSavedCallback {
+                        override fun onError(exc: ImageCaptureException) {
+                            Log.e("Camera", "Capture failed: ${exc.message}", exc)
+                        }
+
+                        override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                            val msg = "Photo captured: ${output.savedUri}"
+                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                            Log.d("Camera", msg)
+                        }
+                    }
+                )
+            },
+            modifier = Modifier
+                .padding(16.dp)
+                .size(72.dp)
+                .clip(CircleShape)
+                .background(Color.White)
+                .shadow(8.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Camera,
+                contentDescription = "Take Photo"
+            )
+
+        }
+    }
 }

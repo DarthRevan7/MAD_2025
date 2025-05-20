@@ -367,8 +367,9 @@ if(showPopup) {
         },
         onTakePhotoClick = {
             // Launch the camera activity
-            val intent = Intent(context, MainActivity::class.java)
-            takePhotoLauncher.launch(intent)
+            navController.navigate("camera")
+            //val intent = Intent(context, MainActivity::class.java)
+            //takePhotoLauncher.launch(intent)
         }
     )
 }
