@@ -154,7 +154,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean)
             //The logged in user see a trip created by them in the "My Trip" section
             if (owner) {
                 //The trip created by the logged in user is published
-                if (nonNullTrip.published && nonNullTrip.status == Trip.TripStatus.NOT_STARTED) {
+                if (nonNullTrip.published && nonNullTrip.status == Trip.TripStatus.NOT_STARTED && nonNullTrip.creatorId == 1) {
                     item {
                         Row(
                             modifier = Modifier
@@ -210,7 +210,6 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean)
                 }
 
                 if (joined) {
-
                     item {
                         Row(
                             modifier = Modifier
@@ -218,25 +217,27 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean)
                                 .fillMaxWidth(),
                             horizontalArrangement = Arrangement.End
                         ) {
-                            Box {
-                                //Applications Button
-                                Button(
-                                    onClick = {},
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(0xd9, 0x24, 0xd6, 255)
-                                    )
-                                ) {
-                                    Text("My Reviews")
-                                }
+                            if (nonNullTrip.status == Trip.TripStatus.COMPLETED) {
+                                Box {
+                                    //Applications Button
+                                    Button(
+                                        onClick = {},
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = Color(0xd9, 0x24, 0xd6, 255)
+                                        )
+                                    ) {
+                                        Text("My Reviews")
+                                    }
 
 
-                                if (!vm.isReviewed(1, nonNullTrip.id)) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(15.dp)
-                                            .background(Color(0xFF448AFF), CircleShape)
-                                            .align(Alignment.TopEnd)
-                                    )
+                                    if (!vm.isReviewed(1, nonNullTrip.id)) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(15.dp)
+                                                .background(Color(0xFF448AFF), CircleShape)
+                                                .align(Alignment.TopEnd)
+                                        )
+                                    }
                                 }
                             }
 
