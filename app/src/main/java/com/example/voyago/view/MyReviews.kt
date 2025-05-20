@@ -26,8 +26,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,8 +60,9 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
 
     val listState = rememberLazyListState()
 
-    val hasReviews = vm.isReviewed(uvm.loggedUser.id, nonNullTrip.id)
-
+    val hasReviews by remember {
+        derivedStateOf { vm.isReviewed(uvm.loggedUser.id, nonNullTrip.id) }
+    }
 
     val titleMap = remember { mutableStateMapOf<String, String>() }
     val reviewMap = remember { mutableStateMapOf<String, String>() }
@@ -375,7 +378,9 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
 
                                     rvm.addAllTripReviews(reviewsToSubmit)
 
-                                    navController.popBackStack()
+                                    println("$hasReviews")
+
+                                    //navController.popBackStack()
                                 }
 
                             },

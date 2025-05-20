@@ -11,13 +11,14 @@ class ReviewViewModel(val model:Model): ViewModel() {
 
     fun addNewReview(newReview: Review): Review {
         val createdReview = model.createNewReview(newReview)
+        println("Review: ${createdReview.reviewId} | ${createdReview.score} - ${createdReview.title} - ${createdReview.comment}")
         return createdReview
     }
 
     fun addAllTripReviews(reviews: List<Review>) {
         for (review in reviews) {
             addNewReview(review)
-            println("Review: ${review.score} - ${review.title} - ${review.comment}")
+
         }
     }
 

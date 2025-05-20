@@ -1413,12 +1413,12 @@ class Model {
 
     //CREATE A TRIP
 
-    private var nextTripId = 9
+    private var nextId = 9
 
     //Create a new trip
     fun createNewTrip(newTrip: Trip): Trip {
         val tripWithId = newTrip.copy(
-            id = nextTripId++,
+            id = nextId++,
         )
         _tripList.value = _tripList.value + tripWithId
         return tripWithId
@@ -1433,7 +1433,7 @@ class Model {
         published: Boolean
     ): List<Trip> {
         val newTrip = Trip(
-            id = nextTripId++,
+            id = nextId++,
             photo = photo,
             title = title,
             destination = destination,
