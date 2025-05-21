@@ -64,13 +64,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.window.Popup
 import androidx.core.net.toUri
 import com.example.voyago.viewmodel.TripViewModel
+import com.example.voyago.viewmodel.UserViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean) {
+fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean, uvm: UserViewModel) {
     //Trip that we are showing
     val trip by vm.selectedTrip
     println("selected trip = ${vm.selectedTrip}")
@@ -439,7 +440,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean)
             }
 
             item {
-                ShowParticipants(vm.getUserData(nonNullTrip.creatorId), 1, navController)
+                ShowParticipants(uvm.getUserData(nonNullTrip.creatorId), 1, navController)
             }
 
             //Reviews section
@@ -454,7 +455,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean)
 
                 //List of reviews of the trip
                 items(vm.getTripReviews(nonNullTrip.id)) { review ->
-                    ShowReview(review, vm, false)
+                    ShowReview(review, vm, false, uvm)
                 }
             }
 
@@ -760,8 +761,8 @@ fun DeleteButtonWithConfirmation(trip: Trip, navController: NavController, vm: T
 }
 
 @Composable
-fun ShowReview(review: Review, vm: TripViewModel, myTrip: Boolean) {
-    val reviewer = vm.getUserData(review.reviewerId)
+fun ShowReview(review: Review, vm: TripViewModel, myTrip: Boolean, uvm: UserViewModel) {
+    val reviewer = uvm.getUserData(review.reviewerId)
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -783,7 +784,7 @@ fun ShowReview(review: Review, vm: TripViewModel, myTrip: Boolean) {
                 modifier = Modifier.padding(start = 16.dp)
             )
         } else if (myTrip && !review.isTripReview) {
-            val userReviewed = vm.getUserData(review.reviewedUserId)
+            val userReviewed = uvm.getUserData(review.reviewedUserId)
             Box(
                 contentAlignment = Alignment.CenterStart,
                 modifier = Modifier

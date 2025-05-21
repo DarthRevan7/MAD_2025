@@ -53,13 +53,14 @@ import androidx.compose.ui.layout.ContentScale
 import coil3.compose.AsyncImage
 import com.example.voyago.model.UserData
 import com.example.voyago.viewmodel.TripViewModel
+import com.example.voyago.viewmodel.UserViewModel
 
 @Composable
-fun EditProfileScreen(navController: NavController, context:Context, vm: TripViewModel) {
+fun EditProfileScreen(navController: NavController, context:Context, vm: TripViewModel, uvm: UserViewModel) {
 
-    val user = vm.getUserData(1)
+    val user = uvm.getUserData(1)
 
-    var profileImageUri = vm.profileImageUri.value
+    var profileImageUri = uvm.profileImageUri.value
 
     // Use rememberSaveable to persist the profile image URI across configuration changes
     var oldProfileImageUri by rememberSaveable { mutableStateOf<Uri?>(user.profilePicture) }
@@ -344,7 +345,7 @@ fun EditProfileScreen(navController: NavController, context:Context, vm: TripVie
 
 
 
-                            vm.editUserData(updatedUser)
+                            uvm.editUserData(updatedUser)
 
                             navController.navigate("profile_overview")
                         }
@@ -368,7 +369,7 @@ if(showPopup) {
         onDismissRequest = { showPopup = false },
         onImageSelectedFromGallery = { uri ->
             profileImageUri = uri
-            vm.setProfileImageUri(uri)
+            uvm.setProfileImageUri(uri)
             user.profilePicture = uri
             showPopup = false
         },

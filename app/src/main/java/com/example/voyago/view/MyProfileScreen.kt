@@ -77,9 +77,9 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: ArticleViewModel) {
+fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: ArticleViewModel, uvm: UserViewModel) {
 
-    val user1 = vm.getUserData(1)
+    val user1 = uvm.getUserData(1)
 
 
 
@@ -180,7 +180,7 @@ fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: Articl
 
         item {
             //Tab About, My Trips, Review
-            TabAboutTripsReview(user1, vm, vm2, navController)
+            TabAboutTripsReview(user1, vm, vm2, navController, uvm)
         }
     }
 }
@@ -251,7 +251,7 @@ fun RatingAndReliability(rating: Float, reliability: Int) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun TabAboutTripsReview(user: UserData, vm: TripViewModel, vm2: ArticleViewModel, navController: NavController) {
+fun TabAboutTripsReview(user: UserData, vm: TripViewModel, vm2: ArticleViewModel, navController: NavController, uvm: UserViewModel) {
 
     // TAB with About, Trips & Articles, Reviews
     val tabs = listOf("About", "Trips & Articles", "Reviews")
@@ -429,8 +429,8 @@ fun TabAboutTripsReview(user: UserData, vm: TripViewModel, vm2: ArticleViewModel
                                     textAlign = TextAlign.Center)
                             } else {
                                 reviewsList.forEach { review ->
-                                    val reviewer = vm.getUserData(review.reviewerId)
-                                    ShowUserReview(review, vm, navController)
+                                    val reviewer = uvm.getUserData(review.reviewerId)
+                                    ShowUserReview(review, vm, navController, uvm)
 
 
                                     //UIReview(item.title, reviewer.firstname, reviewer.surname, item.score,item.date)
@@ -504,8 +504,8 @@ fun UITripArticle(destination: String, date: Calendar, photo: String?) {
 }
 
 @Composable
-fun ShowUserReview(review: Review, vm: TripViewModel, navController: NavController) {
-    val reviewer = vm.getUserData(review.reviewerId)
+fun ShowUserReview(review: Review, vm: TripViewModel, navController: NavController, uvm: UserViewModel) {
+    val reviewer = uvm.getUserData(review.reviewerId)
 
     Column {
 

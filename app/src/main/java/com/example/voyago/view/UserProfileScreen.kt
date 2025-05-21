@@ -77,9 +77,9 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserProfileScreen(vm: TripViewModel, navController: NavController, vm2: ArticleViewModel, userId: Int) {
+fun UserProfileScreen(vm: TripViewModel, navController: NavController, vm2: ArticleViewModel, userId: Int, uvm: UserViewModel) {
 
-    val user = vm.getUserData(userId)
+    val user = uvm.getUserData(userId)
 
 
 
@@ -167,7 +167,7 @@ fun UserProfileScreen(vm: TripViewModel, navController: NavController, vm2: Arti
 
         item {
             //Tab About, My Trips, Review
-            TabAboutTripsReview(user, vm, vm2, navController)
+            TabAboutTripsReview(user, vm, vm2, navController, uvm)
         }
     }
 }

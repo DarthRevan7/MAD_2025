@@ -371,7 +371,11 @@ fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = Factory
             )
-            TripDetails(navController = navController, vm = tripViewModel, owner = false)
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = Factory
+            )
+            TripDetails(navController = navController, vm = tripViewModel, owner = false, uvm = userViewModel)
         }
 
         composable("filters_selection") { entry ->
@@ -409,7 +413,11 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController, vm2: ArticleVi
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = Factory
             )
-            TripDetails(navController = navController, vm = tripViewModel, owner = true)
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = Factory
+            )
+            TripDetails(navController = navController, vm = tripViewModel, owner = true, uvm = userViewModel)
         }
 
         composable("my_reviews") { entry ->
@@ -509,12 +517,17 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController, vm2: ArticleVi
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = Factory
             )
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = Factory
+            )
             val userId = entry.arguments?.getInt("userId") ?: 1
             UserProfileScreen(
                 navController = navController,
                 vm = tripViewModel,
                 vm2 = vm2,
-                userId = userId
+                userId = userId,
+                uvm = userViewModel
             )
         }
     }
@@ -558,10 +571,15 @@ fun NavGraphBuilder.homeNavGraph(
                 viewModelStoreOwner = homeEntry,
                 factory = Factory
             )
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = homeEntry,
+                factory = Factory
+            )
             TripDetails(
                 navController = navController,
                 vm = homeVm,
-                owner = false
+                owner = false,
+                uvm = userViewModel
             )
         }
     }
@@ -598,10 +616,15 @@ fun NavGraphBuilder.profileNavGraph(
                 viewModelStoreOwner = profileNavGraphEntry,
                 factory = Factory
             )
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = profileNavGraphEntry,
+                factory = Factory
+            )
             MyProfileScreen(
                 navController = navController,
                 vm = profileNavGraphEntryVm,
-                vm2 = vm2
+                vm2 = vm2,
+                uvm = userViewModel
             )
         }
 
@@ -614,12 +637,17 @@ fun NavGraphBuilder.profileNavGraph(
                 viewModelStoreOwner = profileNavGraphEntry,
                 factory = Factory
             )
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = profileNavGraphEntry,
+                factory = Factory
+            )
             val userId = entry.arguments?.getInt("userId") ?: 1
             UserProfileScreen(
                 navController = navController,
                 vm = tripViewModel,
                 vm2 = vm2,
-                userId = userId
+                userId = userId,
+                uvm = userViewModel
             )
 
 
@@ -634,10 +662,15 @@ fun NavGraphBuilder.profileNavGraph(
                 viewModelStoreOwner = profileNavGraphEntry,
                 factory = Factory
             )
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = profileNavGraphEntry,
+                factory = Factory
+            )
             EditProfileScreen(
                 navController = navController,
                 context = LocalContext.current,
                 vm = profileNavGraphEntryVm,
+                uvm = userViewModel
             )
         }
 
@@ -646,7 +679,7 @@ fun NavGraphBuilder.profileNavGraph(
             val profileNavGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.Profile.route)
             }
-            val profileNavGraphEntryVm: TripViewModel = viewModel(
+            val profileNavGraphEntryVm: UserViewModel = viewModel(
                 viewModelStoreOwner = profileNavGraphEntry,
                 factory = Factory
             )
