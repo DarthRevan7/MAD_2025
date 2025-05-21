@@ -100,6 +100,11 @@ import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import androidx.compose.runtime.getValue
+import com.example.voyago.view.MyReviews
+import com.example.voyago.viewmodel.ReviewFactory
+import com.example.voyago.viewmodel.ReviewViewModel
+import com.example.voyago.viewmodel.UserFactory
+import com.example.voyago.viewmodel.UserViewModel
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -405,6 +410,26 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController, vm2: ArticleVi
                 factory = Factory
             )
             TripDetails(navController = navController, vm = tripViewModel, owner = true)
+        }
+
+        composable("my_reviews") { entry ->
+            val exploreGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.MyTrips.route)
+            }
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = Factory
+            )
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = UserFactory
+            )
+            val reviewViewModel: ReviewViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = ReviewFactory
+            )
+            MyReviews(navController = navController, vm = tripViewModel, uvm = userViewModel,
+                rvm = reviewViewModel)
         }
 
         composable("trip_applications") { entry ->

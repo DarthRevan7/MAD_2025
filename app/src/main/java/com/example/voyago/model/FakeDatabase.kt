@@ -887,9 +887,10 @@ class Model {
         listOf(
             Review(
                 reviewId = 1,
+                tripId = 1,
                 isTripReview = true,
                 reviewerId = 1,
-                reviewedId = 1,
+                reviewedUserId = -1,
                 title = "Amazing trip!",
                 comment = "This trip was absolutely incredible from start to finish. The guided city tour was informative and fun, the food was delicious, and the museum visit was a highlight for me. Everything was well-organized and the group dynamic was awesome. I would recommend this experience to anyone wanting a deep cultural immersion.",
                 score = 9,
@@ -898,9 +899,10 @@ class Model {
             ),
             Review(
                 reviewId = 2,
+                tripId = 1,
                 isTripReview = true,
                 reviewerId = 2,
-                reviewedId = 1,
+                reviewedUserId = -1,
                 title = "Great experience",
                 comment = "Barcelona was a dream destination and this trip made it even better. I loved how the itinerary was balanced with both group activities and personal time. The hike on day two was a bit challenging but totally worth it for the views. I came back with great memories and new friends.",
                 score = 8,
@@ -909,9 +911,10 @@ class Model {
             ),
             Review(
                 reviewId = 3,
+                tripId = 1,
                 isTripReview = true,
                 reviewerId = 3,
-                reviewedId = 1,
+                reviewedUserId = -1,
                 title = "Would go again",
                 comment = "I’m really impressed by how well this trip was planned. Every activity had a purpose, and even the free time was suggested with local tips. The welcome dinner was a beautiful introduction to Spanish culture, and the entire experience felt authentic and enriching. 10/10 would do it again.",
                 score = 10,
@@ -920,9 +923,10 @@ class Model {
             ),
             Review(
                 reviewId = 4,
+                tripId = 1,
                 isTripReview = true,
                 reviewerId = 6,
-                reviewedId = 1,
+                reviewedUserId = -1,
                 title = "A Deep Dive into Barcelona’s Culture",
                 comment = "This trip was an unforgettable experience! The balance between group activities and personal time was just right. From the rich history of the Gothic Quarter to the vibrant energy of the local markets, I felt immersed in the heart of Catalonia. The museum visit was a standout moment, and the hike followed by the mountain picnic on the second day was so refreshing. Our guide was knowledgeable, friendly, and kept the group engaged. I especially appreciated the campfire stories to end the trip — it gave everyone a chance to bond and reflect. Highly recommend this trip to anyone who enjoys a mix of culture, nature, and great company.",
                 score = 9,
@@ -931,9 +935,10 @@ class Model {
             ),
             Review(
                 reviewId = 5,
+                tripId = 1,
                 isTripReview = false,
                 reviewerId = 6,
-                reviewedId = 1,
+                reviewedUserId = -1,
                 title = "Thoughtful and adventurous companion",
                 comment = "Traveling with Alice was such a joy. She’s incredibly respectful of group dynamics and always made insightful observations about the places we visited. Whether we were exploring museums or hiking together, she brought a calm energy that was deeply appreciated. I especially loved our conversations during free time — she has a way of turning every small moment into something memorable. Would definitely travel with her again!",
                 score = 10,
@@ -942,9 +947,10 @@ class Model {
             ),
             Review(
                 reviewId = 6,
+                tripId = 1,
                 isTripReview = false,
                 reviewerId = 6,
-                reviewedId = 2,
+                reviewedUserId = 2,
                 title = "Fun and high-spirited",
                 comment = "Bella brought a lot of energy and spontaneity to the group. She was always up for trying new things and encouraged others to loosen up and enjoy the moment. I appreciated her bold spirit during our group dinner and how she kept conversations light and joyful. While she sometimes did her own thing, it never felt disruptive — in fact, her independence added flavor to the trip. Great to have her in a travel crew.",
                 score = 8,
@@ -953,9 +959,10 @@ class Model {
             ),
             Review(
                 reviewId = 7,
+                tripId = 1,
                 isTripReview = false,
                 reviewerId = 6,
-                reviewedId = 3,
+                reviewedUserId = 3,
                 title = "Reliable and engaging traveler",
                 comment = "Liam was a solid and dependable member of the trip. Always on time, always helpful, and always curious about the culture we were immersed in. I admired how he engaged with the local guides and asked thoughtful questions that enriched the experience for all of us. He’s the kind of travel partner who makes planning smoother and shared moments more meaningful. A true team player with a curious mind.",
                 score = 9,
@@ -964,9 +971,10 @@ class Model {
             ),
             Review(
                 reviewId = 8,
+                tripId = 1,
                 isTripReview = false,
                 reviewerId = 1,
-                reviewedId = 6,
+                reviewedUserId = 6,
                 title = "Graceful and grounded",
                 comment = "Aisha has a wonderfully calming presence and was such a delight to travel with. She brought depth to our group chats and was always genuinely interested in everyone’s perspectives. Whether we were exploring local markets or sharing stories around the campfire, she listened with intent and offered thoughtful reflections. She’s a solo traveler by heart, but she made our group feel like a close-knit circle.",
                 score = 10,
@@ -975,9 +983,10 @@ class Model {
             ),
             Review(
                 reviewId = 9,
+                tripId = 1,
                 isTripReview = false,
                 reviewerId = 1,
-                reviewedId = 2,
+                reviewedUserId = 2,
                 title = "Vibrant and social",
                 comment = "Bella added an exciting spark to the trip! She was always the first to start a conversation and bring some humor into the mix. Her energy helped us all feel more relaxed, and she never shied away from suggesting fun detours or photo ops. Even if we had slightly different travel styles, I appreciated her spontaneity and joyfulness.",
                 score = 8,
@@ -986,9 +995,10 @@ class Model {
             ),
             Review(
                 reviewId = 10,
+                tripId = 1,
                 isTripReview = false,
                 reviewerId = 1,
-                reviewedId = 3,
+                reviewedUserId = 3,
                 title = "Passionate and thoughtful traveler",
                 comment = "Liam has a true explorer’s heart. He brought so much knowledge and enthusiasm to every activity, especially during the museum visit and the hike. He was always courteous, helped others when needed, and sparked interesting conversations about history and culture. I really valued having him in the group — he made every shared experience richer.",
                 score = 9,
@@ -997,9 +1007,10 @@ class Model {
             ),
             Review(
                 reviewId = 11,
+                tripId = 1,
                 isTripReview = false,
                 reviewerId = 2,
-                reviewedId = 6,
+                reviewedUserId = 6,
                 title = "Kind and composed travel partner",
                 comment = "Aisha was super sweet and always had something meaningful to say. She brought a lot of calm energy to the group and was really open to sharing stories. Loved having her around.",
                 score = 9,
@@ -1008,9 +1019,10 @@ class Model {
             ),
             Review(
                 reviewId = 12,
+                tripId = 1,
                 isTripReview = false,
                 reviewerId = 2,
-                reviewedId = 1,
+                reviewedUserId = 1,
                 title = "Cool and observant",
                 comment = "Alice was more quiet but always super friendly. She had great taste in spots to explore and was really easy to get along with. Would definitely hang out with her again on another trip.",
                 score = 8,
@@ -1019,9 +1031,10 @@ class Model {
             ),
             Review(
                 reviewId = 13,
+                tripId = 1,
                 isTripReview = false,
                 reviewerId = 2,
-                reviewedId = 3,
+                reviewedUserId = 3,
                 title = "Adventurous and smart",
                 comment = "Liam was super into the cultural parts of the trip and always asked cool questions. You could tell he really cared about learning and connecting with the places we visited. Great vibe.",
                 score = 9,
@@ -1030,9 +1043,10 @@ class Model {
             ),
             Review(
                 reviewId = 14,
+                tripId = 1,
                 isTripReview = false,
                 reviewerId = 3,
-                reviewedId = 6,
+                reviewedUserId = 6,
                 title = "Inspiring travel companion",
                 comment = "Aisha was calm, reflective, and brought a meaningful perspective to every moment of the trip. She was someone I found myself looking forward to chatting with at the end of each day. Truly one of the most insightful people I’ve met while traveling.",
                 score = 9,
@@ -1041,9 +1055,10 @@ class Model {
             ),
             Review(
                 reviewId = 15,
+                tripId = 1,
                 isTripReview = false,
                 reviewerId = 3,
-                reviewedId = 1,
+                reviewedUserId = 1,
                 title = "Adventurous and dependable",
                 comment = "Alice was organized, easygoing, and always ready to explore. She kept the group on track during our hike and shared great insights during our city walk. A reliable and fun person to travel with.",
                 score = 10,
@@ -1052,9 +1067,10 @@ class Model {
             ),
             Review(
                 reviewId = 16,
+                tripId = 1,
                 isTripReview = false,
                 reviewerId = 3,
-                reviewedId = 2,
+                reviewedUserId = 2,
                 title = "Lively and social",
                 comment = "Bella kept the energy high and made sure no one felt left out. She was full of creative ideas and always ready to enjoy the moment. If you're looking for someone who brings positive vibes to a group, she's it.",
                 score = 8,
@@ -1063,9 +1079,10 @@ class Model {
             ),
             Review(
                 reviewId = 17,
+                tripId = 2,
                 isTripReview = true,
                 reviewerId = 2,
-                reviewedId = 2,
+                reviewedUserId = -1,
                 title = "Loved it!",
                 comment = "This was the ultimate beach escape. The snorkeling tour showed us some of the most stunning coral reefs I’ve ever seen. The food was delicious, and the beach party was an unforgettable night with music, dancing, and laughter. It struck the perfect balance between adventure and relaxation.",
                 score = 10,
@@ -1074,9 +1091,10 @@ class Model {
             ),
             Review(
                 reviewId = 18,
+                tripId = 2,
                 isTripReview = true,
                 reviewerId = 3,
-                reviewedId = 2,
+                reviewedUserId = -1,
                 title = "Relaxing trip",
                 comment = "I needed a break from work, and this trip delivered. From the moment we arrived, everything was taken care of. The massage session was heavenly, and the sunsets over the ocean were something out of a movie. I left feeling refreshed and truly happy. Would highly recommend for anyone seeking peace.",
                 score = 9,
@@ -1085,9 +1103,10 @@ class Model {
             ),
             Review(
                 reviewId = 19,
+                tripId = 2,
                 isTripReview = true,
                 reviewerId = 5,
-                reviewedId = 2,
+                reviewedUserId = -1,
                 title = "Beautiful place",
                 comment = "Thailand was everything I imagined and more. The island hopping day was packed with activities, yet never felt rushed. The local cuisine tasting opened my eyes to so many flavors, and I even brought some recipes home. A wonderful way to experience the culture while soaking up the sun.",
                 score = 8,
@@ -1096,9 +1115,10 @@ class Model {
             ),
             Review(
                 reviewId = 20,
+                tripId = 2,
                 isTripReview = false,
                 reviewerId = 5,
-                reviewedId = 1,
+                reviewedUserId = 1,
                 title = "Awesome and funny",
                 comment = "Good travel buddy",
                 score = 8,
@@ -1107,9 +1127,10 @@ class Model {
             ),
             Review(
                 reviewId = 21,
+                tripId = 2,
                 isTripReview = false,
                 reviewerId = 5,
-                reviewedId = 2,
+                reviewedUserId = 2,
                 title = "Beautiful place",
                 comment = "Thailand was everything I imagined and more. The island hopping day was packed with activities, yet never felt rushed. The local cuisine tasting opened my eyes to so many flavors, and I even brought some recipes home. A wonderful way to experience the culture while soaking up the sun.",
                 score = 8,
@@ -1118,9 +1139,10 @@ class Model {
             ),
             Review(
                 reviewId = 22,
+                tripId = 2,
                 isTripReview = false,
                 reviewerId = 2,
-                reviewedId = 1,
+                reviewedUserId = 1,
                 title = "Reliable and energetic",
                 comment = "Alice brought a nice balance to the group. She was always on time, enthusiastic, and had a real curiosity for the local culture. Definitely someone I’d travel with again.",
                 score = 9,
@@ -1129,9 +1151,10 @@ class Model {
             ),
             Review(
                 reviewId = 23,
+                tripId = 2,
                 isTripReview = false,
                 reviewerId = 2,
-                reviewedId = 3,
+                reviewedUserId = 3,
                 title = "Adventurous spirit",
                 comment = "Liam was up for anything—snorkeling, island hopping, you name it. His energy made the trip more exciting. Great vibe and very respectful of everyone’s pace.",
                 score = 8,
@@ -1140,9 +1163,10 @@ class Model {
             ),
             Review(
                 reviewId = 24,
+                tripId = 2,
                 isTripReview = false,
                 reviewerId = 2,
-                reviewedId = 5,
+                reviewedUserId = 5,
                 title = "Quiet but curious",
                 comment = "Ethan was observant and kind. He had great recommendations for food stops and local snacks. While he was more reserved, he always participated meaningfully.",
                 score = 7,
@@ -1151,9 +1175,10 @@ class Model {
             ),
             Review(
                 reviewId = 25,
+                tripId = 2,
                 isTripReview = false,
                 reviewerId = 3,
-                reviewedId = 1,
+                reviewedUserId = 1,
                 title = "Uplifting and organized",
                 comment = "Alice had a clear plan in mind and was always prepared, which helped the group move smoothly. Her positivity made the beach party even better. A great teammate.",
                 score = 10,
@@ -1162,9 +1187,10 @@ class Model {
             ),
             Review(
                 reviewId = 26,
+                tripId = 2,
                 isTripReview = false,
                 reviewerId = 3,
-                reviewedId = 2,
+                reviewedUserId = 2,
                 title = "Fun and free-spirited",
                 comment = "Bella brought all the fun to the Phuket nights. She danced, laughed, and made sure the group was enjoying themselves. Always up for a party, but never overstepped.",
                 score = 9,
@@ -1173,9 +1199,10 @@ class Model {
             ),
             Review(
                 reviewId = 27,
+                tripId = 2,
                 isTripReview = false,
                 reviewerId = 3,
-                reviewedId = 5,
+                reviewedUserId = 5,
                 title = "Excellent food scout",
                 comment = "Ethan was quiet but had an incredible sense for finding good food. He introduced us to amazing dishes during the cuisine tasting and was very thoughtful throughout.",
                 score = 8,
@@ -1184,9 +1211,10 @@ class Model {
             ),
             Review(
                 reviewId = 28,
+                tripId = 2,
                 isTripReview = false,
                 reviewerId = 5,
-                reviewedId = 1,
+                reviewedUserId = 1,
                 title = "Supportive and attentive",
                 comment = "Alice always checked in on everyone and made sure things were going well. She made the group feel connected and supported. I appreciated her calm attitude.",
                 score = 9,
@@ -1195,9 +1223,10 @@ class Model {
             ),
             Review(
                 reviewId = 29,
+                tripId = 2,
                 isTripReview = false,
                 reviewerId = 5,
-                reviewedId = 2,
+                reviewedUserId = 2,
                 title = "Lively and fearless",
                 comment = "Bella had a wild but enjoyable energy. From leading the dancing to cracking jokes during the cruise, she was a strong presence. Definitely made things more fun.",
                 score = 8,
@@ -1206,9 +1235,10 @@ class Model {
             ),
             Review(
                 reviewId = 30,
+                tripId = 2,
                 isTripReview = false,
                 reviewerId = 5,
-                reviewedId = 3,
+                reviewedUserId = 3,
                 title = "Chill and reliable",
                 comment = "Liam was super friendly and approachable. He was always open to conversations and helped organize our snorkeling gear when things got messy. Would travel with him again.",
                 score = 9,
@@ -1546,16 +1576,30 @@ class Model {
     //GET TRIP INFORMATION
 
     // Get reviews list of a trip
-    fun getTripReviews(id: Int): List<Review> {
-        return _reviews.value.filter { it.isTripReview && it.reviewedId == id }
+    fun getTripReviews(tripId: Int): List<Review> {
+        return _reviews.value.filter { it.isTripReview && it.tripId == tripId }
     }
 
     //Tells if the logged in user reviewed the trip
     fun isReviewed(userId: Int, tripId: Int) :Boolean {
         return _reviews.value.any {
             it.isTripReview == true && it.reviewerId == userId
-                    && it.reviewedId == tripId
+                    && it.tripId == tripId
         }
+    }
+
+    //Review of a trip made by a user
+    fun getTripReview(userId: Int, tripId: Int): Review {
+        if(isReviewed(userId, tripId )) {
+            return _reviews.value.find { it.isTripReview && it.reviewerId == userId
+                    && it.tripId == tripId}!!
+        }
+        return Review()
+    }
+
+    //Reviews of users that had taken part to a specific trip made by a user
+    fun getUsersReviewsTrip(userId: Int, tripId: Int) :List<Review> {
+        return _reviews.value.filter { !it.isTripReview && it.tripId == tripId && it.reviewerId == userId }
     }
 
     //MANAGEMENT OF APPLICATIONS TO TRIPS
@@ -1609,7 +1653,7 @@ class Model {
 
     // Get reviews list of a user
     fun getUserReviews(id: Int): List<Review> {
-        return _reviews.value.filter { !it.isTripReview && it.reviewedId == id }
+        return _reviews.value.filter { !it.isTripReview && it.reviewedUserId == id }
     }
 
     //EDIT USER
@@ -1620,6 +1664,19 @@ class Model {
             if (it.id == updatedUserData.id) updatedUserData else it
         }
         return _users.value
+    }
+
+    // ------------         REVIEW MODEL        --------------
+
+    private var nextReviewId = 31
+
+    //Create a new trip
+    fun createNewReview(newReview: Review): Review {
+        val reviewWithId = newReview.copy(
+            reviewId = nextReviewId++,
+        )
+        _reviews.value = _reviews.value + reviewWithId
+        return reviewWithId
     }
 
     // ------------------ OTHER FUNCTIONS -------------------
