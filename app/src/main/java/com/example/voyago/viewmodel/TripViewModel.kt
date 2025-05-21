@@ -415,17 +415,21 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
     }
 }
 
-object Factory : ViewModelProvider.Factory{
+object Factory : ViewModelProvider.Factory {
     private val tripModel: TripModel = TripModel()
     private val userModel: UserModel = UserModel()
     private val reviewModel: ReviewModel = ReviewModel()
 
     override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
         @Suppress("UNCHECKED_CAST")
-        return when{
-            modelClass.isAssignableFrom(TripViewModel::class.java)->
+        return when {
+            modelClass.isAssignableFrom(TripViewModel::class.java) ->
                 TripViewModel(tripModel, userModel, reviewModel) as T
-            else -> throw IllegalArgumentException("Unknown ViewModel")
+            modelClass.isAssignableFrom(UserViewModel::class.java) ->
+                UserViewModel(userModel) as T
+            modelClass.isAssignableFrom(ReviewViewModel::class.java) ->
+                ReviewViewModel(reviewModel) as T
+            else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}. Please add it to the Factory.")
         }
     }
 }

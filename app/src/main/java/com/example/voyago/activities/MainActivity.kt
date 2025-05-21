@@ -137,54 +137,7 @@ class MainActivity : ComponentActivity() {
             MainScreen()
         }
 
-//        viewBinding = ActivityCameraBinding.inflate(layoutInflater)
-//        setContentView(viewBinding.root)
-//
-//        if (!allPermissionsGranted()) {
-//            requestPermissions()
-//        }
-//
-//        // Set up the listeners for take photo
-//        viewBinding.imageCaptureButton.setOnClickListener { takePhoto() }
     }
-
-//    private fun takePhoto() {
-//        val imageCapture = imageCapture ?: return
-//
-//        val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
-//            .format(System.currentTimeMillis())
-//        val contentValues = ContentValues().apply {
-//            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
-//            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
-//            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-//                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX-Image")
-//            }
-//        }
-//
-//        val outputOptions = ImageCapture.OutputFileOptions
-//            .Builder(contentResolver,
-//                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-//                contentValues)
-//            .build()
-//
-//        imageCapture.takePicture(
-//            outputOptions,
-//            ContextCompat.getMainExecutor(this),
-//            object : ImageCapture.OnImageSavedCallback {
-//                override fun onError(exc: ImageCaptureException) {
-//                    Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
-//                }
-//
-//                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-//                    val msg = "Photo capture succeeded: ${output.savedUri}"
-//                    Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
-//                    Log.d(TAG, msg)
-//
-//                    onImageCaptured(output.savedUri)
-//                }
-//            }
-//        )
-//    }
 
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
