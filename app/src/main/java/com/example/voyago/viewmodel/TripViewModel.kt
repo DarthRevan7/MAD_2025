@@ -17,7 +17,7 @@ import com.example.voyago.view.*
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
-class TripViewModel(val model:Model): ViewModel() {
+class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val reviewModel: ReviewModel): ViewModel() {
     //Use in the new Trip interface
     var newTrip:Trip = Trip()
 
@@ -42,7 +42,7 @@ class TripViewModel(val model:Model): ViewModel() {
     //EXPLORE
 
     //Filtered list of trips
-    val filteredList = model.filteredList
+    val filteredList = tripModel.filteredList
 
     //Destination filter
     var filterDestination: String by mutableStateOf("")
@@ -53,7 +53,7 @@ class TripViewModel(val model:Model): ViewModel() {
     }
 
     //List of destination of the trip present in the database
-    fun allDestinations() = model.getDestinations()
+    fun allDestinations() = tripModel.getDestinations()
 
     //Price Range filter
     private val _priceBounds = mutableStateOf(0f..1000f)
@@ -77,9 +77,9 @@ class TripViewModel(val model:Model): ViewModel() {
     }
 
     //Min price and Max price of the database
-    fun getMinPrice() = model.minPrice
-    fun getMaxPrice() = model.maxPrice
-    fun setMaxMinPrice() = model.setMaxMinPrice()
+    fun getMinPrice() = tripModel.minPrice
+    fun getMaxPrice() = tripModel.maxPrice
+    fun setMaxMinPrice() = tripModel.setMaxMinPrice()
 
     //Duration filter
     var filterDuration: Pair<Int, Int> by mutableStateOf(Pair(-1, -1))
@@ -100,7 +100,7 @@ class TripViewModel(val model:Model): ViewModel() {
 
     fun updateFilterDuration(list: List<SelectableItem>) {
         durationItems = list
-        filterDuration = model.setRange(list)
+        filterDuration = tripModel.setRange(list)
     }
 
     //Group size filter
@@ -121,7 +121,7 @@ class TripViewModel(val model:Model): ViewModel() {
 
     fun updateFilterGroupSize(list: List<SelectableItem>) {
         groupSizeItems = list
-        filterGroupSize = model.setRange(list)
+        filterGroupSize = tripModel.setRange(list)
     }
 
     //Trip Type filter
@@ -144,7 +144,7 @@ class TripViewModel(val model:Model): ViewModel() {
         private set
 
     fun getUpcomingTripsList(): List<Trip>{
-        return model.getUpcomingTrips()
+        return tripModel.getUpcomingTrips()
     }
 
     fun updateUpcomingTripsFilter(isSelected: Boolean) {
@@ -156,7 +156,7 @@ class TripViewModel(val model:Model): ViewModel() {
         private set
 
     fun getCompletedTripsList(): List<Trip>{
-        return model.getCompletedTrips()
+        return tripModel.getCompletedTrips()
     }
 
     fun updateCompletedTripsFilter(isSelected: Boolean) {
@@ -172,7 +172,7 @@ class TripViewModel(val model:Model): ViewModel() {
     }
 
     //Apply selected filters
-    fun applyFilters() = model.filterFunction(tripList, filterDestination, filterMinPrice, filterMaxPrice,
+    fun applyFilters() = tripModel.filterFunction(tripList, filterDestination, filterMinPrice, filterMaxPrice,
         filterDuration, filterGroupSize, filtersTripType, filterUpcomingTrips, filterCompletedTrips, filterBySeats)
 
     //Reset filters
@@ -180,9 +180,9 @@ class TripViewModel(val model:Model): ViewModel() {
         filterDestination = ""
 
         updateFilterPriceRange(0.0,0.0)
-        model.setMaxMinPrice()
-        val minPrice = model.minPrice.toFloat()
-        val maxPrice = model.maxPrice.toFloat()
+        tripModel.setMaxMinPrice()
+        val minPrice = tripModel.minPrice.toFloat()
+        val maxPrice = tripModel.maxPrice.toFloat()
         val bounds = minPrice..maxPrice
         _selectedPriceRange.value = bounds
 
@@ -200,30 +200,30 @@ class TripViewModel(val model:Model): ViewModel() {
         private set
 
     fun updatePublishedTrip() {
-        tripList = model.getAllPublishedTrips()
+        tripList = tripModel.getAllPublishedTrips()
         applyFilters()
     }
 
     //Ask to join a trip or cancel application
-    val askedTrips = model.askedTrips
+    val askedTrips = tripModel.askedTrips
     //fun toggleAskToJoin(tripId: Int) = model.toggleAskToJoin(tripId)
-    fun askToJoin(trip: Trip, userId: Int, spots: Int) = model.requestToJoin(trip, userId, spots)
-    fun cancelAskToJoin(trip: Trip, userId: Int) = model.cancelRequestToJoin(trip, userId)
-    fun syncAskedTrips() = model.syncAskedTripsWithAppliedUsers(1)
+    fun askToJoin(trip: Trip, userId: Int, spots: Int) = tripModel.requestToJoin(trip, userId, spots)
+    fun cancelAskToJoin(trip: Trip, userId: Int) = tripModel.cancelRequestToJoin(trip, userId)
+    fun syncAskedTrips() = tripModel.syncAskedTripsWithAppliedUsers(1)
 
     //MY TRIPS
 
     //List of trips created and published by the logged in user
-    val publishedTrips = model.publishedTrips
-    fun creatorPublicFilter(id: Int) = model.filterPublishedByCreator(id)
+    val publishedTrips = tripModel.publishedTrips
+    fun creatorPublicFilter(id: Int) = tripModel.filterPublishedByCreator(id)
 
     //List of trips created, but not published by the logged in user
-    val privateTrips = model.privateTrips
-    fun creatorPrivateFilter(id: Int) = model.filterPrivateByCreator(id)
+    val privateTrips = tripModel.privateTrips
+    fun creatorPrivateFilter(id: Int) = tripModel.filterPrivateByCreator(id)
 
     //List of trips the logged in user joined
-    val joinedTrips = model.joinedTrips
-    fun tripUserJoined(userId: Int) = model.getJoinedTrips(userId)
+    val joinedTrips = tripModel.joinedTrips
+    fun tripUserJoined(userId: Int) = tripModel.getJoinedTrips(userId)
 
     //Import an already published trip as a private trip of the logged in user (id=1)
     fun addImportedTrip(photo: String, title: String, destination: String, startDate: Calendar,
@@ -231,14 +231,14 @@ class TripViewModel(val model:Model): ViewModel() {
                         activities: Map<Calendar, List<Activity>>,
                         typeTravel: List<TypeTravel>, creatorId: Int,
                         published: Boolean): List<Trip> =
-        model.importTrip(photo, title, destination, startDate, endDate, estimatedPrice,
+        tripModel.importTrip(photo, title, destination, startDate, endDate, estimatedPrice,
             groupSize, activities, typeTravel, creatorId, published)
 
     //Make published or private a trip
-    fun changePublishedStatus(id: Int) = model.changePublishedStatus(id)
+    fun changePublishedStatus(id: Int) = tripModel.changePublishedStatus(id)
 
     //Delete a trip from the database
-    fun deleteTrip(id: Int) = model.deleteTrip(id)
+    fun deleteTrip(id: Int) = tripModel.deleteTrip(id)
 
     //Mutable list of applications
     var applications = mutableStateOf(emptyMap<UserData, Int>())
@@ -246,21 +246,21 @@ class TripViewModel(val model:Model): ViewModel() {
     // Participants with spots taken
     fun getTripParticipants(trip: Trip): Map<UserData, Int> {
         return trip.participants.mapNotNull { (userId, spots) ->
-            model.getUsers(listOf(userId)).firstOrNull()?.let { user -> user to spots }
+            userModel.getUsers(listOf(userId)).firstOrNull()?.let { user -> user to spots }
         }.toMap()
     }
 
     // Applicants with requested spots
     fun getTripApplicants(trip: Trip): Map<UserData, Int> {
         return trip.appliedUsers.mapNotNull { (userId, spots) ->
-            model.getUsers(listOf(userId)).firstOrNull()?.let { user -> user to spots }
+            userModel.getUsers(listOf(userId)).firstOrNull()?.let { user -> user to spots }
         }.toMap()
     }
 
     // Rejected users with requested spots
     fun getTripRejectedUsers(trip: Trip): Map<UserData, Int> {
         return trip.rejectedUsers.mapNotNull { (userId, spots) ->
-            model.getUsers(listOf(userId)).firstOrNull()?.let { user -> user to spots }
+            userModel.getUsers(listOf(userId)).firstOrNull()?.let { user -> user to spots }
         }.toMap()
     }
 
@@ -310,14 +310,14 @@ class TripViewModel(val model:Model): ViewModel() {
 
     //Add new trip to the database
     fun addNewTrip(newTrip: Trip): Trip {
-        val createdTrip = model.createNewTrip(newTrip)
+        val createdTrip = tripModel.createNewTrip(newTrip)
         _selectedTrip.value = createdTrip
         return createdTrip
     }
 
     //Edit an already existing trip in the database
     fun editExistingTrip(trip: Trip): List<Trip> {
-        val updatedList = model.editTrip(trip)
+        val updatedList = tripModel.editTrip(trip)
         _selectedTrip.value = updatedList.find { it.id == trip.id }!!
         return updatedList
     }
@@ -329,7 +329,7 @@ class TripViewModel(val model:Model): ViewModel() {
 
     //Add an activity to a specific trip
     fun addActivityToSelectedTrip(activity: Activity) {
-        model.addActivityToTrip(activity, _selectedTrip.value)?.let { updatedTrip ->
+        tripModel.addActivityToTrip(activity, _selectedTrip.value)?.let { updatedTrip ->
             _selectedTrip.value = updatedTrip
         }
     }
@@ -337,13 +337,13 @@ class TripViewModel(val model:Model): ViewModel() {
     fun addActivityToTrip(activity: Activity) {
         //Creating a new trip
         if(userAction == UserAction.CREATE_TRIP) {
-            model.addActivityToTrip(activity, newTrip)?.let { updatedTrip ->
+            tripModel.addActivityToTrip(activity, newTrip)?.let { updatedTrip ->
                 newTrip = updatedTrip
                 _selectedTrip.value = newTrip
             }
         } else if(userAction == UserAction.EDIT_TRIP) {
             //I am editing an existing trip
-            model.addActivityToTrip(activity, editTrip)?.let { updatedTrip ->
+            tripModel.addActivityToTrip(activity, editTrip)?.let { updatedTrip ->
                 editTrip = updatedTrip
                 _selectedTrip.value = editTrip
             }
@@ -352,7 +352,7 @@ class TripViewModel(val model:Model): ViewModel() {
 
     //Delete activity from a specific trip
     fun deleteActivity(activity: Activity) {
-        val trip =  model.removeActivityFromTrip(activity, _selectedTrip.value)!!
+        val trip =  tripModel.removeActivityFromTrip(activity, _selectedTrip.value)!!
 
         _selectedTrip.value = trip
 
@@ -366,7 +366,7 @@ class TripViewModel(val model:Model): ViewModel() {
 
     //Edit a specific activity from a specific trip
     fun editActivity(activityId: Int, updatedActivity: Activity) {
-        val trip = model.editActivityInSelectedTrip(activityId, updatedActivity, _selectedTrip.value)!!
+        val trip = tripModel.editActivityInSelectedTrip(activityId, updatedActivity, _selectedTrip.value)!!
 
         _selectedTrip.value = trip
 
@@ -379,13 +379,13 @@ class TripViewModel(val model:Model): ViewModel() {
     }
 
     //Get Trip reviews
-    fun getTripReviews(id: Int): List<Review> = model.getTripReviews(id)
+    fun getTripReviews(id: Int): List<Review> = reviewModel.getTripReviews(id)
 
     //See if a user reviewed a trip
-    fun isReviewed(userId: Int, tripId: Int) = model.isReviewed(userId,tripId)
+    fun isReviewed(userId: Int, tripId: Int) = reviewModel.isReviewed(userId,tripId)
 
     //Get review of a trip created by the logged in user
-    fun tripReview(userId: Int, tripId :Int) = model.getTripReview(model.getUserDataById(userId).id,
+    fun tripReview(userId: Int, tripId :Int) = reviewModel.getTripReview(model.getUserDataById(userId).id,
         tripId)
 
     //Get reviews that a user did for the other participant to a certain trip
@@ -396,37 +396,20 @@ class TripViewModel(val model:Model): ViewModel() {
 
     //PROFILE
 
-    //Edit user profile
-    fun editUserData(updatedUserData: UserData): List<UserData> {
-        val updatedList = model.editUserData(updatedUserData)
-        return updatedList
-    }
-
-    //Get user information
-    fun getUserData(id: Int): UserData {
-        return model.getUserDataById(id)
-    }
-
     //Get user reviews
     fun getUserReviews(id: Int): List<Review> = model.getUserReviews(id)
 
-    // Camera
-    private val _profileImageUri = mutableStateOf<Uri?>(null)
-    var profileImageUri: State<Uri?> = _profileImageUri
 
-    fun setProfileImageUri(uri: Uri?) {
-        _profileImageUri.value = uri
-    }
 
 
 
     //INITIALIZE VIEWMODEL
     init {
         viewModelScope.launch {
-            model.setMaxMinPrice()
+            tripModel.setMaxMinPrice()
 
-            val minPrice = model.minPrice.toFloat()
-            val maxPrice = model.maxPrice.toFloat()
+            val minPrice = tripModel.minPrice.toFloat()
+            val maxPrice = tripModel.maxPrice.toFloat()
 
             if (minPrice.isFinite() && maxPrice.isFinite() && maxPrice >= minPrice) {
                 val bounds = minPrice..maxPrice
@@ -441,13 +424,15 @@ class TripViewModel(val model:Model): ViewModel() {
 }
 
 object Factory : ViewModelProvider.Factory{
-    private val model:Model = Model()
+    private val tripModel: TripModel = TripModel()
+    private val userModel: UserModel = UserModel()
+    private val reviewModel: ReviewModel = ReviewModel()
 
     override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
         @Suppress("UNCHECKED_CAST")
         return when{
             modelClass.isAssignableFrom(TripViewModel::class.java)->
-                TripViewModel(model) as T
+                TripViewModel(tripModel, userModel, reviewModel) as T
             else -> throw IllegalArgumentException("Unknown ViewModel")
         }
     }

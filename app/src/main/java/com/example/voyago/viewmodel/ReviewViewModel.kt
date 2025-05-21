@@ -3,14 +3,13 @@ package com.example.voyago.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.CreationExtras
-import com.example.voyago.model.Model
-import com.example.voyago.model.Review
+import com.example.voyago.model.*
 
 
-class ReviewViewModel(val model:Model): ViewModel() {
+class ReviewViewModel(val reviewModel:ReviewModel): ViewModel() {
 
     fun addNewReview(newReview: Review): Review {
-        val createdReview = model.createNewReview(newReview)
+        val createdReview = reviewModel.createNewReview(newReview)
         println("Review: ${createdReview.reviewId} | ${createdReview.score} - ${createdReview.title} - ${createdReview.comment}")
         return createdReview
     }
@@ -25,7 +24,7 @@ class ReviewViewModel(val model:Model): ViewModel() {
 }
 
 object ReviewFactory : ViewModelProvider.Factory{
-    private val model:Model = Model()
+    private val model:ReviewModel = ReviewModel()
 
     override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
         @Suppress("UNCHECKED_CAST")
