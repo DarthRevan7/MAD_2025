@@ -385,22 +385,14 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
     fun isReviewed(userId: Int, tripId: Int) = reviewModel.isReviewed(userId,tripId)
 
     //Get review of a trip created by the logged in user
-    fun tripReview(userId: Int, tripId :Int) = reviewModel.getTripReview(model.getUserDataById(userId).id,
+    fun tripReview(userId: Int, tripId :Int) = reviewModel.getTripReview(userModel.getUserDataById(userId).id,
         tripId)
 
     //Get reviews that a user did for the other participant to a certain trip
-    fun getUsersReviewsTrip(userId: Int, tripId: Int) = model.getUsersReviewsTrip(userId, tripId)
-
-
-    // -------------- PROFILE VIEWMODEL ------------
-
-    //PROFILE
+    fun getUsersReviewsTrip(userId: Int, tripId: Int) = reviewModel.getUsersReviewsTrip(userId, tripId)
 
     //Get user reviews
-    fun getUserReviews(id: Int): List<Review> = model.getUserReviews(id)
-
-
-
+    fun getUserReviews(id: Int): List<Review> = reviewModel.getUserReviews(id)
 
 
     //INITIALIZE VIEWMODEL
