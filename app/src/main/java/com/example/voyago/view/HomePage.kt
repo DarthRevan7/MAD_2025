@@ -20,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -57,16 +58,16 @@ fun HomePageScreen(
 
 //    val tripLists by vm1.tripList.collectAsState()
     val articles by vm2.articleList.collectAsState()
-    var displayCount by remember { mutableStateOf(5) }
+    var displayCount by remember { mutableIntStateOf(5) }
     val scrollState = rememberScrollState()
     // 1. 先拿到“现在”的时间点
     val now = remember { Calendar.getInstance() }
     // 2. 按条件分组
     vm1.resetFilters()
 
-    val completedTrips = vm1.getCompletedTripsList()
+    val completedTrips = vm1.getCompletedTripsList().filter { trip -> trip.published }
 
-    val upcomingTrips = vm1.getUpcomingTripsList()
+    val upcomingTrips = vm1.getUpcomingTripsList().filter { trip -> trip.published }
 
     Column(
         modifier = Modifier
