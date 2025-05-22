@@ -3,6 +3,7 @@ package com.example.voyago.view
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -456,7 +457,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
 
                 //List of reviews of the trip
                 items(vm.getTripReviews(nonNullTrip.id)) { review ->
-                    ShowReview(review, vm, false, uvm)
+                    ShowReview(review, vm, false, uvm, navController)
                 }
             }
 
@@ -771,7 +772,7 @@ fun DeleteButtonWithConfirmation(trip: Trip, navController: NavController, vm: T
 }
 
 @Composable
-fun ShowReview(review: Review, vm: TripViewModel, myTrip: Boolean, uvm: UserViewModel) {
+fun ShowReview(review: Review, vm: TripViewModel, myTrip: Boolean, uvm: UserViewModel, navController: NavController) {
     val reviewer = uvm.getUserData(review.reviewerId)
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -791,7 +792,12 @@ fun ShowReview(review: Review, vm: TripViewModel, myTrip: Boolean, uvm: UserView
             }
             Text(
                 "${reviewer.firstname} ${reviewer.surname}",
-                modifier = Modifier.padding(start = 16.dp)
+                modifier = Modifier
+                    .padding(start = 16.dp)
+                    .clickable {
+
+                        navController.navigate("user_profile/${review.reviewerId}")
+                    }
             )
         } else if (myTrip && !review.isTripReview) {
             val userReviewed = uvm.getUserData(review.reviewedUserId)

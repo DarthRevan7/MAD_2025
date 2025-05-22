@@ -151,7 +151,7 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
                 //Review of the trip made by the logged in user
                 val review = vm.tripReview(uvm.loggedUser.id, nonNullTrip.id)
                 item {
-                    ShowReview(review, vm, true, uvm)
+                    ShowReview(review, vm, true, uvm, navController)
                 }
             } else {
                 item {
@@ -226,7 +226,7 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
                 //Review of the users made by the logged in user
                 val reviews = vm.getUsersReviewsTrip(uvm.loggedUser.id, nonNullTrip.id)
                 items(reviews) { review ->
-                    ShowReview(review, vm, true, uvm)
+                    ShowReview(review, vm, true, uvm, navController)
                 }
             } else {
                 //Field to complete
