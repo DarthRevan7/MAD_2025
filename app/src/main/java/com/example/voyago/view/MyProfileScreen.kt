@@ -412,7 +412,7 @@ fun TabAboutTripsReview(user: UserData, vm: TripViewModel, vm2: ArticleViewModel
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
-                            .wrapContentWidth()
+                            .fillMaxWidth()
                             .wrapContentHeight()
                             .background(Color(0xdf, 0xd1, 0xe0, 255), shape = RoundedCornerShape(10.dp))
                             .padding(10.dp)
