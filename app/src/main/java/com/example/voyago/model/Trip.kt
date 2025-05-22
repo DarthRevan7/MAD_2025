@@ -59,7 +59,20 @@ data class Trip(
         startDate = yesterday
         endDate = yesterday
 
+        updateStatusBasedOnDate()
+
     }
+
+    fun updateStatusBasedOnDate(): TripStatus {
+        val today = Calendar.getInstance()
+        return when {
+            endDate.before(today) -> TripStatus.COMPLETED
+            startDate.after(today) -> TripStatus.NOT_STARTED
+            else -> TripStatus.IN_PROGRESS
+        }
+    }
+
+
 
     fun isValid():Boolean {
         var condition = true

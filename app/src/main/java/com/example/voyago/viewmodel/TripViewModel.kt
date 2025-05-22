@@ -394,10 +394,25 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
     //Get user reviews
     fun getUserReviews(id: Int): List<Review> = reviewModel.getUserReviews(id)
 
+    private suspend fun updateAllTripStatuses() {
+        val trips = tripModel.getAllPublishedTrips()
+
+        for (trip in trips) {
+            val oldStatus = trip.status
+            val newStatus = trip.updateStatusBasedOnDate()
+
+            if (newStatus != oldStatus) {
+                tripModel.updateTripStatus(trip, newStatus)
+            }
+        }
+    }
+
 
     //INITIALIZE VIEWMODEL
     init {
         viewModelScope.launch {
+            updateAllTripStatuses()
+
             tripModel.setMaxMinPrice()
 
             val minPrice = tripModel.minPrice.toFloat()

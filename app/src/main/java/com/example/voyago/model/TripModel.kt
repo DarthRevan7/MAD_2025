@@ -45,6 +45,13 @@ class TripModel {
         return published
     }
 
+    fun updateTripStatus(trip: Trip, status: TripStatus) {
+        _tripList.value = _tripList.value.map {
+            if (it.id == trip.id) it.copy(status = status) else it
+        }
+    }
+
+
     //List of trips the logged in user (id=1) joined
     private val _joinedTrips = MutableStateFlow<List<Trip>>(emptyList())
     val joinedTrips: StateFlow<List<Trip>> = _joinedTrips
