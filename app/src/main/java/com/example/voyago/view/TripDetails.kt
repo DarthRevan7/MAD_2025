@@ -739,8 +739,17 @@ fun DeleteButtonWithConfirmation(trip: Trip, navController: NavController, vm: T
             confirmButton = {
                 Button(
                     onClick = {
-                        vm.deleteTrip(trip.id)
-                        vm.updatePublishedTrip()
+                        val newOwner = trip.participants.entries.firstOrNull { it.key != trip.creatorId }
+                        println("newOwner: $newOwner")
+                        if (!trip.published || newOwner == null) {
+                            vm.deleteTrip(trip.id)
+                            vm.updatePublishedTrip()
+                        } else {
+                            trip.participants = trip.participants.toMutableMap().apply {
+                                remove(trip.creatorId)
+                            }
+                            trip.creatorId = newOwner.key
+                        }
                         navController.popBackStack()
                         showDialog.value = false
                     }
