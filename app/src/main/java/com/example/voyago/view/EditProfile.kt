@@ -60,10 +60,9 @@ fun EditProfileScreen(navController: NavController, context:Context, vm: TripVie
 
     val user = uvm.getUserData(1)
 
-    var profileImageUri = uvm.profileImageUri.value
 
-    // Use rememberSaveable to persist the profile image URI across configuration changes
-    var oldProfileImageUri by rememberSaveable { mutableStateOf<Uri?>(user.profilePicture) }
+    var profileImageUri by rememberSaveable { mutableStateOf<Uri?>(user.profilePicture) }
+
 
     // Use rememberSaveable for dialog visibility
     var showPopup by rememberSaveable { mutableStateOf(false) }
@@ -370,7 +369,7 @@ if(showPopup) {
         onImageSelectedFromGallery = { uri ->
             profileImageUri = uri
             uvm.setProfileImageUri(uri)
-            user.profilePicture = uri
+            //user.profilePicture = uri
             showPopup = false
         },
         onTakePhotoClick = {
