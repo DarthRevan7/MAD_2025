@@ -265,13 +265,23 @@ fun BottomBar(navController: NavHostController) {
                 label = { Text(item.label) },
                 selected = selected,
                 onClick = {
-                    navController.navigate(item.startRoute) {
-                        // Pop up to the root of the graph to prevent stacking
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
+                    if (item.label == "Home") {
+                        navController.navigate(item.startRoute) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = false
                         }
-                        launchSingleTop = true
-                        restoreState = true
+                    } else {
+                        // Restore last visited tab for other items
+                        navController.navigate(item.startRoute) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     }
                 }
             )
@@ -534,6 +544,30 @@ fun NavGraphBuilder.homeNavGraph(
                 owner = false,
                 uvm = userViewModel
             )
+        }
+
+        composable("user_profile/{userId}",
+            arguments = listOf(navArgument("userId") { type = NavType.IntType })) { entry ->
+            val profileNavGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Home.route)
+            }
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = profileNavGraphEntry,
+                factory = Factory
+            )
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = profileNavGraphEntry,
+                factory = Factory
+            )
+            val userId = entry.arguments?.getInt("userId") ?: 1
+            UserProfileScreen(
+                navController = navController,
+                vm = tripViewModel,
+                vm2 = vm2,
+                userId = userId,
+                uvm = userViewModel
+            )
+
         }
     }
 }
@@ -822,86 +856,4 @@ fun CameraScreen(context: Context, onImageCaptured: (Uri?) -> Unit) {
     }
 }
 
-//@Composable
-//fun CameraScreen(context: Context, onImageCaptured: (Uri?) -> Unit) {
-//    val lifecycleOwner = LocalLifecycleOwner.current
-//    val previewView = remember { PreviewView(context) }
-//    val imageCapture = remember { ImageCapture.Builder().build() }
-//    val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
-//
-//    val cameraExecutor = remember { Executors.newSingleThreadExecutor() }
-//
-//    LaunchedEffect(Unit) {
-//        val cameraProvider = cameraProviderFuture.get()
-//
-//        val preview = Preview.Builder().build().apply {
-//            setSurfaceProvider(previewView.surfaceProvider)
-//        }
-//
-//        val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-//
-//        try {
-//            cameraProvider.unbindAll()
-//            cameraProvider.bindToLifecycle(
-//                lifecycleOwner, cameraSelector, preview, imageCapture
-//            )
-//        } catch (exc: Exception) {
-//            Log.e("Camera", "Binding failed", exc)
-//        }
-//    }
-//
-//    Column(
-//        modifier = modifier.fillMaxSize(),
-//        horizontalAlignment = Alignment.CenterHorizontally
-//    ) {
-//        AndroidView(factory = { previewView }, modifier = Modifier.weight(1f))
-//
-//        IconButton(
-//            onClick = {
-//                val name = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US)
-//                    .format(System.currentTimeMillis())
-//                val contentValues = ContentValues().apply {
-//                    put(MediaStore.MediaColumns.DISPLAY_NAME, name)
-//                    put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
-//                    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-//                        put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX-Image")
-//                    }
-//                }
-//
-//                val outputOptions = ImageCapture.OutputFileOptions.Builder(
-//                    context.contentResolver,
-//                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-//                    contentValues
-//                ).build()
-//
-//                imageCapture.takePicture(
-//                    outputOptions,
-//                    ContextCompat.getMainExecutor(context),
-//                    object : ImageCapture.OnImageSavedCallback {
-//                        override fun onError(exc: ImageCaptureException) {
-//                            Log.e("Camera", "Capture failed: ${exc.message}", exc)
-//                        }
-//
-//                        override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-//                            val msg = "Photo captured: ${output.savedUri}"
-//                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-//                            Log.d("Camera", msg)
-//                        }
-//                    }
-//                )
-//            },
-//            modifier = Modifier
-//                .padding(16.dp)
-//                .size(72.dp)
-//                .clip(CircleShape)
-//                .background(Color.White)
-//                .shadow(8.dp)
-//        ) {
-//            Icon(
-//                imageVector = Icons.Default.Camera,
-//                contentDescription = "Take Photo"
-//            )
-//
-//        }
-//    }
-//}
+
