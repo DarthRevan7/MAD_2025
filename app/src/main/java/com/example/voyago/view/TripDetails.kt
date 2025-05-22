@@ -189,19 +189,20 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                             Spacer(Modifier.weight(1f))
 
                             //Private Button (makes the trip private)
-                            Button(
-                                onClick = {
-                                    vm.changePublishedStatus(nonNullTrip.id)
-                                    vm.updatePublishedTrip()
-                                    navController.popBackStack()
-                                },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0x65, 0x55, 0x8f, 255)
-                                )
-                            ) {
-                                Text("Private")
+                            if (!nonNullTrip.participants.any { it.key != nonNullTrip.creatorId }) {
+                                Button(
+                                    onClick = {
+                                        vm.changePublishedStatus(nonNullTrip.id)
+                                        vm.updatePublishedTrip()
+                                        navController.popBackStack()
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0x65, 0x55, 0x8f, 255)
+                                    )
+                                ) {
+                                    Text("Private")
+                                }
                             }
-
                             Spacer(Modifier.padding(5.dp))
 
                             //Delete button with popup for confirmation
