@@ -652,7 +652,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                                                 usernameTouchedList = usernameTouchedList.toMutableList().also { it[i] = true }
                                             },
                                             usernameTouchedList[i] && (
-                                                    registeredUsernames[i].isBlank() || !registeredUsernames[i].any { it.isLetter() }
+                                                    registeredUsernames[i].isBlank() || !registeredUsernames[i].any { it.isLetter() || uvm.doesUserExist(registeredUsernames[i]) }
                                                     ),
                                             "Username"
                                         )
@@ -667,7 +667,9 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                                                 nameTouchedList = nameTouchedList.toMutableList().also { it[i] = true }
                                             },
                                             nameTouchedList[i] && (
-                                                    participant.name.isBlank() || !participant.name.any { ch -> ch.isLetter() }
+                                                    participant.name.isBlank() ||                             // Empty or only whitespace
+                                                            participant.name.any { !it.isLetter() && it != ' ' } ||   // Contains non-letter and non-space
+                                                            participant.name.all { it == ' ' }                         // Only spaces
                                                     ),
                                             "Name"
                                         )
@@ -681,7 +683,9 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                                                 surnameTouchedList = surnameTouchedList.toMutableList().also { it[i] = true }
                                             },
                                             surnameTouchedList[i] && (
-                                                    participant.surname.isBlank() || !participant.surname.any { ch -> ch.isLetter() }
+                                                    participant.surname.isBlank() ||                             // Empty or only whitespace
+                                                            participant.surname.any { !it.isLetter() && it != ' ' } ||   // Contains non-letter and non-space
+                                                            participant.surname.all { it == ' ' }                         // Only spaces
                                                     ),
                                             "Surname"
                                         )
