@@ -435,6 +435,9 @@ fun ShowApplications(user: UserData, joinRequest: Trip.JoinRequest, vm: TripView
                         Text("Email: ${participant.email}")
                         Spacer(modifier = Modifier.height(8.dp))
                     }
+                    joinRequest.registeredParticipants.forEach { participants ->
+                        Text("Username: ")
+                    }
                 }
             },
             confirmButton = {
