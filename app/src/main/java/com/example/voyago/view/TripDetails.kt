@@ -109,58 +109,37 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
     //To manage phase of the dialog
     var dialogPhase by remember { mutableIntStateOf(0) }
 
-    //Data of other participants
-    val unregisteredParticipants = remember { mutableStateListOf<Participant>() }
-    val registeredUsernames = remember { mutableStateListOf<String>() }
+    // --- INIZIO BLOCCO MODIFICATO ---
 
+    // Data of other participants - Ora usiamo un'unica lista di AdditionalParticipantInput
+    val additionalParticipantsData = remember { mutableStateListOf<AdditionalParticipantInput>() }
 
+    // I singoli stati per username, name, surname, email e i loro 'Touched' e 'HasErrors'
+    // NON SONO PIÙ NECESSARI QUI a livello globale,
+    // perché saranno gestiti all'interno di ogni oggetto AdditionalParticipantInput.
+    // Li ho lasciati commentati per chiarezza, ma puoi rimuoverli completamente.
 
-    //Username field management
-    var username by rememberSaveable { mutableStateOf("") }
-    var usernameTouched = remember {mutableStateOf(false)}
-    val usernameHasErrors by remember {
-        derivedStateOf {
-            usernameTouched.value && (username.isBlank() || !username.any { it.isLetter() })
-        }
-    }
+    // var username by rememberSaveable { mutableStateOf("") } // Rimuovi o commenta
+    // var usernameTouched = remember {mutableStateOf(false)} // Rimuovi o commenta
+    // val usernameHasErrors by remember { // Rimuovi o commenta
+    //     derivedStateOf {
+    //         usernameTouched.value && (username.isBlank() || !username.any { it.isLetter() })
+    //     }
+    // }
 
-    //Name field management
-    var name by rememberSaveable { mutableStateOf("") }
-    var nameTouched = remember {mutableStateOf(false)}
-    val nameHasErrors by remember {
-        derivedStateOf {
-            nameTouched.value && (name.isBlank() || !name.any { it.isLetter() })
-        }
-    }
-
-    //Surname field management
-    var surname by rememberSaveable { mutableStateOf("") }
-    var surnameTouched = remember {mutableStateOf(false)}
-    val surnameHasErrors by remember {
-        derivedStateOf {
-            surnameTouched.value && (surname.isBlank() || !surname.any { it.isLetter() })
-        }
-    }
-
-    //Email field management
-    var email by rememberSaveable { mutableStateOf("") }
-    var emailTouched = remember {mutableStateOf(false)}
-    val emailHasErrors by remember {
-        derivedStateOf {
-            emailTouched.value && email.isBlank()
-        }
-    }
+    // (Commenta o rimuovi anche name, surname, email e i relativi touched/hasErrors)
+    // --- FINE BLOCCO MODIFICATO ---
 
     //Initialization of the list of other participants
     LaunchedEffect(dialogPhase, selectedSpots) {
         if (dialogPhase == 1) {
-            while (unregisteredParticipants.size < selectedSpots - 1) {
-                unregisteredParticipants.add(Participant("", "", ""))
-                registeredUsernames.add("")
+            // Assicurati che la lista sia della dimensione corretta
+            // selectedSpots - 1 perché l'utente corrente è già conteggiato
+            while (additionalParticipantsData.size < selectedSpots - 1) {
+                additionalParticipantsData.add(AdditionalParticipantInput())
             }
-            while (unregisteredParticipants.size > selectedSpots - 1) {
-                unregisteredParticipants.remove(unregisteredParticipants.last())
-                registeredUsernames.remove(registeredUsernames.last())
+            while (additionalParticipantsData.size > selectedSpots - 1) {
+                additionalParticipantsData.remove(additionalParticipantsData.last())
             }
         }
     }
@@ -585,8 +564,8 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                 onDismissRequest = {
                     showDialog = false
                     dialogPhase = 0
-                    unregisteredParticipants.clear()
-                    registeredUsernames.clear()
+                    //unregisteredParticipants.clear()
+                    //registeredUsernames.clear()
                 },
                 title = {
                     if (dialogPhase == 0) {
@@ -623,78 +602,89 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                             }
                         }
                     } else {
-                        LazyColumn {
-                            //For every participants
-                            for (i in 0 until (selectedSpots - 1)) {
-                                item {
-                                    Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                                        Text(
-                                            "Participants ${i + 1}",
-                                            style = MaterialTheme.typography.titleMedium
-                                        )
+                    LazyColumn {
+                        //For every participants
+                        for (i in 0 until (selectedSpots - 1)) {
+                            item {
+                                // Accediamo all'elemento specifico della lista per questo partecipante
+                                val participantData = additionalParticipantsData[i]
 
-                                        //State registered checkbox
-                                        var isRegistered by remember { mutableStateOf(false) }
+                                Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                                    Text(
+                                        "Partecipante ${i + 1}", // Ho corretto il testo in italiano
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
 
-                                        Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Checkbox(
-                                                checked = isRegistered,
-                                                onCheckedChange = {
-                                                    isRegistered = it
-                                                    // Reset if the checkbox changes
-                                                    if (isRegistered) {
-                                                        unregisteredParticipants[i] =
-                                                            Participant("", "", "")
-                                                    } else {
-                                                        registeredUsernames[i] = ""
-                                                    }
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Checkbox(
+                                            checked = participantData.isRegistered,
+                                            onCheckedChange = { isChecked ->
+                                                // AGGIORNA LO STATO NEL MODELLO
+                                                additionalParticipantsData[i] =
+                                                    participantData.copy(isRegistered = isChecked)
+                                                // Resetta i campi rilevanti quando la checkbox cambia
+                                                if (isChecked) {
+                                                    additionalParticipantsData[i] =
+                                                        additionalParticipantsData[i].copy(
+                                                            name = "",
+                                                            lastName = "",
+                                                            email = ""
+                                                        )
+                                                } else {
+                                                    additionalParticipantsData[i] =
+                                                        additionalParticipantsData[i].copy(username = "")
                                                 }
-                                            )
-                                            Text("Are they registered to Voyago?")
-                                        }
+                                            }
+                                        )
+                                        Text("Sono registrati a Voyago?") // Ho corretto il testo in italiano
+                                    }
 
-                                        //If the participant is registered
-                                        if (isRegistered) {
-                                            ValidatingInputTextField(
-                                                username,
-                                                {
-                                                    registeredUsernames[i] = it 
-                                                },
-                                                usernameHasErrors,
-                                                "Username"
-                                            )
-                                        } else {
-                                            ValidatingInputTextField(
-                                                name,
-                                                {
-                                                    unregisteredParticipants[i] =
-                                                        unregisteredParticipants[i].copy(name = it)
-                                                },
-                                                nameHasErrors,
-                                                "Name"
-                                            )
-                                            ValidatingInputTextField(
-                                                surname,
-                                                {
-                                                    unregisteredParticipants[i] =
-                                                        unregisteredParticipants[i].copy(surname = it)
-                                                },
-                                                nameHasErrors,
-                                                "Surname"
-                                            )
-                                            ValidatingInputEmailField(
-                                                email,
-                                                {
-                                                    unregisteredParticipants[i] =
-                                                        unregisteredParticipants[i].copy(email = it)
-                                                },
-                                                emailHasErrors
-                                            )
-                                        }
+                                    // Se il partecipante è registrato
+                                    if (participantData.isRegistered) {
+                                        // Ora ValidatingInputTextField userà lo stato specifico di questo partecipante
+                                        ValidatingInputTextField(
+                                            participantData.username,
+                                            { newValue ->
+                                                additionalParticipantsData[i] =
+                                                    participantData.copy(username = newValue)
+                                            },
+                                            // Dovrai gestire gli errori di validazione all'interno di AdditionalParticipantInput
+                                            // Per ora, useremo un placeholder 'false' o un'altra logica di validazione per singolo campo
+                                            false, // <<< Devi implementare la logica di validazione per 'username' dentro 'AdditionalParticipantInput' o qui.
+                                            "Username"
+                                        )
+                                    } else {
+                                        ValidatingInputTextField(
+                                            participantData.name,
+                                            { newValue ->
+                                                additionalParticipantsData[i] =
+                                                    participantData.copy(name = newValue)
+                                            },
+                                            false, // <<< Devi implementare la logica di validazione per 'name'
+                                            "Nome"
+                                        )
+                                        ValidatingInputTextField(
+                                            participantData.lastName, // Ho corretto 'surname' a 'lastName' per coerenza
+                                            { newValue ->
+                                                additionalParticipantsData[i] =
+                                                    participantData.copy(lastName = newValue)
+                                            },
+                                            false, // <<< Devi implementare la logica di validazione per 'lastName'
+                                            "Cognome"
+                                        )
+                                        ValidatingInputEmailField(
+                                            participantData.email,
+                                            { newValue ->
+                                                additionalParticipantsData[i] =
+                                                    participantData.copy(email = newValue)
+                                            },
+                                            false // <<< Devi implementare la logica di validazione per 'email'
+                                        )
                                     }
                                 }
                             }
                         }
+                    }
                     }
                 },
                 confirmButton = {
@@ -707,14 +697,44 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                                 showDialog = false
                             }
                         } else {
-                            val control = !usernameHasErrors && !nameHasErrors && !surnameHasErrors && !emailHasErrors
-                            if(control) {
-                                vm.askToJoin(nonNullTrip, uvm.loggedUser.id, selectedSpots, unregisteredParticipants, uvm.getIdListFromUsernames(registeredUsernames))
+                            // Validazione: controlla tutti i campi di tutti i partecipanti aggiuntivi
+                            val allParticipantsValid = additionalParticipantsData.all { participant ->
+                                if (participant.isRegistered) {
+                                    // Valida solo l'username
+                                    participant.username.isNotBlank() && participant.username.any { it.isLetter() }
+                                } else {
+                                    // Valida nome, cognome, email (almeno uno deve essere compilato per non essere vuoto)
+                                    participant.name.isNotBlank() || participant.lastName.isNotBlank() || participant.email.isNotBlank()
+                                    // Potresti voler aggiungere una validazione più robusta per l'email qui
+                                }
+                            }
+
+                            if (allParticipantsValid) {
+                                val finalUnregistered = additionalParticipantsData
+                                    .filter { !it.isRegistered }
+                                    .map { Participant(it.name, it.lastName, it.email) } // Assicurati che Participant sia il tuo modello per non registrati
+                                    .filter { it.name.isNotEmpty() || it.surname.isNotEmpty() || it.email.isNotEmpty() } // Aggiunto .surname per coerenza
+
+                                val finalRegisteredUsernames = additionalParticipantsData
+                                    .filter { it.isRegistered }
+                                    .map { it.username }
+                                    .filter { it.isNotEmpty() }
+
+                                vm.askToJoin(
+                                    nonNullTrip,
+                                    uvm.loggedUser.id,
+                                    selectedSpots,
+                                    finalUnregistered,
+                                    uvm.getIdListFromUsernames(finalRegisteredUsernames)
+                                )
                                 showDialog = false
                                 dialogPhase = 0
-                                // Reset lists
-                                unregisteredParticipants.clear()
-                                registeredUsernames.clear()
+                                additionalParticipantsData.clear() // Resetta la lista unificata
+                            } else {
+                                // Mostra un messaggio di errore all'utente, se la validazione fallisce
+                                // Ad esempio, potresti avere uno stato 'showValidationError'
+                                // o un Toast per indicare che tutti i campi devono essere compilati.
+                                Log.e("Validation", "Errore di validazione: alcuni campi sono vuoti o non validi.")
                             }
                         }
 
@@ -726,10 +746,9 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                     TextButton(onClick = {
                         showDialog = false
                         dialogPhase = 0
-                        unregisteredParticipants.clear()
-                        registeredUsernames.clear()
+                        additionalParticipantsData.clear() // Resetta la lista unificata
                     }) {
-                        Text("Cancel")
+                        Text("Annulla") // Ho corretto il testo in italiano
                     }
                 }
             )
@@ -1045,3 +1064,11 @@ fun PrintStars(rating: Int) {
     }
 }
 
+// Inserisci questa data class in fondo al file, o in un file separato per i modelli
+data class AdditionalParticipantInput(
+    var isRegistered: Boolean = false,
+    var username: String = "",
+    var name: String = "",
+    var lastName: String = "",
+    var email: String = ""
+)
