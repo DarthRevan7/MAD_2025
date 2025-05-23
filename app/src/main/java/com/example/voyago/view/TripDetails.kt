@@ -1,7 +1,6 @@
 package com.example.voyago.view
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -60,14 +59,11 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.setValue
 import com.example.voyago.activities.ProfilePhoto
 import com.example.voyago.model.Review
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -127,9 +123,6 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
     var emailTouchedList by remember { mutableStateOf(listOf<Boolean>()) }
 
 
-
-
-
     //Initialization of the list of other participants
     LaunchedEffect(dialogPhase, selectedSpots) {
         if (dialogPhase == 1) {
@@ -139,22 +132,22 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
         }
 
         isRegisteredList = List(selectedSpots - 1) { index ->
-            isRegisteredList.getOrNull(index) ?: false
+            isRegisteredList.getOrNull(index) == true
         }
 
         usernameTouchedList = List(selectedSpots - 1) { i ->
-            usernameTouchedList.getOrNull(i) ?: false
+            usernameTouchedList.getOrNull(i) == true
         }
 
         nameTouchedList = List(selectedSpots - 1) { i ->
-            nameTouchedList.getOrNull(i) ?: false
+            nameTouchedList.getOrNull(i) == true
         }
 
         surnameTouchedList = List(selectedSpots - 1) { i ->
-            surnameTouchedList.getOrNull(i) ?: false
+            surnameTouchedList.getOrNull(i) == true
         }
         emailTouchedList = List(selectedSpots - 1) { i ->
-            emailTouchedList.getOrNull(i) ?: false
+            emailTouchedList.getOrNull(i) == true
         }
 
     }
@@ -623,7 +616,6 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
 
                                 val isRegistered = isRegisteredList.getOrNull(i) == true
                                 val participant = unregisteredParticipants.getOrNull(i) ?: Participant("", "", "")
-                                val username = registeredUsernames.getOrNull(i) ?: ""
 
                                 Column(modifier = Modifier.padding(vertical = 8.dp)) {
                                     Text("Participant ${i + 1}", style = MaterialTheme.typography.titleMedium)

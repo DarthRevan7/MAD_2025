@@ -683,7 +683,20 @@ fun NavGraphBuilder.profileNavGraph(
             )
         }
 
-
+        composable("trip_details") { entry ->
+            val profileNavGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Profile.route)
+            }
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = profileNavGraphEntry,
+                factory = Factory
+            )
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = profileNavGraphEntry,
+                factory = Factory
+            )
+            TripDetails(navController = navController, vm = tripViewModel, owner = false, uvm = userViewModel)
+        }
 
     }
 }

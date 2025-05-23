@@ -391,7 +391,7 @@ var privateTripList = MutableStateFlow<List<Trip>>(
         ),
 
         Trip(
-            id = 5,
+            id = 101,
             photo = "kyoto",
             title = "Kyoto Zen Retreat",
             destination = "Kyoto",
@@ -408,7 +408,10 @@ var privateTripList = MutableStateFlow<List<Trip>>(
                 4 to Trip.JoinRequest(userId = 4, requestedSpots = 3, unregisteredParticipants = listOf(Participant(name = "Greta", surname = "Williams", email = "gretawilliams@gmail.com")), registeredParticipants = listOf(6)),
                 5 to Trip.JoinRequest(userId = 5, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList())
             ),
-            rejectedUsers = emptyMap(),
+            rejectedUsers = mapOf(
+                3 to Trip.JoinRequest(userId = 3, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList())
+
+            ),
             published = true,
             typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.RELAX),
             status = TripStatus.NOT_STARTED,

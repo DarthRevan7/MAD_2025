@@ -1,6 +1,6 @@
 package com.example.voyago.view
 
-import android.app.Activity
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -27,15 +27,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.StarHalf
-import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Tab
@@ -62,13 +55,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
-import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.example.voyago.R
 import com.example.voyago.activities.*
-import com.example.voyago.*
 import com.example.voyago.model.Review
+import com.example.voyago.model.Trip
 import com.example.voyago.model.UserData
 import com.example.voyago.viewmodel.*
 import java.text.SimpleDateFormat
@@ -93,8 +85,6 @@ fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: Articl
         state = listState,
         modifier = Modifier
             .fillMaxSize()
-//        verticalArrangement = Arrangement.Top,
-//        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         item {
             //Box with Profile Photo, Username and Logout, Back and Edit icons
@@ -118,10 +108,6 @@ fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: Articl
                     .offset(y = (-30).dp)
                     .clickable {  navController.navigate("edit_profile") }
                 )
-
-                val context = LocalContext.current
-
-
 
                 ProfilePhoto(
                     user1.firstname, user1.surname, false, user1.profilePicture,
@@ -256,14 +242,12 @@ fun TabAboutTripsReview(user: UserData, vm: TripViewModel, vm2: ArticleViewModel
     // TAB with About, Trips & Articles, Reviews
     val tabs = listOf("About", "Trips & Articles", "Reviews")
 
-    //List of trip created and published by the logged in user (id=1)
+    val joinedTrips by vm.joinedTrips.collectAsState()
     val publishedTrips by vm.publishedTrips.collectAsState()
-    //List of trip created, but not published by the logged in user (id=1)
-    val privateTrips by vm.privateTrips.collectAsState()
 
     LaunchedEffect(Unit) {
         vm.creatorPublicFilter(user.id)
-        vm.creatorPrivateFilter(user.id)
+        vm.tripUserJoined(user.id)
     }
 
     var selectedTabIndex by remember {
@@ -359,9 +343,9 @@ fun TabAboutTripsReview(user: UserData, vm: TripViewModel, vm2: ArticleViewModel
                             .background(Color(0xdf, 0xd1, 0xe0, 255), shape = RoundedCornerShape(10.dp))
                             .padding(10.dp)
                     ) {
-                        if (publishedTrips.isEmpty()) {
+                        if (publishedTrips.isEmpty() && joinedTrips.isEmpty()) {
                             Text(
-                                text = "No published trip yet",
+                                text = "Didn't take part to any trip yet",
                                 textAlign = TextAlign.Center,
                                 style = MaterialTheme.typography.bodyMedium
                             )
@@ -373,7 +357,10 @@ fun TabAboutTripsReview(user: UserData, vm: TripViewModel, vm2: ArticleViewModel
                                     .verticalScroll(rememberScrollState())
                             ) {
                                 publishedTrips.forEach { item ->
-                                    UITripArticle(item.destination, item.startDate, item.photo)
+                                    ShowUserTrip(item, vm, navController)
+                                }
+                                joinedTrips.forEach { item ->
+                                    ShowUserTrip(item, vm, navController)
                                 }
                             }
                         }
@@ -429,11 +416,7 @@ fun TabAboutTripsReview(user: UserData, vm: TripViewModel, vm2: ArticleViewModel
                                     textAlign = TextAlign.Center)
                             } else {
                                 reviewsList.forEach { review ->
-                                    val reviewer = uvm.getUserData(review.reviewerId)
-                                    ShowUserReview(review, vm, navController, uvm)
-
-
-                                    //UIReview(item.title, reviewer.firstname, reviewer.surname, item.score,item.date)
+                                    ShowUserReview(review, navController, uvm)
                                 }
                             }
                         }
@@ -445,6 +428,68 @@ fun TabAboutTripsReview(user: UserData, vm: TripViewModel, vm2: ArticleViewModel
 }
 
 
+@SuppressLint("DiscouragedApi")
+@Composable
+fun ShowUserTrip(trip: Trip, vm: TripViewModel, navController: NavController) {
+    vm.setSelectedTrip(trip)
+    val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+    val formattedDate = dateFormat.format(trip.startDate.time)
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(60.dp)
+            .background(Color(0xf9, 0xf6, 0xf9, 255))
+            .clickable{navController.navigate("trip_details")}
+            .padding(horizontal = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .clip(CircleShape)
+                .background(Color.Gray) // fallback background
+        ) {
+            if (trip.photo.isNotBlank()) {
+                val context = LocalContext.current
+
+                val imageModel = if (!trip.photo.isUriString()) {
+                    // Local drawable resource
+                    context.resources.getIdentifier(trip.photo, "drawable", context.packageName)
+                } else {
+                    // URI string
+                    trip.photo
+                }
+
+                AsyncImage(
+                    model = ImageRequest.Builder(context)
+                        .data(imageModel)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "Trip or Article Image",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = trip.destination, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+
+        Text(
+            text = formattedDate,
+            style = MaterialTheme.typography.bodySmall,
+            textAlign = TextAlign.End
+        )
+    }
+}
+
+@SuppressLint("DiscouragedApi")
 @Composable
 fun UITripArticle(destination: String, date: Calendar, photo: String?) {
     val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
@@ -504,7 +549,7 @@ fun UITripArticle(destination: String, date: Calendar, photo: String?) {
 }
 
 @Composable
-fun ShowUserReview(review: Review, vm: TripViewModel, navController: NavController, uvm: UserViewModel) {
+fun ShowUserReview(review: Review, navController: NavController, uvm: UserViewModel) {
     val reviewer = uvm.getUserData(review.reviewerId)
 
     Column {

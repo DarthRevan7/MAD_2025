@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.voyago.model.*
-import kotlinx.coroutines.flow.forEach
 
 class UserViewModel(val model:UserModel): ViewModel() {
     //For now user with id = 1 is the logged user.
@@ -35,13 +34,8 @@ class UserViewModel(val model:UserModel): ViewModel() {
 
     fun doesUserExist(username: String): Boolean {
         return model.users.value.any { user ->
-            user.username.equals(username)
+            user.username == username
         }
-    }
-
-    //Get user by id
-    fun getUserById(userId: Int) : UserData {
-        return model.getUserDataById(userId)
     }
 
 
