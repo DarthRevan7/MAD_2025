@@ -44,9 +44,10 @@ import com.example.voyago.activities.ProfilePhoto
 import com.example.voyago.model.Trip
 import com.example.voyago.model.UserData
 import com.example.voyago.viewmodel.TripViewModel
+import com.example.voyago.viewmodel.UserViewModel
 
 @Composable
-fun TripApplications(vm: TripViewModel, navController: NavController) {
+fun TripApplications(vm: TripViewModel, uvm:UserViewModel, navController: NavController) {
 
     val listState = rememberLazyListState()
     val trip = vm.selectedTrip.value
@@ -112,7 +113,7 @@ fun TripApplications(vm: TripViewModel, navController: NavController) {
                     val user = entry.key
                     val spots = entry.value
                     if (user.id != 1) {
-                        ShowParticipants(user, spots, navController)
+                        ShowParticipants(user, spots, uvm, navController)
                     }
                 }
 
@@ -143,7 +144,7 @@ fun TripApplications(vm: TripViewModel, navController: NavController) {
 
                 items(applicantsList) { user ->
                     val joinRequest: Trip.JoinRequest = applicantsMap[user]!!
-                    ShowApplications(user, joinRequest, vm, navController)
+                    ShowApplications(user, joinRequest, vm, uvm, navController)
                 }
 
             } else {
@@ -178,7 +179,7 @@ fun TripApplications(vm: TripViewModel, navController: NavController) {
                     val user = entry.key
                     val spots = entry.value
                     if (user.id != 1) {
-                        ShowParticipants(user, spots, navController)
+                        ShowParticipants(user, spots, uvm, navController)
                     }
                 }
 
@@ -197,7 +198,7 @@ fun TripApplications(vm: TripViewModel, navController: NavController) {
 }
 
 @Composable
-fun ShowParticipants(user: UserData, joinRequest: Trip.JoinRequest, navController: NavController) {
+fun ShowParticipants(user: UserData, joinRequest: Trip.JoinRequest, uvm: UserViewModel, navController: NavController) {
     var showPart by remember { mutableStateOf(false) }
 
     Row(
@@ -282,6 +283,11 @@ fun ShowParticipants(user: UserData, joinRequest: Trip.JoinRequest, navControlle
                         Text("Email: ${participant.email}")
                         Spacer(modifier = Modifier.height(8.dp))
                     }
+                    joinRequest.registeredParticipants.forEach { userid ->
+                        Text("Username: ${uvm.getUserData(userid).username}",
+                            Modifier.clickable { navController.navigate("user_profile/${userid}") }
+                        )
+                    }
                 }
             },
             confirmButton = {
@@ -294,7 +300,7 @@ fun ShowParticipants(user: UserData, joinRequest: Trip.JoinRequest, navControlle
 }
 
 @Composable
-fun ShowApplications(user: UserData, joinRequest: Trip.JoinRequest, vm: TripViewModel, navController: NavController) {
+fun ShowApplications(user: UserData, joinRequest: Trip.JoinRequest, vm: TripViewModel, uvm: UserViewModel, navController: NavController) {
     var showDialog by remember { mutableStateOf(false) }
     var isAcceptAction by remember { mutableStateOf(true) }
     var showPart by remember { mutableStateOf(false) }
@@ -435,8 +441,10 @@ fun ShowApplications(user: UserData, joinRequest: Trip.JoinRequest, vm: TripView
                         Text("Email: ${participant.email}")
                         Spacer(modifier = Modifier.height(8.dp))
                     }
-                    joinRequest.registeredParticipants.forEach { participants ->
-                        Text("Username: ")
+                    joinRequest.registeredParticipants.forEach { userid ->
+                        Text("Username: ${uvm.getUserData(userid).username}",
+                            Modifier.clickable { navController.navigate("user_profile/${userid}") }
+                            )
                     }
                 }
             },

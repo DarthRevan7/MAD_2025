@@ -39,6 +39,11 @@ class UserViewModel(val model:UserModel): ViewModel() {
         }
     }
 
+    //Get user by id
+    fun getUserById(userId: Int) : UserData {
+        return model.getUserDataById(userId)
+    }
+
 
     // Camera
     private val _profileImageUri = mutableStateOf<Uri?>(null)

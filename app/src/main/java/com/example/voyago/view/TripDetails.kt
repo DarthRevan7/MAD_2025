@@ -502,7 +502,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
             }
 
             item {
-                ShowParticipants(uvm.getUserData(nonNullTrip.creatorId), Trip.JoinRequest(uvm.getUserData(nonNullTrip.creatorId).id, 1, emptyList(), emptyList()), navController)
+                ShowParticipants(uvm.getUserData(nonNullTrip.creatorId), Trip.JoinRequest(uvm.getUserData(nonNullTrip.creatorId).id, 1, emptyList(), emptyList()),uvm, navController)
             }
 
             //Reviews section
@@ -532,7 +532,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                     val user = entry.key
                     val spots = entry.value
                     if (nonNullTrip.creatorId != user.id) {
-                        ShowParticipants(user, spots, navController)
+                        ShowParticipants(user, spots, uvm, navController)
                     }
                 }
             }
