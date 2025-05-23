@@ -1259,9 +1259,11 @@ var privateJoinedRequests = MutableStateFlow<List<JoinRequest>>(
                 JoinRequest.Participant(
                     id = 1,
                     name = "Greta",
-                    surname = "Garbo"
+                    surname = "Garbo",
+                    email = "gretag@gmail.com"
                 )
-            )
+            ),
+            emptyList()
         ),
 
         JoinRequest(
@@ -1269,7 +1271,8 @@ var privateJoinedRequests = MutableStateFlow<List<JoinRequest>>(
             userId = 5,
             tripId = 5,
             requestedSpots = 1,
-            participants = emptyList()
+            participants = emptyList(),
+            emptyList()
         ),
 
         JoinRequest(
@@ -1277,7 +1280,8 @@ var privateJoinedRequests = MutableStateFlow<List<JoinRequest>>(
             userId = 1,
             tripId = 6,
             requestedSpots = 1,
-            participants = emptyList()
+            participants = emptyList(),
+            emptyList()
         ),
 
         JoinRequest(
@@ -1285,7 +1289,8 @@ var privateJoinedRequests = MutableStateFlow<List<JoinRequest>>(
             userId = 3,
             tripId = 6,
             requestedSpots = 1,
-            participants = emptyList()
+            participants = emptyList(),
+            emptyList()
         ),
 
         JoinRequest(
@@ -1293,7 +1298,8 @@ var privateJoinedRequests = MutableStateFlow<List<JoinRequest>>(
             userId = 4,
             tripId = 7,
             requestedSpots = 1,
-            participants = emptyList()
+            participants = emptyList(),
+            emptyList()
         ),
 
         JoinRequest(
@@ -1301,7 +1307,8 @@ var privateJoinedRequests = MutableStateFlow<List<JoinRequest>>(
             userId = 6,
             tripId = 7,
             requestedSpots = 1,
-            participants = emptyList()
+            participants = emptyList(),
+            emptyList()
         ),
 
         JoinRequest(
@@ -1309,7 +1316,8 @@ var privateJoinedRequests = MutableStateFlow<List<JoinRequest>>(
             userId = 5,
             tripId = 8,
             requestedSpots = 1,
-            participants = emptyList()
+            participants = emptyList(),
+            emptyList()
         ),
     )
 )
