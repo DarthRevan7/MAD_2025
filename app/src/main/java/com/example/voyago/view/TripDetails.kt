@@ -103,6 +103,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
     vm.syncAskedTrips()
     val requestedSpots = trip?.id?.let { askedTrips[it] } ?: 0
     val hasAsked = requestedSpots > 0
+
     var showDialog by remember { mutableStateOf(false) }
     var selectedSpots by remember { mutableIntStateOf(1) }
 
@@ -110,60 +111,48 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
     var dialogPhase by remember { mutableIntStateOf(0) }
 
     //Data of other participants
-    val unregisteredParticipants = remember { mutableStateListOf<Participant>() }
-    val registeredUsernames = remember { mutableStateListOf<String>() }
+    var unregisteredParticipants by remember { mutableStateOf(listOf<Participant>()) }
+    var registeredUsernames by remember { mutableStateOf(listOf<String>()) }
+    var isRegisteredList by remember { mutableStateOf(listOf<Boolean>()) }
+
+    var usernameTouchedList by remember { mutableStateOf(listOf<Boolean>()) }
+    var nameTouchedList by remember { mutableStateOf(listOf<Boolean>()) }
+    var surnameTouchedList by remember { mutableStateOf(listOf<Boolean>()) }
+    var emailTouchedList by remember { mutableStateOf(listOf<Boolean>()) }
 
 
 
-    //Username field management
-    var username by rememberSaveable { mutableStateOf("") }
-    var usernameTouched = remember {mutableStateOf(false)}
-    val usernameHasErrors by remember {
-        derivedStateOf {
-            usernameTouched.value && (username.isBlank() || !username.any { it.isLetter() })
-        }
-    }
 
-    //Name field management
-    var name by rememberSaveable { mutableStateOf("") }
-    var nameTouched = remember {mutableStateOf(false)}
-    val nameHasErrors by remember {
-        derivedStateOf {
-            nameTouched.value && (name.isBlank() || !name.any { it.isLetter() })
-        }
-    }
-
-    //Surname field management
-    var surname by rememberSaveable { mutableStateOf("") }
-    var surnameTouched = remember {mutableStateOf(false)}
-    val surnameHasErrors by remember {
-        derivedStateOf {
-            surnameTouched.value && (surname.isBlank() || !surname.any { it.isLetter() })
-        }
-    }
-
-    //Email field management
-    var email by rememberSaveable { mutableStateOf("") }
-    var emailTouched = remember {mutableStateOf(false)}
-    val emailHasErrors by remember {
-        derivedStateOf {
-            emailTouched.value && email.isBlank()
-        }
-    }
 
     //Initialization of the list of other participants
     LaunchedEffect(dialogPhase, selectedSpots) {
         if (dialogPhase == 1) {
-            while (unregisteredParticipants.size < selectedSpots - 1) {
-                unregisteredParticipants.add(Participant("", "", ""))
-                registeredUsernames.add("")
-            }
-            while (unregisteredParticipants.size > selectedSpots - 1) {
-                unregisteredParticipants.remove(unregisteredParticipants.last())
-                registeredUsernames.remove(registeredUsernames.last())
-            }
+            isRegisteredList = List(selectedSpots - 1) { i -> isRegisteredList.getOrNull(i) == true }
+            registeredUsernames = List(selectedSpots - 1) { i -> registeredUsernames.getOrNull(i) ?: "" }
+            unregisteredParticipants = List(selectedSpots - 1) { i -> unregisteredParticipants.getOrNull(i) ?: Participant("", "", "") }
         }
+
+        isRegisteredList = List(selectedSpots - 1) { index ->
+            isRegisteredList.getOrNull(index) ?: false
+        }
+
+        usernameTouchedList = List(selectedSpots - 1) { i ->
+            usernameTouchedList.getOrNull(i) ?: false
+        }
+
+        nameTouchedList = List(selectedSpots - 1) { i ->
+            nameTouchedList.getOrNull(i) ?: false
+        }
+
+        surnameTouchedList = List(selectedSpots - 1) { i ->
+            surnameTouchedList.getOrNull(i) ?: false
+        }
+        emailTouchedList = List(selectedSpots - 1) { i ->
+            emailTouchedList.getOrNull(i) ?: false
+        }
+
     }
+
 
     val listState = rememberLazyListState()
 
@@ -585,8 +574,8 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                 onDismissRequest = {
                     showDialog = false
                     dialogPhase = 0
-                    unregisteredParticipants.clear()
-                    registeredUsernames.clear()
+                    unregisteredParticipants = emptyList()
+                    registeredUsernames = emptyList()
                 },
                 title = {
                     if (dialogPhase == 0) {
@@ -624,77 +613,95 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                         }
                     } else {
                         LazyColumn {
-                            //For every participants
-                            for (i in 0 until (selectedSpots - 1)) {
-                                item {
-                                    Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                                        Text(
-                                            "Participants ${i + 1}",
-                                            style = MaterialTheme.typography.titleMedium
-                                        )
+                            items(selectedSpots - 1) { i ->
 
-                                        //State registered checkbox
-                                        var isRegistered by remember { mutableStateOf(false) }
+                                val isRegistered = isRegisteredList.getOrNull(i) == true
+                                val participant = unregisteredParticipants.getOrNull(i) ?: Participant("", "", "")
+                                val username = registeredUsernames.getOrNull(i) ?: ""
 
-                                        Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Checkbox(
-                                                checked = isRegistered,
-                                                onCheckedChange = {
-                                                    isRegistered = it
-                                                    // Reset if the checkbox changes
-                                                    if (isRegistered) {
-                                                        unregisteredParticipants[i] =
-                                                            Participant("", "", "")
-                                                    } else {
-                                                        registeredUsernames[i] = ""
+                                Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                                    Text("Participant ${i + 1}", style = MaterialTheme.typography.titleMedium)
+
+                                    // Checkbox registered user
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Checkbox(
+                                            checked = isRegistered,
+                                            onCheckedChange = { checked ->
+                                                isRegisteredList = isRegisteredList.toMutableList().also { it[i] = checked }
+                                                // Reset data
+                                                if (checked) {
+                                                    unregisteredParticipants = unregisteredParticipants.toMutableList().also {
+                                                        it[i] = Participant("", "", "")
+                                                    }
+                                                } else {
+                                                    registeredUsernames = registeredUsernames.toMutableList().also {
+                                                        it[i] = ""
                                                     }
                                                 }
-                                            )
-                                            Text("Are they registered to Voyago?")
-                                        }
+                                            }
+                                        )
+                                        Text("Are they registered to Voyago?")
+                                    }
 
-                                        //If the participant is registered
-                                        if (isRegistered) {
-                                            ValidatingInputTextField(
-                                                username,
-                                                {
-                                                    registeredUsernames[i] = it 
-                                                },
-                                                usernameHasErrors,
-                                                "Username"
-                                            )
-                                        } else {
-                                            ValidatingInputTextField(
-                                                name,
-                                                {
-                                                    unregisteredParticipants[i] =
-                                                        unregisteredParticipants[i].copy(name = it)
-                                                },
-                                                nameHasErrors,
-                                                "Name"
-                                            )
-                                            ValidatingInputTextField(
-                                                surname,
-                                                {
-                                                    unregisteredParticipants[i] =
-                                                        unregisteredParticipants[i].copy(surname = it)
-                                                },
-                                                nameHasErrors,
-                                                "Surname"
-                                            )
-                                            ValidatingInputEmailField(
-                                                email,
-                                                {
-                                                    unregisteredParticipants[i] =
-                                                        unregisteredParticipants[i].copy(email = it)
-                                                },
-                                                emailHasErrors
-                                            )
-                                        }
+                                    // Input fields
+                                    if (isRegistered) {
+                                        ValidatingInputTextField(
+                                            registeredUsernames[i],
+                                            { newValue ->
+                                                registeredUsernames = registeredUsernames.toMutableList().also { it[i] = newValue }
+                                                usernameTouchedList = usernameTouchedList.toMutableList().also { it[i] = true }
+                                            },
+                                            usernameTouchedList[i] && (
+                                                    registeredUsernames[i].isBlank() || !registeredUsernames[i].any { it.isLetter() }
+                                                    ),
+                                            "Username"
+                                        )
+
+                                    } else {
+                                        ValidatingInputTextField(
+                                            participant.name,
+                                            { newValue ->
+                                                unregisteredParticipants = unregisteredParticipants.toMutableList().also {
+                                                    it[i] = it[i].copy(name = newValue)
+                                                }
+                                                nameTouchedList = nameTouchedList.toMutableList().also { it[i] = true }
+                                            },
+                                            nameTouchedList[i] && (
+                                                    participant.name.isBlank() || !participant.name.any { ch -> ch.isLetter() }
+                                                    ),
+                                            "Name"
+                                        )
+
+                                        ValidatingInputTextField(
+                                            participant.surname,
+                                            { newValue ->
+                                                unregisteredParticipants = unregisteredParticipants.toMutableList().also {
+                                                    it[i] = it[i].copy(surname = newValue)
+                                                }
+                                                surnameTouchedList = surnameTouchedList.toMutableList().also { it[i] = true }
+                                            },
+                                            surnameTouchedList[i] && (
+                                                    participant.surname.isBlank() || !participant.surname.any { ch -> ch.isLetter() }
+                                                    ),
+                                            "Surname"
+                                        )
+
+                                        ValidatingInputEmailField(
+                                            participant.email,
+                                            { newValue ->
+                                                unregisteredParticipants = unregisteredParticipants.toMutableList().also {
+                                                    it[i] = it[i].copy(email = newValue)
+                                                }
+                                                emailTouchedList = emailTouchedList.toMutableList().also { it[i] = true }
+                                            },
+                                            emailTouchedList[i] && participant.email.isBlank()
+                                        )
+
                                     }
                                 }
                             }
                         }
+
                     }
                 },
                 confirmButton = {
@@ -707,15 +714,64 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                                 showDialog = false
                             }
                         } else {
-                            val control = !usernameHasErrors && !nameHasErrors && !surnameHasErrors && !emailHasErrors
-                            if(control) {
-                                vm.askToJoin(nonNullTrip, uvm.loggedUser.id, selectedSpots, unregisteredParticipants, uvm.getIdListFromUsernames(registeredUsernames))
+                            val updatedUsernameTouched = usernameTouchedList.toMutableList()
+                            val updatedNameTouched = nameTouchedList.toMutableList()
+                            val updatedSurnameTouched = surnameTouchedList.toMutableList()
+                            val updatedEmailTouched = emailTouchedList.toMutableList()
+
+                            var hasErrors = false
+
+                            for (i in 0 until selectedSpots - 1) {
+                                if (isRegisteredList[i]) {
+                                    val username = registeredUsernames[i]
+                                    if (username.isBlank() || !username.any { it.isLetter() }) {
+                                        hasErrors = true
+                                        updatedUsernameTouched[i] = true
+                                    }
+                                } else {
+                                    val participant = unregisteredParticipants[i]
+
+                                    if (participant.name.isBlank() || !participant.name.any { it.isLetter() }) {
+                                        hasErrors = true
+                                        updatedNameTouched[i] = true
+                                    }
+                                    if (participant.surname.isBlank() || !participant.surname.any { it.isLetter() }) {
+                                        hasErrors = true
+                                        updatedSurnameTouched[i] = true
+                                    }
+                                    if (participant.email.isBlank()) {
+                                        hasErrors = true
+                                        updatedEmailTouched[i] = true
+                                    }
+                                }
+                            }
+
+                            usernameTouchedList = updatedUsernameTouched
+                            nameTouchedList = updatedNameTouched
+                            surnameTouchedList = updatedSurnameTouched
+                            emailTouchedList = updatedEmailTouched
+
+                            if (!hasErrors) {
+                                vm.askToJoin(
+                                    nonNullTrip,
+                                    uvm.loggedUser.id,
+                                    selectedSpots,
+                                    unregisteredParticipants,
+                                    uvm.getIdListFromUsernames(registeredUsernames)
+                                )
                                 showDialog = false
                                 dialogPhase = 0
-                                // Reset lists
-                                unregisteredParticipants.clear()
-                                registeredUsernames.clear()
+                                unregisteredParticipants = emptyList()
+                                registeredUsernames = emptyList()
+                                isRegisteredList = emptyList()
+                                // Reset touched lists
+                                usernameTouchedList = emptyList()
+                                nameTouchedList = emptyList()
+                                surnameTouchedList = emptyList()
+                                emailTouchedList = emptyList()
                             }
+
+
                         }
 
                     }) {
@@ -726,8 +782,8 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                     TextButton(onClick = {
                         showDialog = false
                         dialogPhase = 0
-                        unregisteredParticipants.clear()
-                        registeredUsernames.clear()
+                        unregisteredParticipants = emptyList()
+                        registeredUsernames = emptyList()
                     }) {
                         Text("Cancel")
                     }
