@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -50,20 +51,26 @@ import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.TextButton
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.setValue
 import com.example.voyago.activities.ProfilePhoto
 import com.example.voyago.model.Review
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.window.Popup
 import androidx.core.net.toUri
+import com.example.voyago.model.Trip.Participant
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
 import kotlinx.coroutines.delay
@@ -99,6 +106,64 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
     var showDialog by remember { mutableStateOf(false) }
     var selectedSpots by remember { mutableIntStateOf(1) }
 
+    //To manage phase of the dialog
+    var dialogPhase by remember { mutableIntStateOf(0) }
+
+    //Data of other participants
+    val unregisteredParticipants = remember { mutableStateListOf<Participant>() }
+    val registeredUsernames = remember { mutableStateListOf<String>() }
+
+
+
+    //Username field management
+    var username by rememberSaveable { mutableStateOf("") }
+    var usernameTouched = remember {mutableStateOf(false)}
+    val usernameHasErrors by remember {
+        derivedStateOf {
+            usernameTouched.value && (username.isBlank() || !username.any { it.isLetter() })
+        }
+    }
+
+    //Name field management
+    var name by rememberSaveable { mutableStateOf("") }
+    var nameTouched = remember {mutableStateOf(false)}
+    val nameHasErrors by remember {
+        derivedStateOf {
+            nameTouched.value && (name.isBlank() || !name.any { it.isLetter() })
+        }
+    }
+
+    //Surname field management
+    var surname by rememberSaveable { mutableStateOf("") }
+    var surnameTouched = remember {mutableStateOf(false)}
+    val surnameHasErrors by remember {
+        derivedStateOf {
+            surnameTouched.value && (surname.isBlank() || !surname.any { it.isLetter() })
+        }
+    }
+
+    //Email field management
+    var email by rememberSaveable { mutableStateOf("") }
+    var emailTouched = remember {mutableStateOf(false)}
+    val emailHasErrors by remember {
+        derivedStateOf {
+            emailTouched.value && email.isBlank()
+        }
+    }
+
+    //Initialization of the list of other participants
+    LaunchedEffect(dialogPhase, selectedSpots) {
+        if (dialogPhase == 1) {
+            while (unregisteredParticipants.size < selectedSpots - 1) {
+                unregisteredParticipants.add(Participant("", "", ""))
+                registeredUsernames.add("")
+            }
+            while (unregisteredParticipants.size > selectedSpots - 1) {
+                unregisteredParticipants.remove(unregisteredParticipants.last())
+                registeredUsernames.remove(registeredUsernames.last())
+            }
+        }
+    }
 
     val listState = rememberLazyListState()
 
@@ -517,46 +582,153 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
             val maxSpots = nonNullTrip.availableSpots()
 
             AlertDialog(
-                onDismissRequest = { showDialog = false },
-                title = { Text("Select number of spots") },
+                onDismissRequest = {
+                    showDialog = false
+                    dialogPhase = 0
+                    unregisteredParticipants.clear()
+                    registeredUsernames.clear()
+                },
+                title = {
+                    if (dialogPhase == 0) {
+                        Text("Select number of spots:")
+                    } else {
+                        Text("Details other participants:")
+                    }
+                },
                 text = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        IconButton(
-                            onClick = { if (selectedSpots > 1) selectedSpots-- },
-                            enabled = selectedSpots > 1
+                    if (dialogPhase == 0) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            Icon(Icons.Default.Remove, contentDescription = "Decrease")
+                            IconButton(
+                                onClick = { if (selectedSpots > 1) selectedSpots-- },
+                                enabled = selectedSpots > 1
+                            ) {
+                                Icon(Icons.Default.Remove, contentDescription = "Decrease")
+                            }
+
+                            Text(
+                                "$selectedSpots",
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                style = MaterialTheme.typography.headlineMedium
+                            )
+
+                            IconButton(
+                                onClick = { if (selectedSpots < maxSpots) selectedSpots++ },
+                                enabled = selectedSpots < maxSpots
+                            ) {
+                                Icon(Icons.Default.Add, contentDescription = "Increase")
+                            }
                         }
+                    } else {
+                        LazyColumn {
+                            //For every participants
+                            for (i in 0 until (selectedSpots - 1)) {
+                                item {
+                                    Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                                        Text(
+                                            "Participants ${i + 1}",
+                                            style = MaterialTheme.typography.titleMedium
+                                        )
 
-                        Text(
-                            "$selectedSpots",
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                            style = MaterialTheme.typography.headlineMedium
-                        )
+                                        //State registered checkbox
+                                        var isRegistered by remember { mutableStateOf(false) }
 
-                        IconButton(
-                            onClick = { if (selectedSpots < maxSpots) selectedSpots++ },
-                            enabled = selectedSpots < maxSpots
-                        ) {
-                            Icon(Icons.Default.Add, contentDescription = "Increase")
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Checkbox(
+                                                checked = isRegistered,
+                                                onCheckedChange = {
+                                                    isRegistered = it
+                                                    // Reset if the checkbox changes
+                                                    if (isRegistered) {
+                                                        unregisteredParticipants[i] =
+                                                            Participant("", "", "")
+                                                    } else {
+                                                        registeredUsernames[i] = ""
+                                                    }
+                                                }
+                                            )
+                                            Text("Are they registered to Voyago?")
+                                        }
+
+                                        //If the participant is registered
+                                        if (isRegistered) {
+                                            ValidatingInputTextField(
+                                                username,
+                                                {
+                                                    registeredUsernames[i] = it 
+                                                },
+                                                usernameHasErrors,
+                                                "Username"
+                                            )
+                                        } else {
+                                            ValidatingInputTextField(
+                                                name,
+                                                {
+                                                    unregisteredParticipants[i] =
+                                                        unregisteredParticipants[i].copy(name = it)
+                                                },
+                                                nameHasErrors,
+                                                "Name"
+                                            )
+                                            ValidatingInputTextField(
+                                                surname,
+                                                {
+                                                    unregisteredParticipants[i] =
+                                                        unregisteredParticipants[i].copy(surname = it)
+                                                },
+                                                nameHasErrors,
+                                                "Surname"
+                                            )
+                                            ValidatingInputEmailField(
+                                                email,
+                                                {
+                                                    unregisteredParticipants[i] =
+                                                        unregisteredParticipants[i].copy(email = it)
+                                                },
+                                                emailHasErrors
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
                 confirmButton = {
                     TextButton(onClick = {
-                        //pass unregistered and registered list of participants and list of int
-                        vm.askToJoin(nonNullTrip, 1, selectedSpots, emptyList(), emptyList())
-                        showDialog = false
+                        if (dialogPhase == 0) {
+                            if (selectedSpots > 1) {
+                                dialogPhase = 1
+                            } else {
+                                vm.askToJoin(nonNullTrip, 1, selectedSpots, emptyList(), emptyList())
+                                showDialog = false
+                            }
+                        } else {
+                            val control = !usernameHasErrors && !nameHasErrors && !surnameHasErrors && !emailHasErrors
+                            if(control) {
+                                vm.askToJoin(nonNullTrip, uvm.loggedUser.id, selectedSpots, unregisteredParticipants, uvm.getIdListFromUsernames(registeredUsernames))
+                                showDialog = false
+                                dialogPhase = 0
+                                // Reset lists
+                                unregisteredParticipants.clear()
+                                registeredUsernames.clear()
+                            }
+                        }
+
                     }) {
-                        Text("Confirm")
+                        Text(if (dialogPhase == 0 && selectedSpots > 1) "Next" else "Confirm")
                     }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showDialog = false }) {
+                    TextButton(onClick = {
+                        showDialog = false
+                        dialogPhase = 0
+                        unregisteredParticipants.clear()
+                        registeredUsernames.clear()
+                    }) {
                         Text("Cancel")
                     }
                 }

@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.voyago.model.*
+import kotlinx.coroutines.flow.forEach
 
 class UserViewModel(val model:UserModel): ViewModel() {
     //For now user with id = 1 is the logged user.
@@ -21,6 +22,15 @@ class UserViewModel(val model:UserModel): ViewModel() {
     //Get user information
     fun getUserData(id: Int): UserData {
         return model.getUserDataById(id)
+    }
+
+    //Given a list of username get a list of their ids
+    fun getIdListFromUsernames(usernames: List<String>): List<Int> {
+        return model.users.value.filter { user ->
+            usernames.contains(user.username)
+        }.map { user ->
+            user.id
+        }
     }
 
     // Camera
