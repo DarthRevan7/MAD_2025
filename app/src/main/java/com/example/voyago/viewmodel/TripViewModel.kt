@@ -242,31 +242,32 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
     fun deleteTrip(id: Int) = tripModel.deleteTrip(id)
 
     //Mutable list of applications
-    var applications = mutableStateOf(emptyMap<UserData, Int>())
+    var applications = mutableStateOf(emptyMap<UserData, Trip.JoinRequest>())
 
     // Participants with spots taken
-    fun getTripParticipants(trip: Trip): Map<UserData, Int> {
+    fun getTripParticipants(trip: Trip): Map<UserData, Trip.JoinRequest> {
         return trip.participants.mapNotNull { (userId, joinRequest) ->
             userModel.getUsers(listOf(userId)).firstOrNull()?.let { user ->
-                user to joinRequest.requestedSpots
+                user to joinRequest
             }
         }.toMap()
     }
 
 
     // Applicants with requested spots
-    fun getTripApplicants(trip: Trip): Map<UserData, Int> {
+    fun getTripApplicants(trip: Trip): Map<UserData, Trip.JoinRequest> {
         return trip.appliedUsers.mapNotNull { (userId, joinRequest) ->
             userModel.getUsers(listOf(userId)).firstOrNull()?.let { user ->
-                user to joinRequest.requestedSpots
+                user to joinRequest
             }
         }.toMap()
     }
 
     // Rejected users with requested spots
-    fun getTripRejectedUsers(trip: Trip): Map<UserData, Int> {
-        return trip.rejectedUsers.mapNotNull { (userId, spots) ->
-            userModel.getUsers(listOf(userId)).firstOrNull()?.let { user -> user to spots }
+    fun getTripRejectedUsers(trip: Trip): Map<UserData, Trip.JoinRequest> {
+        return trip.rejectedUsers.mapNotNull { (userId, joinRequest) ->
+            userModel.getUsers(listOf(userId)).firstOrNull()?.let { user ->
+                user to joinRequest }
         }.toMap()
     }
 
@@ -295,7 +296,7 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
         for ((id, joinRequest) in remainingApplicants) {
             if (joinRequest.requestedSpots > remainingSpots) {
                 trip.appliedUsers = trip.appliedUsers - id
-                trip.rejectedUsers = trip.rejectedUsers + (id to joinRequest.requestedSpots)
+                trip.rejectedUsers = trip.rejectedUsers + (id to joinRequest)
             }
         }
 
@@ -306,10 +307,10 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
     //Reject an application
     fun rejectApplication(trip: Trip?, userId: Int) {
         if (trip != null && userId in trip.appliedUsers) {
-            val requestedSpots = trip.appliedUsers[userId]?.requestedSpots ?: return
+            val joinRequest = trip.appliedUsers[userId]?: return
 
             trip.appliedUsers = trip.appliedUsers - userId
-            trip.rejectedUsers = trip.rejectedUsers + (userId to requestedSpots)
+            trip.rejectedUsers = trip.rejectedUsers + (userId to joinRequest)
 
             // Assign just the list of users, ignoring requestedSpots here
             applications.value = getTripApplicants(trip)

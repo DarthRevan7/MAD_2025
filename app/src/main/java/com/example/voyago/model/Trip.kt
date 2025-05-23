@@ -17,7 +17,7 @@ data class Trip(
     var typeTravel: List<TypeTravel>,
     var creatorId: Int,
     var appliedUsers: Map<Int, JoinRequest>,                   // userId, id JoinedRequest
-    var rejectedUsers: Map<Int, Int>,                  // userId, number of spots
+    var rejectedUsers: Map<Int, JoinRequest>,                  // userId, number of spots
     var published: Boolean
 ) {
 

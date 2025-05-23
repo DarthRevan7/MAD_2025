@@ -502,7 +502,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
             }
 
             item {
-                ShowParticipants(uvm.getUserData(nonNullTrip.creatorId), 1, navController)
+                ShowParticipants(uvm.getUserData(nonNullTrip.creatorId), Trip.JoinRequest(uvm.getUserData(nonNullTrip.creatorId).id, 1, emptyList(), emptyList()), navController)
             }
 
             //Reviews section

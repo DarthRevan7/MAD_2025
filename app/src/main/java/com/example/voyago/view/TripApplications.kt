@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -40,6 +41,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.voyago.activities.ProfilePhoto
+import com.example.voyago.model.Trip
 import com.example.voyago.model.UserData
 import com.example.voyago.viewmodel.TripViewModel
 
@@ -140,8 +142,8 @@ fun TripApplications(vm: TripViewModel, navController: NavController) {
                 val applicantsList = applicantsMap.keys.toList()
 
                 items(applicantsList) { user ->
-                    val requestedSpots = applicantsMap[user] ?: 1 // fallback to 1 if missing
-                    ShowApplications(user, requestedSpots, vm, navController)
+                    val joinRequest: Trip.JoinRequest = applicantsMap[user]!!
+                    ShowApplications(user, joinRequest, vm, navController)
                 }
 
             } else {
@@ -195,7 +197,9 @@ fun TripApplications(vm: TripViewModel, navController: NavController) {
 }
 
 @Composable
-fun ShowParticipants(user: UserData, requestedSpots: Int, navController: NavController) {
+fun ShowParticipants(user: UserData, joinRequest: Trip.JoinRequest, navController: NavController) {
+    var showPart by remember { mutableStateOf(false) }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -229,7 +233,7 @@ fun ShowParticipants(user: UserData, requestedSpots: Int, navController: NavCont
                 },
                 text ="${user.firstname} ${user.surname}")
 
-            if (requestedSpots > 1) {
+            if (joinRequest.requestedSpots > 1) {
                 Spacer(modifier = Modifier.width(8.dp))
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -240,12 +244,12 @@ fun ShowParticipants(user: UserData, requestedSpots: Int, navController: NavCont
                     Icon(
                         imageVector = Icons.Default.People,
                         contentDescription = "Multiple spots",
-                        modifier = Modifier.size(14.dp),
+                        modifier = Modifier.size(14.dp).clickable{showPart = true},
                         tint = Color.White
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "$requestedSpots",
+                        text = "${joinRequest.requestedSpots}",
                         fontSize = 12.sp,
                         color = Color.White
                     )
@@ -264,12 +268,36 @@ fun ShowParticipants(user: UserData, requestedSpots: Int, navController: NavCont
             Text(user.rating.toString())
         }
     }
+
+    if (showPart) {
+        AlertDialog(
+            onDismissRequest = { showPart = false },
+            title = {
+                Text("Participants Info")
+            },
+            text = {
+                Column {
+                    joinRequest.unregisteredParticipants.forEach { participant ->
+                        Text("Name: ${participant.name} ${participant.surname}")
+                        Text("Email: ${participant.email}")
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showPart = false }) {
+                    Text("Close")
+                }
+            }
+        )
+    }
 }
 
 @Composable
-fun ShowApplications(user: UserData, requestedSpots: Int, vm: TripViewModel, navController: NavController) {
+fun ShowApplications(user: UserData, joinRequest: Trip.JoinRequest, vm: TripViewModel, navController: NavController) {
     var showDialog by remember { mutableStateOf(false) }
     var isAcceptAction by remember { mutableStateOf(true) }
+    var showPart by remember { mutableStateOf(false) }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -300,7 +328,7 @@ fun ShowApplications(user: UserData, requestedSpots: Int, vm: TripViewModel, nav
                 },
                 text = "${user.firstname} ${user.surname}")
 
-            if (requestedSpots > 1) {
+            if (joinRequest.requestedSpots > 1) {
                 Spacer(modifier = Modifier.width(8.dp))
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -311,12 +339,12 @@ fun ShowApplications(user: UserData, requestedSpots: Int, vm: TripViewModel, nav
                     Icon(
                         imageVector = Icons.Default.People,
                         contentDescription = "Multiple spots",
-                        modifier = Modifier.size(14.dp),
+                        modifier = Modifier.size(14.dp).clickable{showPart = true},
                         tint = Color.White
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "$requestedSpots",
+                        text = "${joinRequest.requestedSpots}",
                         fontSize = 12.sp,
                         color = Color.White
                     )
@@ -389,6 +417,29 @@ fun ShowApplications(user: UserData, requestedSpots: Int, vm: TripViewModel, nav
             dismissButton = {
                 TextButton(onClick = { showDialog = false }) {
                     Text("Cancel")
+                }
+            }
+        )
+    }
+
+    if (showPart) {
+        AlertDialog(
+            onDismissRequest = { showPart = false },
+            title = {
+                Text("Participants Info")
+            },
+            text = {
+                Column {
+                    joinRequest.unregisteredParticipants.forEach { participant ->
+                        Text("Name: ${participant.name} ${participant.surname}")
+                        Text("Email: ${participant.email}")
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showPart = false }) {
+                    Text("Close")
                 }
             }
         )

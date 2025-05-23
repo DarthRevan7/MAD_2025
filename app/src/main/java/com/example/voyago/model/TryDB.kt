@@ -144,7 +144,10 @@ var privateTripList = MutableStateFlow<List<Trip>>(
             ),
 
             appliedUsers = emptyMap(),
-            rejectedUsers = mapOf(5 to 1, 4 to 1),
+            rejectedUsers = mapOf(
+                5 to Trip.JoinRequest(userId = 5, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList()),
+                4 to Trip.JoinRequest(userId = 4, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList()),
+            ),
             published = true,
             typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.RELAX),
             status = TripStatus.COMPLETED,
@@ -229,7 +232,10 @@ var privateTripList = MutableStateFlow<List<Trip>>(
                 1 to Trip.JoinRequest(userId = 1, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList())
             ),
             appliedUsers = emptyMap(),
-            rejectedUsers = mapOf(6 to 1, 4 to 1),
+            rejectedUsers = mapOf(
+                6 to Trip.JoinRequest(userId = 6, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList()),
+                4 to Trip.JoinRequest(userId = 4, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList()),
+            ),
             published = true,
             typeTravel = listOf(TypeTravel.PARTY, TypeTravel.RELAX),
             status = TripStatus.COMPLETED,
@@ -315,7 +321,10 @@ var privateTripList = MutableStateFlow<List<Trip>>(
                 5 to Trip.JoinRequest(userId = 5, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList())
             ),
             appliedUsers = emptyMap(),
-            rejectedUsers = mapOf(2 to 1, 6 to 1),
+            rejectedUsers = mapOf(
+                6 to Trip.JoinRequest(userId = 6, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList()),
+                2 to Trip.JoinRequest(userId = 2, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList()),
+            ),
             published = true,
             typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.CULTURE),
             status = TripStatus.NOT_STARTED,
