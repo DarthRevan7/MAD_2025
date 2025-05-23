@@ -1,10 +1,27 @@
 package com.example.voyago.activities
 
+import android.Manifest
+import android.content.ContentValues
+import android.content.Context
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.ImageProxy
+import androidx.camera.core.Preview
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
 import androidx.compose.foundation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -14,6 +31,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.ChatBubble
 import androidx.compose.material.icons.filled.Commute
 import androidx.compose.material.icons.filled.Language
@@ -29,6 +47,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,12 +55,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -54,20 +76,39 @@ import androidx.navigation.navigation
 import coil3.compose.AsyncImage
 import com.example.voyago.model.NavItem
 import com.example.voyago.R
+import com.example.voyago.databinding.ActivityCameraBinding
 import com.example.voyago.view.ActivitiesList
 import com.example.voyago.view.CreateNewTrip
 import com.example.voyago.view.EditActivity
+import com.example.voyago.view.EditProfileScreen
 import com.example.voyago.view.EditTrip
 import com.example.voyago.view.ExplorePage
 import com.example.voyago.view.FiltersSelection
 import com.example.voyago.view.HomePageScreen
+import com.example.voyago.view.MyProfileScreen
 import com.example.voyago.view.MyTripsPage
 import com.example.voyago.view.NewActivity
 import com.example.voyago.view.TripApplications
 import com.example.voyago.view.TripDetails
+import com.example.voyago.view.UserProfileScreen
 import com.example.voyago.viewmodel.ArticleViewModel
 import com.example.voyago.viewmodel.Factory
 import com.example.voyago.viewmodel.TripViewModel
+import java.nio.ByteBuffer
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import androidx.compose.runtime.getValue
+import com.example.voyago.view.MyReviews
+import com.example.voyago.viewmodel.ReviewFactory
+import com.example.voyago.viewmodel.ReviewViewModel
+import com.example.voyago.viewmodel.UserFactory
+import com.example.voyago.viewmodel.UserViewModel
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
+
 
 sealed class Screen(val route: String) {
     object Explore : Screen("explore_root")
@@ -78,11 +119,113 @@ sealed class Screen(val route: String) {
 }
 
 class MainActivity : ComponentActivity() {
+
+    private lateinit var viewBinding: ActivityCameraBinding
+
+    private var imageCapture: ImageCapture? = null
+    private lateinit var cameraExecutor: ExecutorService
+
+    private lateinit var context: Context
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        context = this
+
+        cameraExecutor = Executors.newSingleThreadExecutor()
         setContent {
             MainScreen()
+        }
+
+    }
+
+    private fun startCamera() {
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+
+        cameraProviderFuture.addListener({
+            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+
+            // Preview
+            val preview = Preview.Builder()
+                .build()
+                .also {
+                    it.setSurfaceProvider(viewBinding.viewFinder.surfaceProvider)
+                }
+
+            imageCapture = ImageCapture.Builder().build()
+
+            val imageAnalyzer = ImageAnalysis.Builder().build().also {
+                it.setAnalyzer(cameraExecutor, LuminosityAnalyzer { luma ->
+                    Log.d(TAG, "Average luminosity: $luma")
+                })
+            }
+
+            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+
+            try {
+                cameraProvider.unbindAll()
+                cameraProvider.bindToLifecycle(
+                    this, cameraSelector, preview, imageCapture, imageAnalyzer
+                )
+            } catch (exc: Exception) {
+                Log.e(TAG, "Use case binding failed", exc)
+            }
+        }, ContextCompat.getMainExecutor(this))
+    }
+
+    private fun requestPermissions() {
+        activityResultLauncher.launch(REQUIRED_PERMISSIONS)
+    }
+
+    private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
+        ContextCompat.checkSelfPermission(baseContext, it) == PackageManager.PERMISSION_GRANTED
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        cameraExecutor.shutdown()
+    }
+
+    companion object {
+        private const val TAG = "Camera"
+        private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
+        private val REQUIRED_PERMISSIONS = mutableListOf(
+            Manifest.permission.CAMERA,
+            Manifest.permission.RECORD_AUDIO
+        ).apply {
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+                add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            }
+        }.toTypedArray()
+    }
+
+    private val activityResultLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            val permissionGranted = permissions.entries.all {
+                it.key in REQUIRED_PERMISSIONS && it.value
+            }
+            if (!permissionGranted) {
+                Toast.makeText(baseContext, "Permission request denied", Toast.LENGTH_SHORT).show()
+            } else {
+                startCamera()
+            }
+        }
+
+    private class LuminosityAnalyzer(private val listener: (Double) -> Unit) : ImageAnalysis.Analyzer {
+        private fun ByteBuffer.toByteArray(): ByteArray {
+            rewind()
+            val data = ByteArray(remaining())
+            get(data)
+            return data
+        }
+
+        override fun analyze(image: ImageProxy) {
+            val buffer = image.planes[0].buffer
+            val data = buffer.toByteArray()
+            val pixels = data.map { it.toInt() and 0xFF }
+            val luma = pixels.average()
+            listener(luma)
+            image.close()
         }
     }
 }
@@ -109,7 +252,7 @@ fun BottomBar(navController: NavHostController) {
     )
 
     NavigationBar {
-        val navBackStackEntry = navController.currentBackStackEntryAsState().value
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentDestination = navBackStackEntry?.destination
 
         items.forEach { item ->
@@ -122,14 +265,23 @@ fun BottomBar(navController: NavHostController) {
                 label = { Text(item.label) },
                 selected = selected,
                 onClick = {
-                    navController.navigate(item.startRoute) {
-                        navController.graph.startDestinationRoute?.let { screenRoute ->
-                            popUpTo(screenRoute) {
+                    if (item.label == "Home") {
+                        navController.navigate(item.startRoute) {
+                            popUpTo(navController.graph.findStartDestination().id) {
                                 saveState = true
                             }
+                            launchSingleTop = true
+                            restoreState = false
                         }
-                        launchSingleTop = true
-                        restoreState = true
+                    } else {
+                        // Restore last visited tab for other items
+                        navController.navigate(item.startRoute) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     }
                 }
             )
@@ -138,14 +290,26 @@ fun BottomBar(navController: NavHostController) {
 }
 
 
+
 @Composable
 fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modifier) {
     NavHost(navController = navController, startDestination = Screen.Home.route, modifier = modifier) {
         exploreNavGraph(navController)
-        myTripsNavGraph(navController)
+        myTripsNavGraph(navController, ArticleViewModel())
         homeNavGraph(navController, ArticleViewModel())
         chatsNavGraph()
-        profileNavGraph()
+        profileNavGraph(navController, ArticleViewModel())
+        composable("camera") {
+            val context = LocalContext.current
+            CameraScreen(
+                context = context,
+                //modifier = Modifier.fillMaxSize(),
+                onImageCaptured = { uri ->
+                    Toast.makeText(context, "Saved to: $uri", Toast.LENGTH_SHORT).show()
+                    navController.popBackStack()
+                }
+            )
+        }
     }
 }
 
@@ -170,7 +334,11 @@ fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = Factory
             )
-            TripDetails(navController = navController, vm = tripViewModel, owner = false)
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = Factory
+            )
+            TripDetails(navController = navController, vm = tripViewModel, owner = false, uvm = userViewModel)
         }
 
         composable("filters_selection") { entry ->
@@ -187,7 +355,7 @@ fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
 }
 
 
-fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
+fun NavGraphBuilder.myTripsNavGraph(navController: NavController, vm2: ArticleViewModel) {
     navigation(startDestination = "my_trips_main", route = Screen.MyTrips.route) {
         composable("my_trips_main") { entry ->
             val exploreGraphEntry = remember(entry) {
@@ -208,7 +376,31 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = Factory
             )
-            TripDetails(navController = navController, vm = tripViewModel, owner = true)
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = Factory
+            )
+            TripDetails(navController = navController, vm = tripViewModel, owner = true, uvm = userViewModel)
+        }
+
+        composable("my_reviews") { entry ->
+            val exploreGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.MyTrips.route)
+            }
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = Factory
+            )
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = UserFactory
+            )
+            val reviewViewModel: ReviewViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = ReviewFactory
+            )
+            MyReviews(navController = navController, vm = tripViewModel, uvm = userViewModel,
+                rvm = reviewViewModel)
         }
 
         composable("trip_applications") { entry ->
@@ -219,7 +411,7 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = Factory
             )
-            TripApplications(vm = tripViewModel)
+            TripApplications(vm = tripViewModel, navController)
         }
 
         composable("edit_trip") { entry ->
@@ -278,11 +470,35 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
             val activityId = entry.arguments?.getInt("activityId") ?: -1
             EditActivity(navController = navController, vm = tripViewModel, activityId)
         }
+
+        composable("user_profile/{userId}",
+            arguments = listOf(navArgument("userId") { type = NavType.IntType })) { entry ->
+            val exploreGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.MyTrips.route)
+            }
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = Factory
+            )
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = Factory
+            )
+            val userId = entry.arguments?.getInt("userId") ?: 1
+            UserProfileScreen(
+                navController = navController,
+                vm = tripViewModel,
+                vm2 = vm2,
+                userId = userId,
+                uvm = userViewModel
+            )
+        }
     }
 }
 
 fun NavGraphBuilder.homeNavGraph(
     navController: NavHostController,
+    //vm1: TripListViewModel,
     vm2: ArticleViewModel
 ) {
     navigation(
@@ -318,15 +534,43 @@ fun NavGraphBuilder.homeNavGraph(
                 viewModelStoreOwner = homeEntry,
                 factory = Factory
             )
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = homeEntry,
+                factory = Factory
+            )
             TripDetails(
                 navController = navController,
                 vm = homeVm,
-                owner = false
+                owner = false,
+                uvm = userViewModel
             )
+        }
+
+        composable("user_profile/{userId}",
+            arguments = listOf(navArgument("userId") { type = NavType.IntType })) { entry ->
+            val profileNavGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Home.route)
+            }
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = profileNavGraphEntry,
+                factory = Factory
+            )
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = profileNavGraphEntry,
+                factory = Factory
+            )
+            val userId = entry.arguments?.getInt("userId") ?: 1
+            UserProfileScreen(
+                navController = navController,
+                vm = tripViewModel,
+                vm2 = vm2,
+                userId = userId,
+                uvm = userViewModel
+            )
+
         }
     }
 }
-
 
 
 
@@ -341,14 +585,102 @@ fun NavGraphBuilder.chatsNavGraph() {
     }
 }
 
-fun NavGraphBuilder.profileNavGraph() {
-    navigation(startDestination = "profile_overview", route = Screen.Profile.route) {
-        composable("profile_overview") {
-            Text("Profile Overview Screen")
+fun NavGraphBuilder.profileNavGraph(
+    navController: NavHostController,
+    //vm1: TripListViewModel,
+    vm2: ArticleViewModel
+) {
+    navigation(
+        startDestination = "profile_overview",
+        route = Screen.Profile.route
+    ) {
+        composable("profile_overview") { entry ->
+            // 取同一个 HomeGraph 的 VM
+            val profileNavGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Profile.route)
+            }
+            val profileNavGraphEntryVm: TripViewModel = viewModel(
+                viewModelStoreOwner = profileNavGraphEntry,
+                factory = Factory
+            )
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = profileNavGraphEntry,
+                factory = Factory
+            )
+            MyProfileScreen(
+                navController = navController,
+                vm = profileNavGraphEntryVm,
+                vm2 = vm2,
+                uvm = userViewModel
+            )
         }
-        composable("profile_settings") {
-            Text("Profile Settings Screen")
+
+        composable("user_profile/{userId}",
+            arguments = listOf(navArgument("userId") { type = NavType.IntType })) { entry ->
+            val profileNavGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Profile.route)
+            }
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = profileNavGraphEntry,
+                factory = Factory
+            )
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = profileNavGraphEntry,
+                factory = Factory
+            )
+            val userId = entry.arguments?.getInt("userId") ?: 1
+            UserProfileScreen(
+                navController = navController,
+                vm = tripViewModel,
+                vm2 = vm2,
+                userId = userId,
+                uvm = userViewModel
+            )
+
+
         }
+
+        composable("edit_profile") { entry ->
+
+            val profileNavGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Profile.route)
+            }
+            val profileNavGraphEntryVm: TripViewModel = viewModel(
+                viewModelStoreOwner = profileNavGraphEntry,
+                factory = Factory
+            )
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = profileNavGraphEntry,
+                factory = Factory
+            )
+            EditProfileScreen(
+                navController = navController,
+                context = LocalContext.current,
+                vm = profileNavGraphEntryVm,
+                uvm = userViewModel
+            )
+        }
+
+        composable("camera") {entry ->
+
+            val profileNavGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Profile.route)
+            }
+            val profileNavGraphEntryVm: UserViewModel = viewModel(
+                viewModelStoreOwner = profileNavGraphEntry,
+                factory = Factory
+            )
+            CameraScreen(
+                context = LocalContext.current,
+                onImageCaptured = { uri ->
+                    profileNavGraphEntryVm.setProfileImageUri(uri)
+                    navController.popBackStack()
+                }
+            )
+        }
+
+
+
     }
 }
 
@@ -448,3 +780,80 @@ fun TopBar() {
         modifier = Modifier.shadow(8.dp)
     )
 }
+
+@Composable
+fun CameraScreen(context: Context, onImageCaptured: (Uri?) -> Unit) {
+    val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
+    val previewView = remember { PreviewView(context) }
+    val imageCapture = remember { ImageCapture.Builder().build() }
+
+    LaunchedEffect(Unit) {
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
+        cameraProviderFuture.addListener({
+            val cameraProvider = cameraProviderFuture.get()
+            val preview = Preview.Builder().build().also {
+                it.setSurfaceProvider(previewView.surfaceProvider)
+            }
+            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+            try {
+                cameraProvider.unbindAll()
+                cameraProvider.bindToLifecycle(
+                    lifecycleOwner, cameraSelector, preview, imageCapture
+                )
+            } catch (exc: Exception) {
+                Log.e("Camera", "Use case binding failed", exc)
+            }
+        }, ContextCompat.getMainExecutor(context))
+    }
+
+    Box(Modifier.fillMaxSize()) {
+        AndroidView({ previewView }, modifier = Modifier.fillMaxSize())
+        IconButton(
+            onClick = {
+                val name = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US).format(System.currentTimeMillis())
+                val contentValues = ContentValues().apply {
+                    put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+                    put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+                    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+                        put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX-Image")
+                    }
+                }
+                val outputOptions = ImageCapture.OutputFileOptions.Builder(
+                    context.contentResolver,
+                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                    contentValues
+                ).build()
+
+                imageCapture.takePicture(
+                    outputOptions,
+                    ContextCompat.getMainExecutor(context),
+                    object : ImageCapture.OnImageSavedCallback {
+                        override fun onError(exc: ImageCaptureException) {
+                            Log.e("Camera", "Photo capture failed: ${exc.message}", exc)
+                        }
+
+                        override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                            Log.d("Camera", "Photo capture succeeded: ${output.savedUri}")
+                            onImageCaptured(output.savedUri)
+                        }
+                    }
+                )
+            },
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(16.dp)
+                .size(72.dp)
+                .clip(CircleShape)
+                .background(Color.White)
+                .border(2.dp, Color.Gray, CircleShape)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Camera,
+                contentDescription = "Capture",
+                tint = Color.Black
+            )
+        }
+    }
+}
+
+

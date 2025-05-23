@@ -38,12 +38,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.voyago.activities.ProfilePhoto
 import com.example.voyago.model.UserData
 import com.example.voyago.viewmodel.TripViewModel
 
 @Composable
-fun TripApplications(vm: TripViewModel) {
+fun TripApplications(vm: TripViewModel, navController: NavController) {
 
     val listState = rememberLazyListState()
     val trip = vm.selectedTrip.value
@@ -103,11 +104,13 @@ fun TripApplications(vm: TripViewModel) {
             }
 
             if (trip.participants.size > 1) {
-                var participants = vm.applications.value
+                val participantsMap = vm.getTripParticipants(trip)
 
-                items(participants) { user ->
+                items(participantsMap.entries.toList()) { entry ->
+                    val user = entry.key
+                    val spots = entry.value
                     if (user.id != 1) {
-                        ShowParticipants(user)
+                        ShowParticipants(user, spots, navController)
                     }
                 }
 
@@ -133,10 +136,14 @@ fun TripApplications(vm: TripViewModel) {
             }
 
             if (trip.appliedUsers.isNotEmpty()) {
-                var applicants = vm.getTripApplicants(trip)
-                items(applicants) { user ->
-                    ShowApplications(user, vm)
+                val applicantsMap = vm.applications.value
+                val applicantsList = applicantsMap.keys.toList()
+
+                items(applicantsList) { user ->
+                    val requestedSpots = applicantsMap[user] ?: 1 // fallback to 1 if missing
+                    ShowApplications(user, requestedSpots, vm, navController)
                 }
+
             } else {
                 item {
                     Row (
@@ -163,10 +170,16 @@ fun TripApplications(vm: TripViewModel) {
             }
 
             if (trip.rejectedUsers.isNotEmpty()) {
-                var applicants = vm.getTripRejectedUsers(trip)
-                items(applicants) { user ->
-                    ShowParticipants(user)
+                val participantsMap = vm.getTripRejectedUsers(trip)
+
+                items(participantsMap.entries.toList()) { entry ->
+                    val user = entry.key
+                    val spots = entry.value
+                    if (user.id != 1) {
+                        ShowParticipants(user, spots, navController)
+                    }
                 }
+
             } else {
                 item {
                     Row (
@@ -182,7 +195,7 @@ fun TripApplications(vm: TripViewModel) {
 }
 
 @Composable
-fun ShowParticipants(user: UserData) {
+fun ShowParticipants(user: UserData, requestedSpots: Int, navController: NavController) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -191,25 +204,32 @@ fun ShowParticipants(user: UserData) {
             .border(1.dp, Color.Gray, RoundedCornerShape(12.dp))
             .padding(12.dp)
     ) {
-        //Profile image of the participant
+        // Profile image of the participant
         Box(
             contentAlignment = Alignment.CenterStart,
             modifier = Modifier
                 .size(30.dp)
                 .background(Color.Gray, shape = CircleShape)
         ) {
-            ProfilePhoto(user.firstname, user.surname,true, null)
+            ProfilePhoto(user.firstname, user.surname, true, null)
         }
 
-        //Participant information
+        // Participant information
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(start = 16.dp)
-        ) {
-            //User information
-            Text("${user.firstname} ${user.surname}")
+            modifier = Modifier
+                .padding(start = 16.dp),
 
-            if (user.requestedSpots > 1) {
+        ) {
+            // User information
+            Text(modifier = Modifier
+                .clickable {
+
+                    navController.navigate("user_profile/${user.id}")
+                },
+                text ="${user.firstname} ${user.surname}")
+
+            if (requestedSpots > 1) {
                 Spacer(modifier = Modifier.width(8.dp))
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -225,7 +245,7 @@ fun ShowParticipants(user: UserData) {
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "${user.requestedSpots}",
+                        text = "$requestedSpots",
                         fontSize = 12.sp,
                         color = Color.White
                     )
@@ -233,13 +253,12 @@ fun ShowParticipants(user: UserData) {
             }
         }
 
-        //Participant's rating
+        // Participant's rating
         Row(
-            modifier = Modifier
-                .weight(1f),
+            modifier = Modifier.weight(1f),
             horizontalArrangement = Arrangement.End,
-            verticalAlignment = Alignment.CenterVertically)
-        {
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Icon(Icons.Default.StarBorder, "star")
             Spacer(modifier = Modifier.width(5.dp))
             Text(user.rating.toString())
@@ -248,7 +267,7 @@ fun ShowParticipants(user: UserData) {
 }
 
 @Composable
-fun ShowApplications(user: UserData, vm: TripViewModel) {
+fun ShowApplications(user: UserData, requestedSpots: Int, vm: TripViewModel, navController: NavController) {
     var showDialog by remember { mutableStateOf(false) }
     var isAcceptAction by remember { mutableStateOf(true) }
 
@@ -260,91 +279,87 @@ fun ShowApplications(user: UserData, vm: TripViewModel) {
             .border(1.dp, Color.Gray, RoundedCornerShape(12.dp))
             .padding(12.dp)
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
+        // Profile image of the applicant
+        Box(
+            contentAlignment = Alignment.CenterStart,
+            modifier = Modifier
+                .size(30.dp)
+                .background(Color.Gray, shape = CircleShape)
         ) {
-            //Profile image of the applicant
-            Box(
-                contentAlignment = Alignment.CenterStart,
-                modifier = Modifier
-                    .size(30.dp)
-                    .background(Color.Gray, shape = CircleShape)
-            ) {
-                ProfilePhoto(user.firstname, user.surname, true, null)
-            }
-            //User information
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(start = 16.dp)
-            ) {
-                //User information
-                Text("${user.firstname} ${user.surname}")
+            ProfilePhoto(user.firstname, user.surname, true, null)
+        }
+        // User information
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(start = 16.dp)
+        ) {
+            Text(modifier = Modifier
+                .clickable {
 
-                if (user.requestedSpots > 1) {
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .background(Color(0xFF9C4DFF), shape = RoundedCornerShape(12.dp))
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.People,
-                            contentDescription = "Multiple spots",
-                            modifier = Modifier.size(14.dp),
-                            tint = Color.White
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "${user.requestedSpots}",
-                            fontSize = 12.sp,
-                            color = Color.White
-                        )
-                    }
+                    navController.navigate("user_profile/${user.id}")
+                },
+                text = "${user.firstname} ${user.surname}")
+
+            if (requestedSpots > 1) {
+                Spacer(modifier = Modifier.width(8.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .background(Color(0xFF9C4DFF), shape = RoundedCornerShape(12.dp))
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.People,
+                        contentDescription = "Multiple spots",
+                        modifier = Modifier.size(14.dp),
+                        tint = Color.White
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "$requestedSpots",
+                        fontSize = 12.sp,
+                        color = Color.White
+                    )
                 }
             }
         }
 
-        //Applicant's rating
+        // Applicant's rating
         Row(
             modifier = Modifier
                 .weight(1f),
             horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically)
-        {
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Icon(Icons.Default.StarBorder, "star")
             Spacer(modifier = Modifier.width(5.dp))
             Text(user.rating.toString())
         }
 
-        //Accept and Reject Icons
+        // Accept and Reject Icons
         Row(
             modifier = Modifier
                 .weight(1f),
             horizontalArrangement = Arrangement.End,
-            verticalAlignment = Alignment.CenterVertically)
-        {
-            //Approve Icon
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Icon(
                 imageVector = Icons.Default.Check,
                 contentDescription = "approve",
                 modifier = Modifier
                     .background(Color.Green)
-                    .clickable{
+                    .clickable {
                         isAcceptAction = true
                         showDialog = true
                     }
             )
-
             Spacer(modifier = Modifier.padding(5.dp))
-
-            //Reject Icon
             Icon(
                 imageVector = Icons.Default.Close,
                 contentDescription = "reject",
                 modifier = Modifier
                     .background(Color.Red)
-                    .clickable{
+                    .clickable {
                         isAcceptAction = false
                         showDialog = true
                     }
@@ -352,7 +367,6 @@ fun ShowApplications(user: UserData, vm: TripViewModel) {
         }
     }
 
-    //PopUp of confirmation for acceptance/rejection of an application
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },

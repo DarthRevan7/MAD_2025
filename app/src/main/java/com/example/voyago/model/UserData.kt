@@ -2,6 +2,7 @@ package com.example.voyago.model
 
 
 import android.media.Image
+import android.net.Uri
 import com.example.voyago.model.Article
 import com.example.voyago.model.Review
 import java.util.Calendar
@@ -16,18 +17,11 @@ data class UserData(
     var userDescription: String,
     var dateOfBirth: Calendar,
     var password: String,
-    var profilePicture: Image?,
+    var profilePicture: Uri?,
     var typeTravel: List<TypeTravel>,
     var desiredDestination: List<String>,
     var rating: Float,
-    var reliability: Int,
-    var publicTrips: List<Trip>,                    //Trip id
-    var articles: List<Article>,                    //Article id
-    var reviews: List<Review>,                      //Reviews id
-    var privateTrips: List<Trip>,                   //Trip id
-    var tripsAppliedTo: List<Trip>,                 //Trip id
-    var tripsApplicationAccepted: List<Trip>,       //Trip id
-    var requestedSpots: Int
+    var reliability: Int
 
 ) {
     fun age(): String

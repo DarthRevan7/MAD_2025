@@ -11,21 +11,21 @@ data class Trip(
     var endDate: Calendar,
     var estimatedPrice: Double,
     var groupSize: Int,
-    var participants: List<Int>,                            //user id
-    var activities: Map<Calendar, List<Activity>>,          //Map<Date,Activity> to filter by day
+    var participants: Map<Int, Int>,                   // userId -> spots taken
+    var activities: Map<Calendar, List<Activity>>,     // Map<Date, Activity>
     var status: TripStatus,
     var typeTravel: List<TypeTravel>,
     var creatorId: Int,
-    var appliedUsers: List<Int>,
-    var rejectedUsers: List<Int>,
-    var published: Boolean,
-    var reviews:List<Review>
+    var appliedUsers: Map<Int, Int>,                   // userId -> requested spots
+    var rejectedUsers: Map<Int, Int>,                  // userId -> requested spots
+    var published: Boolean
 ) {
+
     data class Activity(
         val id: Int,
-        var date: Calendar,           //yyyy-mm-gg
-        var time: String,           //hh:mm
-        var isGroupActivity:Boolean,
+        var date: Calendar,         // yyyy-mm-dd
+        var time: String,           // hh:mm
+        var isGroupActivity: Boolean,
         var description: String
     )
 
@@ -44,15 +44,14 @@ data class Trip(
         endDate = Calendar.getInstance(),
         estimatedPrice = -1.0,
         groupSize = -1,
-        participants = emptyList(),
+        participants = emptyMap(),
         activities = emptyMap(),
         status = TripStatus.NOT_STARTED,
         typeTravel = emptyList(),
         creatorId = -1,
-        appliedUsers = emptyList(),
-        rejectedUsers = emptyList(),
-        published = false,
-        reviews = emptyList()
+        appliedUsers = emptyMap(),
+        rejectedUsers = emptyMap(),
+        published = false
     ) {
         var yesterday = Calendar.getInstance()
         yesterday.add(Calendar.DATE, -1)
@@ -60,7 +59,20 @@ data class Trip(
         startDate = yesterday
         endDate = yesterday
 
+        updateStatusBasedOnDate()
+
     }
+
+    fun updateStatusBasedOnDate(): TripStatus {
+        val today = Calendar.getInstance()
+        return when {
+            endDate.before(today) -> TripStatus.COMPLETED
+            startDate.after(today) -> TripStatus.NOT_STARTED
+            else -> TripStatus.IN_PROGRESS
+        }
+    }
+
+
 
     fun isValid():Boolean {
         var condition = true
@@ -82,12 +94,17 @@ data class Trip(
         return this.status == TripStatus.NOT_STARTED && hasAvailableSpots()
     }
 
+    fun loggedInUserCanJoin(id: Int): Boolean {
+        return this.status == TripStatus.NOT_STARTED && hasAvailableSpots() && creatorId != id
+                && !participants.containsKey(id) && !appliedUsers.containsKey(id)
+    }
+
     fun hasAvailableSpots():Boolean {
         return availableSpots() > 0
     }
 
     fun availableSpots(): Int {
-        return this.groupSize - this.participants.size
+        return this.groupSize - this.participants.values.sum()
     }
 
     fun tripDuration():Int {

@@ -429,11 +429,10 @@ fun CreateNewTrip(navController: NavController, vm: TripViewModel) {
                                     creatorId = creatorId,
                                     published = false,
                                     id = -1,
-                                    participants = emptyList(),
+                                    participants = emptyMap(),
                                     status = Trip.TripStatus.NOT_STARTED,
-                                    appliedUsers = emptyList(),
-                                    rejectedUsers = emptyList(),
-                                    reviews = emptyList()
+                                    appliedUsers = emptyMap(),
+                                    rejectedUsers = emptyMap()
                                 )
 
                                 vm.newTrip = newTrip

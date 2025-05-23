@@ -6,11 +6,14 @@ import com.example.voyago.model.Trip.TripStatus
 import com.example.voyago.view.SelectableItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.forEach
+import kotlinx.coroutines.flow.filter
 import java.util.Calendar
 
 
 class Model {
+    //LISTS OF DATA PLACEHOLDER
+
+    //User list
     private var _users = MutableStateFlow<List<UserData>>(
         listOf(
             UserData(
@@ -22,19 +25,12 @@ class Model {
                 country = "USA",
                 email = "alice@example.com",
                 password = "securePassword123",
-                userDescription = "hi",
+                userDescription = "Globetrotter and sunset chaser. Always looking for the next quiet beach or bustling city",
                 profilePicture = null,
                 typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.ADVENTURE),
                 desiredDestination = listOf("Greece", "Italy", "Japan"),
                 rating = 4.7f,
-                reliability = 90,
-                publicTrips = emptyList(),
-                articles = emptyList(),
-                reviews = emptyList(),
-                privateTrips = emptyList(),
-                tripsAppliedTo = emptyList(),
-                tripsApplicationAccepted = emptyList(),
-                requestedSpots = 1
+                reliability = 90
             ),
 
             UserData(
@@ -46,73 +42,86 @@ class Model {
                 country = "UK",
                 email = "bellalast@example.com",
                 password = "securePassword987",
-                userDescription = "hi",
+                userDescription = "Spa days or city lights—I do both. Always chasing good vibes, bold flavors, and unforgettable nights. Let’s dance, then unwind in style.",
                 profilePicture = null,
                 typeTravel = listOf(TypeTravel.RELAX, TypeTravel.PARTY),
                 desiredDestination = listOf("Romania", "USA", "South Korea"),
                 rating = 4.3f,
-                reliability = 55,
-                publicTrips = emptyList(),
-                articles = emptyList(),
-                reviews = emptyList(),
-                privateTrips = emptyList(),
-                tripsAppliedTo = emptyList(),
-                tripsApplicationAccepted = emptyList(),
-                requestedSpots = 1
+                reliability = 55
             ),
 
-            )
-    )
-
-    var users: StateFlow<List<UserData>> = _users
-
-    private var _reviews = MutableStateFlow<List<Review>>(
-        listOf(
-            Review(
-                reviewId = 1,
-                reviewerId = 1,
-                tripId = 1,
-                title = "Amazing trip!",
-                comment = "This trip was absolutely incredible from start to finish. The guided city tour was informative and fun, the food was delicious, and the museum visit was a highlight for me. Everything was well-organized and the group dynamic was awesome. I would recommend this experience to anyone wanting a deep cultural immersion.",
-                score = 9,
-                photos = emptyList(),
-                userId = 1,
-                date = Calendar.getInstance().apply { set(2025, 6, 12); stripTime() }
+            UserData(
+                id = 3,
+                firstname = "Liam",
+                surname = "Hunter",
+                username = "globetrotliam",
+                dateOfBirth = Calendar.getInstance().apply { set(1990, 5, 21); stripTime() },
+                country = "Canada",
+                email = "liam.hunter@example.com",
+                password = "canuckTravels123",
+                userDescription = "Adventurer and culture seeker",
+                profilePicture = null,
+                typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.CULTURE),
+                desiredDestination = listOf("Peru", "Nepal", "Morocco"),
+                rating = 4.7f,
+                reliability = 80
             ),
 
-            Review(
-                reviewId = 2,
-                reviewerId = 2,
-                tripId = 1,
-                title = "Loved it!",
-                comment = "This was the ultimate beach escape. The snorkeling tour showed us some of the most stunning coral reefs I’ve ever seen. The food was delicious, and the beach party was an unforgettable night with music, dancing, and laughter. It struck the perfect balance between adventure and relaxation.",
-                score = 10,
-                photos = emptyList(),
-                userId = 1,
-                date = Calendar.getInstance().apply { set(2022, 4, 12); stripTime() }
+            UserData(
+                id = 4,
+                firstname = "Sofia",
+                surname = "Mendoza",
+                username = "sofi_explorer",
+                dateOfBirth = Calendar.getInstance().apply { set(1993, 2, 14); stripTime() },
+                country = "Argentina",
+                email = "sofia.mendoza@example.com",
+                password = "andesLover2021",
+                userDescription = "Love hiking and photographing landscapes",
+                profilePicture = null,
+                typeTravel = listOf(TypeTravel.ADVENTURE),
+                desiredDestination = listOf("New Zealand", "Iceland", "Japan"),
+                rating = 4.5f,
+                reliability = 73
+            ),
+
+            UserData(
+                id = 5,
+                firstname = "Ethan",
+                surname = "Nguyen",
+                username = "ethan_nomad",
+                dateOfBirth = Calendar.getInstance().apply { set(1988, 7, 9); stripTime() },
+                country = "USA",
+                email = "ethan.nguyen@example.com",
+                password = "secureWay888",
+                userDescription = "Foodie with a passion for street markets",
+                profilePicture = null,
+                typeTravel = listOf(TypeTravel.CULTURE),
+                desiredDestination = listOf("Thailand", "Italy", "Vietnam"),
+                rating = 4.1f,
+                reliability = 67
+            ),
+
+            UserData(
+                id = 6,
+                firstname = "Aisha",
+                surname = "Khan",
+                username = "aishatravels",
+                dateOfBirth = Calendar.getInstance().apply { set(1995, 12, 3); stripTime() },
+                country = "Pakistan",
+                email = "aisha.khan@example.com",
+                password = "safeJourney999",
+                userDescription = "Solo traveler sharing stories from around the world",
+                profilePicture = null,
+                typeTravel = listOf(TypeTravel.RELAX, TypeTravel.CULTURE),
+                desiredDestination = listOf("Turkey", "Spain", "Malaysia"),
+                rating = 4.8f,
+                reliability = 90
             )
-//                reviews = listOf(
-//                    Review(
-//                        4, users[2], "Loved it!",
-//                        "This was the ultimate beach escape. The snorkeling tour showed us some of the most stunning coral reefs I’ve ever seen. The food was delicious, and the beach party was an unforgettable night with music, dancing, and laughter. It struck the perfect balance between adventure and relaxation.",
-//                        10, emptyList()
-//                    ),
-//                    Review(
-//                        5, users[4], "Relaxing trip",
-//                        "I needed a break from work, and this trip delivered. From the moment we arrived, everything was taken care of. The massage session was heavenly, and the sunsets over the ocean were something out of a movie. I left feeling refreshed and truly happy. Would highly recommend for anyone seeking peace.",
-//                        9, emptyList()
-//                    ),
-//                    Review(
-//                        6, users[5], "Beautiful place",
-//                        "Thailand was everything I imagined and more. The island hopping day was packed with activities, yet never felt rushed. The local cuisine tasting opened my eyes to so many flavors, and I even brought some recipes home. A wonderful way to experience the culture while soaking up the sun.",
-//                        8, emptyList()
-//                    )
-//                )
         )
     )
+    var users: StateFlow<List<UserData>> = _users
 
-    var reviews: StateFlow<List<Review>> = _reviews
-
+    //Trip list
     private var _tripList = MutableStateFlow<List<Trip>>(
         listOf(
             Trip(
@@ -120,80 +129,79 @@ class Model {
                 photo = "barcelona",
                 title = "Cultural Wonders of Spain",
                 destination = "Barcelona",
-                startDate = Calendar.getInstance().apply { set(2025, 6, 10); stripTime() },
-                endDate = Calendar.getInstance().apply { set(2025, 6, 11); stripTime() },
+                startDate = Calendar.getInstance().apply { set(2024, 6, 10); stripTime() },
+                endDate = Calendar.getInstance().apply { set(2024, 6, 11); stripTime() },
                 estimatedPrice = 950.0,
                 groupSize = 4,
                 creatorId = 6,
-                participants = listOf(1, 2, 3, 4),
-                appliedUsers = listOf(5, 6),
-                rejectedUsers = emptyList(),
+                participants = mapOf(6 to 1, 2 to 1, 3 to 1, 1 to 1),
+                appliedUsers = emptyMap(),
+                rejectedUsers = mapOf(5 to 1, 4 to 1),
                 published = true,
                 typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.RELAX),
                 status = TripStatus.COMPLETED,
                 activities = mapOf(
-                    Calendar.getInstance().apply { set(2025, 6, 10); stripTime() } to listOf(
+                    Calendar.getInstance().apply { set(2024, 6, 10); stripTime() } to listOf(
                         Activity(
                             1,
-                            Calendar.getInstance().apply { set(2025, 6, 10); stripTime() },
+                            Calendar.getInstance().apply { set(2024, 6, 10); stripTime() },
                             "09:00 AM",
                             true,
                             "City tour"
                         ),
                         Activity(
                             2,
-                            Calendar.getInstance().apply { set(2025, 6, 10); stripTime() },
+                            Calendar.getInstance().apply { set(2024, 6, 10); stripTime() },
                             "02:00 PM",
                             false,
                             "Lunch at market"
                         ),
                         Activity(
                             3,
-                            Calendar.getInstance().apply { set(2025, 6, 10); stripTime() },
+                            Calendar.getInstance().apply { set(2024, 6, 10); stripTime() },
                             "03:00 PM",
                             true,
                             "Museum visit"
                         ),
                         Activity(
                             4,
-                            Calendar.getInstance().apply { set(2025, 6, 10); stripTime() },
+                            Calendar.getInstance().apply { set(2024, 6, 10); stripTime() },
                             "08:00 PM",
                             true,
                             "Welcome dinner"
                         )
                     ),
-                    Calendar.getInstance().apply { set(2025, 6, 11); stripTime() } to listOf(
+                    Calendar.getInstance().apply { set(2024, 6, 11); stripTime() } to listOf(
                         Activity(
                             5,
-                            Calendar.getInstance().apply { set(2025, 6, 11); stripTime() },
+                            Calendar.getInstance().apply { set(2024, 6, 11); stripTime() },
                             "08:00 AM",
                             true,
                             "Hiking trip"
                         ),
                         Activity(
                             6,
-                            Calendar.getInstance().apply { set(2025, 6, 11); stripTime() },
+                            Calendar.getInstance().apply { set(2024, 6, 11); stripTime() },
                             "01:00 PM",
                             true,
                             "Mountain picnic"
                         ),
                         Activity(
                             7,
-                            Calendar.getInstance().apply { set(2025, 6, 11); stripTime() },
+                            Calendar.getInstance().apply { set(2024, 6, 11); stripTime() },
                             "05:00 PM",
                             false,
                             "Free time"
                         ),
                         Activity(
                             8,
-                            Calendar.getInstance().apply { set(2025, 6, 11); stripTime() },
+                            Calendar.getInstance().apply { set(2024, 6, 11); stripTime() },
                             "09:00 PM",
                             true,
                             "Campfire stories"
                         )
                     )
-                ),
-                reviews = getReviewsbyTripId(1)
+                )
             ),
 
             Trip(
@@ -201,80 +209,79 @@ class Model {
                 photo = "phuket",
                 title = "Beach Escape in Thailand",
                 destination = "Phuket",
-                startDate = Calendar.getInstance().apply { set(2025, 7, 20); stripTime() },
-                endDate = Calendar.getInstance().apply { set(2025, 7, 21); stripTime() },
+                startDate = Calendar.getInstance().apply { set(2025, 5, 20); stripTime() },
+                endDate = Calendar.getInstance().apply { set(2025, 5, 21); stripTime() },
                 estimatedPrice = 1200.0,
                 groupSize = 4,
                 creatorId = 2,
-                participants = listOf(2, 3, 5, 6),
-                appliedUsers = listOf(1, 4),
-                rejectedUsers = emptyList(),
+                participants = mapOf(2 to 1, 3 to 1, 5 to 1, 1 to 1),
+                appliedUsers = emptyMap(),
+                rejectedUsers = mapOf(6 to 1, 4 to 1),
                 published = true,
                 typeTravel = listOf(TypeTravel.PARTY, TypeTravel.RELAX),
                 status = TripStatus.COMPLETED,
                 activities = mapOf(
-                    Calendar.getInstance().apply { set(2025, 7, 20); stripTime() } to listOf(
+                    Calendar.getInstance().apply { set(2025, 5, 20); stripTime() } to listOf(
                         Activity(
                             9,
-                            Calendar.getInstance().apply { set(2025, 7, 20); stripTime() },
+                            Calendar.getInstance().apply { set(2025, 5, 20); stripTime() },
                             "10:00 AM",
                             true,
                             "Snorkeling tour"
                         ),
                         Activity(
                             10,
-                            Calendar.getInstance().apply { set(2025, 7, 20); stripTime() },
+                            Calendar.getInstance().apply { set(2025, 5, 20); stripTime() },
                             "01:00 PM",
                             true,
                             "Beach lunch"
                         ),
                         Activity(
                             11,
-                            Calendar.getInstance().apply { set(2025, 7, 20); stripTime() },
+                            Calendar.getInstance().apply { set(2025, 5, 20); stripTime() },
                             "04:00 PM",
                             false,
                             "Massage session"
                         ),
                         Activity(
                             12,
-                            Calendar.getInstance().apply { set(2025, 7, 20); stripTime() },
+                            Calendar.getInstance().apply { set(2025, 5, 20); stripTime() },
                             "07:00 PM",
                             true,
                             "Sunset cruise"
                         )
                     ),
-                    Calendar.getInstance().apply { set(2025, 7, 21); stripTime() } to listOf(
+                    Calendar.getInstance().apply { set(2025, 5, 21); stripTime() } to listOf(
                         Activity(
                             13,
-                            Calendar.getInstance().apply { set(2025, 7, 21); stripTime() },
+                            Calendar.getInstance().apply { set(2025, 5, 21); stripTime() },
                             "09:00 AM",
                             true,
                             "Island hopping"
                         ),
                         Activity(
                             14,
-                            Calendar.getInstance().apply { set(2025, 7, 21); stripTime() },
+                            Calendar.getInstance().apply { set(2025, 5, 21); stripTime() },
                             "02:00 PM",
                             true,
                             "Cuisine tasting"
                         ),
                         Activity(
                             15,
-                            Calendar.getInstance().apply { set(2025, 7, 21); stripTime() },
+                            Calendar.getInstance().apply { set(2025, 5, 21); stripTime() },
                             "03:00 PM",
                             false,
                             "Shopping"
                         ),
                         Activity(
                             16,
-                            Calendar.getInstance().apply { set(2025, 7, 21); stripTime() },
+                            Calendar.getInstance().apply { set(2025, 5, 21); stripTime() },
                             "08:00 PM",
                             true,
                             "Beach party"
                         )
                     )
-                ),
-                reviews = getReviewsbyTripId(2)
+                )
             ),
 
 
@@ -288,12 +295,12 @@ class Model {
                 estimatedPrice = 1100.0,
                 groupSize = 4,
                 creatorId = 3,
-                participants = listOf(1, 3, 4, 5),
-                appliedUsers = listOf(2, 6),
-                rejectedUsers = emptyList(),
+                participants = mapOf(3 to 1, 1 to 1, 4 to 1, 5 to 1),
+                appliedUsers = emptyMap(),
+                rejectedUsers = mapOf(2 to 1, 6 to 1),
                 published = true,
                 typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.CULTURE),
-                status = TripStatus.IN_PROGRESS,
+                status = TripStatus.NOT_STARTED,
                 activities = mapOf(
                     Calendar.getInstance().apply { set(2025, 9, 5); stripTime() } to listOf(
                         Activity(17, Calendar.getInstance().apply { set(2025, 9, 5); stripTime() }, "08:00 AM", true, "Guided trek through Sacred Valley"),
@@ -307,8 +314,7 @@ class Model {
                         Activity(23, Calendar.getInstance().apply { set(2025, 9, 6); stripTime() }, "02:00 PM", true, "Lunch with a view"),
                         Activity(24, Calendar.getInstance().apply { set(2025, 9, 6); stripTime()}, "06:00 PM", true, "Group reflection session")
                     )
-                ),
-                reviews = emptyList()
+                )
             ),
 
             Trip(
@@ -321,9 +327,9 @@ class Model {
                 estimatedPrice = 1800.0,
                 groupSize = 4,
                 creatorId = 1,
-                participants = listOf(1),
-                appliedUsers = emptyList(),
-                rejectedUsers = emptyList(),
+                participants = mapOf(1 to 1),
+                appliedUsers = emptyMap(),
+                rejectedUsers = emptyMap(),
                 published = false,
                 typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.RELAX),
                 status = TripStatus.NOT_STARTED,
@@ -352,8 +358,7 @@ class Model {
                         Activity(63, Calendar.getInstance().apply { set(2025, 11, 8); stripTime() }, "02:00 PM", true, "Cooking class"),
                         Activity(64, Calendar.getInstance().apply { set(2025, 11, 8); stripTime() }, "06:00 PM", true, "Closing group dinner")
                     )
-                ),
-                reviews = emptyList()
+                )
             ),
 
             Trip(
@@ -361,90 +366,87 @@ class Model {
                 photo = "kyoto",
                 title = "Kyoto Zen Retreat",
                 destination = "Kyoto",
-                startDate = Calendar.getInstance().apply { set(2025, 12, 1); stripTime() },
-                endDate = Calendar.getInstance().apply { set(2025, 12, 4); stripTime() },
+                startDate = Calendar.getInstance().apply { set(2025, 10, 1); stripTime() },
+                endDate = Calendar.getInstance().apply { set(2025, 10, 4); stripTime() },
                 estimatedPrice = 1650.0,
                 groupSize = 5,
                 creatorId = 1,
-                participants = listOf(1, 2),
-                appliedUsers = listOf(4, 5),
-                rejectedUsers = emptyList(),
+                participants = mapOf(1 to 1, 2 to 1),
+                appliedUsers = mapOf(4 to 2, 5 to 1),
+                rejectedUsers = emptyMap(),
                 published = true,
                 typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.RELAX),
                 status = TripStatus.NOT_STARTED,
                 activities = mapOf(
-                    Calendar.getInstance().apply { set(2025, 12, 1); stripTime() } to listOf(
-                        Activity(65, Calendar.getInstance().apply { set(2025, 12, 1); stripTime() }, "08:00 AM", true, "Zen meditation at Ryōan-ji"),
-                        Activity(66, Calendar.getInstance().apply { set(2025, 12, 1); stripTime() }, "11:00 AM", true, "Stroll through Philosopher’s Path"),
-                        Activity(67, Calendar.getInstance().apply { set(2025, 12, 1); stripTime() }, "02:00 PM", false, "Matcha tasting"),
-                        Activity(68, Calendar.getInstance().apply { set(2025, 12, 1); stripTime() }, "06:00 PM", true, "Kaiseki dinner at local ryokan")
+                    Calendar.getInstance().apply { set(2025, 10, 1); stripTime() } to listOf(
+                        Activity(65, Calendar.getInstance().apply { set(2025, 10, 1); stripTime() }, "08:00 AM", true, "Zen meditation at Ryōan-ji"),
+                        Activity(66, Calendar.getInstance().apply { set(2025, 10, 1); stripTime() }, "11:00 AM", true, "Stroll through Philosopher’s Path"),
+                        Activity(67, Calendar.getInstance().apply { set(2025, 10, 1); stripTime() }, "02:00 PM", false, "Matcha tasting"),
+                        Activity(68, Calendar.getInstance().apply { set(2025, 10, 1); stripTime() }, "06:00 PM", true, "Kaiseki dinner at local ryokan")
                     ),
-                    Calendar.getInstance().apply { set(2025, 12, 2); stripTime() } to listOf(
-                        Activity(69, Calendar.getInstance().apply { set(2025, 12, 2); stripTime() }, "09:00 AM", true, "Visit Fushimi Inari shrine"),
-                        Activity(70, Calendar.getInstance().apply { set(2025, 12, 2); stripTime() }, "02:00 PM", true, "Tofu lunch in Gion"),
-                        Activity(71, Calendar.getInstance().apply { set(2025, 12, 2); stripTime() }, "03:00 PM", false, "Tea ceremony workshop"),
-                        Activity(72, Calendar.getInstance().apply { set(2025, 12, 2); stripTime() }, "07:00 PM", true, "Night walk in Gion district")
+                    Calendar.getInstance().apply { set(2025, 10, 2); stripTime() } to listOf(
+                        Activity(69, Calendar.getInstance().apply { set(2025, 10, 2); stripTime() }, "09:00 AM", true, "Visit Fushimi Inari shrine"),
+                        Activity(70, Calendar.getInstance().apply { set(2025, 10, 2); stripTime() }, "02:00 PM", true, "Tofu lunch in Gion"),
+                        Activity(71, Calendar.getInstance().apply { set(2025, 10, 2); stripTime() }, "03:00 PM", false, "Tea ceremony workshop"),
+                        Activity(72, Calendar.getInstance().apply { set(2025, 10, 2); stripTime() }, "07:00 PM", true, "Night walk in Gion district")
                     ),
-                    Calendar.getInstance().apply { set(2025, 12, 3); stripTime() } to listOf(
-                        Activity(73, Calendar.getInstance().apply { set(2025, 12, 3); stripTime() }, "08:00 AM", true, "Arashiyama Bamboo Grove walk"),
-                        Activity(74, Calendar.getInstance().apply { set(2025, 12, 3); stripTime() }, "11:00 AM", true, "River boat ride"),
-                        Activity(75, Calendar.getInstance().apply { set(2025, 12, 3); stripTime() }, "02:00 PM", false, "Zen garden journaling"),
-                        Activity(76, Calendar.getInstance().apply { set(2025, 12, 3); stripTime() }, "06:00 PM", true, "Dinner & sake tasting")
+                    Calendar.getInstance().apply { set(2025, 10, 3); stripTime() } to listOf(
+                        Activity(73, Calendar.getInstance().apply { set(2025, 10, 3); stripTime() }, "08:00 AM", true, "Arashiyama Bamboo Grove walk"),
+                        Activity(74, Calendar.getInstance().apply { set(2025, 10, 3); stripTime() }, "11:00 AM", true, "River boat ride"),
+                        Activity(75, Calendar.getInstance().apply { set(2025, 10, 3); stripTime() }, "02:00 PM", false, "Zen garden journaling"),
+                        Activity(76, Calendar.getInstance().apply { set(2025, 10, 3); stripTime() }, "06:00 PM", true, "Dinner & sake tasting")
                     ),
-                    Calendar.getInstance().apply { set(2025, 12, 4); stripTime() } to listOf(
-                        Activity(77, Calendar.getInstance().apply { set(2025, 12, 4); stripTime() }, "09:00 AM", true, "Kinkaku-ji visit"),
-                        Activity(78, Calendar.getInstance().apply { set(2025, 12, 4); stripTime() }, "02:00 PM", true, "Farewell sushi lunch"),
-                        Activity(79, Calendar.getInstance().apply { set(2025, 12, 4); stripTime() }, "03:00 PM", false, "Free time & shopping"),
-                        Activity(80, Calendar.getInstance().apply { set(2025, 12, 4); stripTime() }, "06:00 PM", true, "Closing circle reflection")
+                    Calendar.getInstance().apply { set(2025, 10, 4); stripTime() } to listOf(
+                        Activity(77, Calendar.getInstance().apply { set(2025, 10, 4); stripTime() }, "09:00 AM", true, "Kinkaku-ji visit"),
+                        Activity(78, Calendar.getInstance().apply { set(2025, 10, 4); stripTime() }, "02:00 PM", true, "Farewell sushi lunch"),
+                        Activity(79, Calendar.getInstance().apply { set(2025, 10, 4); stripTime() }, "03:00 PM", false, "Free time & shopping"),
+                        Activity(80, Calendar.getInstance().apply { set(2025, 10, 4); stripTime() }, "06:00 PM", true, "Closing circle reflection")
                     )
-                ),
-                reviews = emptyList()
+                )
             ),
-
 
             Trip(
                 id = 6,
                 photo = "sydney",
                 title = "Sydney Coastal Explorer",
                 destination = "Sydney",
-                startDate = Calendar.getInstance().apply { set(2025, 12, 10); stripTime() },
-                endDate = Calendar.getInstance().apply { set(2025, 12, 13); stripTime() },
+                startDate = Calendar.getInstance().apply { set(2025, 11, 10); stripTime() },
+                endDate = Calendar.getInstance().apply { set(2025, 11, 13); stripTime() },
                 estimatedPrice = 1900.0,
                 groupSize = 6,
                 creatorId = 4,
-                participants = listOf(2, 4, 5, 6),
-                appliedUsers = listOf(1, 3),
-                rejectedUsers = emptyList(),
+                participants = mapOf(4 to 1, 2 to 1, 5 to 1, 6 to 1),
+                appliedUsers = mapOf(1 to 1, 3 to 1),
+                rejectedUsers = emptyMap(),
                 published = true,
                 typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.PARTY),
                 status = TripStatus.NOT_STARTED,
                 activities = mapOf(
-                    Calendar.getInstance().apply { set(2025, 12, 10) } to listOf(
-                        Activity(81, Calendar.getInstance().apply { set(2025, 12, 10); stripTime() }, "09:00 AM", true, "Bondi to Coogee coastal walk"),
-                        Activity(82, Calendar.getInstance().apply { set(2025, 12, 10); stripTime() }, "02:00 PM", true, "Beachside BBQ lunch"),
-                        Activity(83, Calendar.getInstance().apply { set(2025, 12, 10); stripTime() }, "03:00 PM", false, "Surfing intro class"),
-                        Activity(84, Calendar.getInstance().apply { set(2025, 12, 10); stripTime() }, "08:00 PM", true, "Rooftop drinks downtown")
+                    Calendar.getInstance().apply { set(2025, 11, 10) } to listOf(
+                        Activity(81, Calendar.getInstance().apply { set(2025, 11, 10); stripTime() }, "09:00 AM", true, "Bondi to Coogee coastal walk"),
+                        Activity(82, Calendar.getInstance().apply { set(2025, 11, 10); stripTime() }, "02:00 PM", true, "Beachside BBQ lunch"),
+                        Activity(83, Calendar.getInstance().apply { set(2025, 11, 10); stripTime() }, "03:00 PM", false, "Surfing intro class"),
+                        Activity(84, Calendar.getInstance().apply { set(2025, 11, 10); stripTime() }, "08:00 PM", true, "Rooftop drinks downtown")
                     ),
-                    Calendar.getInstance().apply { set(2025, 12, 11) } to listOf(
-                        Activity(85, Calendar.getInstance().apply { set(2025, 12, 11); stripTime() }, "08:00 AM", true, "Harbour Bridge climb"),
-                        Activity(86, Calendar.getInstance().apply { set(2025, 12, 11); stripTime() }, "11:00 AM", true, "Opera House guided tour"),
-                        Activity(87, Calendar.getInstance().apply { set(2025, 12, 11); stripTime() }, "02:00 PM", false, "Museum of Contemporary Art visit"),
-                        Activity(88, Calendar.getInstance().apply { set(2025, 12, 11); stripTime() }, "07:00 PM", true, "Sunset dinner cruise")
+                    Calendar.getInstance().apply { set(2025, 11, 11) } to listOf(
+                        Activity(85, Calendar.getInstance().apply { set(2025, 11, 11); stripTime() }, "08:00 AM", true, "Harbour Bridge climb"),
+                        Activity(86, Calendar.getInstance().apply { set(2025, 11, 11); stripTime() }, "11:00 AM", true, "Opera House guided tour"),
+                        Activity(87, Calendar.getInstance().apply { set(2025, 11, 11); stripTime() }, "02:00 PM", false, "Museum of Contemporary Art visit"),
+                        Activity(88, Calendar.getInstance().apply { set(2025, 11, 11); stripTime() }, "07:00 PM", true, "Sunset dinner cruise")
                     ),
-                    Calendar.getInstance().apply { set(2025, 12, 12) } to listOf(
-                        Activity(89, Calendar.getInstance().apply { set(2025, 12, 12); stripTime() }, "10:00 AM", true, "Ferry to Manly Beach"),
-                        Activity(90, Calendar.getInstance().apply { set(2025, 12, 12); stripTime() }, "01:00 PM", true, "Seafood lunch at the wharf"),
-                        Activity(91, Calendar.getInstance().apply { set(2025, 12, 12); stripTime() }, "04:00 PM", false, "Relax on the sand"),
-                        Activity(92, Calendar.getInstance().apply { set(2025, 12, 12); stripTime() }, "09:00 PM", true, "Beach party")
+                    Calendar.getInstance().apply { set(2025, 11, 12) } to listOf(
+                        Activity(89, Calendar.getInstance().apply { set(2025, 11, 12); stripTime() }, "10:00 AM", true, "Ferry to Manly Beach"),
+                        Activity(90, Calendar.getInstance().apply { set(2025, 11, 12); stripTime() }, "01:00 PM", true, "Seafood lunch at the wharf"),
+                        Activity(91, Calendar.getInstance().apply { set(2025, 11, 12); stripTime() }, "04:00 PM", false, "Relax on the sand"),
+                        Activity(92, Calendar.getInstance().apply { set(2025, 11, 12); stripTime() }, "09:00 PM", true, "Beach party")
                     ),
-                    Calendar.getInstance().apply { set(2025, 12, 13) } to listOf(
-                        Activity(93, Calendar.getInstance().apply { set(2025, 12, 13); stripTime() }, "08:00 AM", true, "Morning yoga by the bay"),
-                        Activity(94, Calendar.getInstance().apply { set(2025, 12, 13); stripTime() }, "11:00 AM", true, "Brunch & recap session"),
-                        Activity(95, Calendar.getInstance().apply { set(2025, 12, 13); stripTime() }, "02:00 PM", false, "Last-minute shopping"),
-                        Activity(96, Calendar.getInstance().apply { set(2025, 12, 13); stripTime() }, "05:00 PM", true, "Farewell drinks")
+                    Calendar.getInstance().apply { set(2025, 11, 13) } to listOf(
+                        Activity(93, Calendar.getInstance().apply { set(2025, 11, 13); stripTime() }, "08:00 AM", true, "Morning yoga by the bay"),
+                        Activity(94, Calendar.getInstance().apply { set(2025, 11, 13); stripTime() }, "11:00 AM", true, "Brunch & recap session"),
+                        Activity(95, Calendar.getInstance().apply { set(2025, 11, 13); stripTime() }, "02:00 PM", false, "Last-minute shopping"),
+                        Activity(96, Calendar.getInstance().apply { set(2025, 11, 13); stripTime() }, "05:00 PM", true, "Farewell drinks")
                     )
-                ),
-                reviews = emptyList()
+                )
             ),
 
             Trip(
@@ -457,9 +459,9 @@ class Model {
                 estimatedPrice = 2100.0,
                 groupSize = 6,
                 creatorId = 2,
-                participants = listOf(1, 2, 3, 5),
-                appliedUsers = listOf(4, 6),
-                rejectedUsers = emptyList(),
+                participants = mapOf(2 to 1, 3 to 1, 5 to 1),
+                appliedUsers = mapOf(4 to 1, 6 to 1),
+                rejectedUsers = emptyMap(),
                 published = true,
                 typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.PARTY),
                 status = TripStatus.NOT_STARTED,
@@ -674,8 +676,7 @@ class Model {
                             "Trip recap & goodbye circle"
                         )
                     )
-                ),
-                reviews = emptyList()
+                )
             ),
 
             Trip(
@@ -688,9 +689,9 @@ class Model {
                 estimatedPrice = 4600.0,
                 groupSize = 4,
                 creatorId = 6,
-                participants = listOf(2, 4, 6),
-                appliedUsers = listOf(1, 5),
-                rejectedUsers = emptyList(),
+                participants = mapOf(2 to 1, 4 to 1, 6 to 1),
+                appliedUsers = mapOf(5 to 1),
+                rejectedUsers = emptyMap(),
                 published = true,
                 typeTravel = listOf(TypeTravel.RELAX, TypeTravel.CULTURE),
                 status = TripStatus.NOT_STARTED,
@@ -875,72 +876,555 @@ class Model {
                             "Farewell gala"
                         )
                     )
-                ),
-                reviews = emptyList()
+                )
             )
         )
     )
     var tripList: StateFlow<List<Trip>> = _tripList
 
-    private var nextId = 9
+    //Review list
+    private var _reviews = MutableStateFlow<List<Review>>(
+        listOf(
+            Review(
+                reviewId = 1,
+                tripId = 1,
+                isTripReview = true,
+                reviewerId = 1,
+                reviewedUserId = -1,
+                title = "Amazing trip!",
+                comment = "This trip was absolutely incredible from start to finish. The guided city tour was informative and fun, the food was delicious, and the museum visit was a highlight for me. Everything was well-organized and the group dynamic was awesome. I would recommend this experience to anyone wanting a deep cultural immersion.",
+                score = 9,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2026, 4, 10); stripTime() }
+            ),
+            Review(
+                reviewId = 2,
+                tripId = 1,
+                isTripReview = true,
+                reviewerId = 2,
+                reviewedUserId = -1,
+                title = "Great experience",
+                comment = "Barcelona was a dream destination and this trip made it even better. I loved how the itinerary was balanced with both group activities and personal time. The hike on day two was a bit challenging but totally worth it for the views. I came back with great memories and new friends.",
+                score = 8,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2026, 4, 10); stripTime() }
+            ),
+            Review(
+                reviewId = 3,
+                tripId = 1,
+                isTripReview = true,
+                reviewerId = 3,
+                reviewedUserId = -1,
+                title = "Would go again",
+                comment = "I’m really impressed by how well this trip was planned. Every activity had a purpose, and even the free time was suggested with local tips. The welcome dinner was a beautiful introduction to Spanish culture, and the entire experience felt authentic and enriching. 10/10 would do it again.",
+                score = 10,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2026, 4, 10); stripTime() }
+            ),
+            Review(
+                reviewId = 4,
+                tripId = 1,
+                isTripReview = true,
+                reviewerId = 6,
+                reviewedUserId = -1,
+                title = "A Deep Dive into Barcelona’s Culture",
+                comment = "This trip was an unforgettable experience! The balance between group activities and personal time was just right. From the rich history of the Gothic Quarter to the vibrant energy of the local markets, I felt immersed in the heart of Catalonia. The museum visit was a standout moment, and the hike followed by the mountain picnic on the second day was so refreshing. Our guide was knowledgeable, friendly, and kept the group engaged. I especially appreciated the campfire stories to end the trip — it gave everyone a chance to bond and reflect. Highly recommend this trip to anyone who enjoys a mix of culture, nature, and great company.",
+                score = 9,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2024, 6, 15) }
+            ),
+            Review(
+                reviewId = 5,
+                tripId = 1,
+                isTripReview = false,
+                reviewerId = 6,
+                reviewedUserId = -1,
+                title = "Thoughtful and adventurous companion",
+                comment = "Traveling with Alice was such a joy. She’s incredibly respectful of group dynamics and always made insightful observations about the places we visited. Whether we were exploring museums or hiking together, she brought a calm energy that was deeply appreciated. I especially loved our conversations during free time — she has a way of turning every small moment into something memorable. Would definitely travel with her again!",
+                score = 10,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2024, 6, 14) }
+            ),
+            Review(
+                reviewId = 6,
+                tripId = 1,
+                isTripReview = false,
+                reviewerId = 6,
+                reviewedUserId = 2,
+                title = "Fun and high-spirited",
+                comment = "Bella brought a lot of energy and spontaneity to the group. She was always up for trying new things and encouraged others to loosen up and enjoy the moment. I appreciated her bold spirit during our group dinner and how she kept conversations light and joyful. While she sometimes did her own thing, it never felt disruptive — in fact, her independence added flavor to the trip. Great to have her in a travel crew.",
+                score = 8,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2024, 6, 14) }
+            ),
+            Review(
+                reviewId = 7,
+                tripId = 1,
+                isTripReview = false,
+                reviewerId = 6,
+                reviewedUserId = 3,
+                title = "Reliable and engaging traveler",
+                comment = "Liam was a solid and dependable member of the trip. Always on time, always helpful, and always curious about the culture we were immersed in. I admired how he engaged with the local guides and asked thoughtful questions that enriched the experience for all of us. He’s the kind of travel partner who makes planning smoother and shared moments more meaningful. A true team player with a curious mind.",
+                score = 9,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2024, 6, 14) }
+            ),
+            Review(
+                reviewId = 8,
+                tripId = 1,
+                isTripReview = false,
+                reviewerId = 1,
+                reviewedUserId = 6,
+                title = "Graceful and grounded",
+                comment = "Aisha has a wonderfully calming presence and was such a delight to travel with. She brought depth to our group chats and was always genuinely interested in everyone’s perspectives. Whether we were exploring local markets or sharing stories around the campfire, she listened with intent and offered thoughtful reflections. She’s a solo traveler by heart, but she made our group feel like a close-knit circle.",
+                score = 10,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2024, 6, 14) }
+            ),
+            Review(
+                reviewId = 9,
+                tripId = 1,
+                isTripReview = false,
+                reviewerId = 1,
+                reviewedUserId = 2,
+                title = "Vibrant and social",
+                comment = "Bella added an exciting spark to the trip! She was always the first to start a conversation and bring some humor into the mix. Her energy helped us all feel more relaxed, and she never shied away from suggesting fun detours or photo ops. Even if we had slightly different travel styles, I appreciated her spontaneity and joyfulness.",
+                score = 8,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2024, 6, 14) }
+            ),
+            Review(
+                reviewId = 10,
+                tripId = 1,
+                isTripReview = false,
+                reviewerId = 1,
+                reviewedUserId = 3,
+                title = "Passionate and thoughtful traveler",
+                comment = "Liam has a true explorer’s heart. He brought so much knowledge and enthusiasm to every activity, especially during the museum visit and the hike. He was always courteous, helped others when needed, and sparked interesting conversations about history and culture. I really valued having him in the group — he made every shared experience richer.",
+                score = 9,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2024, 6, 14) }
+            ),
+            Review(
+                reviewId = 11,
+                tripId = 1,
+                isTripReview = false,
+                reviewerId = 2,
+                reviewedUserId = 6,
+                title = "Kind and composed travel partner",
+                comment = "Aisha was super sweet and always had something meaningful to say. She brought a lot of calm energy to the group and was really open to sharing stories. Loved having her around.",
+                score = 9,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2024, 6, 14) }
+            ),
+            Review(
+                reviewId = 12,
+                tripId = 1,
+                isTripReview = false,
+                reviewerId = 2,
+                reviewedUserId = 1,
+                title = "Cool and observant",
+                comment = "Alice was more quiet but always super friendly. She had great taste in spots to explore and was really easy to get along with. Would definitely hang out with her again on another trip.",
+                score = 8,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2024, 6, 14) }
+            ),
+            Review(
+                reviewId = 13,
+                tripId = 1,
+                isTripReview = false,
+                reviewerId = 2,
+                reviewedUserId = 3,
+                title = "Adventurous and smart",
+                comment = "Liam was super into the cultural parts of the trip and always asked cool questions. You could tell he really cared about learning and connecting with the places we visited. Great vibe.",
+                score = 9,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2024, 6, 14) }
+            ),
+            Review(
+                reviewId = 14,
+                tripId = 1,
+                isTripReview = false,
+                reviewerId = 3,
+                reviewedUserId = 6,
+                title = "Inspiring travel companion",
+                comment = "Aisha was calm, reflective, and brought a meaningful perspective to every moment of the trip. She was someone I found myself looking forward to chatting with at the end of each day. Truly one of the most insightful people I’ve met while traveling.",
+                score = 9,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2024, 6, 14) }
+            ),
+            Review(
+                reviewId = 15,
+                tripId = 1,
+                isTripReview = false,
+                reviewerId = 3,
+                reviewedUserId = 1,
+                title = "Adventurous and dependable",
+                comment = "Alice was organized, easygoing, and always ready to explore. She kept the group on track during our hike and shared great insights during our city walk. A reliable and fun person to travel with.",
+                score = 10,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2024, 6, 14) }
+            ),
+            Review(
+                reviewId = 16,
+                tripId = 1,
+                isTripReview = false,
+                reviewerId = 3,
+                reviewedUserId = 2,
+                title = "Lively and social",
+                comment = "Bella kept the energy high and made sure no one felt left out. She was full of creative ideas and always ready to enjoy the moment. If you're looking for someone who brings positive vibes to a group, she's it.",
+                score = 8,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2024, 6, 14) }
+            ),
+            Review(
+                reviewId = 17,
+                tripId = 2,
+                isTripReview = true,
+                reviewerId = 2,
+                reviewedUserId = -1,
+                title = "Loved it!",
+                comment = "This was the ultimate beach escape. The snorkeling tour showed us some of the most stunning coral reefs I’ve ever seen. The food was delicious, and the beach party was an unforgettable night with music, dancing, and laughter. It struck the perfect balance between adventure and relaxation.",
+                score = 10,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2026, 4, 10); stripTime() }
+            ),
+            Review(
+                reviewId = 18,
+                tripId = 2,
+                isTripReview = true,
+                reviewerId = 3,
+                reviewedUserId = -1,
+                title = "Relaxing trip",
+                comment = "I needed a break from work, and this trip delivered. From the moment we arrived, everything was taken care of. The massage session was heavenly, and the sunsets over the ocean were something out of a movie. I left feeling refreshed and truly happy. Would highly recommend for anyone seeking peace.",
+                score = 9,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2026, 4, 10); stripTime() }
+            ),
+            Review(
+                reviewId = 19,
+                tripId = 2,
+                isTripReview = true,
+                reviewerId = 5,
+                reviewedUserId = -1,
+                title = "Beautiful place",
+                comment = "Thailand was everything I imagined and more. The island hopping day was packed with activities, yet never felt rushed. The local cuisine tasting opened my eyes to so many flavors, and I even brought some recipes home. A wonderful way to experience the culture while soaking up the sun.",
+                score = 8,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2026, 4, 10); stripTime() }
+            ),
+            Review(
+                reviewId = 20,
+                tripId = 2,
+                isTripReview = false,
+                reviewerId = 5,
+                reviewedUserId = 1,
+                title = "Awesome and funny",
+                comment = "Good travel buddy",
+                score = 8,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2026, 4, 10); stripTime() }
+            ),
+            Review(
+                reviewId = 21,
+                tripId = 2,
+                isTripReview = false,
+                reviewerId = 5,
+                reviewedUserId = 2,
+                title = "Beautiful place",
+                comment = "Thailand was everything I imagined and more. The island hopping day was packed with activities, yet never felt rushed. The local cuisine tasting opened my eyes to so many flavors, and I even brought some recipes home. A wonderful way to experience the culture while soaking up the sun.",
+                score = 8,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2026, 4, 10); stripTime() }
+            ),
+            Review(
+                reviewId = 22,
+                tripId = 2,
+                isTripReview = false,
+                reviewerId = 2,
+                reviewedUserId = 1,
+                title = "Reliable and energetic",
+                comment = "Alice brought a nice balance to the group. She was always on time, enthusiastic, and had a real curiosity for the local culture. Definitely someone I’d travel with again.",
+                score = 9,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2025, 5, 22) }
+            ),
+            Review(
+                reviewId = 23,
+                tripId = 2,
+                isTripReview = false,
+                reviewerId = 2,
+                reviewedUserId = 3,
+                title = "Adventurous spirit",
+                comment = "Liam was up for anything—snorkeling, island hopping, you name it. His energy made the trip more exciting. Great vibe and very respectful of everyone’s pace.",
+                score = 8,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2025, 5, 22) }
+            ),
+            Review(
+                reviewId = 24,
+                tripId = 2,
+                isTripReview = false,
+                reviewerId = 2,
+                reviewedUserId = 5,
+                title = "Quiet but curious",
+                comment = "Ethan was observant and kind. He had great recommendations for food stops and local snacks. While he was more reserved, he always participated meaningfully.",
+                score = 7,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2025, 5, 22) }
+            ),
+            Review(
+                reviewId = 25,
+                tripId = 2,
+                isTripReview = false,
+                reviewerId = 3,
+                reviewedUserId = 1,
+                title = "Uplifting and organized",
+                comment = "Alice had a clear plan in mind and was always prepared, which helped the group move smoothly. Her positivity made the beach party even better. A great teammate.",
+                score = 10,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2025, 5, 22) }
+            ),
+            Review(
+                reviewId = 26,
+                tripId = 2,
+                isTripReview = false,
+                reviewerId = 3,
+                reviewedUserId = 2,
+                title = "Fun and free-spirited",
+                comment = "Bella brought all the fun to the Phuket nights. She danced, laughed, and made sure the group was enjoying themselves. Always up for a party, but never overstepped.",
+                score = 9,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2025, 5, 22) }
+            ),
+            Review(
+                reviewId = 27,
+                tripId = 2,
+                isTripReview = false,
+                reviewerId = 3,
+                reviewedUserId = 5,
+                title = "Excellent food scout",
+                comment = "Ethan was quiet but had an incredible sense for finding good food. He introduced us to amazing dishes during the cuisine tasting and was very thoughtful throughout.",
+                score = 8,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2025, 5, 22) }
+            ),
+            Review(
+                reviewId = 28,
+                tripId = 2,
+                isTripReview = false,
+                reviewerId = 5,
+                reviewedUserId = 1,
+                title = "Supportive and attentive",
+                comment = "Alice always checked in on everyone and made sure things were going well. She made the group feel connected and supported. I appreciated her calm attitude.",
+                score = 9,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2025, 5, 22) }
+            ),
+            Review(
+                reviewId = 29,
+                tripId = 2,
+                isTripReview = false,
+                reviewerId = 5,
+                reviewedUserId = 2,
+                title = "Lively and fearless",
+                comment = "Bella had a wild but enjoyable energy. From leading the dancing to cracking jokes during the cruise, she was a strong presence. Definitely made things more fun.",
+                score = 8,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2025, 5, 22) }
+            ),
+            Review(
+                reviewId = 30,
+                tripId = 2,
+                isTripReview = false,
+                reviewerId = 5,
+                reviewedUserId = 3,
+                title = "Chill and reliable",
+                comment = "Liam was super friendly and approachable. He was always open to conversations and helped organize our snorkeling gear when things got messy. Would travel with him again.",
+                score = 9,
+                photos = emptyList(),
+                date = Calendar.getInstance().apply { set(2025, 5, 22) }
+            )
+        )
+    )
 
+    var reviews: StateFlow<List<Review>> = _reviews
+
+    // --------------  TRIP MODEL   -----------------
+
+    //SUBSET OF THE TRIP LIST
+
+    //Trips published by the logged in user
     private val _publishedTrips = MutableStateFlow<List<Trip>>(emptyList())
     val publishedTrips: StateFlow<List<Trip>> = _publishedTrips
-
-    private val _privateTrips = MutableStateFlow<List<Trip>>(emptyList())
-    val privateTrips: StateFlow<List<Trip>> = _privateTrips
-
-    private val _allPublishedTrips = MutableStateFlow<List<Trip>>(emptyList())
-    val allPublishedTrips: StateFlow<List<Trip>> = _allPublishedTrips
-
-    private val _askedTrips = MutableStateFlow<Set<Int>>(emptySet())
-    val askedTrips: StateFlow<Set<Int>> = _askedTrips
-
-    private val _minPrice = Double.MAX_VALUE
-    var minPrice: Double = _minPrice
-
-    private val _maxPrice = Double.MIN_VALUE
-    var maxPrice: Double = _maxPrice
-
-    private val _filteredList = MutableStateFlow<List<Trip>>(emptyList())
-    val filteredList: StateFlow<List<Trip>> = _filteredList
-
-    //User Business Logic
-    fun getUsers(ids: List<Int>): List<UserData> {
-        return _users.value.filter { it.id in ids }
-    }
-
-    //TripList Business Logic
-    fun getAllPublishedTrips(): List<Trip> {
-        val published = _tripList.value.filter { it.published }
-        _allPublishedTrips.value = published
-        return published
-    }
 
     fun filterPublishedByCreator(id: Int): List<Trip> {
         _publishedTrips.value = _tripList.value.filter { it.creatorId == id && it.published }
         return _publishedTrips.value
     }
 
+    //Trips created by the user but not published
+    private val _privateTrips = MutableStateFlow<List<Trip>>(emptyList())
+    val privateTrips: StateFlow<List<Trip>> = _privateTrips
+
     fun filterPrivateByCreator(id: Int): List<Trip> {
         _privateTrips.value = _tripList.value.filter { it.creatorId == id && !it.published }
         return _privateTrips.value
     }
 
-    fun changePublishedStatus(id: Int) {
-        _tripList.value = _tripList.value.map {
-            if (it.id == id) {
-                it.copy(published = !it.published)  // Toggle the published status
+    //List of all the published trips
+    private val _allPublishedTrips = MutableStateFlow<List<Trip>>(emptyList())
+    val allPublishedTrips: StateFlow<List<Trip>> = _allPublishedTrips
+
+    fun getAllPublishedTrips(): List<Trip> {
+        val published = _tripList.value.filter { it.published }
+        _allPublishedTrips.value = published
+        return published
+    }
+
+    //List of trips the logged in user (id=1) joined
+    private val _joinedTrips = MutableStateFlow<List<Trip>>(emptyList())
+    val joinedTrips: StateFlow<List<Trip>> = _joinedTrips
+
+    fun getJoinedTrips(userId :Int): List<Trip> {
+        val joined = _tripList.value.filter { it.participants.containsKey(userId) && it.creatorId != userId }
+        _joinedTrips.value = joined
+        return joined
+    }
+
+    //List of trips after the application of the filters
+    private val _filteredList = MutableStateFlow<List<Trip>>(emptyList())
+    val filteredList: StateFlow<List<Trip>> = _filteredList
+
+    fun filterFunction(list: List<Trip>, filterDestination: String, filterMinPrice: Double,
+                       filterMaxPrice: Double, filterDuration: Pair<Int,Int>,
+                       filterGroupSize: Pair<Int,Int>, filtersTripType: List<SelectableItem>,
+                       filterUpcomingTrips: Boolean, filterCompletedTrips: Boolean,
+                       filterBySeats: Int) {
+        Log.d("FilterFunction", "Filtering with destination: $filterDestination, minPrice: $filterMinPrice, maxPrice: $filterMaxPrice, filterDuration: $filterDuration, filterGroupSize: $filterGroupSize, filterTripType: $filtersTripType")
+        var filtered = list.filter { trip ->
+            Log.d("FilterFunction", "Checking trip: ${trip.title}")
+            val destination = filterDestination.isBlank() || trip.destination.contains(filterDestination, ignoreCase = true)
+            //val price = (filterMinPrice == Double.MAX_VALUE && filterMaxPrice == Double.MIN_VALUE) || trip.estimatedPrice in filterMinPrice..filterMaxPrice
+
+            val duration = (filterDuration.first == -1 && filterDuration.second == -1) ||
+                    (trip.tripDuration() in filterDuration.first..filterDuration.second)
+
+            val groupSize = (filterGroupSize.first == -1 && filterGroupSize.second == -1) ||
+                    (trip.groupSize in filterGroupSize.first..filterGroupSize.second)
+
+            // 0-0 => No filter for price
+            val price = if (filterMinPrice == 0.0 && filterMaxPrice == 0.0) {
+                true
             } else {
-                it
+                trip.estimatedPrice in filterMinPrice..filterMaxPrice // Aplly filter with given interval
+            }
+            Log.d("FilterFunction", "Checking price for trip ${trip.title}: estimatedPrice=${trip.estimatedPrice}, filterMinPrice=$filterMinPrice, filterMaxPrice=$filterMaxPrice, priceCondition=$price")
+
+
+            val completed = !filterCompletedTrips || trip.status == TripStatus.COMPLETED//|| !trip.canJoin()
+            val canJoin = !filterUpcomingTrips || trip.loggedInUserCanJoin(1)
+            val spots = trip.availableSpots() >= filterBySeats
+
+            Log.d("FilterFunction", "Conditions: destination=$destination, price=$price, duration=$duration, groupSize=$groupSize, completed=$completed, spots=$spots")
+
+            trip.published && destination && price && duration && groupSize && canJoin && completed
+                    && spots
+        }
+        Log.d("FilterFunction", "Filtered trips: $filtered")
+
+        if(!filtersTripType.any{ it.isSelected }) {
+            _filteredList.value = filtered
+            return
+        } else {
+            var filteredAgain = filtered.filter { trip ->
+                filtersTripType.any {
+                    trip.typeTravel.contains(it.typeTravel) && it.isSelected
+                }
+
+            }
+            _filteredList.value = filteredAgain
+            return
+        }
+        _filteredList.value = filtered
+    }
+
+    //FUNCTION FOR THE APPLICATION OF THE FILTERS
+
+    //Get the list of all the destinations present in the database for the search bar
+    fun getDestinations(): List<String> {
+        return _tripList.value.map { it.destination }.distinct()
+    }
+
+    //MaxPrice and min Price of the database
+    private val _minPrice = Double.MAX_VALUE
+    var minPrice: Double = _minPrice
+
+    private val _maxPrice = Double.MIN_VALUE
+    var maxPrice: Double = _maxPrice
+
+    fun setMaxMinPrice() {
+        _tripList.value.forEach { trip ->
+            if (trip.estimatedPrice < minPrice) {
+                minPrice = trip.estimatedPrice
+            }
+            if (trip.estimatedPrice > maxPrice) {
+                maxPrice = trip.estimatedPrice
             }
         }
     }
 
-    fun deleteTrip(id: Int) {
-        _tripList.value = _tripList.value.filter { it.id != id }
+    //Range of the Price slider
+    fun setRange(list: List<SelectableItem>): Pair<Int, Int> {
+        var min = Int.MAX_VALUE
+        var max = Int.MIN_VALUE
+
+        list.forEach { item ->
+            if (item.isSelected) {
+                if (item.min < min) {
+                    min = item.min
+                }
+                if (item.max > max) {
+                    max = item.max
+                }
+            }
+        }
+
+        if(min == Int.MAX_VALUE && max == Int.MIN_VALUE) {
+            min = -1
+            max = -1
+        }
+
+        println("SetRange min = $min")
+        println("SetRange max = $max")
+
+        return Pair(min, max)
     }
 
+    //Get list of completed trips
+    fun getCompletedTrips(): List<Trip> {
+        return _tripList.value.filter { it.status == TripStatus.COMPLETED }
+    }
+
+    //Get list of upcoming trips
+    fun getUpcomingTrips(): List<Trip> {
+        return _tripList.value.filter { it.status == TripStatus.NOT_STARTED }
+    }
+
+    //CREATE A TRIP
+
+    private var nextId = 9
+
+    //Create a new trip
+    fun createNewTrip(newTrip: Trip): Trip {
+        val tripWithId = newTrip.copy(
+            id = nextId++,
+        )
+        _tripList.value = _tripList.value + tripWithId
+        return tripWithId
+    }
+
+    //A copy of the trip gets created in "My Trips" section as a private trip
     fun importTrip(
         photo: String, title: String, destination: String, startDate: Calendar,
         endDate: Calendar, estimatedPrice: Double, groupSize: Int,
@@ -957,29 +1441,23 @@ class Model {
             endDate = endDate,
             estimatedPrice = estimatedPrice,
             groupSize = groupSize,
-            participants = listOf(creatorId),
+            participants = mapOf(creatorId to 1),
             activities = activities,
             status = TripStatus.NOT_STARTED,
             typeTravel = typeTravel,
             creatorId = creatorId,
-            appliedUsers = emptyList(),
-            rejectedUsers = emptyList(),
-            published = published,
-            reviews = emptyList()
+            appliedUsers = emptyMap(),
+            rejectedUsers = emptyMap(),
+            published = published
         )
         _tripList.value = _tripList.value + newTrip
 
         return _tripList.value
     }
 
-    fun createNewTrip(newTrip: Trip): Trip {
-        val tripWithId = newTrip.copy(
-            id = nextId++,
-        )
-        _tripList.value = _tripList.value + tripWithId
-        return tripWithId
-    }
+    //EDIT TRIP
 
+    //Edit trip information
     fun editTrip(updatedTrip: Trip): List<Trip> {
         _tripList.value = _tripList.value.map {
             if (it.id == updatedTrip.id) updatedTrip else it
@@ -987,23 +1465,32 @@ class Model {
         return _tripList.value
     }
 
-    fun removeActivityFromTrip(activity: Trip.Activity, trip: Trip?): Trip? {
+    //Change the published status of a trip
+    fun changePublishedStatus(id: Int) {
+        _tripList.value = _tripList.value.map {
+            if (it.id == id) {
+                it.copy(published = !it.published)  // Toggle the published status
+            } else {
+                it
+            }
+        }
+    }
+
+    //ACTIVITY MANAGEMENT
+
+    //Add an activity
+    fun addActivityToTrip(activity: Activity, trip: Trip?): Trip? {
         if (trip == null) return null
 
-        val dateKey = activity.date
-        val updatedActivities = trip.activities.orEmpty()
-            .toMutableMap()
-            .apply {
-                val updatedList = getOrDefault(dateKey, emptyList()) - activity
-                if (updatedList.isEmpty()) {
-                    remove(dateKey)
-                } else {
+        val updatedTrip = trip.copy(
+            activities = trip.activities
+                .toMutableMap()
+                .apply {
+                    val dateKey = activity.date
+                    val updatedList = getOrDefault(dateKey, emptyList()) + activity
                     put(dateKey, updatedList)
                 }
-            }
-            .toMap()
-
-        val updatedTrip = trip.copy(activities = updatedActivities)
+        )
 
         _tripList.value = _tripList.value.map {
             if (it.id == updatedTrip.id) updatedTrip else it
@@ -1012,12 +1499,10 @@ class Model {
         return updatedTrip
     }
 
-
-
-
+    //Edit an Activity
     fun editActivityInSelectedTrip(
         activityId: Int,
-        updatedActivity: Trip.Activity,
+        updatedActivity: Activity,
         trip: Trip?
     ): Trip? {
         if (trip == null) return null
@@ -1055,22 +1540,24 @@ class Model {
         return updatedTrip
     }
 
-
-
-
-
-    fun addActivityToTrip(activity: Trip.Activity, trip: Trip?): Trip? {
+    //Delete an activity
+    fun removeActivityFromTrip(activity: Activity, trip: Trip?): Trip? {
         if (trip == null) return null
 
-        val updatedTrip = trip.copy(
-            activities = trip.activities.orEmpty()
-                .toMutableMap()
-                .apply {
-                    val dateKey = activity.date
-                    val updatedList = getOrDefault(dateKey, emptyList()) + activity
+        val dateKey = activity.date
+        val updatedActivities = trip.activities
+            .toMutableMap()
+            .apply {
+                val updatedList = getOrDefault(dateKey, emptyList()) - activity
+                if (updatedList.isEmpty()) {
+                    remove(dateKey)
+                } else {
                     put(dateKey, updatedList)
                 }
-        )
+            }
+            .toMap()
+
+        val updatedTrip = trip.copy(activities = updatedActivities)
 
         _tripList.value = _tripList.value.map {
             if (it.id == updatedTrip.id) updatedTrip else it
@@ -1079,152 +1566,129 @@ class Model {
         return updatedTrip
     }
 
+    //DELETE A TRIP
 
-
-
-
-    fun toggleAskToJoin(tripId: Int) {
-        _askedTrips.value = if (_askedTrips.value.contains(tripId)) {
-            _askedTrips.value - tripId
-        } else {
-            _askedTrips.value + tripId
-        }
+    //Delete a trip
+    fun deleteTrip(id: Int) {
+        _tripList.value = _tripList.value.filter { it.id != id }
     }
 
-    fun getDestinations(): List<String> {
-        return _tripList.value.map { it.destination }.distinct()
-    }
-
-    fun setMaxMinPrice() {
-        _tripList.value.forEach { trip ->
-            if (trip.estimatedPrice < minPrice) {
-                minPrice = trip.estimatedPrice
-            }
-            if (trip.estimatedPrice > maxPrice) {
-                maxPrice = trip.estimatedPrice
-            }
-        }
-    }
-
-    fun setRange(list: List<SelectableItem>): Pair<Int, Int> {
-        var min = Int.MAX_VALUE
-        var max = Int.MIN_VALUE
-
-        list.forEach { item ->
-            if (item.isSelected) {
-                if (item.min < min) {
-                    min = item.min
-                }
-                if (item.max > max) {
-                    max = item.max
-                }
-            }
-        }
-
-        if(min == Int.MAX_VALUE && max == Int.MIN_VALUE) {
-            min = -1
-            max = -1
-        }
-
-        println("SetRange min = $min")
-        println("SetRange max = $max")
-
-
-
-        return Pair(min, max)
-    }
-
-    fun filterFunction(list: List<Trip>, filterDestination: String, filterMinPrice: Double,
-                       filterMaxPrice: Double, filterDuration: Pair<Int,Int>,
-                       filterGroupSize: Pair<Int,Int>, filtersTripType: List<SelectableItem>,
-                       filterCompletedTrips: Boolean, filterBySeats: Int) {
-        Log.d("FilterFunction", "Filtering with destination: $filterDestination, minPrice: $filterMinPrice, maxPrice: $filterMaxPrice, filterDuration: $filterDuration, filterGroupSize: $filterGroupSize, filterTripType: $filtersTripType")
-        var filtered = list.filter { trip ->
-            Log.d("FilterFunction", "Checking trip: ${trip.title}")
-            val destination = filterDestination.isBlank() || trip.destination.contains(filterDestination, ignoreCase = true)
-            //val price = (filterMinPrice == Double.MAX_VALUE && filterMaxPrice == Double.MIN_VALUE) || trip.estimatedPrice in filterMinPrice..filterMaxPrice
-
-            val duration = (filterDuration.first == -1 && filterDuration.second == -1) ||
-                    (trip.tripDuration() in filterDuration.first..filterDuration.second)
-
-            val groupSize = (filterGroupSize.first == -1 && filterGroupSize.second == -1) ||
-                    (trip.groupSize in filterGroupSize.first..filterGroupSize.second)
-
-            // 0-0 => No filter for price
-            val price = if (filterMinPrice == 0.0 && filterMaxPrice == 0.0) {
-                true
-            } else {
-                trip.estimatedPrice in filterMinPrice..filterMaxPrice // Aplly filter with given interval
-            }
-            Log.d("FilterFunction", "Checking price for trip ${trip.title}: estimatedPrice=${trip.estimatedPrice}, filterMinPrice=$filterMinPrice, filterMaxPrice=$filterMaxPrice, priceCondition=$price")
-
-
-            /*
-            val selectedTripTypes = filtersTripType.filter { it.isSelected }
-
-            var tripType:Boolean = selectedTripTypes.any { trip.typeTravel.toString() == it.label }
-            if(tripType == false)
-            {
-
-            }
-             */
-
-            val completed = !filterCompletedTrips || !trip.canJoin()
-            val spots = trip.availableSpots() >= filterBySeats
-
-            Log.d("FilterFunction", "Conditions: destination=$destination, price=$price, duration=$duration, groupSize=$groupSize, completed=$completed, spots=$spots")
-
-            trip.published && destination && price && duration && groupSize && completed
-                    && spots
-        }
-        Log.d("FilterFunction", "Filtered trips: $filtered")
-
-        if(!filtersTripType.any{ it.isSelected }) {
-            _filteredList.value = filtered
-            return
-        } else {
-            var filteredAgain = filtered.filter { trip ->
-                filtersTripType.any {
-                    trip.typeTravel.contains(it.typeTravel) && it.isSelected
-                }
-
-            }
-            _filteredList.value = filteredAgain
-            return
-        }
-        _filteredList.value = filtered
-    }
+    //GET TRIP INFORMATION
 
     // Get reviews list of a trip
-    fun getReviewsbyTripId(id: Int): List<Review> {
-        return _reviews.value.filter { it.tripId == id }
+    fun getTripReviews(tripId: Int): List<Review> {
+        return _reviews.value.filter { it.isTripReview && it.tripId == tripId }
     }
 
+    //Tells if the logged in user reviewed the trip
+    fun isReviewed(userId: Int, tripId: Int) :Boolean {
+        return _reviews.value.any {
+            it.isTripReview == true && it.reviewerId == userId
+                    && it.tripId == tripId
+        }
+    }
+
+    //Review of a trip made by a user
+    fun getTripReview(userId: Int, tripId: Int): Review {
+        if(isReviewed(userId, tripId )) {
+            return _reviews.value.find { it.isTripReview && it.reviewerId == userId
+                    && it.tripId == tripId}!!
+        }
+        return Review()
+    }
+
+    //Reviews of users that had taken part to a specific trip made by a user
+    fun getUsersReviewsTrip(userId: Int, tripId: Int) :List<Review> {
+        return _reviews.value.filter { !it.isTripReview && it.tripId == tripId && it.reviewerId == userId }
+    }
+
+    //MANAGEMENT OF APPLICATIONS TO TRIPS
+
+    private val _askedTrips = MutableStateFlow<Map<Int, Int>>(emptyMap())
+    val askedTrips: StateFlow<Map<Int, Int>> = _askedTrips
+
+    fun requestToJoin(trip: Trip, userId :Int, spots: Int) {
+        val updatedAppliedUsers = trip.appliedUsers.toMutableMap()
+        updatedAppliedUsers[userId] = spots
+
+        trip.appliedUsers = updatedAppliedUsers
+        _askedTrips.value = _askedTrips.value + (trip.id to spots)
+    }
+
+    fun cancelRequestToJoin(trip: Trip, userId: Int) {
+        val updatedAppliedUsers = trip.appliedUsers.toMutableMap()
+        updatedAppliedUsers.remove(userId)
+
+        trip.appliedUsers = updatedAppliedUsers
+        _askedTrips.value = _askedTrips.value - trip.id
+    }
+
+    fun syncAskedTripsWithAppliedUsers(userId: Int) {
+        val askedMap = _tripList.value
+            .filter { trip -> trip.appliedUsers.containsKey(userId) }
+            .associate { trip -> trip.id to (trip.appliedUsers[userId] ?: 0) }
+        _askedTrips.value = askedMap
+    }
+
+
+
+
+
+    // ------------         USER MODEL        --------------
+
+    //SUBSET OF USER LIST
+
+    //Get a list of user given their ids
+    fun getUsers(ids: List<Int>): List<UserData> {
+        return _users.value.filter { it.id in ids }
+    }
+
+    //GET USER INFORMATION
+
+    //Get a user given its id
     fun getUserDataById(id: Int): UserData {
         return _users.value.find { it.id == id }
             ?: throw NoSuchElementException("User with ID $id not found")
     }
 
-    //Get list of completed trips
-    fun getCompletedTrips(): List<Trip> {
-        return _tripList.value.filter { it.status == TripStatus.COMPLETED }
+    // Get reviews list of a user
+    fun getUserReviews(id: Int): List<Review> {
+        return _reviews.value.filter { !it.isTripReview && it.reviewedUserId == id }
     }
 
-    //Get list of upcoming trips
-    fun getUpcomingTrips(): List<Trip> {
-        return _tripList.value.filter { it.status == TripStatus.NOT_STARTED }
+    //EDIT USER
+
+    //Edit user information
+    fun editUserData(updatedUserData: UserData): List<UserData> {
+        _users.value = _users.value.map {
+            if (it.id == updatedUserData.id) updatedUserData else it
+        }
+        return _users.value
     }
 
+    // ------------         REVIEW MODEL        --------------
 
+    private var nextReviewId = 31
 
+    //Create a new trip
+    fun createNewReview(newReview: Review): Review {
+        val reviewWithId = newReview.copy(
+            reviewId = nextReviewId++,
+        )
+        _reviews.value = _reviews.value + reviewWithId
+        return reviewWithId
+    }
 
+    // ------------------ OTHER FUNCTIONS -------------------
 
+    //CALENDAR MANAGEMENT
+    fun Calendar.stripTime(): Calendar {
+        this.set(Calendar.HOUR_OF_DAY, 0)
+        this.set(Calendar.MINUTE, 0)
+        this.set(Calendar.SECOND, 0)
+        this.set(Calendar.MILLISECOND, 0)
+        return this
+    }
 }
 
-fun Calendar.stripTime(): Calendar {
-    this.set(Calendar.HOUR_OF_DAY, 0)
-    this.set(Calendar.MINUTE, 0)
-    this.set(Calendar.SECOND, 0)
-    this.set(Calendar.MILLISECOND, 0)
-    return this
-}
+

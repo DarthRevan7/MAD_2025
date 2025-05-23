@@ -44,10 +44,13 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel) {
     val publishedTrips by vm.publishedTrips.collectAsState()
     //List of trip created, but not published by the logged in user (id=1)
     val privateTrips by vm.privateTrips.collectAsState()
+    //List of trip the logged in user (id=1) joined
+    val joinedTrips by vm.joinedTrips.collectAsState()
 
     LaunchedEffect(Unit) {
-        vm.creatorPublicFilter()
-        vm.creatorPrivateFilter()
+        vm.creatorPublicFilter(1)
+        vm.creatorPrivateFilter(1)
+        vm.tripUserJoined(1)
     }
 
     Scaffold(
@@ -120,6 +123,22 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel) {
                     }
                 }
             }
+
+            //List of trips the logged in user (id=1) joined
+            item {
+                Text(
+                    text = "Trips I joined:",
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp),
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            if (joinedTrips.isNotEmpty()) {
+                items(joinedTrips, key = { it.id }) { trip ->
+                    vm.userAction = TripViewModel.UserAction.VIEW_TRIP
+                    TripCard(trip, navController, vm, vm.userAction == TripViewModel.UserAction.VIEW_TRIP)
+                }
+            }
         }
     }
 }
@@ -159,6 +178,35 @@ fun CompletedBanner(modifier: Modifier) {
             Spacer(Modifier.padding(3.dp))
             Text(
                 text = "Completed",
+                color = Color.White
+            )
+        }
+    }
+}
+
+@Composable
+fun BookedBanner(modifier: Modifier) {
+    Box(
+        modifier = modifier
+            .padding(vertical = 10.dp, horizontal = 10.dp)
+            .wrapContentSize()
+            .clip(RoundedCornerShape(16.dp))
+            .background(
+                color = Color(0xfa, 0xa2, 0x61, 255)
+            ),
+    ) {
+        Row(
+            modifier = Modifier.padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.TaskAlt,
+                contentDescription = "booked",
+                tint = Color.White
+            )
+            Spacer(Modifier.padding(3.dp))
+            Text(
+                text = "Fully booked",
                 color = Color.White
             )
         }
