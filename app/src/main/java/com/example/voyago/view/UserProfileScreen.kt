@@ -69,6 +69,7 @@ import com.example.voyago.R
 import com.example.voyago.activities.*
 import com.example.voyago.*
 import com.example.voyago.model.Review
+import com.example.voyago.model.ReviewModel
 import com.example.voyago.model.UserData
 import com.example.voyago.viewmodel.*
 import java.text.SimpleDateFormat
@@ -79,8 +80,9 @@ import java.util.Locale
 @Composable
 fun UserProfileScreen(vm: TripViewModel, navController: NavController, vm2: ArticleViewModel, userId: Int, uvm: UserViewModel) {
 
-    val user = uvm.getUserData(userId)
+    uvm.updateAllRatings(ReviewModel())
 
+    val user = uvm.getUserData(userId)
 
 
     //Icons

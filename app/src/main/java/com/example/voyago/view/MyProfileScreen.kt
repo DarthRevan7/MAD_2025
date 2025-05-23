@@ -61,6 +61,7 @@ import com.example.voyago.R
 import com.example.voyago.activities.*
 import com.example.voyago.model.Article
 import com.example.voyago.model.Review
+import com.example.voyago.model.ReviewModel
 import com.example.voyago.model.Trip
 import com.example.voyago.model.UserData
 import com.example.voyago.viewmodel.*
@@ -71,6 +72,10 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: ArticleViewModel, uvm: UserViewModel) {
+
+    LaunchedEffect(Unit) {
+        uvm.updateAllRatings(ReviewModel())
+    }
 
     val user1 = uvm.loggedUser
 

@@ -38,13 +38,16 @@ class UserViewModel(val model:UserModel): ViewModel() {
         }
     }
 
-
     // Camera
     private val _profileImageUri = mutableStateOf<Uri?>(null)
     var profileImageUri: State<Uri?> = _profileImageUri
 
     fun setProfileImageUri(uri: Uri?) {
         _profileImageUri.value = uri
+    }
+
+    fun updateAllRatings(reviewModel: ReviewModel) {
+        model.refreshAllRatings(reviewModel)
     }
 
 }

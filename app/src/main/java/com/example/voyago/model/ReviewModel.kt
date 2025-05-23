@@ -50,4 +50,19 @@ class ReviewModel {
     fun getUserReviews(id: Int): List<Review> {
         return _reviews.value.filter { !it.isTripReview && it.reviewedUserId == id }
     }
+
+
+    // Calculate average user rating by id
+    fun calculateRatingById(id:Int): Float {
+        val reviewsForUser = _reviews.value.filter { !it.isTripReview && it.reviewedUserId == id }
+
+        return if (reviewsForUser.isNotEmpty()) {
+            val averageScore = reviewsForUser.map { it.score }.average().toFloat()
+            val scaled = averageScore / 2f  // Convert from 0–10 to 0–5
+            (scaled * 10).toInt() / 10f     // Truncate to 1 decimal place
+        } else {
+            5.0f // Default rating for users with no reviews
+        }
+    }
+
 }

@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.voyago.activities.ProfilePhoto
 import com.example.voyago.model.Review
+import com.example.voyago.model.ReviewModel
 import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
@@ -47,6 +48,9 @@ import java.util.Calendar
 
 @Composable
 fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewModel, rvm: ReviewViewModel) {
+
+    uvm.updateAllRatings(ReviewModel())
+
     val trip by vm.selectedTrip
     println("selected trip = ${vm.selectedTrip}")
 

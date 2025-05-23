@@ -15,6 +15,10 @@ fun Calendar.stripTime(): Calendar {
     return this
 }
 
+val reviewModel = ReviewModel()
+
+val userModel = UserModel()
+
 //USER LIST
 var privateUsers = MutableStateFlow<List<UserData>>(
     listOf(
@@ -31,7 +35,7 @@ var privateUsers = MutableStateFlow<List<UserData>>(
             profilePicture = null,
             typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.ADVENTURE),
             desiredDestination = listOf("Greece", "Italy", "Japan"),
-            rating = 4.7f,
+            rating = 5.0f,
             reliability = 90
         ),
 
@@ -48,7 +52,7 @@ var privateUsers = MutableStateFlow<List<UserData>>(
             profilePicture = null,
             typeTravel = listOf(TypeTravel.RELAX, TypeTravel.PARTY),
             desiredDestination = listOf("Romania", "USA", "South Korea"),
-            rating = 4.3f,
+            rating = 5.0f,
             reliability = 55
         ),
 
@@ -65,7 +69,7 @@ var privateUsers = MutableStateFlow<List<UserData>>(
             profilePicture = null,
             typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.CULTURE),
             desiredDestination = listOf("Peru", "Nepal", "Morocco"),
-            rating = 4.7f,
+            rating = 5.0f,
             reliability = 80
         ),
 
@@ -82,7 +86,7 @@ var privateUsers = MutableStateFlow<List<UserData>>(
             profilePicture = null,
             typeTravel = listOf(TypeTravel.ADVENTURE),
             desiredDestination = listOf("New Zealand", "Iceland", "Japan"),
-            rating = 4.5f,
+            rating = 5.0f,
             reliability = 73
         ),
 
@@ -99,7 +103,7 @@ var privateUsers = MutableStateFlow<List<UserData>>(
             profilePicture = null,
             typeTravel = listOf(TypeTravel.CULTURE),
             desiredDestination = listOf("Thailand", "Italy", "Vietnam"),
-            rating = 4.1f,
+            rating = 5.0f,
             reliability = 67
         ),
 
@@ -116,7 +120,7 @@ var privateUsers = MutableStateFlow<List<UserData>>(
             profilePicture = null,
             typeTravel = listOf(TypeTravel.RELAX, TypeTravel.CULTURE),
             desiredDestination = listOf("Turkey", "Spain", "Malaysia"),
-            rating = 4.8f,
+            rating = 5.0f,
             reliability = 90
         )
     )

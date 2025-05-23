@@ -32,4 +32,11 @@ class UserModel {
         }
         return _users.value
     }
+
+    // Calculate average user rating by id
+    fun refreshAllRatings(reviewModel: ReviewModel) {
+        _users.value = _users.value.map { user ->
+            user.copy(rating = reviewModel.calculateRatingById(user.id))
+        }
+    }
 }

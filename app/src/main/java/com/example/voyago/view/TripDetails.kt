@@ -72,6 +72,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.window.Popup
 import androidx.core.net.toUri
+import com.example.voyago.model.ReviewModel
 import com.example.voyago.model.Trip.Participant
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
@@ -82,6 +83,9 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean, uvm: UserViewModel) {
+
+    uvm.updateAllRatings(ReviewModel())
+
     //Trip that we are showing
     val trip by vm.selectedTrip
     println("selected trip = ${vm.selectedTrip}")

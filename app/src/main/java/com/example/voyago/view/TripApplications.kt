@@ -41,6 +41,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.voyago.activities.ProfilePhoto
+import com.example.voyago.model.ReviewModel
 import com.example.voyago.model.Trip
 import com.example.voyago.model.UserData
 import com.example.voyago.viewmodel.TripViewModel
@@ -48,6 +49,8 @@ import com.example.voyago.viewmodel.UserViewModel
 
 @Composable
 fun TripApplications(vm: TripViewModel, uvm:UserViewModel, navController: NavController) {
+
+    uvm.updateAllRatings(ReviewModel())
 
     val listState = rememberLazyListState()
     val trip = vm.selectedTrip.value
