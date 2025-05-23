@@ -1336,9 +1336,9 @@ fun sampleArticles(): List<Article> {
         "sydney", "rio", "colorado", "fiji", "japan"
     )
     val authors = listOf(
-        "Jane Doe", "Jean Dupont", "Somchai Prasert", "Håkon Larsen",
-        "Amira Khalil", "David Smith", "Emily Chen", "Luca Rossi",
-        "Ólafur Jónsson", "Giulia Bianchi"
+        1, 2, 3, 4,
+        5, 6, 1, 2,
+        3, 4
     )
     val tagsList = listOf(
         listOf("Travel", "Culture", "Japan"),

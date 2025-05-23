@@ -59,6 +59,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.example.voyago.R
 import com.example.voyago.activities.*
+import com.example.voyago.model.Article
 import com.example.voyago.model.Review
 import com.example.voyago.model.Trip
 import com.example.voyago.model.UserData
@@ -71,7 +72,7 @@ import java.util.Locale
 @Composable
 fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: ArticleViewModel, uvm: UserViewModel) {
 
-    val user1 = uvm.getUserData(1)
+    val user1 = uvm.loggedUser
 
 
 
@@ -384,9 +385,8 @@ fun TabAboutTripsReview(user: UserData, vm: TripViewModel, vm2: ArticleViewModel
                                 .height((3*43).dp)
                                 .verticalScroll(rememberScrollState())
                         ) {
-                            val articles by vm2.articleList.collectAsState()
-                            articles.forEach {
-                                    item -> UITripArticle(item.title,item.date, item.photo)
+                            vm2.articlesByUserId(user.id).forEach { item ->
+                                ShowUserArticle(item)
                             }
                         }
                     }
@@ -491,9 +491,10 @@ fun ShowUserTrip(trip: Trip, vm: TripViewModel, navController: NavController) {
 
 @SuppressLint("DiscouragedApi")
 @Composable
-fun UITripArticle(destination: String, date: Calendar, photo: String?) {
+fun ShowUserArticle(article: Article) {
+
     val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
-    val formattedDate = dateFormat.format(date.time)
+    val formattedDate = dateFormat.format(article.date.time)
 
     Row(
         modifier = Modifier
@@ -509,15 +510,15 @@ fun UITripArticle(destination: String, date: Calendar, photo: String?) {
                 .clip(CircleShape)
                 .background(Color.Gray) // fallback background
         ) {
-            if (!photo.isNullOrBlank()) {
+            if (article.photo.isNotBlank()) {
                 val context = LocalContext.current
 
-                val imageModel = if (!photo.isUriString()) {
+                val imageModel = if (!article.photo.isUriString()) {
                     // Local drawable resource
-                    context.resources.getIdentifier(photo, "drawable", context.packageName)
+                    context.resources.getIdentifier(article.photo, "drawable", context.packageName)
                 } else {
                     // URI string
-                    photo
+                    article.photo
                 }
 
                 AsyncImage(
@@ -537,7 +538,7 @@ fun UITripArticle(destination: String, date: Calendar, photo: String?) {
         Spacer(modifier = Modifier.width(12.dp))
 
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = destination, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(text = article.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
 
         Text(

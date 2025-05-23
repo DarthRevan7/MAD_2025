@@ -8,7 +8,7 @@ data class Article(
     val id: Int,
     var title: String,
     var text: String,
-    var authorId: String,  //Todo change to it and vm.getUserData
+    var authorId: Int,  //Todo change to it and vm.getUserData
     var date: Calendar,
     var photo: String,
     val contentUrl: String,          // 点击后跳转的链接
