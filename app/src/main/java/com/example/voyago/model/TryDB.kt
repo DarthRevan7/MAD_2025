@@ -217,8 +217,8 @@ var privateTripList = MutableStateFlow<List<Trip>>(
             photo = "phuket",
             title = "Beach Escape in Thailand",
             destination = "Phuket",
-            startDate = Calendar.getInstance().apply { set(2025, 5, 20); stripTime() },
-            endDate = Calendar.getInstance().apply { set(2025, 5, 21); stripTime() },
+            startDate = Calendar.getInstance().apply { set(2024, 5, 20); stripTime() },
+            endDate = Calendar.getInstance().apply { set(2024, 5, 21); stripTime() },
             estimatedPrice = 1200.0,
             groupSize = 4,
             creatorId = 2,
@@ -234,61 +234,61 @@ var privateTripList = MutableStateFlow<List<Trip>>(
             typeTravel = listOf(TypeTravel.PARTY, TypeTravel.RELAX),
             status = TripStatus.COMPLETED,
             activities = mapOf(
-                Calendar.getInstance().apply { set(2025, 5, 20); stripTime() } to listOf(
+                Calendar.getInstance().apply { set(2024, 5, 20); stripTime() } to listOf(
                     Activity(
                         9,
-                        Calendar.getInstance().apply { set(2025, 5, 20); stripTime() },
+                        Calendar.getInstance().apply { set(2024, 5, 20); stripTime() },
                         "10:00 AM",
                         true,
                         "Snorkeling tour"
                     ),
                     Activity(
                         10,
-                        Calendar.getInstance().apply { set(2025, 5, 20); stripTime() },
+                        Calendar.getInstance().apply { set(2024, 5, 20); stripTime() },
                         "01:00 PM",
                         true,
                         "Beach lunch"
                     ),
                     Activity(
                         11,
-                        Calendar.getInstance().apply { set(2025, 5, 20); stripTime() },
+                        Calendar.getInstance().apply { set(2024, 5, 20); stripTime() },
                         "04:00 PM",
                         false,
                         "Massage session"
                     ),
                     Activity(
                         12,
-                        Calendar.getInstance().apply { set(2025, 5, 20); stripTime() },
+                        Calendar.getInstance().apply { set(2024, 5, 20); stripTime() },
                         "07:00 PM",
                         true,
                         "Sunset cruise"
                     )
                 ),
-                Calendar.getInstance().apply { set(2025, 5, 21); stripTime() } to listOf(
+                Calendar.getInstance().apply { set(2024, 5, 21); stripTime() } to listOf(
                     Activity(
                         13,
-                        Calendar.getInstance().apply { set(2025, 5, 21); stripTime() },
+                        Calendar.getInstance().apply { set(2024, 5, 21); stripTime() },
                         "09:00 AM",
                         true,
                         "Island hopping"
                     ),
                     Activity(
                         14,
-                        Calendar.getInstance().apply { set(2025, 5, 21); stripTime() },
+                        Calendar.getInstance().apply { set(2024, 5, 21); stripTime() },
                         "02:00 PM",
                         true,
                         "Cuisine tasting"
                     ),
                     Activity(
                         15,
-                        Calendar.getInstance().apply { set(2025, 5, 21); stripTime() },
+                        Calendar.getInstance().apply { set(2024, 5, 21); stripTime() },
                         "03:00 PM",
                         false,
                         "Shopping"
                     ),
                     Activity(
                         16,
-                        Calendar.getInstance().apply { set(2025, 5, 21); stripTime() },
+                        Calendar.getInstance().apply { set(2024, 5, 21); stripTime() },
                         "08:00 PM",
                         true,
                         "Beach party"
