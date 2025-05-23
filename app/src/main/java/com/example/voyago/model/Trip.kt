@@ -11,13 +11,13 @@ data class Trip(
     var endDate: Calendar,
     var estimatedPrice: Double,
     var groupSize: Int,
-    var participants: Map<Int, Int>,                   // userId -> spots taken
+    var participants: Map<Int, Int>,                   // userId, id JoinedRequest
     var activities: Map<Calendar, List<Activity>>,     // Map<Date, Activity>
     var status: TripStatus,
     var typeTravel: List<TypeTravel>,
     var creatorId: Int,
-    var appliedUsers: Map<Int, Int>,                   // userId -> requested spots
-    var rejectedUsers: Map<Int, Int>,                  // userId -> requested spots
+    var appliedUsers: Map<Int, Int>,                   // userId, id JoinedRequest
+    var rejectedUsers: Map<Int, Int>,                  // userId, id JoinedRequest
     var published: Boolean
 ) {
 
