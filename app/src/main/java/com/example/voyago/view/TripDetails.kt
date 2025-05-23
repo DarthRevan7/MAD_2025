@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,6 +44,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.StarHalf
 import androidx.compose.material.icons.filled.Add
@@ -54,6 +56,7 @@ import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -68,6 +71,9 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.window.Popup
 import androidx.core.net.toUri
 import com.example.voyago.model.Trip.Participant
@@ -645,14 +651,14 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
 
                                     // Input fields
                                     if (isRegistered) {
-                                        ValidatingInputTextField(
+                                        ValidatingInputUsernameField(
                                             registeredUsernames[i],
                                             { newValue ->
                                                 registeredUsernames = registeredUsernames.toMutableList().also { it[i] = newValue }
                                                 usernameTouchedList = usernameTouchedList.toMutableList().also { it[i] = true }
                                             },
                                             usernameTouchedList[i] && (
-                                                    registeredUsernames[i].isBlank() || !registeredUsernames[i].any { it.isLetter() || uvm.doesUserExist(registeredUsernames[i]) }
+                                                    registeredUsernames[i].isBlank() || !registeredUsernames[i].any { it.isLetter()} || !uvm.doesUserExist(registeredUsernames[i])
                                                     ),
                                             "Username"
                                         )
@@ -728,7 +734,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                             for (i in 0 until selectedSpots - 1) {
                                 if (isRegisteredList[i]) {
                                     val username = registeredUsernames[i]
-                                    if (username.isBlank() || !username.any { it.isLetter() }) {
+                                    if (username.isBlank() || !username.any { it.isLetter() } || !uvm.doesUserExist(registeredUsernames[i])) {
                                         hasErrors = true
                                         updatedUsernameTouched[i] = true
                                     }
@@ -1105,3 +1111,34 @@ fun PrintStars(rating: Int) {
     }
 }
 
+@Composable
+fun ValidatingInputUsernameField(text: String, updateState: (String) -> Unit,
+                             validatorHasErrors: Boolean, label: String) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    Column(
+        modifier = Modifier
+            .wrapContentSize()
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = {
+                    keyboardController?.hide()
+                })
+            }
+    ) {
+        OutlinedTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
+            value = text,
+            onValueChange = updateState,
+            label = { Text(label) },
+            isError = validatorHasErrors,
+            supportingText = {
+                if (validatorHasErrors) {
+                    Text("The username is not valid")
+                }
+            },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+        )
+    }
+}

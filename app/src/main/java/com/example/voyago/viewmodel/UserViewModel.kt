@@ -35,7 +35,7 @@ class UserViewModel(val model:UserModel): ViewModel() {
 
     fun doesUserExist(username: String): Boolean {
         return model.users.value.any { user ->
-            user.username == username
+            user.username.equals(username)
         }
     }
 
