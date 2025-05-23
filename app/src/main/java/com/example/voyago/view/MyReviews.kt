@@ -380,7 +380,7 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
 
                                     println("$hasReviews")
 
-                                    //navController.popBackStack()
+                                    navController.popBackStack()
                                 }
 
                             },
