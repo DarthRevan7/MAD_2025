@@ -1248,6 +1248,72 @@ var privateReviews = MutableStateFlow<List<Review>>(
     )
 )
 
+var privateJoinedRequests = MutableStateFlow<List<JoinRequest>>(
+    listOf(
+        JoinRequest(
+            id = 1,
+            userId = 4,
+            tripId = 5,
+            requestedSpots = 2,
+            participants = listOf(
+                JoinRequest.Participant(
+                    id = 1,
+                    name = "Greta",
+                    surname = "Garbo"
+                )
+            )
+        ),
+
+        JoinRequest(
+            id = 2,
+            userId = 5,
+            tripId = 5,
+            requestedSpots = 1,
+            participants = emptyList()
+        ),
+
+        JoinRequest(
+            id = 3,
+            userId = 1,
+            tripId = 6,
+            requestedSpots = 1,
+            participants = emptyList()
+        ),
+
+        JoinRequest(
+            id = 4,
+            userId = 3,
+            tripId = 6,
+            requestedSpots = 1,
+            participants = emptyList()
+        ),
+
+        JoinRequest(
+            id = 5,
+            userId = 4,
+            tripId = 7,
+            requestedSpots = 1,
+            participants = emptyList()
+        ),
+
+        JoinRequest(
+            id = 6,
+            userId = 6,
+            tripId = 7,
+            requestedSpots = 1,
+            participants = emptyList()
+        ),
+
+        JoinRequest(
+            id = 7,
+            userId = 5,
+            tripId = 8,
+            requestedSpots = 1,
+            participants = emptyList()
+        ),
+    )
+)
+
 fun sampleArticles(): List<Article> {
     val titles = listOf(
         "The Hidden Gems of Kyoto: Beyond the Tourist Trail",
