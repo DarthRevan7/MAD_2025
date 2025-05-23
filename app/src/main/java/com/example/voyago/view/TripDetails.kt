@@ -548,7 +548,8 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                 },
                 confirmButton = {
                     TextButton(onClick = {
-                        vm.askToJoin(nonNullTrip, 1, selectedSpots)
+                        //pass unregistered and registered list of participants and list of int
+                        vm.askToJoin(nonNullTrip, 1, selectedSpots, emptyList(), emptyList())
                         showDialog = false
                     }) {
                         Text("Confirm")

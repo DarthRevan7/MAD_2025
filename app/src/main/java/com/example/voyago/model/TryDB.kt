@@ -1,6 +1,7 @@
 package com.example.voyago.model
 
 import com.example.voyago.model.Trip.Activity
+import com.example.voyago.model.Trip.Participant
 import com.example.voyago.model.Trip.TripStatus
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -135,7 +136,13 @@ var privateTripList = MutableStateFlow<List<Trip>>(
             estimatedPrice = 950.0,
             groupSize = 4,
             creatorId = 6,
-            participants = mapOf(6 to 1, 2 to 1, 3 to 1, 1 to 1),
+            participants = mapOf(
+                6 to Trip.JoinRequest(userId = 6, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList()),
+                2 to Trip.JoinRequest(userId = 2, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList()),
+                3 to Trip.JoinRequest(userId = 3, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList()),
+                1 to Trip.JoinRequest(userId = 1, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList())
+            ),
+
             appliedUsers = emptyMap(),
             rejectedUsers = mapOf(5 to 1, 4 to 1),
             published = true,
@@ -215,7 +222,12 @@ var privateTripList = MutableStateFlow<List<Trip>>(
             estimatedPrice = 1200.0,
             groupSize = 4,
             creatorId = 2,
-            participants = mapOf(2 to 1, 3 to 1, 5 to 1, 1 to 1),
+            participants = mapOf(
+                2 to Trip.JoinRequest(userId = 2, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList()),
+                3 to Trip.JoinRequest(userId = 3, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList()),
+                5 to Trip.JoinRequest(userId = 5, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList()),
+                1 to Trip.JoinRequest(userId = 1, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList())
+            ),
             appliedUsers = emptyMap(),
             rejectedUsers = mapOf(6 to 1, 4 to 1),
             published = true,
@@ -296,7 +308,12 @@ var privateTripList = MutableStateFlow<List<Trip>>(
             estimatedPrice = 1100.0,
             groupSize = 4,
             creatorId = 3,
-            participants = mapOf(3 to 1, 1 to 1, 4 to 1, 5 to 1),
+            participants = mapOf(
+                3 to Trip.JoinRequest(userId = 3, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList()),
+                1 to Trip.JoinRequest(userId = 1, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList()),
+                4 to Trip.JoinRequest(userId = 4, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList()),
+                5 to Trip.JoinRequest(userId = 5, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList())
+            ),
             appliedUsers = emptyMap(),
             rejectedUsers = mapOf(2 to 1, 6 to 1),
             published = true,
@@ -328,7 +345,9 @@ var privateTripList = MutableStateFlow<List<Trip>>(
             estimatedPrice = 1800.0,
             groupSize = 4,
             creatorId = 1,
-            participants = mapOf(1 to 1),
+            participants = mapOf(
+                1 to Trip.JoinRequest(userId = 1, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList())
+            ),
             appliedUsers = emptyMap(),
             rejectedUsers = emptyMap(),
             published = false,
@@ -372,8 +391,14 @@ var privateTripList = MutableStateFlow<List<Trip>>(
             estimatedPrice = 1650.0,
             groupSize = 5,
             creatorId = 1,
-            participants = mapOf(1 to 1, 2 to 1),
-            appliedUsers = mapOf(4 to 2, 5 to 1),
+            participants = mapOf(
+                1 to Trip.JoinRequest(userId = 1, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList()),
+                2 to Trip.JoinRequest(userId = 2, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList())
+            ),
+            appliedUsers = mapOf(
+                4 to Trip.JoinRequest(userId = 4, requestedSpots = 3, unregisteredParticipants = listOf(Participant(name = "Greta", surname = "Williams", email = "gretawilliams@gmail.com")), registeredParticipants = listOf(6)),
+                5 to Trip.JoinRequest(userId = 5, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList())
+            ),
             rejectedUsers = emptyMap(),
             published = true,
             typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.RELAX),
@@ -416,8 +441,16 @@ var privateTripList = MutableStateFlow<List<Trip>>(
             estimatedPrice = 1900.0,
             groupSize = 6,
             creatorId = 4,
-            participants = mapOf(4 to 1, 2 to 1, 5 to 1, 6 to 1),
-            appliedUsers = mapOf(1 to 1, 3 to 1),
+            participants = mapOf(
+                4 to Trip.JoinRequest(userId = 4, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList()),
+                2 to Trip.JoinRequest(userId = 2, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList()),
+                5 to Trip.JoinRequest(userId = 5, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList()),
+                6 to Trip.JoinRequest(userId = 6, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList())
+            ),
+            appliedUsers = mapOf(
+                1 to Trip.JoinRequest(userId = 1, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList()),
+                3 to Trip.JoinRequest(userId = 3, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList())
+            ),
             rejectedUsers = emptyMap(),
             published = true,
             typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.PARTY),
@@ -460,8 +493,15 @@ var privateTripList = MutableStateFlow<List<Trip>>(
             estimatedPrice = 2100.0,
             groupSize = 6,
             creatorId = 2,
-            participants = mapOf(2 to 1, 3 to 1, 5 to 1),
-            appliedUsers = mapOf(4 to 1, 6 to 1),
+            participants = mapOf(
+                2 to Trip.JoinRequest(userId = 2, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList()),
+                3 to Trip.JoinRequest(userId = 3, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList()),
+                5 to Trip.JoinRequest(userId = 5, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList())
+            ),
+            appliedUsers = mapOf(
+                4 to Trip.JoinRequest(userId = 4, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList()),
+                6 to Trip.JoinRequest(userId = 6, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList())
+            ),
             rejectedUsers = emptyMap(),
             published = true,
             typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.PARTY),
@@ -690,8 +730,14 @@ var privateTripList = MutableStateFlow<List<Trip>>(
             estimatedPrice = 4600.0,
             groupSize = 4,
             creatorId = 6,
-            participants = mapOf(2 to 1, 4 to 1, 6 to 1),
-            appliedUsers = mapOf(5 to 1),
+            participants = mapOf(
+                2 to Trip.JoinRequest(userId = 2, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList()),
+                4 to Trip.JoinRequest(userId = 4, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList()),
+                6 to Trip.JoinRequest(userId = 6, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList())
+            ),
+            appliedUsers = mapOf(
+                5 to Trip.JoinRequest(userId = 5, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList())
+            ),
             rejectedUsers = emptyMap(),
             published = true,
             typeTravel = listOf(TypeTravel.RELAX, TypeTravel.CULTURE),
@@ -1245,80 +1291,6 @@ var privateReviews = MutableStateFlow<List<Review>>(
             photos = emptyList(),
             date = Calendar.getInstance().apply { set(2025, 5, 22) }
         )
-    )
-)
-
-var privateJoinedRequests = MutableStateFlow<List<JoinRequest>>(
-    listOf(
-        JoinRequest(
-            id = 1,
-            userId = 4,
-            tripId = 5,
-            requestedSpots = 2,
-            participants = listOf(
-                JoinRequest.Participant(
-                    id = 1,
-                    name = "Greta",
-                    surname = "Garbo",
-                    email = "gretag@gmail.com"
-                )
-            ),
-            emptyList()
-        ),
-
-        JoinRequest(
-            id = 2,
-            userId = 5,
-            tripId = 5,
-            requestedSpots = 1,
-            participants = emptyList(),
-            emptyList()
-        ),
-
-        JoinRequest(
-            id = 3,
-            userId = 1,
-            tripId = 6,
-            requestedSpots = 1,
-            participants = emptyList(),
-            emptyList()
-        ),
-
-        JoinRequest(
-            id = 4,
-            userId = 3,
-            tripId = 6,
-            requestedSpots = 1,
-            participants = emptyList(),
-            emptyList()
-        ),
-
-        JoinRequest(
-            id = 5,
-            userId = 4,
-            tripId = 7,
-            requestedSpots = 1,
-            participants = emptyList(),
-            emptyList()
-        ),
-
-        JoinRequest(
-            id = 6,
-            userId = 6,
-            tripId = 7,
-            requestedSpots = 1,
-            participants = emptyList(),
-            emptyList()
-        ),
-
-        JoinRequest(
-            id = 7,
-            userId = 5,
-            tripId = 8,
-            requestedSpots = 1,
-            participants = emptyList(),
-            emptyList()
-        ),
     )
 )
 

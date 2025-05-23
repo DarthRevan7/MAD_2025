@@ -11,13 +11,13 @@ data class Trip(
     var endDate: Calendar,
     var estimatedPrice: Double,
     var groupSize: Int,
-    var participants: Map<Int, Int>,                   // userId, id JoinedRequest
+    var participants: Map<Int, JoinRequest>,                   // userId, id JoinedRequest
     var activities: Map<Calendar, List<Activity>>,     // Map<Date, Activity>
     var status: TripStatus,
     var typeTravel: List<TypeTravel>,
     var creatorId: Int,
-    var appliedUsers: Map<Int, Int>,                   // userId, id JoinedRequest
-    var rejectedUsers: Map<Int, Int>,                  // userId, id JoinedRequest
+    var appliedUsers: Map<Int, JoinRequest>,                   // userId, id JoinedRequest
+    var rejectedUsers: Map<Int, Int>,                  // userId, number of spots
     var published: Boolean
 ) {
 
@@ -27,6 +27,19 @@ data class Trip(
         var time: String,           // hh:mm
         var isGroupActivity: Boolean,
         var description: String
+    )
+
+    data class JoinRequest(
+        val userId: Int,
+        val requestedSpots: Int,
+        val unregisteredParticipants: List<Participant>, // excludes the requesting user
+        val registeredParticipants: List<Int>            //users' Ids
+    )
+
+    data class Participant(
+        val name: String,
+        val surname: String,
+        val email: String
     )
 
     enum class TripStatus {
@@ -104,11 +117,18 @@ data class Trip(
     }
 
     fun availableSpots(): Int {
-        return this.groupSize - this.participants.values.sum()
+        return this.groupSize - this.participants.values.sumOf { it.requestedSpots }
     }
 
-    fun tripDuration():Int {
-        return endDate.get(Calendar.DAY_OF_YEAR) - startDate.get(Calendar.DAY_OF_YEAR)
+    fun tripDuration(): Int {
+        val start = startDate.clone() as Calendar
+        val end = endDate.clone() as Calendar
+        var days = 0
+        while (start.before(end)) {
+            days++
+            start.add(Calendar.DATE, 1)
+        }
+        return days
     }
 
     fun printTrip()

@@ -13,6 +13,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.voyago.model.*
 import com.example.voyago.model.Trip.Activity
+import com.example.voyago.model.Trip.Participant
 import com.example.voyago.view.*
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -207,7 +208,7 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
     //Ask to join a trip or cancel application
     val askedTrips = tripModel.askedTrips
     //fun toggleAskToJoin(tripId: Int) = model.toggleAskToJoin(tripId)
-    fun askToJoin(trip: Trip, userId: Int, spots: Int) = tripModel.requestToJoin(trip, userId, spots)
+    fun askToJoin(trip: Trip, userId: Int, spots: Int, unregisteredParticipants: List<Participant>, registeredParticipants: List<Int>) = tripModel.requestToJoin(trip, userId, spots, unregisteredParticipants, registeredParticipants)
     fun cancelAskToJoin(trip: Trip, userId: Int) = tripModel.cancelRequestToJoin(trip, userId)
     fun syncAskedTrips() = tripModel.syncAskedTripsWithAppliedUsers(1)
 
@@ -245,15 +246,20 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
 
     // Participants with spots taken
     fun getTripParticipants(trip: Trip): Map<UserData, Int> {
-        return trip.participants.mapNotNull { (userId, spots) ->
-            userModel.getUsers(listOf(userId)).firstOrNull()?.let { user -> user to spots }
+        return trip.participants.mapNotNull { (userId, joinRequest) ->
+            userModel.getUsers(listOf(userId)).firstOrNull()?.let { user ->
+                user to joinRequest.requestedSpots
+            }
         }.toMap()
     }
 
+
     // Applicants with requested spots
     fun getTripApplicants(trip: Trip): Map<UserData, Int> {
-        return trip.appliedUsers.mapNotNull { (userId, spots) ->
-            userModel.getUsers(listOf(userId)).firstOrNull()?.let { user -> user to spots }
+        return trip.appliedUsers.mapNotNull { (userId, joinRequest) ->
+            userModel.getUsers(listOf(userId)).firstOrNull()?.let { user ->
+                user to joinRequest.requestedSpots
+            }
         }.toMap()
     }
 
@@ -268,26 +274,28 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
     fun acceptApplication(trip: Trip?, userId: Int) {
         if (trip == null || userId !in trip.appliedUsers) return
 
-        val requestedSpots = trip.appliedUsers[userId] ?: return
+        val requestedSpots = trip.appliedUsers[userId]?.requestedSpots ?: return
 
-        val usedSpots = trip.participants.values.sum()
+        val usedSpots = trip.participants.values.sumOf { it.requestedSpots }
+
+        val joinRequest = trip.appliedUsers[userId] ?: return
 
         if (usedSpots + requestedSpots > trip.groupSize) return
 
         // Accept applicant
-        trip.participants = trip.participants + (userId to requestedSpots)
+        trip.participants = trip.participants + (userId to joinRequest)
         trip.appliedUsers = trip.appliedUsers - userId
 
         // Recalculate used spots
-        val updatedUsedSpots = trip.participants.values.sum()
+        val updatedUsedSpots = trip.participants.values.sumOf{ it.requestedSpots }
         val remainingSpots = trip.groupSize - updatedUsedSpots
 
         // Reject remaining applicants who can't fit
         val remainingApplicants = trip.appliedUsers.toMap()
-        for ((id, spots) in remainingApplicants) {
-            if (spots > remainingSpots) {
+        for ((id, joinRequest) in remainingApplicants) {
+            if (joinRequest.requestedSpots > remainingSpots) {
                 trip.appliedUsers = trip.appliedUsers - id
-                trip.rejectedUsers = trip.rejectedUsers + (id to spots)
+                trip.rejectedUsers = trip.rejectedUsers + (id to joinRequest.requestedSpots)
             }
         }
 
@@ -298,7 +306,7 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
     //Reject an application
     fun rejectApplication(trip: Trip?, userId: Int) {
         if (trip != null && userId in trip.appliedUsers) {
-            val requestedSpots = trip.appliedUsers[userId] ?: return
+            val requestedSpots = trip.appliedUsers[userId]?.requestedSpots ?: return
 
             trip.appliedUsers = trip.appliedUsers - userId
             trip.rejectedUsers = trip.rejectedUsers + (userId to requestedSpots)

@@ -2,6 +2,7 @@ package com.example.voyago.model
 
 import android.util.Log
 import com.example.voyago.model.Trip.Activity
+import com.example.voyago.model.Trip.Participant
 import com.example.voyago.model.Trip.TripStatus
 import com.example.voyago.view.SelectableItem
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -211,7 +212,7 @@ class TripModel {
             endDate = endDate,
             estimatedPrice = estimatedPrice,
             groupSize = groupSize,
-            participants = mapOf(creatorId to 1),
+            participants = mapOf(creatorId to Trip.JoinRequest(userId = creatorId, requestedSpots = 1, unregisteredParticipants = emptyList(), registeredParticipants = emptyList())),
             activities = activities,
             status = TripStatus.NOT_STARTED,
             typeTravel = typeTravel,
@@ -348,9 +349,16 @@ class TripModel {
     private val _askedTrips = MutableStateFlow<Map<Int, Int>>(emptyMap())
     val askedTrips: StateFlow<Map<Int, Int>> = _askedTrips
 
-    fun requestToJoin(trip: Trip, userId :Int, spots: Int) {
+    fun requestToJoin(trip: Trip, userId :Int, spots: Int, unregisteredParticipants: List<Participant>, registeredParticipants: List<Int>) {
         val updatedAppliedUsers = trip.appliedUsers.toMutableMap()
-        updatedAppliedUsers[userId] = spots
+        val joinRequest = Trip.JoinRequest(
+            userId = userId,
+            requestedSpots = spots,
+            unregisteredParticipants = unregisteredParticipants,
+            registeredParticipants = registeredParticipants
+        )
+
+        updatedAppliedUsers[userId] = joinRequest
 
         trip.appliedUsers = updatedAppliedUsers
         _askedTrips.value = _askedTrips.value + (trip.id to spots)
@@ -367,7 +375,10 @@ class TripModel {
     fun syncAskedTripsWithAppliedUsers(userId: Int) {
         val askedMap = _tripList.value
             .filter { trip -> trip.appliedUsers.containsKey(userId) }
-            .associate { trip -> trip.id to (trip.appliedUsers[userId] ?: 0) }
+            .associate { trip ->
+                val requestedSpots = trip.appliedUsers[userId]?.requestedSpots ?: 0
+                trip.id to requestedSpots
+            }
         _askedTrips.value = askedMap
     }
 }
