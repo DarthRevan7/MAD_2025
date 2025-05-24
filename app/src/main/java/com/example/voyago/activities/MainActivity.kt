@@ -108,6 +108,8 @@ import com.example.voyago.viewmodel.UserViewModel
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.example.voyago.model.ReviewModel
+import com.example.voyago.model.UserModel
 
 
 sealed class Screen(val route: String) {
@@ -233,6 +235,9 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()
+    val reviewModel = ReviewModel()
+    val userModel = UserModel()
+    userModel.refreshAllRatings(reviewModel)
     Scaffold(
         topBar = { TopBar() },
         bottomBar = { BottomBar(navController) }
