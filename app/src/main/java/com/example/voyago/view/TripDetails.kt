@@ -1,6 +1,7 @@
 package com.example.voyago.view
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -67,11 +69,13 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.window.Popup
 import androidx.core.net.toUri
+import coil3.compose.rememberAsyncImagePainter
 import com.example.voyago.model.ReviewModel
 import com.example.voyago.model.Trip.Participant
 import com.example.voyago.viewmodel.TripViewModel
@@ -1075,6 +1079,27 @@ fun ShowReview(review: Review, vm: TripViewModel, myTrip: Boolean, uvm: UserView
             text = review.comment,
             modifier = Modifier.padding(start = 50.dp, end = 16.dp)
         )
+    }
+
+    // Show photos if there are any
+    if (!review.photos.isNullOrEmpty()) {
+        LazyRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 50.dp, top = 8.dp, end = 16.dp)
+        ) {
+            items(review.photos) { photoUri ->
+                Image(
+                    painter = rememberAsyncImagePainter(photoUri),
+                    contentDescription = "Review photo",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(100.dp)
+                        .padding(end = 8.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                )
+            }
+        }
     }
 
     Spacer(Modifier.padding(16.dp))

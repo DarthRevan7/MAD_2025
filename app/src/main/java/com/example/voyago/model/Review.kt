@@ -14,7 +14,7 @@ data class Review(
     var title: String,
     var comment: String,
     var score: Int,
-    var photos: List<Uri>,
+    var photos: List<String>,
     val date: Calendar
 ) {
     constructor() : this (

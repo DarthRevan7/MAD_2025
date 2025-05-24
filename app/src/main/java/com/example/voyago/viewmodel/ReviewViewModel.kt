@@ -1,9 +1,12 @@
 package com.example.voyago.viewmodel
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.voyago.model.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 
 class ReviewViewModel(val reviewModel:ReviewModel): ViewModel() {
@@ -19,6 +22,14 @@ class ReviewViewModel(val reviewModel:ReviewModel): ViewModel() {
             addNewReview(review)
 
         }
+    }
+
+    // Select photos
+    private val _selectedUris = MutableStateFlow<List<Uri>>(emptyList())
+    val selectedUris: StateFlow<List<Uri>> = _selectedUris
+
+    fun updateSelectedUris(uris: List<Uri>) {
+        _selectedUris.value = uris
     }
 
 }
