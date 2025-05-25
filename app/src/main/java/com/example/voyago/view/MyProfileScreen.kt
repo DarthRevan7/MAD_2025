@@ -77,7 +77,7 @@ fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: Articl
         uvm.updateAllRatings(ReviewModel())
     }
 
-    val user1 = uvm.loggedUser
+    val user1 = uvm.getUserData(uvm.loggedUser.id)
 
 
 
