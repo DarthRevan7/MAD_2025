@@ -135,6 +135,12 @@ class MainActivity : ComponentActivity() {
         context = this
 
         cameraExecutor = Executors.newSingleThreadExecutor()
+
+        // Check for camera permissions
+        if (!allPermissionsGranted()) {
+            requestPermissions()
+        }
+
         setContent {
             MainScreen()
         }
