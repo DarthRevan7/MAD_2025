@@ -112,7 +112,10 @@ fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: Articl
                     .align(alignment = Alignment.BottomEnd)
                     .padding(16.dp)
                     .offset(y = (-30).dp)
-                    .clickable {  navController.navigate("edit_profile") }
+                    .clickable {
+                        uvm.setProfileImageUri(uvm.loggedUser.profilePicture)
+                        navController.navigate("edit_profile")
+                    }
                 )
 
                 ProfilePhoto(
