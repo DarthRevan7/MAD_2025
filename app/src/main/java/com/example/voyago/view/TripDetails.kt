@@ -1089,15 +1089,41 @@ fun ShowReview(review: Review, vm: TripViewModel, myTrip: Boolean, uvm: UserView
                 .padding(start = 50.dp, top = 8.dp, end = 16.dp)
         ) {
             items(review.photos) { photoUri ->
-                Image(
-                    painter = rememberAsyncImagePainter(photoUri),
-                    contentDescription = "Review photo",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(100.dp)
-                        .padding(end = 8.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                )
+
+                //The photo is saved as a uri (the user selected it from the gallery)
+                if(photoUri.isUriString()) {
+                    Image(
+                        painter = rememberAsyncImagePainter(photoUri),
+                        contentDescription = "Review photo",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(100.dp)
+                            .padding(end = 8.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                    )
+                }
+                //The photo is saved as a drawable (the trip was already in the database and the user hadn't edit its photo)
+                else {
+                    val context = LocalContext.current
+                    val drawableId = remember(photoUri) {
+                        context.resources.getIdentifier(photoUri, "drawable", context.packageName)
+                    }
+                    AsyncImage(
+                        model = ImageRequest.Builder(context)
+                            .data(drawableId)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = photoUri,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(100.dp)
+                            .padding(end = 8.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                    )
+                }
+
+
+
             }
         }
     }

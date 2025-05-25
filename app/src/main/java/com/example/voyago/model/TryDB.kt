@@ -956,7 +956,7 @@ var privateReviews = MutableStateFlow<List<Review>>(
             title = "Amazing trip!",
             comment = "This trip was absolutely incredible from start to finish. The guided city tour was informative and fun, the food was delicious, and the museum visit was a highlight for me. Everything was well-organized and the group dynamic was awesome. I would recommend this experience to anyone wanting a deep cultural immersion.",
             score = 9,
-            photos = emptyList(),
+            photos = listOf("gaudi", "barcelona", "mountrocky"),
             date = Calendar.getInstance().apply { set(2026, 4, 10); stripTime() }
         ),
         Review(
