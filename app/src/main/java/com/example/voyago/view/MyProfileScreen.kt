@@ -444,7 +444,8 @@ fun ShowUserTrip(trip: Trip, vm: TripViewModel, navController: NavController) {
             .height(60.dp)
             .background(Color(0xf9, 0xf6, 0xf9, 255))
             .clickable{
-                vm.setSelectedTrip(trip)
+                vm.userAction = TripViewModel.UserAction.VIEW_OTHER_TRIP
+                vm.setOtherTrip(trip)
                 navController.navigate("trip_details")
             }
             .padding(horizontal = 8.dp),

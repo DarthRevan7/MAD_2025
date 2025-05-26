@@ -24,6 +24,14 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
     //Use in the edit trip interface
     var editTrip:Trip = Trip()
 
+
+    private val _otherTrip = mutableStateOf<Trip>(Trip())
+    val otherTrip: State<Trip> = _otherTrip
+
+    fun setOtherTrip(trip: Trip) {
+        _otherTrip.value = trip
+    }
+
     //Use in the select trip interface (trip detail)
     private val _selectedTrip = mutableStateOf<Trip?>(null)
     val selectedTrip: State<Trip?> = _selectedTrip
@@ -36,7 +44,7 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
     var userAction:UserAction = UserAction.NOTHING
 
     enum class UserAction {
-        EDIT_TRIP, CREATE_TRIP, VIEW_TRIP, NOTHING, SEARCHING, FILTER_SELECTION
+        EDIT_TRIP, CREATE_TRIP, VIEW_TRIP, NOTHING, SEARCHING, FILTER_SELECTION, VIEW_OTHER_TRIP
     }
 
     //EXPLORE

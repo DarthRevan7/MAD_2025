@@ -95,6 +95,7 @@ fun HomePageScreen(
 
             onTripClick = { trip ->
                 vm1.setSelectedTrip(trip)
+                vm1.userAction = TripViewModel.UserAction.VIEW_TRIP
                 navController.navigate("trip_details")
             }
         )
@@ -195,14 +196,6 @@ fun SectionTag(
         )
     }
 }
-
-
-
-
-
-
-
-
 
 @Composable
 fun PopularTravel(

@@ -1,6 +1,7 @@
 package com.example.voyago.view
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -59,6 +60,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextButton
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.setValue
@@ -91,7 +93,19 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
     uvm.updateAllRatings(ReviewModel())
 
     //Trip that we are showing
-    val trip by vm.selectedTrip
+    val trip = when (vm.userAction) {
+        TripViewModel.UserAction.VIEW_TRIP -> vm.selectedTrip.value
+        TripViewModel.UserAction.VIEW_OTHER_TRIP -> vm.otherTrip.value
+        else -> null
+    }
+
+    Log.d("Action", "${vm.userAction}")
+
+    DisposableEffect(Unit) {
+        onDispose {
+            vm.userAction = TripViewModel.UserAction.VIEW_TRIP
+        }
+    }
 
     if (trip == null) {
         Text("Loading trip details...")
@@ -101,7 +115,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
     val nonNullTrip = trip!!
 
     //The user joined the trip but didn't created
-    val joined = nonNullTrip.participants.containsKey(1) && nonNullTrip.creatorId != 1
+    val joined = nonNullTrip.participants.containsKey(uvm.loggedUser.id) && nonNullTrip.creatorId != uvm.loggedUser.id
 
     //Delete confirmation trip
     var showPopup by remember { mutableStateOf(false) }
