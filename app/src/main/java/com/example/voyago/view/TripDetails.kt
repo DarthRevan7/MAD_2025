@@ -96,7 +96,8 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
     val trip = when (vm.userAction) {
         TripViewModel.UserAction.VIEW_TRIP -> vm.selectedTrip.value
         TripViewModel.UserAction.VIEW_OTHER_TRIP -> vm.otherTrip.value
-        else -> null
+        else -> vm.selectedTrip.value
+
     }
 
     Log.d("Action", "${vm.userAction}")
