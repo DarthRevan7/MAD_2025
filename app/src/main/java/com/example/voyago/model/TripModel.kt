@@ -1,6 +1,5 @@
 package com.example.voyago.model
 
-import android.util.Log
 import com.example.voyago.model.Trip.Activity
 import com.example.voyago.model.Trip.Participant
 import com.example.voyago.model.Trip.TripStatus
@@ -72,11 +71,8 @@ class TripModel {
                        filterGroupSize: Pair<Int,Int>, filtersTripType: List<SelectableItem>,
                        filterUpcomingTrips: Boolean, filterCompletedTrips: Boolean,
                        filterBySeats: Int) {
-        Log.d("FilterFunction", "Filtering with destination: $filterDestination, minPrice: $filterMinPrice, maxPrice: $filterMaxPrice, filterDuration: $filterDuration, filterGroupSize: $filterGroupSize, filterTripType: $filtersTripType")
         var filtered = list.filter { trip ->
-            Log.d("FilterFunction", "Checking trip: ${trip.title}")
             val destination = filterDestination.isBlank() || trip.destination.contains(filterDestination, ignoreCase = true)
-            //val price = (filterMinPrice == Double.MAX_VALUE && filterMaxPrice == Double.MIN_VALUE) || trip.estimatedPrice in filterMinPrice..filterMaxPrice
 
             val duration = (filterDuration.first == -1 && filterDuration.second == -1) ||
                     (trip.tripDuration() in filterDuration.first..filterDuration.second)
@@ -90,19 +86,14 @@ class TripModel {
             } else {
                 trip.estimatedPrice in filterMinPrice..filterMaxPrice // Apply filter with given interval
             }
-            Log.d("FilterFunction", "Checking price for trip ${trip.title}: estimatedPrice=${trip.estimatedPrice}, filterMinPrice=$filterMinPrice, filterMaxPrice=$filterMaxPrice, priceCondition=$price")
-
 
             val completed = !filterCompletedTrips || trip.status == TripStatus.COMPLETED//|| !trip.canJoin()
             val canJoin = !filterUpcomingTrips || trip.loggedInUserCanJoin(1)
             val spots = trip.availableSpots() >= filterBySeats
 
-            Log.d("FilterFunction", "Conditions: destination=$destination, price=$price, duration=$duration, groupSize=$groupSize, completed=$completed, spots=$spots")
-
             trip.published && destination && price && duration && groupSize && canJoin && completed
                     && spots
         }
-        Log.d("FilterFunction", "Filtered trips: $filtered")
 
         if(!filtersTripType.any{ it.isSelected }) {
             _filteredList.value = filtered

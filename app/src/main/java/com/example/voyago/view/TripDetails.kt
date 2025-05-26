@@ -1008,6 +1008,7 @@ fun DeleteButtonWithConfirmation(trip: Trip, navController: NavController, vm: T
     }
 }
 
+@SuppressLint("DiscouragedApi")
 @Composable
 fun ShowReview(review: Review, vm: TripViewModel, myTrip: Boolean, uvm: UserViewModel, navController: NavController) {
     val reviewer = uvm.getUserData(review.reviewerId)

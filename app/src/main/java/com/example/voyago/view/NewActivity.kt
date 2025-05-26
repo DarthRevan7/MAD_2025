@@ -4,7 +4,6 @@ package com.example.voyago.view
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
-import android.util.Log
 import android.widget.DatePicker
 import android.widget.TimePicker
 import androidx.compose.foundation.background
@@ -292,7 +291,6 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
 
                             descriptionTouched.value = true
 
-                            Log.d("Validation", "!showDateError = ${!showDateError}\n!descriptionHasError = ${!descriptionHasErrors}")
                             if (!showDateError && !descriptionHasErrors) {
 
                                 val newActivity = Trip.Activity(

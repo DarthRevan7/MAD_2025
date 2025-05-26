@@ -2,7 +2,6 @@ package com.example.voyago.view
 
 import android.app.DatePickerDialog
 import android.net.Uri
-import android.util.Log
 import android.widget.DatePicker
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -467,13 +466,7 @@ fun TripImage(imageUri: Uri?, onUriSelected: (Uri?) -> Unit, photoTouched: Mutab
     val pickMedia = rememberLauncherForActivityResult(
         contract = PickVisualMedia()
     ) { uri ->
-
         onUriSelected(uri)
-        if (uri != null) {
-            Log.d("PhotoPicker", "Selected URI: $uri")
-        } else {
-            Log.d("PhotoPicker", "No media selected")
-        }
     }
 
     Box(

@@ -480,11 +480,6 @@ fun TripImageEdit(trip:Trip, imageUri: Uri?, onUriSelected: (Uri?) -> Unit) {
         contract = PickVisualMedia()
     ) { uri ->
         onUriSelected(uri)
-        if (uri != null) {
-            Log.d("PhotoPicker", "Selected URI: $uri")
-        } else {
-            Log.d("PhotoPicker", "No media selected")
-        }
     }
 
     Box(

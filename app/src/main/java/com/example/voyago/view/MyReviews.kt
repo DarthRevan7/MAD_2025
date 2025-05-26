@@ -1,7 +1,5 @@
 package com.example.voyago.view
 
-import android.net.Uri
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -36,9 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -95,7 +91,6 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
     ) { uris ->
         if (uris.isNotEmpty()) {
             rvm.updateSelectedUris(uris)
-            Log.d("ImagePicker", "Selected URIs: $uris")
         }
     }
 
@@ -206,7 +201,6 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
                         Spacer(modifier = Modifier.height(16.dp))
                         Text("Your rating: $rating")
 
-                        Log.d("Rating", "Trip error=${isRatingInvalid(key)}")
                         if (isRatingInvalid(key)) {
                             Text(
                                 "Rating must be at least 0.5",
@@ -341,7 +335,6 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
                             Spacer(modifier = Modifier.height(16.dp))
                             Text("Your rating: $rating")
 
-                            Log.d("Rating", "User error=${isRatingInvalid(key.toString())}")
                             if (isRatingInvalid(key.toString())) {
                                 Text(
                                     "Rating must be at least 0.5",

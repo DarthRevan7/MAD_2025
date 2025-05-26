@@ -1,4 +1,5 @@
 package com.example.voyago.view
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -21,7 +22,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -245,6 +245,7 @@ fun PopularTravel(
 
 
 
+@SuppressLint("DiscouragedApi")
 @Composable
 private fun TripCard(
 
@@ -309,6 +310,7 @@ private fun TripCard(
 }
 
 
+@SuppressLint("DiscouragedApi")
 @Composable
 fun ArticleShow(
     imageUrl: String,

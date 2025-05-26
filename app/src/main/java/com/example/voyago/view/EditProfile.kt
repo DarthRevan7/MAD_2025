@@ -1,10 +1,7 @@
 package com.example.voyago.view
 
 import android.app.Activity.RESULT_OK
-import com.example.voyago.activities.*
 import android.content.Context
-import android.content.Intent
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
@@ -25,7 +22,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -34,8 +30,6 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.voyago.activities.BottomBar
-import com.example.voyago.activities.TopBar
 import androidx.compose.material3.*
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -77,15 +71,10 @@ fun EditProfileScreen(navController: NavController, context:Context, vm: TripVie
         if (result.resultCode == RESULT_OK) {
             val uri = result.data?.data // Get the URI from the result Intent
             if (uri != null) {
-                Log.d("CameraResult", "Captured URI: $uri")
                 profileImageUri = uri // Update the rememberSaveable state
                 user.profilePicture = uri // Also update the user object
                 showPopup = false // Dismiss the popup
-            } else {
-                Log.d("CameraResult", "No URI received from camera")
             }
-        } else {
-            Log.d("CameraResult", "Camera activity cancelled or failed")
         }
     }
 
@@ -437,10 +426,7 @@ fun CameraPopup(onDismissRequest: () -> Unit, onImageSelectedFromGallery: (Uri) 
         contract = PickVisualMedia()
     ) { uri ->
         if (uri != null) {
-            Log.d("PhotoPicker", "Selected URI: $uri")
             onImageSelectedFromGallery(uri)
-        } else {
-            Log.d("PhotoPicker", "No media selected")
         }
     }
 

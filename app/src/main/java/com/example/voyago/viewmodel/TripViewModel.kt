@@ -1,6 +1,5 @@
 package com.example.voyago.viewmodel
 
-import android.net.Uri
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
@@ -78,8 +77,6 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
     }
 
     //Min price and Max price of the database
-    fun getMinPrice() = tripModel.minPrice
-    fun getMaxPrice() = tripModel.maxPrice
     fun setMaxMinPrice() = tripModel.setMaxMinPrice()
 
     //Duration filter
@@ -331,18 +328,6 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
         return updatedList
     }
 
-    //List of activities of a specific trip
-    fun getActivities(trip: Trip): List<Activity> {
-        return trip.activities.values.flatten()
-    }
-
-    //Add an activity to a specific trip
-    fun addActivityToSelectedTrip(activity: Activity) {
-        tripModel.addActivityToTrip(activity, _selectedTrip.value)?.let { updatedTrip ->
-            _selectedTrip.value = updatedTrip
-        }
-    }
-
     fun addActivityToTrip(activity: Activity) {
         //Creating a new trip
         if(userAction == UserAction.CREATE_TRIP) {
@@ -403,7 +388,7 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
     //Get user reviews
     fun getUserReviews(id: Int): List<Review> = reviewModel.getUserReviews(id)
 
-    private suspend fun updateAllTripStatuses() {
+    private fun updateAllTripStatuses() {
         val trips = tripModel.getAllPublishedTrips()
 
         for (trip in trips) {

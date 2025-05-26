@@ -1,6 +1,7 @@
 package com.example.voyago.view
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -66,7 +67,6 @@ import com.example.voyago.model.Trip
 import com.example.voyago.model.UserData
 import com.example.voyago.viewmodel.*
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -439,7 +439,6 @@ fun TabAboutTripsReview(user: UserData, vm: TripViewModel, vm2: ArticleViewModel
 @SuppressLint("DiscouragedApi")
 @Composable
 fun ShowUserTrip(trip: Trip, vm: TripViewModel, navController: NavController) {
-    vm.setSelectedTrip(trip)
     val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
     val formattedDate = dateFormat.format(trip.startDate.time)
 
@@ -448,7 +447,10 @@ fun ShowUserTrip(trip: Trip, vm: TripViewModel, navController: NavController) {
             .fillMaxWidth()
             .height(60.dp)
             .background(Color(0xf9, 0xf6, 0xf9, 255))
-            .clickable{navController.navigate("trip_details")}
+            .clickable{
+                vm.setSelectedTrip(trip)
+                navController.navigate("trip_details")
+            }
             .padding(horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

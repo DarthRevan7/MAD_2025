@@ -27,7 +27,7 @@ data class Review(
         date = Calendar.getInstance()
     )
 
-    //A valid review has filled fields!!
+    //A valid review has filled fields
     fun isValidReview(): Boolean {
         return reviewId > 0 && reviewerId > 0 && (reviewedUserId > 0 || tripId > 0)  && score > 0
                 && title != "" && comment != ""

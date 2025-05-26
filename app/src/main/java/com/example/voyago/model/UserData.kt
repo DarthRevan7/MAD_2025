@@ -20,14 +20,12 @@ data class UserData(
     var reliability: Int
 
 ) {
-    fun age(): String
-    {
+    fun age(): String {
         val calendarToday = Calendar.getInstance()
         return (calendarToday.get(Calendar.YEAR) - dateOfBirth.get(Calendar.YEAR)).toString()
 
     }
-    fun changeUserData(dataToChange:List<String>)
-    {
+    fun changeUserData(dataToChange:List<String>) {
         this.firstname = dataToChange[0]
         this.surname = dataToChange[1]
         this.username = dataToChange[2]
