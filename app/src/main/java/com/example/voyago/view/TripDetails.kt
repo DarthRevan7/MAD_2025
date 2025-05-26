@@ -1063,7 +1063,11 @@ fun ShowReview(review: Review, vm: TripViewModel, myTrip: Boolean, uvm: UserView
             }
             Text(
                 "${userReviewed.firstname} ${userReviewed.surname}",
-                modifier = Modifier.padding(start = 16.dp)
+                modifier = Modifier
+                    .padding(start = 16.dp)
+                    .clickable{
+                        navController.navigate("user_profile/${userReviewed.id}")
+                    }
             )
         }
 
