@@ -445,7 +445,6 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                                         vm.editTrip = updatedTrip
                                         vm.setSelectedTrip(updatedTrip)
                                         vm.editExistingTrip(vm.editTrip)
-                                        println("Trip editing")
                                     }
                                 }
                                 //Go to the list of activities

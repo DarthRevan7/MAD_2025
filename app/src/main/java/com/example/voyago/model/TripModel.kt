@@ -88,7 +88,7 @@ class TripModel {
             val price = if (filterMinPrice == 0.0 && filterMaxPrice == 0.0) {
                 true
             } else {
-                trip.estimatedPrice in filterMinPrice..filterMaxPrice // Aplly filter with given interval
+                trip.estimatedPrice in filterMinPrice..filterMaxPrice // Apply filter with given interval
             }
             Log.d("FilterFunction", "Checking price for trip ${trip.title}: estimatedPrice=${trip.estimatedPrice}, filterMinPrice=$filterMinPrice, filterMaxPrice=$filterMaxPrice, priceCondition=$price")
 
@@ -165,10 +165,6 @@ class TripModel {
             min = -1
             max = -1
         }
-
-        println("SetRange min = $min")
-        println("SetRange max = $max")
-
         return Pair(min, max)
     }
 

@@ -92,7 +92,6 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
 
     //Trip that we are showing
     val trip by vm.selectedTrip
-    println("selected trip = ${vm.selectedTrip}")
 
     if (trip == null) {
         Text("Loading trip details...")
@@ -980,7 +979,6 @@ fun DeleteButtonWithConfirmation(trip: Trip, navController: NavController, vm: T
                 Button(
                     onClick = {
                         val newOwner = trip.participants.entries.firstOrNull { it.key != trip.creatorId }
-                        println("newOwner: $newOwner")
                         if (!trip.published || newOwner == null) {
                             vm.deleteTrip(trip.id)
                             vm.updatePublishedTrip()

@@ -4,7 +4,6 @@ import com.example.voyago.model.Trip.Activity
 import com.example.voyago.model.Trip.Participant
 import com.example.voyago.model.Trip.TripStatus
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import java.util.Calendar
 
 fun Calendar.stripTime(): Calendar {

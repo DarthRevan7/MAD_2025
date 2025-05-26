@@ -51,10 +51,6 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
 
     val selectedTrip by vm.selectedTrip
 
-
-    println("Vm.UserAction = " + vm.userAction.toString())
-    println("selected trip to: ${selectedTrip?.destination}")
-
     var showIncompleteDialog by rememberSaveable { mutableStateOf(false) }
 
     Box(

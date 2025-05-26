@@ -1,7 +1,5 @@
 package com.example.voyago.model
 
-import android.media.Image
-import java.time.LocalDateTime
 import java.util.Calendar
 
 data class Article(

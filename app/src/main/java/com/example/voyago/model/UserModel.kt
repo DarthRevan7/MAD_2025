@@ -1,9 +1,5 @@
 package com.example.voyago.model
 
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import java.util.Calendar
-
 class UserModel {
     private var _users = privateUsers
     var users = _users

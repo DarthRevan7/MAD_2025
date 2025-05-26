@@ -1,9 +1,6 @@
 package com.example.voyago.model
 
 import java.util.Calendar
-import android.net.Uri
-import com.example.voyago.model.Trip
-import com.example.voyago.model.Trip.TripStatus
 
 data class Review(
     val reviewId: Int,

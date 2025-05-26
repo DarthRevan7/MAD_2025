@@ -64,7 +64,6 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
     uvm.updateAllRatings(ReviewModel())
 
     val trip by vm.selectedTrip
-    println("selected trip = ${vm.selectedTrip}")
 
     //Delete before submission
     if (trip == null) {
@@ -439,8 +438,6 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
                                     }
 
                                     rvm.addAllTripReviews(reviewsToSubmit)
-
-                                    println("$hasReviews")
 
                                     navController.popBackStack()
                                 }

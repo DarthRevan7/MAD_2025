@@ -13,7 +13,6 @@ class ReviewViewModel(val reviewModel:ReviewModel): ViewModel() {
 
     fun addNewReview(newReview: Review): Review {
         val createdReview = reviewModel.createNewReview(newReview)
-        println("Review: ${createdReview.reviewId} | ${createdReview.score} - ${createdReview.title} - ${createdReview.comment}")
         return createdReview
     }
 

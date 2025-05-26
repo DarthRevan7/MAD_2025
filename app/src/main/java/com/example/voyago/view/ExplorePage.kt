@@ -68,8 +68,6 @@ fun ExplorePage(navController: NavController, vm: TripViewModel = viewModel(fact
         vm.updatePublishedTrip()
         vm.setMaxMinPrice()
 
-        println("User Action = " + vm.userAction)
-
         if(vm.userAction != TripViewModel.UserAction.SEARCHING && vm.userAction != TripViewModel.UserAction.VIEW_TRIP) {
             vm.resetFilters()
         }
@@ -137,7 +135,6 @@ fun TripCard(trip: Trip, navController: NavController, vm: TripViewModel, edit: 
         shape = CardDefaults.elevatedShape,
         onClick = {
             vm.setSelectedTrip(trip)
-            println("selected trip = ${vm.selectedTrip}")
             vm.userAction = TripViewModel.UserAction.VIEW_TRIP
             navController.navigate("trip_details")
 
