@@ -352,6 +352,32 @@ fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
             TripDetails(navController = navController, vm = tripViewModel, owner = false, uvm = userViewModel)
         }
 
+        composable("user_profile/{userId}",
+            arguments = listOf(navArgument("userId") { type = NavType.IntType })) { entry ->
+            val exploreGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Explore.route)
+            }
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = Factory
+            )
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = Factory
+            )
+            val vm2: ArticleViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry
+            )
+            val userId = entry.arguments?.getInt("userId") ?: 1
+            UserProfileScreen(
+                navController = navController,
+                vm = tripViewModel,
+                vm2 = vm2,
+                userId = userId,
+                uvm = userViewModel
+            )
+        }
+
         composable("filters_selection") { entry ->
             val exploreGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.Explore.route)

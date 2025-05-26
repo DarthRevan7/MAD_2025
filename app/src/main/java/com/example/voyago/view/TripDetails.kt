@@ -1082,7 +1082,7 @@ fun ShowReview(review: Review, vm: TripViewModel, myTrip: Boolean, uvm: UserView
     }
 
     // Show photos if there are any
-    if (!review.photos.isNullOrEmpty()) {
+    if (review.photos.isNotEmpty()) {
         LazyRow(
             modifier = Modifier
                 .fillMaxWidth()
