@@ -4,6 +4,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -306,7 +307,11 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
                             }
                             Text(
                                 "${user.firstname} ${user.surname}",
-                                modifier = Modifier.padding(start = 16.dp),
+                                modifier = Modifier
+                                    .padding(start = 16.dp)
+                                    .clickable{
+                                        navController.navigate("user_profile/${user.id}")
+                                    },
                                 fontSize = 20.sp
 
                             )

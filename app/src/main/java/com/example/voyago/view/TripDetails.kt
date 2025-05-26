@@ -1048,7 +1048,6 @@ fun ShowReview(review: Review, vm: TripViewModel, myTrip: Boolean, uvm: UserView
                 modifier = Modifier
                     .padding(start = 16.dp)
                     .clickable {
-
                         navController.navigate("user_profile/${review.reviewerId}")
                     }
             )
