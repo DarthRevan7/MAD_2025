@@ -113,7 +113,7 @@ fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: Articl
                     .padding(16.dp)
                     .offset(y = (-30).dp)
                     .clickable {
-                        uvm.setProfileImageUri(uvm.loggedUser.profilePicture)
+                        uvm.setProfileImageUri(user1.profilePicture)
                         navController.navigate("edit_profile")
                     }
                 )
