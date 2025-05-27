@@ -1,6 +1,24 @@
 package com.example.voyago.model
 
 class UserModel {
+    data class User(
+        val id: Int = 0,
+        var firstname: String = "",
+        var surname: String = "",
+        var username: String = "",
+        var country: String = "",
+        var email: String = "",
+        var userDescription: String = "",
+        var dateOfBirth: Long = 0L,
+        var password: String = "",
+        var profilePictureUrl: String? = null,
+        var typeTravel: List<TypeTravel> = emptyList(),
+        var desiredDestination: List<String> = emptyList(),
+        var rating: Float = 0f,
+        var reliability: Int = 0
+    )
+
+    // -------------------------------------------------
     private var _users = privateUsers
     var users = _users
 
@@ -14,6 +32,7 @@ class UserModel {
     //GET USER INFORMATION
 
     //Get a user given its id
+
     fun getUserDataById(id: Int): UserData {
         return _users.value.find { it.id == id }
             ?: throw NoSuchElementException("User with ID $id not found")
@@ -29,7 +48,7 @@ class UserModel {
         return _users.value
     }
 
-    // Calculate average user rating by id
+    //Calculate average user rating by id
     fun refreshAllRatings(reviewModel: ReviewModel) {
         _users.value = _users.value.map { user ->
             user.copy(rating = reviewModel.calculateRatingById(user.id))
