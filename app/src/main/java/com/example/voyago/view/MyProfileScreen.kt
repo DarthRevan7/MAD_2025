@@ -65,6 +65,7 @@ import com.example.voyago.model.ReviewModel
 import com.example.voyago.model.Trip
 import com.example.voyago.model.UserData
 import com.example.voyago.viewmodel.*
+import kotlinx.coroutines.flow.forEach
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -389,7 +390,9 @@ fun TabAboutTripsReview(user: UserData, vm: TripViewModel, vm2: ArticleViewModel
                                 .height((3*43).dp)
                                 .verticalScroll(rememberScrollState())
                         ) {
-                            vm2.articlesByUserId(user.id).forEach { item ->
+                            val articles by vm2.articlesByUserId(user.id).collectAsState(initial = emptyList())
+
+                            articles.forEach { item ->
                                 ShowUserArticle(item)
                             }
                         }
@@ -501,8 +504,7 @@ fun ShowUserTrip(trip: Trip, vm: TripViewModel, navController: NavController) {
 fun ShowUserArticle(article: Article) {
 
     val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
-    val formattedDate = dateFormat.format(article.date.time)
-
+    val formattedDate = dateFormat.format(article.date ?: 0L)
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -517,10 +519,10 @@ fun ShowUserArticle(article: Article) {
                 .clip(CircleShape)
                 .background(Color.Gray) // fallback background
         ) {
-            if (article.photo.isNotBlank()) {
+            if (article.photo?.isNotBlank() == true) {
                 val context = LocalContext.current
 
-                val imageModel = if (!article.photo.isUriString()) {
+                val imageModel = if (article.photo?.isUriString() == true) {
                     // Local drawable resource
                     context.resources.getIdentifier(article.photo, "drawable", context.packageName)
                 } else {
@@ -545,7 +547,7 @@ fun ShowUserArticle(article: Article) {
         Spacer(modifier = Modifier.width(12.dp))
 
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = article.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(text = article.title?:"No title", maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
 
         Text(

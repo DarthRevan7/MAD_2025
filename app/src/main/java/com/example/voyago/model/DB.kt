@@ -1369,7 +1369,7 @@ fun sampleArticles(): List<Article> {
             text = descriptions[index],
             photo = imageNames[index],
             authorId = authors[index],
-            date = calendar,
+            date =Calendar.getInstance().timeInMillis,
             contentUrl = "https://example.com/articles/${titles[index].lowercase().replace("""[^a-z0-9]+""".toRegex(), "-")}",
             tags = tagsList[index]
         )

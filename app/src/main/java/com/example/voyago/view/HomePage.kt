@@ -57,7 +57,7 @@ fun HomePageScreen(
 
 
 //    val tripLists by vm1.tripList.collectAsState()
-    val articles by vm2.articleList.collectAsState()
+    val articles by vm2.articleList.collectAsState(initial = emptyList() )
     var displayCount by remember { mutableIntStateOf(5) }
     val scrollState = rememberScrollState()
     // 1. 先拿到“现在”的时间点
@@ -306,9 +306,9 @@ private fun TripCard(
 @SuppressLint("DiscouragedApi")
 @Composable
 fun ArticleShow(
-    imageUrl: String,
-    title: String,
-    description: String,
+    imageUrl: String?,
+    title: String?,
+    description: String?,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -334,14 +334,14 @@ fun ArticleShow(
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = title,
+                text = title ?: "No Title", // 处理 null,
                 style = MaterialTheme.typography.titleMedium,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                text = description,
+                text = description ?: "No Description", // 处理 null
                 style = MaterialTheme.typography.bodyMedium,
                 maxLines = 5,
                 overflow = TextOverflow.Ellipsis
