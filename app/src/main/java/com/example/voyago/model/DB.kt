@@ -6,6 +6,7 @@ import com.example.voyago.model.Trip.TripStatus
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.util.Calendar
 
+/*
 fun Calendar.stripTime(): Calendar {
     this.set(Calendar.HOUR_OF_DAY, 0)
     this.set(Calendar.MINUTE, 0)
@@ -1378,3 +1379,5 @@ fun sampleArticles(): List<Article> {
         )
     }
 }
+
+ */
