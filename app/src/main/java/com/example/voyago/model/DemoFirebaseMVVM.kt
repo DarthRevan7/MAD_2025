@@ -57,7 +57,6 @@ object Collections{
 data class User(
 
     val id: Int=0, // Added an ID field
-
     val first: String = "",
     val second: String = "",
     val born: Long = 0L

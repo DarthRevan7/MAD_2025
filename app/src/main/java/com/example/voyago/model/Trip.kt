@@ -1,7 +1,7 @@
 package com.example.voyago.model
 
 import java.util.Calendar
-
+/*
 data class Trip(
     val id: Int,
     var photo: String,
@@ -173,3 +173,5 @@ enum class TypeTravel {
     ADVENTURE,
     RELAX
 }
+
+ */

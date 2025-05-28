@@ -1,5 +1,6 @@
 package com.example.voyago.view
 
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -37,6 +38,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -53,6 +55,7 @@ import com.example.voyago.model.ReviewModel
 import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
+import kotlinx.coroutines.launch
 import java.util.Calendar
 
 @Composable
@@ -62,13 +65,7 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
 
     val trip by vm.selectedTrip
 
-    //Delete before submission
-    if (trip == null) {
-        Text("Loading trip details...")
-        return
-    }
-
-    val nonNullTrip = trip!!
+    val nonNullTrip = trip
 
     val listState = rememberLazyListState()
 
@@ -94,6 +91,8 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
             rvm.updateSelectedUris(uris)
         }
     }
+
+    val composableScope = rememberCoroutineScope()
 
 
     fun isTitleInvalid(key: String): Boolean {
@@ -149,7 +148,7 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     Text(
-                        text = "${trip?.estimatedPrice} €",
+                        text = "${trip.estimatedPrice} €",
                         modifier = Modifier.align(Alignment.CenterVertically)
                     )
                 }
@@ -173,8 +172,15 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
             if(hasReviews) {
                 //Review of the trip made by the logged in user
                 val review = vm.tripReview(uvm.loggedUser.id, nonNullTrip.id)
-                item {
-                    ShowReview(review, vm, true, uvm, navController)
+                if(review != null) {
+                    item {
+                        ShowReview(review, vm, true, uvm, navController)
+                    }
+                } else
+                {
+                    item {
+                        Text("No review yet")
+                    }
                 }
             } else {
                 item {
@@ -280,8 +286,15 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
             if(hasReviews) {
                 //Review of the users made by the logged in user
                 val reviews = vm.getUsersReviewsTrip(uvm.loggedUser.id, nonNullTrip.id)
-                items(reviews) { review ->
-                    ShowReview(review, vm, true, uvm, navController)
+                if(reviews != null) {
+                    items(reviews) { review ->
+                        ShowReview(review, vm, true, uvm, navController)
+                    }
+                }
+                else {
+                    item {
+                        Text("No reviews yet")
+                    }
                 }
             } else {
                 //Field to complete
@@ -429,13 +442,16 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
                                             comment = comment,
                                             score = score,
                                             photos = photos,
-                                            date = currentDate
+                                            date = currentDate.timeInMillis
                                         )
 
                                         reviewsToSubmit.add(review)
                                     }
 
-                                    rvm.addAllTripReviews(reviewsToSubmit)
+                                    composableScope.launch {
+                                        Log.d("MyReviewScreen", "Chiamata a addAllTripReviews dal Composable.")
+                                        rvm.addAllTripReviews(reviewsToSubmit)
+                                    }
 
                                     navController.popBackStack()
                                 }

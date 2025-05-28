@@ -3,29 +3,18 @@ package com.example.voyago.model
 import java.util.Calendar
 
 data class Review(
-    val reviewId: Int,
-    val tripId: Int,
-    val isTripReview: Boolean,
-    var reviewerId: Int,
-    var reviewedUserId: Int,
-    var title: String,
-    var comment: String,
-    var score: Int,
-    var photos: List<String>,
-    val date: Calendar
+    val reviewId: Int = 0,
+    val tripId: Int = 0,
+    val isTripReview: Boolean = false,
+    var reviewerId: Int = 0,
+    var reviewedUserId: Int = 0,
+    var title: String = "",
+    var comment: String = "",
+    var score: Int = 0,
+    var photos: List<String> = emptyList(),
+    val date: Long = 0L
 ) {
-    constructor() : this (
-        reviewId = -1,
-        tripId = -1,
-        isTripReview = false,
-        reviewerId = -1,
-        reviewedUserId = -1,
-        title = "",
-        comment = "",
-        score = -1,
-        photos = emptyList(),
-        date = Calendar.getInstance()
-    )
+
 
     //A valid review has filled fields
     fun isValidReview(): Boolean {

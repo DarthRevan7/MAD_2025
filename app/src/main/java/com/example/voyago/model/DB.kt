@@ -942,6 +942,7 @@ var privateTripList = MutableStateFlow<List<Trip>>(
         )
     )
 )
+/*
 
 //Review list
 var privateReviews = MutableStateFlow<List<Review>>(
@@ -1308,6 +1309,8 @@ var privateReviews = MutableStateFlow<List<Review>>(
         )
     )
 )
+
+ */
 
 fun sampleArticles(): List<Article> {
     val titles = listOf(
