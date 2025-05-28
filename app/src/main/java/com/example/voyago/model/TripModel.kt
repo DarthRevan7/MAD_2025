@@ -1,14 +1,184 @@
 package com.example.voyago.model
 
+import android.util.Log
+import com.example.voyago.Collections
 import com.example.voyago.model.Trip.Activity
 import com.example.voyago.model.Trip.Participant
 import com.example.voyago.model.Trip.TripStatus
 import com.example.voyago.view.SelectableItem
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.tasks.await
 import java.util.Calendar
+import java.util.TimeZone
 import kotlin.collections.contains
 import kotlin.collections.forEach
+
+
+data class TripDB(
+    val id: Int = 0,
+    var photo: String = "",
+    var title: String = "",
+    var destination: String = "",
+    var startDate: Long = 0L,
+    var endDate: Long = 0L,
+    var estimatedPrice: Double = 0.0,
+    var groupSize: Int = 0,
+    var participants: Map<Int, JoinRequestDB> = emptyMap(),                   // userId, id JoinedRequest
+    var activities: Map<Long, List<ActivityDB>> = emptyMap(),     // Map<Date, Activity>
+    var status: String = "",
+    var typeTravel: List<String> = emptyList(),
+    var creatorId: Int = 0,
+    var appliedUsers: Map<Int, JoinRequestDB> = emptyMap(),                   // userId, id JoinedRequest
+    var rejectedUsers: Map<Int, JoinRequestDB> = emptyMap(),                  // userId, number of spots
+    var published: Boolean = false
+) {
+
+    data class ActivityDB(
+        val id: Int = 0,
+        var date: Long = 0L,         // yyyy-mm-dd
+        var time: String = "",           // hh:mm
+        var isGroupActivity: Boolean = false,
+        var description: String = ""
+    )
+
+    data class JoinRequestDB(
+        val userId: Int = 0,
+        val requestedSpots: Int = 0,
+        val unregisteredParticipants: List<ParticipantDB> = emptyList(), // excludes the requesting user
+        val registeredParticipants: List<Int> = emptyList()            //users' Ids
+    )
+
+    data class ParticipantDB(
+        val name: String = "",
+        val surname: String = "",
+        val email: String = ""
+    )
+
+
+    fun TripDB.toTrip(): Trip {
+        // Helper function to convert Long to Calendar
+        fun Long.toCalendar(): Calendar {
+            val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC")) // Or your desired timezone
+            calendar.timeInMillis = this
+            return calendar
+        }
+
+        // Helper function to convert TripDB.ActivityDB to Trip.Activity
+        fun TripDB.ActivityDB.toActivity(): Trip.Activity {
+            return Trip.Activity(
+                id = this.id,
+                date = this.date.toCalendar(),
+                time = this.time,
+                isGroupActivity = this.isGroupActivity,
+                description = this.description
+            )
+        }
+
+        // Helper function to convert TripDB.ParticipantDB to Trip.Participant
+        fun TripDB.ParticipantDB.toParticipant(): Trip.Participant {
+            return Trip.Participant(
+                name = this.name,
+                surname = this.surname,
+                email = this.email
+            )
+        }
+
+        // Helper function to convert TripDB.JoinRequestDB to Trip.JoinRequest
+        fun TripDB.JoinRequestDB.toJoinRequest(): Trip.JoinRequest {
+            return Trip.JoinRequest(
+                userId = this.userId,
+                requestedSpots = this.requestedSpots,
+                unregisteredParticipants = this.unregisteredParticipants.map { it.toParticipant() },
+                registeredParticipants = this.registeredParticipants
+            )
+        }
+
+
+
+        return Trip(
+            id = this.id,
+            photo = this.photo,
+            title = this.title,
+            destination = this.destination,
+            startDate = this.startDate.toCalendar(),
+            endDate = this.endDate.toCalendar(),
+            estimatedPrice = this.estimatedPrice,
+            groupSize = this.groupSize,
+            participants = this.participants.mapValues { it.value.toJoinRequest() },
+            activities = this.activities.entries.associate { it.key.toCalendar() to it.value.map { it.toActivity() } },
+            status = when (this.status) { // Convert String to TripStatus
+                "NOT_STARTED" -> TripStatus.NOT_STARTED
+                "IN_PROGRESS" -> TripStatus.IN_PROGRESS
+                "COMPLETED" -> TripStatus.COMPLETED
+                else -> TripStatus.NOT_STARTED // Or handle the error case as needed
+            },
+            typeTravel = this.typeTravel.map { TypeTravel.valueOf(it) }, // Convert List<String> to List<TypeTravel>
+            creatorId = this.creatorId,
+            appliedUsers = this.appliedUsers.mapValues { it.value.toJoinRequest() },
+            rejectedUsers = this.rejectedUsers.mapValues { it.value.toJoinRequest() },
+            published = this.published
+        )
+    }
+}
+
+class TripModelDB() {
+
+    fun getTrips(): Flow<List<TripDB>> = callbackFlow {//Observes update from the Server
+        val listener = Collections.trips.
+        orderBy("id")
+            .addSnapshotListener { s, er ->
+                if(s!=null)
+                    trySend(s.toObjects(TripDB::class.java))
+                else {
+                    Log.e("Error", er.toString())
+                    trySend(emptyList())
+                }
+            }
+        awaitClose {
+            listener.remove()
+        }
+    }
+
+    suspend fun putTrip(trip: TripDB): Boolean {
+        return try {
+            Collections.trips.document(trip.id.toString()).set(trip).await()
+            true
+        } catch (e: Exception) {
+            Log.e("Firebase Put Error", "Error adding/updating trip: ${e.message}")
+            false
+        }
+    }
+
+    suspend fun editTrip(trip: TripDB): Boolean {
+        return try {
+            Collections.trips.document(trip.id.toString()).set(trip).await()
+            true
+        } catch (e: Exception) {
+            Log.e("Firebase Edit Error", "Error editing trip with ID ${trip.id}: ${e.message}")
+            false
+        }
+    }
+
+
+    suspend fun deleteTrip(tripId: Int): Boolean {
+        return try {
+            Collections.trips.document(tripId.toString()).delete().await()
+            true
+        } catch (e: Exception) {
+            Log.e("Firebase Delete Error", "Error deleting trip with ID $tripId: ${e.message}")
+            false
+        }
+    }
+}
+
+
+
+
+
 
 class TripModel {
 

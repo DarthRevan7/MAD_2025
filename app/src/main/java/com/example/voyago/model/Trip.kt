@@ -165,6 +165,63 @@ data class Trip(
         return true
     }
 
+    fun Trip.toTripDB(): TripDB {
+
+        // Helper function to convert Calendar to Long
+        fun Calendar.toLong(): Long {
+            return this.timeInMillis
+        }
+
+        // Helper function to convert Trip.Activity to TripDB.ActivityDB
+        fun Activity.toActivityDB(): TripDB.ActivityDB {
+            return TripDB.ActivityDB(
+                id = this.id,
+                date = this.date.toLong(),
+                time = this.time,
+                isGroupActivity = this.isGroupActivity,
+                description = this.description
+            )
+        }
+
+        // Helper function to convert Trip.Participant to TripDB.ParticipantDB
+        fun Participant.toParticipantDB(): TripDB.ParticipantDB {
+            return TripDB.ParticipantDB(
+                name = this.name,
+                surname = this.surname,
+                email = this.email
+            )
+        }
+
+        // Helper function to convert Trip.JoinRequest to TripDB.JoinRequestDB
+        fun JoinRequest.toJoinRequestDB(): TripDB.JoinRequestDB {
+            return TripDB.JoinRequestDB(
+                userId = this.userId,
+                requestedSpots = this.requestedSpots,
+                unregisteredParticipants = this.unregisteredParticipants.map { it.toParticipantDB() },
+                registeredParticipants = this.registeredParticipants
+            )
+        }
+
+        return TripDB(
+            id = this.id,
+            photo = this.photo,
+            title = this.title,
+            destination = this.destination,
+            startDate = this.startDate.toLong(),
+            endDate = this.endDate.toLong(),
+            estimatedPrice = this.estimatedPrice,
+            groupSize = this.groupSize,
+            participants = this.participants.mapValues { it.value.toJoinRequestDB() },
+            activities = this.activities.entries.associate { it.key.toLong() to it.value.map { it.toActivityDB() } }, // Corrected line
+            status = this.status.toString(), // Convert TripStatus to String
+            typeTravel = this.typeTravel.map { it.toString() }, // Convert List<TypeTravel> to List<String>
+            creatorId = this.creatorId,
+            appliedUsers = this.appliedUsers.mapValues { it.value.toJoinRequestDB() },
+            rejectedUsers = this.rejectedUsers.mapValues { it.value.toJoinRequestDB() },
+            published = this.published
+        )
+    }
+
 }
 
 enum class TypeTravel {
