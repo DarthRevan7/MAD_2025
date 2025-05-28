@@ -205,7 +205,7 @@ class TripModel {
     fun filterPublishedByCreator(id: Int): Flow<List<Trip>> = callbackFlow {
         val listener = Collections.trips
             .whereEqualTo("id", id)
-            .whereEqualTo("published", true)// Filter documents where id matches
+            .whereEqualTo("published", true)
             .addSnapshotListener { snapshot, error ->
                 if (snapshot != null) {
                     trySend(snapshot.toObjects(Trip::class.java))
@@ -219,7 +219,38 @@ class TripModel {
         }
     }
 
+    fun filterPrivateByCreator(id: Int): Flow<List<Trip>> = callbackFlow {
+        val listener = Collections.trips
+            .whereEqualTo("id", id)
+            .whereEqualTo("published", false)
+            .addSnapshotListener { snapshot, error ->
+                if (snapshot != null) {
+                    trySend(snapshot.toObjects(Trip::class.java))
+                } else {
+                    Log.e("Error", error.toString())
+                    trySend(emptyList())
+                }
+            }
+        awaitClose {
+            listener.remove()
+        }
+    }
 
+    fun getAllPublishedTrips(): Flow<List<Trip>> = callbackFlow {
+        val listener = Collections.trips
+            .whereEqualTo("published", true)
+            .addSnapshotListener { snapshot, error ->
+                if (snapshot != null) {
+                    trySend(snapshot.toObjects(Trip::class.java))
+                } else {
+                    Log.e("Error", error.toString())
+                    trySend(emptyList())
+                }
+            }
+        awaitClose {
+            listener.remove()
+        }
+    }
 
     //--------------------------------------------------------------------
 
