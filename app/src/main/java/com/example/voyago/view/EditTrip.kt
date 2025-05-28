@@ -3,7 +3,6 @@ package com.example.voyago.view
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.net.Uri
-import android.util.Log
 import android.widget.DatePicker
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -56,6 +55,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.example.voyago.model.Trip
 import com.example.voyago.model.TypeTravel
+import com.example.voyago.model.toCalendar
 import com.example.voyago.viewmodel.TripViewModel
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -63,7 +63,7 @@ import java.util.Locale
 
 fun initUri(vm: TripViewModel): String {
     val trip = vm.selectedTrip.value
-    if (trip != null && vm.editTrip.isValid()) {
+    if (vm.editTrip.isValid()) {
         return trip.photo
     }
     return "placeholder_photo"
@@ -117,11 +117,11 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
 
 
     //Date Handling
-    var startDate by rememberSaveable { mutableStateOf(trip.startDate.toStringDate()) }
-    var startCalendar by rememberSaveable { mutableStateOf<Calendar?>(trip.startDate) }
+    var startDate by rememberSaveable { mutableStateOf(toCalendar(trip.startDate).toStringDate()) }
+    var startCalendar by rememberSaveable { mutableStateOf<Calendar?>(toCalendar(trip.startDate)) }
 
-    var endDate by rememberSaveable { mutableStateOf(trip.endDate.toStringDate()) }
-    var endCalendar by rememberSaveable { mutableStateOf<Calendar?>(trip.endDate) }
+    var endDate by rememberSaveable { mutableStateOf(toCalendar(trip.endDate).toStringDate()) }
+    var endCalendar by rememberSaveable { mutableStateOf<Calendar?>(toCalendar(trip.endDate)) }
 
     var dateError by rememberSaveable { mutableStateOf("") }
 
@@ -427,12 +427,12 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                                             photo = imageUri?.toString() ?: trip.photo,
                                             title = fieldValues[0].toString(),
                                             destination = fieldValues[1].toString(),
-                                            startDate = startCalendar!!,
-                                            endDate = endCalendar!!,
+                                            startDate = startCalendar!!.timeInMillis,
+                                            endDate = endCalendar!!.timeInMillis,
                                             estimatedPrice = fieldValues[2].toString().toDouble(),
                                             groupSize = fieldValues[3].toString().toInt(),
                                             activities = currentTrip.activities,
-                                            typeTravel = selected.map { TypeTravel.valueOf(it.uppercase()) },
+                                            typeTravel = selected.map { TypeTravel.valueOf(it.uppercase()).toString() },
                                             creatorId = currentTrip.creatorId,
                                             published = currentTrip.published,
                                             id = currentTrip.id,
@@ -444,11 +444,14 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
 
                                         vm.editTrip = updatedTrip
                                         vm.setSelectedTrip(updatedTrip)
-                                        vm.editExistingTrip(vm.editTrip)
+                                        vm.editExistingTrip(vm.editTrip) { success ->
+                                            if (success) {
+                                                //Go to the list of activities
+                                                navController.navigate("activities_list")
+                                            }
+                                        }
                                     }
                                 }
-                                //Go to the list of activities
-                                navController.navigate("activities_list")
                             }
                         },
                         modifier = Modifier

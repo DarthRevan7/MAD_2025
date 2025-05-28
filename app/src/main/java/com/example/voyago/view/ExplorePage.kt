@@ -227,7 +227,7 @@ fun TripCard(trip: Trip, navController: NavController, vm: TripViewModel, edit: 
             }
 
             //If the trip has the max number of participants or it's already started
-            if (trip.status == Trip.TripStatus.COMPLETED) {
+            if (trip.status == Trip.TripStatus.COMPLETED.toString()) {
                 //Banner that indicated that the trip has already happened
                 CompletedBanner(Modifier.align(Alignment.TopEnd))
             } else if (!trip.canJoin()) {

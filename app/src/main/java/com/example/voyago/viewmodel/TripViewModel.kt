@@ -1,5 +1,6 @@
 package com.example.voyago.viewmodel
 
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
@@ -28,7 +29,7 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
     //Use in the edit trip interface
     var editTrip:Trip = Trip()
 
-
+    //Used to see the details of a trip that isn't the selected trip
     private val _otherTrip = mutableStateOf<Trip>(Trip())
     val otherTrip: State<Trip> = _otherTrip
 
@@ -36,7 +37,7 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
         _otherTrip.value = trip
     }
 
-    //Use in the select trip interface (trip detail)
+    //Used in the select trip interface (trip detail)
     private val _selectedTrip = mutableStateOf<Trip>(Trip())
     val selectedTrip: State<Trip> = _selectedTrip
 
@@ -182,7 +183,7 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
     }
 
     //Apply selected filters
-    fun applyFilters() = tripModel.filterFunction(tripList, filterDestination, filterMinPrice, filterMaxPrice,
+    fun applyFilters() = tripModel.filterFunction(allPublishedList, filterDestination, filterMinPrice, filterMaxPrice,
         filterDuration, filterGroupSize, filtersTripType, filterUpcomingTrips, filterCompletedTrips, filterBySeats, viewModelScope)
 
     //Reset filters
@@ -206,49 +207,91 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
     }
 
     //Update list of published trips after filter application
-    var tripList: Flow<List<Trip>> = flowOf(emptyList())
-        private set
+    val allPublishedList = tripModel.allPublishedTrips
 
     fun updatePublishedTrip() {
-        tripList = tripModel.getAllPublishedTrips()
+        tripModel.getAllPublishedTrips(viewModelScope)
         applyFilters()
     }
 
+
     //Ask to join a trip or cancel application
     val askedTrips = tripModel.askedTrips
-    //fun toggleAskToJoin(tripId: Int) = model.toggleAskToJoin(tripId)
-    fun askToJoin(trip: Trip, userId: Int, spots: Int, unregisteredParticipants: List<Participant>, registeredParticipants: List<Int>) = tripModel.requestToJoin(trip, userId, spots, unregisteredParticipants, registeredParticipants)
-    fun cancelAskToJoin(trip: Trip, userId: Int) = tripModel.cancelRequestToJoin(trip, userId)
-    fun syncAskedTrips() = tripModel.syncAskedTripsWithAppliedUsers(1)
+    fun askToJoin(trip: Trip, userId: Int, spots: Int, unregisteredParticipants: List<Participant>,
+                  registeredParticipants: List<Int>) {
+        tripModel.requestToJoin(trip = trip, userId = userId, spots = spots,
+            unregisteredParticipants = unregisteredParticipants,
+            registeredParticipants = registeredParticipants
+        ) { success ->
+            if (success) {
+                Log.d("ViewModel", "Successfully requested to join trip ${trip.id}")
+            } else {
+                Log.e("ViewModel", "Failed to request to join trip ${trip.id}")
+            }
+        }
+    }
+
+    fun cancelAskToJoin(trip: Trip, userId: Int) {
+        tripModel.cancelRequestToJoin(trip, userId) { success ->
+            if (success) {
+                Log.d("ViewModel", "Request canceled successfully")
+            } else {
+                Log.e("ViewModel", "Failed to cancel request")
+            }
+        }
+    }
+
+    fun syncAskedTrips(userId: Int, onResult: (Boolean) -> Unit) {
+        tripModel.syncAskedTripsWithAppliedUsers(userId, onResult)
+    }
 
     //MY TRIPS
 
     //List of trips created and published by the logged in user
     val publishedTrips = tripModel.publishedTrips
-    fun creatorPublicFilter(id: Int) = tripModel.filterPublishedByCreator(id)
+    fun creatorPublicFilter(id: Int) = tripModel.filterPublishedByCreator(id, viewModelScope)
 
     //List of trips created, but not published by the logged in user
     val privateTrips = tripModel.privateTrips
-    fun creatorPrivateFilter(id: Int) = tripModel.filterPrivateByCreator(id)
+    fun creatorPrivateFilter(id: Int) = tripModel.filterPrivateByCreator(id, viewModelScope)
 
-    //List of trips the logged in user joined
+    //List of trips a user joined
     val joinedTrips = tripModel.joinedTrips
-    fun tripUserJoined(userId: Int) = tripModel.getJoinedTrips(userId)
+    fun tripUserJoined(userId: Int) = tripModel.getJoinedTrips(userId, viewModelScope)
 
     //Import an already published trip as a private trip of the logged in user (id=1)
     fun addImportedTrip(photo: String, title: String, destination: String, startDate: Calendar,
                         endDate: Calendar, estimatedPrice: Double, groupSize: Int,
-                        activities: Map<Calendar, List<Activity>>,
-                        typeTravel: List<TypeTravel>, creatorId: Int,
-                        published: Boolean): List<Trip> =
+                        activities: Map<Calendar, List<Activity>>, typeTravel: List<String>,
+                        creatorId: Int, published: Boolean, onResult: (Boolean, Trip?) -> Unit) {
         tripModel.importTrip(photo, title, destination, startDate, endDate, estimatedPrice,
-            groupSize, activities, typeTravel, creatorId, published)
+            groupSize, activities, listOf(typeTravel.toString()), creatorId, published) { success, trip ->
+            onResult(success, trip)
+        }
+    }
+
 
     //Make published or private a trip
-    fun changePublishedStatus(id: Int) = tripModel.changePublishedStatus(id)
+    fun changePublishedStatus(id: Int) {
+        tripModel.changePublishedStatus(id) { success ->
+            if (success) {
+                Log.d("TripViewModel", "Trip publish status changed successfully")
+            } else {
+                Log.e("TripViewModel", "Failed to change publish status")
+            }
+        }
+    }
 
     //Delete a trip from the database
-    fun deleteTrip(id: Int) = tripModel.deleteTrip(id)
+    fun deleteTrip(id: Int) {
+        tripModel.deleteTrip(id) { success ->
+            if (success) {
+                Log.d("ViewModel", "Trip successfully deleted from Firebase.")
+            } else {
+                Log.e("ViewModel", "Trip deletion failed.")
+            }
+        }
+    }
 
     //Mutable list of applications
     var applications = mutableStateOf(emptyMap<UserData, Trip.JoinRequest>())
@@ -327,29 +370,37 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
     }
 
     //Add new trip to the database
-    fun addNewTrip(newTrip: Trip): Trip {
-        val createdTrip = tripModel.createNewTrip(newTrip)
-        _selectedTrip.value = createdTrip
-        return createdTrip
+    fun addNewTrip(newTrip: Trip, onResult: (Boolean, Trip?) -> Unit) {
+        tripModel.createNewTrip(newTrip) { success, createdTrip ->
+            if (success && createdTrip != null) {
+                _selectedTrip.value = createdTrip
+            }
+            onResult(success, createdTrip)
+        }
     }
 
+
     //Edit an already existing trip in the database
-    fun editExistingTrip(trip: Trip): List<Trip> {
-        val updatedList = tripModel.editTrip(trip)
-        _selectedTrip.value = updatedList.find { it.id == trip.id }!!
-        return updatedList
+    fun editExistingTrip(trip: Trip, onResult: (Boolean) -> Unit) {
+        tripModel.editTrip(trip) { success ->
+            if (success) {
+                _selectedTrip.value = trip
+            }
+            onResult(success)
+        }
     }
+
 
     fun addActivityToTrip(activity: Activity) {
         //Creating a new trip
         if(userAction == UserAction.CREATE_TRIP) {
-            tripModel.addActivityToTrip(activity, newTrip)?.let { updatedTrip ->
+            tripModel.addActivityToTrip(activity, newTrip).let { updatedTrip ->
                 newTrip = updatedTrip
                 _selectedTrip.value = newTrip
             }
         } else if(userAction == UserAction.EDIT_TRIP) {
             //I am editing an existing trip
-            tripModel.addActivityToTrip(activity, editTrip)?.let { updatedTrip ->
+            tripModel.addActivityToTrip(activity, editTrip).let { updatedTrip ->
                 editTrip = updatedTrip
                 _selectedTrip.value = editTrip
             }
@@ -358,34 +409,49 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
 
     //Delete activity from a specific trip
     fun deleteActivity(activity: Activity) {
-        val trip =  tripModel.removeActivityFromTrip(activity, _selectedTrip.value)!!
+        tripModel.removeActivityFromTrip(activity, _selectedTrip.value) { success, updatedTrip ->
+            if (success && updatedTrip != null) {
+                _selectedTrip.value = updatedTrip
 
-        _selectedTrip.value = trip
-
-        if (userAction == UserAction.CREATE_TRIP) {
-            newTrip = trip
-        } else if (userAction == UserAction.EDIT_TRIP) {
-            editTrip = trip
+                when (userAction) {
+                    UserAction.CREATE_TRIP -> newTrip = updatedTrip
+                    UserAction.EDIT_TRIP -> editTrip = updatedTrip
+                    else -> {}
+                }
+            }
         }
-
     }
+
 
     //Edit a specific activity from a specific trip
     fun editActivity(activityId: Int, updatedActivity: Activity) {
-        val trip = tripModel.editActivityInSelectedTrip(activityId, updatedActivity, _selectedTrip.value)!!
+        val trip = _selectedTrip.value
 
-        _selectedTrip.value = trip
+        tripModel.editActivityInSelectedTrip(activityId, updatedActivity, trip) { success, updatedTrip ->
+            if (success && updatedTrip != null) {
+                _selectedTrip.value = updatedTrip
 
-        if (userAction == UserAction.CREATE_TRIP) {
-            newTrip = trip
-        } else if (userAction == UserAction.EDIT_TRIP) {
-            editTrip = trip
+                when (userAction) {
+                    UserAction.CREATE_TRIP -> newTrip = updatedTrip
+                    UserAction.EDIT_TRIP -> editTrip = updatedTrip
+                    else -> {}
+                }
+
+            }
         }
-
     }
 
+
     //Get Trip reviews
-    fun getTripReviews(id: Int): List<Review> = reviewModel.getTripReviews(id)
+    private val _tripReviews = MutableStateFlow<List<Review>>(emptyList())
+    val tripReviews: StateFlow<List<Review>> = _tripReviews
+
+    fun getTripReviews(id: Int){
+        viewModelScope.launch {
+            val reviewsList = reviewModel.getTripReviews(id)
+            _tripReviews.value = reviewsList
+        }
+    }
 
     //See if a user reviewed a trip
     fun isReviewed(userId: Int, tripId: Int) = reviewModel.isReviewed(userId,tripId)
@@ -401,7 +467,7 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
     fun getUserReviews(id: Int): List<Review> = reviewModel.getUserReviews(id)
 
     private fun updateAllTripStatuses() {
-        val trips = tripModel.getAllPublishedTrips()
+        val trips = tripModel.getAllPublishedTrips(viewModelScope)
 
         for (trip in trips) {
             val oldStatus = trip.status

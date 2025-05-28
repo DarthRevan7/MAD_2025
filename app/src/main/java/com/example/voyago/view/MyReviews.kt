@@ -52,6 +52,7 @@ import coil3.compose.AsyncImage
 import com.example.voyago.activities.ProfilePhoto
 import com.example.voyago.model.Review
 import com.example.voyago.model.ReviewModel
+import com.example.voyago.model.toCalendar
 import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
@@ -136,8 +137,8 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
                         .padding(start = 24.dp, end = 24.dp)
                 ) {
                     Text(
-                        text = formatTripDate(nonNullTrip.startDate) + " - " +
-                                formatTripDate(nonNullTrip.endDate) + "\n " +
+                        text = formatTripDate(toCalendar(nonNullTrip.startDate)) + " - " +
+                                formatTripDate(toCalendar(nonNullTrip.endDate)) + "\n " +
                                 "${nonNullTrip.groupSize} people" +
                                 if (nonNullTrip.availableSpots() > 0) {
                                     " (${nonNullTrip.availableSpots()} spots left)"

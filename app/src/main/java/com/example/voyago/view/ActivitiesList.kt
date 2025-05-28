@@ -146,7 +146,7 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
                         //Finish Button
                         Button(
                             onClick = {
-                                if (selectedTrip?.hasActivityForEachDay() == true) {
+                                if (selectedTrip.hasActivityForEachDay() == true) {
 
                                     if(vm.userAction == TripViewModel.UserAction.CREATE_TRIP) {
                                         val updatedTrip = Trip(
@@ -164,20 +164,22 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
                                             id = vm.newTrip.id,
                                             participants = emptyMap(),
                                             rejectedUsers = emptyMap(),
-                                            status = Trip.TripStatus.NOT_STARTED,
+                                            status = Trip.TripStatus.NOT_STARTED.toString(),
                                             appliedUsers = emptyMap()
 
                                         )
 
-                                        vm.addNewTrip(updatedTrip)
-
-                                        //Go to the owned travel proposal
-                                        navController.navigate("my_trips_main") {
-                                            popUpTo("my_trips_main") {
-                                                inclusive = false
+                                        vm.addNewTrip(updatedTrip) { success, trip ->
+                                            if (success && trip != null) {
+                                                navController.navigate("my_trips_main") {
+                                                    popUpTo("my_trips_main") {
+                                                        inclusive = false
+                                                    }
+                                                    launchSingleTop = true
+                                                }
                                             }
-                                            launchSingleTop = true
                                         }
+
                                     } else if(vm.userAction == TripViewModel.UserAction.EDIT_TRIP){
                                         val updatedTrip = Trip(
                                             photo = vm.editTrip.photo,
@@ -251,7 +253,7 @@ fun ActivitiesListContent(trip: Trip?, vm: TripViewModel, navController: NavCont
             )
         } else {
             sortedDays.forEach { day ->
-                val dayIndex = ((day.timeInMillis - trip.startDate.timeInMillis) / (1000 * 60 * 60 * 24)).toInt() + 1
+                val dayIndex = ((day.timeInMillis - trip.startDate) / (1000 * 60 * 60 * 24)).toInt() + 1
                 val formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.US)
                 val activitiesForDay = (trip.activities[day] ?: emptyList())
                     .sortedBy { LocalTime.parse(it.time, formatter) }

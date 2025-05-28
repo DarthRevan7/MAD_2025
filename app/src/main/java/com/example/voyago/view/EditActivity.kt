@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.voyago.model.Trip
+import com.example.voyago.model.toCalendar
 import com.example.voyago.viewmodel.TripViewModel
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -75,7 +76,7 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
 
 
     var activityDate by rememberSaveable {
-        mutableStateOf(SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(activityToEdit.date.time))
+        mutableStateOf(SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(toCalendar(activityToEdit.date).time))
     }
     var selectedTime by rememberSaveable { mutableStateOf(activityToEdit.time) }
 
@@ -125,9 +126,9 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
             item {
                 val context = LocalContext.current
                 val calendar = activityToEdit.date
-                val year = calendar.get(Calendar.YEAR)
-                val month = calendar.get(Calendar.MONTH)
-                val day = calendar.get(Calendar.DAY_OF_MONTH)
+                val year = toCalendar(calendar).get(Calendar.YEAR)
+                val month = toCalendar(calendar).get(Calendar.MONTH)
+                val day = toCalendar(calendar).get(Calendar.DAY_OF_MONTH)
                 val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 
                 val startDatePickerDialog = remember {
@@ -152,7 +153,7 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                                 dateErrorMessage = ""
                             } else {
                                 showDateError = true
-                                dateErrorMessage = "Activity date must be within the trip period \n(${dateFormat.format(currentTrip.startDate.time)} - ${dateFormat.format(currentTrip.endDate.time)})"
+                                dateErrorMessage = "Activity date must be within the trip period \n(${dateFormat.format(toCalendar(currentTrip.startDate).time)} - ${dateFormat.format(toCalendar(currentTrip.endDate).time)})"
                             }
                         }, year, month, day
                     )
@@ -295,7 +296,7 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
 
                                 val updatedActivity = Trip.Activity(
                                     id = activityId, // preserve the original ID
-                                    date = activityCalendar,
+                                    date = activityCalendar.timeInMillis,
                                     time = selectedTime,
                                     isGroupActivity = isGroupActivityChecked,
                                     description = activityDescription

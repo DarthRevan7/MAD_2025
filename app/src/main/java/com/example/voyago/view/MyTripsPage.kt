@@ -34,11 +34,12 @@ import androidx.compose.material3.*
 import androidx.compose.ui.draw.clip
 import androidx.core.net.toUri
 import com.example.voyago.viewmodel.TripViewModel
+import com.example.voyago.viewmodel.UserViewModel
 
 
 @SuppressLint("DiscouragedApi")
 @Composable
-fun MyTripsPage(navController: NavController, vm: TripViewModel) {
+fun MyTripsPage(navController: NavController, vm: TripViewModel, uvm: UserViewModel) {
 
     //List of trip created and published by the logged in user (id=1)
     val publishedTrips by vm.publishedTrips.collectAsState()
@@ -48,9 +49,9 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel) {
     val joinedTrips by vm.joinedTrips.collectAsState()
 
     LaunchedEffect(Unit) {
-        vm.creatorPublicFilter(1)
-        vm.creatorPrivateFilter(1)
-        vm.tripUserJoined(1)
+        vm.creatorPublicFilter(uvm.loggedUser.id)
+        vm.creatorPrivateFilter(uvm.loggedUser.id)
+        vm.tripUserJoined(uvm.loggedUser.id)
     }
 
     Scaffold(

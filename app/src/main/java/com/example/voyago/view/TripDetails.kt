@@ -80,6 +80,8 @@ import androidx.core.net.toUri
 import coil3.compose.rememberAsyncImagePainter
 import com.example.voyago.model.ReviewModel
 import com.example.voyago.model.Trip.Participant
+import com.example.voyago.model.toCalendar
+import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
 import kotlinx.coroutines.delay
@@ -108,15 +110,13 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
         }
     }
 
-    if (trip == null) {
+    if (!trip.isValid()) {
         Text("Loading trip details...")
         return
     }
 
-    val nonNullTrip = trip!!
-
     //The user joined the trip but didn't created
-    val joined = nonNullTrip.participants.containsKey(uvm.loggedUser.id) && nonNullTrip.creatorId != uvm.loggedUser.id
+    val joined = trip.participants.containsKey(uvm.loggedUser.id) && trip.creatorId != uvm.loggedUser.id
 
     //Delete confirmation trip
     var showPopup by remember { mutableStateOf(false) }
@@ -124,8 +124,8 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
 
     //Manage join request
     val askedTrips: Map<Int, Int> by vm.askedTrips.collectAsState()
-    vm.syncAskedTrips()
-    val requestedSpots = trip?.id?.let { askedTrips[it] } ?: 0
+    vm.syncAskedTrips(uvm.loggedUser.id) {}
+    val requestedSpots = trip.id.let { askedTrips[it] } ?: 0
     val hasAsked = requestedSpots > 0
 
     var showDialog by remember { mutableStateOf(false) }
@@ -174,6 +174,12 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
 
     }
 
+    //Manage reviews
+    val reviews by vm.tripReviews.collectAsState()
+    LaunchedEffect(trip.id) {
+        vm.getTripReviews(trip.id)
+    }
+
 
     val listState = rememberLazyListState()
 
@@ -184,7 +190,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
         set(Calendar.MILLISECOND, 0)
     }
 
-    val isAfterToday = nonNullTrip.startDate.after(today)
+    val isAfterToday = toCalendar(trip.startDate).after(today)
     var publishError by rememberSaveable {mutableStateOf(false)}
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -195,7 +201,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
         ) {
             //Trip image
             item {
-                Hero(nonNullTrip)
+                Hero(trip)
             }
 
             item {
@@ -210,11 +216,11 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                         .padding(start = 24.dp, end = 24.dp)
                 ) {
                     Text(
-                        text = formatTripDate(nonNullTrip.startDate) + " - " +
-                                formatTripDate(nonNullTrip.endDate) + "\n " +
-                                "${nonNullTrip.groupSize} people" +
-                                if (nonNullTrip.availableSpots() > 0) {
-                                    " (${nonNullTrip.availableSpots()} spots left)"
+                        text = formatTripDate(toCalendar(trip.startDate)) + " - " +
+                                formatTripDate(toCalendar(trip.endDate)) + "\n " +
+                                "${trip.groupSize} people" +
+                                if (trip.availableSpots() > 0) {
+                                    " (${trip.availableSpots()} spots left)"
                                 } else {
                                     ""
                                 },
@@ -222,7 +228,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     Text(
-                        text = "${trip?.estimatedPrice} €",
+                        text = "${trip.estimatedPrice} €",
                         modifier = Modifier.align(Alignment.CenterVertically)
                     )
                 }
@@ -231,7 +237,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
             //The logged in user see a trip created by them in the "My Trip" section
             if (owner) {
                 //The trip created by the logged in user is published
-                if (nonNullTrip.published && nonNullTrip.status == Trip.TripStatus.NOT_STARTED && nonNullTrip.creatorId == 1) {
+                if (trip.published && trip.status == Trip.TripStatus.NOT_STARTED.toString() && trip.creatorId == 1) {
                     item {
                         Row(
                             modifier = Modifier
@@ -252,7 +258,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                                     Text("Applications")
                                 }
 
-                                if (nonNullTrip.appliedUsers.isNotEmpty()) {
+                                if (trip.appliedUsers.isNotEmpty()) {
                                     Box(
                                         modifier = Modifier
                                             .size(15.dp)
@@ -265,10 +271,10 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                             Spacer(Modifier.weight(1f))
 
                             //Private Button (makes the trip private)
-                            if (!nonNullTrip.participants.any { it.key != nonNullTrip.creatorId }) {
+                            if (!trip.participants.any { it.key != trip.creatorId }) {
                                 Button(
                                     onClick = {
-                                        vm.changePublishedStatus(nonNullTrip.id)
+                                        vm.changePublishedStatus(trip.id)
                                         vm.updatePublishedTrip()
                                         navController.popBackStack()
                                     },
@@ -282,7 +288,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                             Spacer(Modifier.padding(5.dp))
 
                             //Delete button with popup for confirmation
-                            DeleteButtonWithConfirmation(nonNullTrip, navController, vm)
+                            DeleteButtonWithConfirmation(trip, navController, vm)
                         }
                     }
                 }
@@ -295,7 +301,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                                 .fillMaxWidth(),
                             horizontalArrangement = Arrangement.End
                         ) {
-                            if (nonNullTrip.status == Trip.TripStatus.COMPLETED) {
+                            if (trip.status == Trip.TripStatus.COMPLETED.toString()) {
                                 Box {
                                     //Applications Button
                                     Button(
@@ -307,7 +313,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                                         Text("My Reviews")
                                     }
 
-                                    if (!vm.isReviewed(1, nonNullTrip.id)) {
+                                    if (!vm.isReviewed(1, trip.id)) {
                                         Box(
                                             modifier = Modifier
                                                 .size(15.dp)
@@ -324,26 +330,30 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                             Button(
                                 onClick = {
                                     vm.addImportedTrip(
-                                        nonNullTrip.photo,
-                                        nonNullTrip.title,
-                                        nonNullTrip.destination,
-                                        nonNullTrip.startDate,
-                                        nonNullTrip.endDate,
-                                        nonNullTrip.estimatedPrice,
-                                        nonNullTrip.groupSize,
-                                        nonNullTrip.activities,
-                                        nonNullTrip.typeTravel,
+                                        trip.photo,
+                                        trip.title,
+                                        trip.destination,
+                                        toCalendar(trip.startDate),
+                                        toCalendar(trip.endDate),
+                                        trip.estimatedPrice,
+                                        trip.groupSize,
+                                        trip.activities,
+                                        trip.typeTravel,
                                         1,
                                         false
-                                    )
-                                    vm.updatePublishedTrip()
+                                    ) { success, importedTrip ->
+                                        if (success) {
+                                            vm.updatePublishedTrip()
 
-                                    showPopup = true
-                                    coroutineScope.launch {
-                                        delay(2000)
-                                        showPopup = false
+                                            showPopup = true
+                                            coroutineScope.launch {
+                                                delay(2000)
+                                                showPopup = false
+                                            }
+                                        }
                                     }
-                                },
+                                }
+                                ,
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(0x65, 0x55, 0x8f, 255)
                                 )
@@ -355,7 +365,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                 }
 
                 //The trip created by the logged in user is private
-                if (!nonNullTrip.published) {
+                if (!trip.published) {
                     item {
                         Row(
                             modifier = Modifier
@@ -367,7 +377,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                             Button(
                                 onClick = {
                                     if (isAfterToday) {
-                                        vm.changePublishedStatus(nonNullTrip.id)
+                                        vm.changePublishedStatus(trip.id)
                                         vm.updatePublishedTrip()
                                         navController.popBackStack()
                                     } else {
@@ -384,7 +394,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                             Spacer(Modifier.padding(5.dp))
 
                             //Delete button with popup for confirmation
-                            DeleteButtonWithConfirmation(nonNullTrip, navController, vm)
+                            DeleteButtonWithConfirmation(trip, navController, vm)
                         }
 
                         if (publishError) {
@@ -419,24 +429,27 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                         Button(
                             onClick = {
                                 vm.addImportedTrip(
-                                    nonNullTrip.photo,
-                                    nonNullTrip.title,
-                                    nonNullTrip.destination,
-                                    nonNullTrip.startDate,
-                                    nonNullTrip.endDate,
-                                    nonNullTrip.estimatedPrice,
-                                    nonNullTrip.groupSize,
-                                    nonNullTrip.activities,
-                                    nonNullTrip.typeTravel,
+                                    trip.photo,
+                                    trip.title,
+                                    trip.destination,
+                                    toCalendar(trip.startDate),
+                                    toCalendar(trip.endDate),
+                                    trip.estimatedPrice,
+                                    trip.groupSize,
+                                    trip.activities,
+                                    trip.typeTravel,
                                     1,
                                     false
-                                )
-                                vm.updatePublishedTrip()
+                                ){ success, importedTrip ->
+                                    if (success) {
+                                        vm.updatePublishedTrip()
 
-                                showPopup = true
-                                coroutineScope.launch {
-                                    delay(2000)
-                                    showPopup = false
+                                        showPopup = true
+                                        coroutineScope.launch {
+                                            delay(2000)
+                                            showPopup = false
+                                        }
+                                    }
                                 }
                             },
                             colors = ButtonDefaults.buttonColors(
@@ -449,12 +462,12 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                         Spacer(Modifier.padding(5.dp))
 
                         //If the user can join the trip
-                        if (nonNullTrip.canJoin() && nonNullTrip.creatorId != 1) {
+                        if (trip.canJoin() && trip.creatorId != uvm.loggedUser.id) {
                             //Ask to Join/Asked to Join Button
                             Button(
                                 onClick = {
                                     if (hasAsked) {
-                                        vm.cancelAskToJoin(nonNullTrip, 1)
+                                        vm.cancelAskToJoin(trip, uvm.loggedUser.id)
                                     } else {
                                         selectedSpots = 1
                                         showDialog = true
@@ -475,9 +488,9 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                                 }
                             }
 
-                        } else if (nonNullTrip.participants.containsKey(1)
-                            && nonNullTrip.status != Trip.TripStatus.COMPLETED
-                            && nonNullTrip.creatorId != 1) {
+                        } else if (trip.participants.containsKey(1)
+                            && trip.status != Trip.TripStatus.COMPLETED.toString()
+                            && trip.creatorId != 1) {
                             Button(
                                 onClick = {},
                                 colors = ButtonDefaults.buttonColors(
@@ -502,7 +515,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
             //The Itinerary of the trip
             item {
                 ItineraryText(
-                    nonNullTrip,
+                    trip,
                     modifier = Modifier
                         .padding(start = 24.dp, top = 16.dp, end = 20.dp)
                 )
@@ -517,11 +530,12 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
             }
 
             item {
-                ShowParticipants(uvm.getUserData(nonNullTrip.creatorId), Trip.JoinRequest(uvm.getUserData(nonNullTrip.creatorId).id, 1, emptyList(), emptyList()),uvm, navController)
+                ShowParticipants(uvm.getUserData(trip.creatorId),
+                    Trip.JoinRequest(uvm.getUserData(trip.creatorId).id, 1, emptyList(), emptyList()),uvm, navController)
             }
 
             //Reviews section
-            if (vm.getTripReviews(nonNullTrip.id).isNotEmpty()) {
+            if (reviews.isNotEmpty()) {
                 item {
                     TitleBox("Reviews")
                 }
@@ -531,22 +545,22 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                 }
 
                 //List of reviews of the trip
-                items(vm.getTripReviews(nonNullTrip.id)) { review ->
+                items(reviews) { review ->
                     ShowReview(review, vm, false, uvm, navController)
                 }
             }
 
-            if (nonNullTrip.participants.size > 1) {
+            if (trip.participants.size > 1) {
                 item {
                     TitleBox("Participants:")
                 }
 
-                val participantsMap = vm.getTripParticipants(nonNullTrip)
+                val participantsMap = vm.getTripParticipants(trip)
 
                 items(participantsMap.entries.toList()) { entry ->
                     val user = entry.key
                     val spots = entry.value
-                    if (nonNullTrip.creatorId != user.id) {
+                    if (trip.creatorId != user.id) {
                         ShowParticipants(user, spots, uvm, navController)
                     }
                 }
@@ -589,7 +603,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
 
         //PopUp that appears when the user ask to join a trip
         if (showDialog) {
-            val maxSpots = nonNullTrip.availableSpots()
+            val maxSpots = trip.availableSpots()
 
             AlertDialog(
                 onDismissRequest = {
@@ -734,7 +748,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                             if (selectedSpots > 1) {
                                 dialogPhase = 1
                             } else {
-                                vm.askToJoin(nonNullTrip, 1, selectedSpots, emptyList(), emptyList())
+                                vm.askToJoin(trip, uvm.loggedUser.id, selectedSpots, emptyList(), emptyList())
                                 showDialog = false
                             }
                         } else {
@@ -777,7 +791,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
 
                             if (!hasErrors) {
                                 vm.askToJoin(
-                                    nonNullTrip,
+                                    trip,
                                     uvm.loggedUser.id,
                                     selectedSpots,
                                     unregisteredParticipants,
@@ -879,7 +893,7 @@ fun Hero(trip: Trip) {
             )
         }
 
-        if (trip.status == Trip.TripStatus.COMPLETED) {
+        if (trip.status == Trip.TripStatus.COMPLETED.toString()) {
             //Banner that indicated that the trip has already happened
             CompletedBanner(Modifier.align(Alignment.TopEnd))
         } else if (!trip.canJoin()) {
@@ -936,7 +950,7 @@ fun ItineraryText(trip: Trip, modifier: Modifier = Modifier) {
         .toSortedMap(compareBy { it.timeInMillis }) // Sort days chronologically
         .entries
         .joinToString("\n\n") { (day, activities) ->
-            val dayIndex = ((day.timeInMillis - trip.startDate.timeInMillis) / (1000 * 60 * 60 * 24)).toInt() + 1
+            val dayIndex = ((day.timeInMillis - trip.startDate) / (1000 * 60 * 60 * 24)).toInt() + 1
             val dayHeader = "Day $dayIndex:\n"
 
             val sortedActivities = activities.sortedBy { activity ->

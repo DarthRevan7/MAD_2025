@@ -55,145 +55,141 @@ fun TripApplications(vm: TripViewModel, uvm:UserViewModel, navController: NavCon
     val listState = rememberLazyListState()
     val trip = vm.selectedTrip.value
 
-    if (trip != null) {
-        vm.applications.value = vm.getTripApplicants(trip)
-    }
+    vm.applications.value = vm.getTripApplicants(trip)
 
-    if (trip != null){
-        LazyColumn(
-            state = listState,
-            modifier = Modifier
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.Start
-        ) {
+    LazyColumn(
+        state = listState,
+        modifier = Modifier
+            .fillMaxSize(),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.Start
+    ) {
 
-            //Trip photo
-            item {
-                Hero(trip)
+        //Trip photo
+        item {
+            Hero(trip)
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        //Group Size and Available spots
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 24.dp, end = 24.dp, bottom = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "${trip.groupSize} people" +
+                            if(trip.availableSpots() > 0) {
+                                " (${trip.availableSpots()} spots left)"
+                            } else { "" },
+                    modifier = Modifier.align(Alignment.CenterVertically)
+                )
+            }
+        }
+
+        item {
+            TitleBox("Applications")
+        }
+
+        //Approved users
+        item {
+            Text(
+                text = "Approved Applications:",
+                modifier = Modifier
+                    .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        if (trip.participants.size > 1) {
+            val participantsMap = vm.getTripParticipants(trip)
+
+            items(participantsMap.entries.toList()) { entry ->
+                val user = entry.key
+                val spots = entry.value
+                if (user.id != 1) {
+                    ShowParticipants(user, spots, uvm, navController)
+                }
             }
 
+        } else {
             item {
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            //Group Size and Available spots
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 24.dp, end = 24.dp, bottom = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                Row (
+                    modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
                 ) {
-                    Text(
-                        text = "${trip.groupSize} people" +
-                                if(trip.availableSpots() > 0) {
-                                    " (${trip.availableSpots()} spots left)"
-                                } else { "" },
-                        modifier = Modifier.align(Alignment.CenterVertically)
-                    )
+                    Text("There aren't any participants yet.")
                 }
             }
+        }
 
+        //Applications that must be still approved or rejected
+        item {
+            Text(
+                text = "Pending Applications:",
+                modifier = Modifier
+                    .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        if (trip.appliedUsers.isNotEmpty()) {
+            val applicantsMap = vm.applications.value
+            val applicantsList = applicantsMap.keys.toList()
+
+            items(applicantsList) { user ->
+                val joinRequest: Trip.JoinRequest = applicantsMap[user]!!
+                ShowApplications(user, joinRequest, vm, uvm, navController)
+            }
+
+        } else {
             item {
-                TitleBox("Applications")
+                Row (
+                    modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    if (trip.hasAvailableSpots()) {
+                        Text("There aren't any new applications for this trip.")
+                    } else {
+                        Text("The group for the trip is completed. There won't be any new applications.")
+                    }
+                }
+            }
+        }
+
+        //Rejected users
+        item {
+            Text(
+                text = "Rejected Applications:",
+                modifier = Modifier
+                    .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        if (trip.rejectedUsers.isNotEmpty()) {
+            val participantsMap = vm.getTripRejectedUsers(trip)
+
+            items(participantsMap.entries.toList()) { entry ->
+                val user = entry.key
+                val spots = entry.value
+                if (user.id != 1) {
+                    ShowParticipants(user, spots, uvm, navController)
+                }
             }
 
-            //Approved users
+        } else {
             item {
-                Text(
-                    text = "Approved Applications:",
-                    modifier = Modifier
-                        .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            if (trip.participants.size > 1) {
-                val participantsMap = vm.getTripParticipants(trip)
-
-                items(participantsMap.entries.toList()) { entry ->
-                    val user = entry.key
-                    val spots = entry.value
-                    if (user.id != 1) {
-                        ShowParticipants(user, spots, uvm, navController)
-                    }
-                }
-
-            } else {
-                item {
-                    Row (
-                        modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Text("There aren't any participants yet.")
-                    }
-                }
-            }
-
-            //Applications that must be still approved or rejected
-            item {
-                Text(
-                    text = "Pending Applications:",
-                    modifier = Modifier
-                        .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            if (trip.appliedUsers.isNotEmpty()) {
-                val applicantsMap = vm.applications.value
-                val applicantsList = applicantsMap.keys.toList()
-
-                items(applicantsList) { user ->
-                    val joinRequest: Trip.JoinRequest = applicantsMap[user]!!
-                    ShowApplications(user, joinRequest, vm, uvm, navController)
-                }
-
-            } else {
-                item {
-                    Row (
-                        modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        if (trip.hasAvailableSpots()) {
-                            Text("There aren't any new applications for this trip.")
-                        } else {
-                            Text("The group for the trip is completed. There won't be any new applications.")
-                        }
-                    }
-                }
-            }
-
-            //Rejected users
-            item {
-                Text(
-                    text = "Rejected Applications:",
-                    modifier = Modifier
-                        .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            if (trip.rejectedUsers.isNotEmpty()) {
-                val participantsMap = vm.getTripRejectedUsers(trip)
-
-                items(participantsMap.entries.toList()) { entry ->
-                    val user = entry.key
-                    val spots = entry.value
-                    if (user.id != 1) {
-                        ShowParticipants(user, spots, uvm, navController)
-                    }
-                }
-
-            } else {
-                item {
-                    Row (
-                        modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Text("There aren't any rejected applications for this trip.")
-                    }
+                Row (
+                    modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text("There aren't any rejected applications for this trip.")
                 }
             }
         }

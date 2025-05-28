@@ -10,23 +10,49 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.tasks.await
 
+data class Review(
+    val reviewId: Int = 0,
+    val tripId: Int = 0,
+    val isTripReview: Boolean = false,
+    var reviewerId: Int = 0,
+    var reviewedUserId: Int = 0,
+    var title: String = "",
+    var comment: String = "",
+    var score: Int = 0,
+    var photos: List<String> = emptyList(),
+    val date: Long = 0L
+) {
+
+
+    //A valid review has filled fields
+    fun isValidReview(): Boolean {
+        return reviewId > 0 && reviewerId > 0 && (reviewedUserId > 0 || tripId > 0)  && score > 0
+                && title != "" && comment != ""
+    }
+}
+
 class ReviewModel {
 
-    fun getReviews(): Flow<List<Review>> = callbackFlow {//Observes update from the Server
-        val listener = Collections.reviews.
-        orderBy("born")
-            .addSnapshotListener { s, er ->
-                if(s!=null)
-                    trySend(s.toObjects(Review::class.java))
-                else {
-                    Log.e("Error", er.toString())
+    fun getReviews(): Flow<List<Review>> = callbackFlow {
+        val listener = Collections.reviews
+            .orderBy("id")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    Log.e("Error", error.toString())
+                    trySend(emptyList())  // On error, send empty list
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null && !snapshot.isEmpty) {
+                    trySend(snapshot.toObjects(Review::class.java))
+                } else {
+                    // Snapshot exists but has no documents (no reviews yet)
                     trySend(emptyList())
                 }
             }
-        awaitClose {
-            listener.remove()
-        }
+        awaitClose { listener.remove() }
     }
+
 
     suspend fun createReview(reviewToCreate: Review): Review? {
         return try {
@@ -93,35 +119,27 @@ class ReviewModel {
 
      */
 
-    suspend fun getTripReviews(tripId: Int): List<Review>? {
+    suspend fun getTripReviews(tripId: Int): List<Review> {
         return try {
-            // Execute Query on DB
             val querySnapshot = Collections.reviews
                 .whereEqualTo("tripId", tripId)
                 .get()
                 .await()
 
-            // Map firestore documents on reviews
-            // If a document cant be mappet, it gets ignored
-            val reviews = querySnapshot.documents.mapNotNull { document ->
+            querySnapshot.documents.mapNotNull { doc ->
                 try {
-                    // Conversion of the object and addition of the ID
-                    document.toObject(Review::class.java)?.copy(reviewId = document.id.toInt())
+                    doc.toObject(Review::class.java)?.takeIf { it.isTripReview }
                 } catch (e: Exception) {
-                    // Error log if deserialization fails
-                    Log.e("FirestoreHelper", "Errore durante la deserializzazione della review ${document.id}", e)
+                    Log.e("Firestore", "Failed to deserialize review ${doc.id}", e)
                     null
                 }
             }
-
-            Log.d("FirestoreHelper", "Recuperate ${reviews.size} recensioni per il viaggio $tripId.")
-            reviews // Returns recension list (even if it's empty)
         } catch (e: Exception) {
-            // If error, log it and return null (sad)
-            Log.e("FirestoreHelper", "Errore durante il recupero delle recensioni per il viaggio $tripId", e)
-            null
+            Log.e("Firestore", "Failed to fetch reviews for trip $tripId", e)
+            emptyList()
         }
     }
+
 
     /*
     // Get reviews list of a trip

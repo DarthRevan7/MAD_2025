@@ -15,6 +15,10 @@ import kotlinx.coroutines.launch
 
 class ReviewViewModel(val reviewModel:ReviewModel): ViewModel() {
 
+    fun getReviews() {
+        reviewModel.getReviews()
+    }
+
     private suspend fun addNewReview(newReview: Review): Review? {
         val createdReview = reviewModel.createReview(newReview)
         return createdReview

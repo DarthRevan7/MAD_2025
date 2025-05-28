@@ -52,11 +52,14 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.RangeSlider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.window.PopupProperties
 import com.example.voyago.model.TypeTravel
 import com.example.voyago.viewmodel.Factory
 import com.example.voyago.viewmodel.TripViewModel
+
 
 data class SelectableItem(
     val label: String,
@@ -74,10 +77,10 @@ fun FiltersSelection(navController: NavController, vm: TripViewModel = viewModel
     var selectedDestination by remember { mutableStateOf<String?>(null) }
 
     //List of all the destinations present in the database
-    var allDestinations = vm.allDestinations()
+    val allDestinations by vm.allDestinations().collectAsState(initial = emptyList())
 
     //Suggestions the appear when you search
-    val filteredSuggestions = remember(query) {
+    val filteredSuggestions = remember(query, allDestinations) {
         allDestinations.filter {
             it.contains(query, ignoreCase = true)
         }
@@ -87,7 +90,10 @@ fun FiltersSelection(navController: NavController, vm: TripViewModel = viewModel
     val isCompletedSelected = vm.filterCompletedTrips
     val isCanJoinSelected = vm.filterUpcomingTrips
 
-    vm.setMaxMinPrice()
+    LaunchedEffect(Unit) {
+        vm.setMaxMinPrice()
+    }
+
 
     LazyColumn(
         state = listState,

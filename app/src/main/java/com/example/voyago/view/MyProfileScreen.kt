@@ -65,7 +65,6 @@ import com.example.voyago.model.ReviewModel
 import com.example.voyago.model.Trip
 import com.example.voyago.model.UserData
 import com.example.voyago.viewmodel.*
-import kotlinx.coroutines.flow.forEach
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -439,7 +438,7 @@ fun TabAboutTripsReview(user: UserData, vm: TripViewModel, vm2: ArticleViewModel
 @Composable
 fun ShowUserTrip(trip: Trip, vm: TripViewModel, navController: NavController) {
     val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
-    val formattedDate = dateFormat.format(trip.startDate.time)
+    val formattedDate = dateFormat.format(trip.startDate)
 
     Row(
         modifier = Modifier
