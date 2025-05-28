@@ -33,8 +33,8 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
     }
 
     //Use in the select trip interface (trip detail)
-    private val _selectedTrip = mutableStateOf<Trip?>(null)
-    val selectedTrip: State<Trip?> = _selectedTrip
+    private val _selectedTrip = mutableStateOf<Trip>(Trip())
+    val selectedTrip: State<Trip> = _selectedTrip
 
     fun setSelectedTrip(trip: Trip) {
         _selectedTrip.value = trip

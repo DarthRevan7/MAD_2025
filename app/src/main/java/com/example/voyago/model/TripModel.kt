@@ -1,11 +1,16 @@
 package com.example.voyago.model
 
+import android.util.Log
+import com.example.voyago.Collections
 import com.example.voyago.model.Trip.Activity
 import com.example.voyago.model.Trip.Participant
 import com.example.voyago.model.Trip.TripStatus
 import com.example.voyago.view.SelectableItem
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.callbackFlow
 import java.util.Calendar
 import kotlin.collections.contains
 import kotlin.collections.forEach
@@ -196,6 +201,24 @@ enum class TypeTravel {
 }
 
 class TripModel {
+
+    fun filterPublishedByCreator(id: Int): Flow<List<Trip>> = callbackFlow {
+        val listener = Collections.trips
+            .whereEqualTo("id", id)
+            .whereEqualTo("published", true)// Filter documents where id matches
+            .addSnapshotListener { snapshot, error ->
+                if (snapshot != null) {
+                    trySend(snapshot.toObjects(Trip::class.java))
+                } else {
+                    Log.e("Error", error.toString())
+                    trySend(emptyList())
+                }
+            }
+        awaitClose {
+            listener.remove()
+        }
+    }
+
 
 
     //--------------------------------------------------------------------
