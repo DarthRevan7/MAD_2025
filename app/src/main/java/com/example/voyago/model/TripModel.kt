@@ -10,8 +10,197 @@ import java.util.Calendar
 import kotlin.collections.contains
 import kotlin.collections.forEach
 
+data class Trip(
+    val id: Int = 0,
+    var photo: String = "",
+    var title: String = "",
+    var destination: String = "",
+    var startDate: Long = 0L,
+    var endDate: Long = 0L,
+    var estimatedPrice: Double = 0.0,
+    var groupSize: Int = 0,
+    var participants: Map<Int, JoinRequest> = emptyMap(),                   // userId, id JoinedRequest
+    var activities: Map<Calendar, List<Activity>> = emptyMap(),     // Map<Date, Activity>
+    var status: String = "",
+    var typeTravel: List<String> = emptyList(),
+    var creatorId: Int = 0,
+    var appliedUsers: Map<Int, JoinRequest> = emptyMap(),                   // userId, id JoinedRequest
+    var rejectedUsers: Map<Int, JoinRequest> = emptyMap(),                  // userId, number of spots
+    var published: Boolean = false
+) {
+
+    data class Activity(
+        val id: Int = 0,
+        var date: Long = 0L,         // yyyy-mm-dd
+        var time: String = "",           // hh:mm
+        var isGroupActivity: Boolean = false,
+        var description: String = ""
+    )
+
+    data class JoinRequest(
+        val userId: Int = 0,
+        val requestedSpots: Int = 0,
+        val unregisteredParticipants: List<Participant> = emptyList(), // excludes the requesting user
+        val registeredParticipants: List<Int> = emptyList()           //users' Ids
+    )
+
+    data class Participant(
+        val name: String = "",
+        val surname: String = "",
+        val email: String = ""
+    )
+
+    enum class TripStatus {
+        NOT_STARTED,
+        IN_PROGRESS,
+        COMPLETED
+    }
+    constructor() : this (
+        id = -1,
+        photo = "",
+        title = "",
+        destination = "",
+        startDate = 0L,
+        endDate = 0L,
+        estimatedPrice = -1.0,
+        groupSize = -1,
+        participants = emptyMap(),
+        activities = emptyMap(),
+        status = "",
+        typeTravel = emptyList(),
+        creatorId = -1,
+        appliedUsers = emptyMap(),
+        rejectedUsers = emptyMap(),
+        published = false
+    ) {
+
+        /*
+        var yesterday = Calendar.getInstance()
+        yesterday.add(Calendar.DATE, -1)
+
+        startDate = yesterday
+        endDate = yesterday
+
+         */
+
+        updateStatusBasedOnDate()
+
+    }
+
+    fun toCalendar(timeDate : Long) : Calendar {
+        var calendarDate = Calendar.getInstance()
+        calendarDate.timeInMillis = timeDate
+        return calendarDate
+    }
+
+    fun updateStatusBasedOnDate(): TripStatus {
+        val today = Calendar.getInstance().timeInMillis
+
+        return when {
+            endDate < today -> TripStatus.COMPLETED
+            startDate > today -> TripStatus.NOT_STARTED
+            else -> TripStatus.IN_PROGRESS
+        }
+    }
+
+    fun isValid():Boolean {
+        var condition = true
+        var yesterday = toCalendar(this.startDate)
+        yesterday.add(Calendar.DATE, -1)
+
+        var startDate = toCalendar(this.startDate)
+
+        var endDate = toCalendar(this.endDate)
+
+        condition = photo != "" && title != "" && destination != ""
+
+        condition = condition && startDate != yesterday && endDate != yesterday
+
+        condition = condition && estimatedPrice > 0.0 && groupSize > 0
+
+        condition = condition && activities.isNotEmpty() && typeTravel.isNotEmpty()
+
+        return condition
+    }
+
+    fun canJoin():Boolean {
+        return this.status == TripStatus.NOT_STARTED.toString() && hasAvailableSpots()
+    }
+
+    fun loggedInUserCanJoin(id: Int): Boolean {
+        return this.status == TripStatus.NOT_STARTED.toString() && hasAvailableSpots() && creatorId != id
+                && !participants.containsKey(id) && !appliedUsers.containsKey(id)
+    }
+
+    fun hasAvailableSpots():Boolean {
+        return availableSpots() > 0
+    }
+
+    fun availableSpots(): Int {
+        return this.groupSize - this.participants.values.sumOf { it.requestedSpots }
+    }
+
+    fun tripDuration(): Int {
+        val start = toCalendar(startDate)
+        val end = toCalendar(endDate)
+
+        var days = 0
+        while (start.before(end)) {
+            days++
+            start.add(Calendar.DATE, 1)
+        }
+        return days
+    }
+
+    fun printTrip()
+    {
+        println("Trip data: ")
+        println(destination)
+        println(id)
+        println(title)
+        println(estimatedPrice)
+        println(groupSize)
+        println("Status: $status")
+        println("Published? $published")
+        println("Available spots: " + availableSpots().toString())
+        println("Can join? " + canJoin().toString())
+        println("Has available spots? " + hasAvailableSpots().toString())
+
+
+    }
+
+    fun hasActivityForEachDay(): Boolean {
+        val current = toCalendar(startDate)
+        val end = toCalendar(endDate)
+
+        while (!current.after(end)) {
+            val hasActivity = activities.any { (activityDate, _) ->
+                activityDate.get(Calendar.YEAR) == current.get(Calendar.YEAR) &&
+                        activityDate.get(Calendar.DAY_OF_YEAR) == current.get(Calendar.DAY_OF_YEAR)
+            }
+
+            if (!hasActivity) return false
+            current.add(Calendar.DATE, 1)
+        }
+
+        return true
+    }
+
+}
+
+enum class TypeTravel {
+    CULTURE,
+    PARTY,
+    ADVENTURE,
+    RELAX
+}
+
 class TripModel {
 
+
+    //--------------------------------------------------------------------
+
+    /*
     private var _tripList = privateTripList
     var tripList = _tripList
 
@@ -45,7 +234,7 @@ class TripModel {
         return published
     }
 
-    fun updateTripStatus(trip: Trip, status: TripStatus) {
+    fun updateTripStatus(trip: Trip, status: String) {
         _tripList.value = _tripList.value.map {
             if (it.id == trip.id) it.copy(status = status) else it
         }
@@ -368,4 +557,6 @@ class TripModel {
             }
         _askedTrips.value = askedMap
     }
+    
+     */
 }
