@@ -14,6 +14,10 @@ import com.example.voyago.model.*
 import com.example.voyago.model.Trip.Activity
 import com.example.voyago.model.Trip.Participant
 import com.example.voyago.view.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
@@ -85,7 +89,7 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
     }
 
     //Min price and Max price of the database
-    fun setMaxMinPrice() = tripModel.setMaxMinPrice()
+    suspend fun setMaxMinPrice() = tripModel.setMaxMinPrice()
 
     //Duration filter
     var filterDuration: Pair<Int, Int> by mutableStateOf(Pair(-1, -1))
@@ -149,7 +153,7 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
     var filterUpcomingTrips: Boolean by mutableStateOf(false)
         private set
 
-    fun getUpcomingTripsList(): List<Trip>{
+    fun getUpcomingTripsList(): Flow<List<Trip>>{
         return tripModel.getUpcomingTrips()
     }
 
@@ -161,7 +165,7 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
     var filterCompletedTrips: Boolean by mutableStateOf(false)
         private set
 
-    fun getCompletedTripsList(): List<Trip>{
+    fun getCompletedTripsList(): Flow<List<Trip>>{
         return tripModel.getCompletedTrips()
     }
 
@@ -179,10 +183,10 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
 
     //Apply selected filters
     fun applyFilters() = tripModel.filterFunction(tripList, filterDestination, filterMinPrice, filterMaxPrice,
-        filterDuration, filterGroupSize, filtersTripType, filterUpcomingTrips, filterCompletedTrips, filterBySeats)
+        filterDuration, filterGroupSize, filtersTripType, filterUpcomingTrips, filterCompletedTrips, filterBySeats, viewModelScope)
 
     //Reset filters
-    fun resetFilters() {
+    suspend fun resetFilters() {
         filterDestination = ""
 
         updateFilterPriceRange(0.0,0.0)
@@ -202,7 +206,7 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
     }
 
     //Update list of published trips after filter application
-    var tripList: List<Trip> = emptyList()
+    var tripList: Flow<List<Trip>> = flowOf(emptyList())
         private set
 
     fun updatePublishedTrip() {

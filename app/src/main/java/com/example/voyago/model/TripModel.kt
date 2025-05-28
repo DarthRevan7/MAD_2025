@@ -6,14 +6,26 @@ import com.example.voyago.model.Trip.Activity
 import com.example.voyago.model.Trip.Participant
 import com.example.voyago.model.Trip.TripStatus
 import com.example.voyago.view.SelectableItem
+import com.google.firebase.firestore.Query
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.util.Calendar
 import kotlin.collections.contains
 import kotlin.collections.forEach
+
+fun toCalendar(timeDate : Long) : Calendar {
+    var calendarDate = Calendar.getInstance()
+    calendarDate.timeInMillis = timeDate
+    return calendarDate
+}
 
 data class Trip(
     val id: Int = 0,
@@ -90,12 +102,6 @@ data class Trip(
 
         updateStatusBasedOnDate()
 
-    }
-
-    fun toCalendar(timeDate : Long) : Calendar {
-        var calendarDate = Calendar.getInstance()
-        calendarDate.timeInMillis = timeDate
-        return calendarDate
     }
 
     fun updateStatusBasedOnDate(): TripStatus {
@@ -202,6 +208,9 @@ enum class TypeTravel {
 
 class TripModel {
 
+    //SUBSET OF THE TRIP LIST
+
+    //Trips published by the logged in user
     fun filterPublishedByCreator(id: Int): Flow<List<Trip>> = callbackFlow {
         val listener = Collections.trips
             .whereEqualTo("id", id)
@@ -251,6 +260,317 @@ class TripModel {
             listener.remove()
         }
     }
+
+    fun updateTripStatus(tripId: Int, newStatus: String) {
+        Collections.trips
+            .whereEqualTo("id", tripId)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                for (document in snapshot.documents) {
+                    document.reference.update("status", newStatus)
+                }
+            }
+            .addOnFailureListener { error ->
+                Log.e("Firestore", "Failed to update trip status", error)
+            }
+    }
+
+    fun getJoinedTrips(userId: Int): Flow<List<Trip>> = callbackFlow {
+        val listener = Collections.trips
+            .whereNotEqualTo("creatorId", userId)
+            .addSnapshotListener { snapshot, error ->
+                if (snapshot != null) {
+                    val joinedTrips = snapshot.toObjects(Trip::class.java)
+                        .filter { it.participants.containsKey(userId) }
+
+                    trySend(joinedTrips).onFailure {
+                        Log.e("Firestore", "Failed to send joined trips", it)
+                    }
+                } else {
+                    Log.e("Firestore", "Error fetching joined trips", error)
+                    trySend(emptyList())
+                }
+            }
+
+        awaitClose {
+            listener.remove()
+        }
+    }
+
+    private val _filteredList = MutableStateFlow<List<Trip>>(emptyList())
+    val filteredList: StateFlow<List<Trip>> = _filteredList
+
+    // Call this function to start filtering trips reactively
+    fun filterFunction(tripsFlow: Flow<List<Trip>>, filterDestination: String,
+                       filterMinPrice: Double, filterMaxPrice: Double,
+                       filterDuration: Pair<Int, Int>, filterGroupSize: Pair<Int, Int>,
+                       filtersTripType: List<SelectableItem>, filterUpcomingTrips: Boolean,
+                       filterCompletedTrips: Boolean, filterBySeats: Int,
+                       coroutineScope: CoroutineScope) {
+        coroutineScope.launch {
+            tripsFlow.collect { list ->
+                val filtered = list.filter { trip ->
+                    val destination = filterDestination.isBlank() || trip.destination.contains(filterDestination, ignoreCase = true)
+
+                    val duration = (filterDuration.first == -1 && filterDuration.second == -1) ||
+                            (trip.tripDuration() in filterDuration.first..filterDuration.second)
+
+                    val groupSize = (filterGroupSize.first == -1 && filterGroupSize.second == -1) ||
+                            (trip.groupSize in filterGroupSize.first..filterGroupSize.second)
+
+                    val price = if (filterMinPrice == 0.0 && filterMaxPrice == 0.0) {
+                        true
+                    } else {
+                        trip.estimatedPrice in filterMinPrice..filterMaxPrice
+                    }
+
+                    val completed = !filterCompletedTrips || trip.status == TripStatus.COMPLETED.toString()
+                    val canJoin = !filterUpcomingTrips || trip.loggedInUserCanJoin(1)
+                    val spots = trip.availableSpots() >= filterBySeats
+
+                    trip.published && destination && price && duration && groupSize && canJoin && completed && spots
+                }
+
+                val finalFiltered = if (!filtersTripType.any { it.isSelected }) {
+                    filtered
+                } else {
+                    filtered.filter { trip ->
+                        filtersTripType.any { it.isSelected && trip.typeTravel.contains(it.typeTravel.toString()) }
+                    }
+                }
+
+                _filteredList.value = finalFiltered
+            }
+        }
+    }
+
+
+    fun getDestinations(): Flow<List<String>> = callbackFlow {
+        val listener = Collections.trips
+            .whereEqualTo("published", true)
+            .addSnapshotListener { snapshot, error ->
+                if (snapshot != null) {
+                    val destinations = snapshot.documents
+                        .mapNotNull { it.getString("destination") }
+                        .distinct()
+
+                    trySend(destinations).onFailure {
+                        Log.e("Firestore", "Failed to send destinations", it)
+                    }
+                } else {
+                    Log.e("Firestore", "Error fetching destinations", error)
+                    trySend(emptyList())
+                }
+            }
+
+        awaitClose { listener.remove() }
+    }
+
+    internal var minPrice = Double.MAX_VALUE
+    internal var maxPrice = Double.MIN_VALUE
+
+    suspend fun setMaxMinPrice() {
+        try {
+            val snapshot = Collections.trips.get().await()  // Using kotlinx-coroutines-play-services for .await()
+            val trips = snapshot.toObjects(Trip::class.java)
+
+            minPrice = trips.minOfOrNull { it.estimatedPrice } ?: Double.MAX_VALUE
+            maxPrice = trips.maxOfOrNull { it.estimatedPrice } ?: Double.MIN_VALUE
+        } catch (e: Exception) {
+            Log.e("Firestore", "Failed to fetch trips for min/max price", e)
+            minPrice = Double.MAX_VALUE
+            maxPrice = Double.MIN_VALUE
+        }
+    }
+
+    //Range of the Price slider
+    fun setRange(list: List<SelectableItem>): Pair<Int, Int> {
+        var min = Int.MAX_VALUE
+        var max = Int.MIN_VALUE
+
+        list.forEach { item ->
+            if (item.isSelected) {
+                if (item.min < min) {
+                    min = item.min
+                }
+                if (item.max > max) {
+                    max = item.max
+                }
+            }
+        }
+
+        if(min == Int.MAX_VALUE && max == Int.MIN_VALUE) {
+            min = -1
+            max = -1
+        }
+        return Pair(min, max)
+    }
+
+    fun getCompletedTrips(): Flow<List<Trip>> = callbackFlow {
+        val listener = Collections.trips
+            .whereEqualTo("status", "COMPLETED")
+            .addSnapshotListener { snapshot, error ->
+                if (snapshot != null) {
+                    trySend(snapshot.toObjects(Trip::class.java)).onFailure {
+                        Log.e("Firestore", "Send failed", it)
+                    }
+                } else {
+                    Log.e("Firestore", "Listener error", error)
+                    trySend(emptyList())
+                }
+            }
+
+        awaitClose { listener.remove() }
+    }
+
+    fun getUpcomingTrips(): Flow<List<Trip>> = callbackFlow {
+        val listener = Collections.trips
+            .whereEqualTo("status", "NOT_STARTED")
+            .addSnapshotListener { snapshot, error ->
+                if (snapshot != null) {
+                    trySend(snapshot.toObjects(Trip::class.java)).onFailure {
+                        Log.e("Firestore", "Send failed", it)
+                    }
+                } else {
+                    Log.e("Firestore", "Listener error", error)
+                    trySend(emptyList())
+                }
+            }
+
+        awaitClose { listener.remove() }
+    }
+
+    fun createNewTrip(newTrip: Trip, onResult: (Boolean, Trip?) -> Unit) {
+        val docRef = Collections.trips.document() // Let Firestore generate a unique document ID
+        val generatedId = docRef.id.hashCode()     // Use a hash of the string ID as an Int
+
+        val tripWithId = newTrip.copy(id = generatedId)
+
+        docRef.set(tripWithId)
+            .addOnSuccessListener {
+                onResult(true, tripWithId)
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "Failed to create trip", e)
+                onResult(false, null)
+            }
+    }
+
+    fun importTrip(
+        photo: String,
+        title: String,
+        destination: String,
+        startDate: Calendar,
+        endDate: Calendar,
+        estimatedPrice: Double,
+        groupSize: Int,
+        activities: Map<Calendar, List<Activity>>,
+        typeTravel: List<TypeTravel>,
+        creatorId: Int,
+        published: Boolean,
+        onResult: (Boolean, Trip?) -> Unit
+    ) {
+        val docRef = Collections.trips.document() // Firestore-generated ID
+        val tripId = docRef.id.hashCode()
+
+        val newTrip = Trip(
+            id = tripId,
+            photo = photo,
+            title = title,
+            destination = destination,
+            startDate = startDate.timeInMillis,
+            endDate = endDate.timeInMillis,
+            estimatedPrice = estimatedPrice,
+            groupSize = groupSize,
+            participants = mapOf(
+                creatorId to Trip.JoinRequest(
+                    userId = creatorId,
+                    requestedSpots = 1,
+                    unregisteredParticipants = emptyList(),
+                    registeredParticipants = emptyList()
+                )
+            ),
+            activities = activities,
+            status = TripStatus.NOT_STARTED.toString(),
+            typeTravel = listOf(typeTravel.toString()),
+            creatorId = creatorId,
+            appliedUsers = emptyMap(),
+            rejectedUsers = emptyMap(),
+            published = published
+        )
+
+        docRef.set(newTrip)
+            .addOnSuccessListener {
+                onResult(true, newTrip)
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "Failed to import trip", e)
+                onResult(false, null)
+            }
+    }
+
+    fun editTrip(updatedTrip: Trip, onResult: (Boolean) -> Unit) {
+        val docId = updatedTrip.id.toString() // Assumes Firestore document ID
+
+        Collections.trips
+            .document(docId)
+            .set(updatedTrip)
+            .addOnSuccessListener {
+                onResult(true)
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "Failed to update trip", e)
+                onResult(false)
+            }
+    }
+
+    fun changePublishedStatus(id: Int, onResult: (Boolean) -> Unit) {
+        val docId = id.toString()  // Assuming document ID is stringified trip ID
+
+        val tripDocRef = Collections.trips.document(docId)
+
+        // Get current trip to toggle the published status
+        tripDocRef.get()
+            .addOnSuccessListener { snapshot ->
+                val trip = snapshot.toObject(Trip::class.java)
+                if (trip != null) {
+                    val updatedPublished = !trip.published
+                    tripDocRef.update("published", updatedPublished)
+                        .addOnSuccessListener { onResult(true) }
+                        .addOnFailureListener {
+                            Log.e("Firestore", "Failed to update published status", it)
+                            onResult(false)
+                        }
+                } else {
+                    Log.e("Firestore", "Trip not found for ID: $id")
+                    onResult(false)
+                }
+            }
+            .addOnFailureListener {
+                Log.e("Firestore", "Failed to fetch trip for ID: $id", it)
+                onResult(false)
+            }
+    }
+
+
+    fun addActivityToTrip(activity: Activity, trip: Trip?): Trip {
+        val currentTrip = trip ?: Trip()
+
+        val updatedActivities = currentTrip.activities.toMutableMap().apply {
+            val dateKey: Calendar = toCalendar(activity.date)
+            val updatedList: List<Activity> = getOrDefault(dateKey, emptyList()) + activity
+            put(dateKey, updatedList)
+        }
+
+        val updatedTrip = currentTrip.copy(activities = updatedActivities)
+
+        Collections.trips.document(updatedTrip.id.toString())
+            .set(updatedTrip)
+
+        return updatedTrip
+    }
+
+    
 
     //--------------------------------------------------------------------
 
