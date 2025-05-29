@@ -71,6 +71,8 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
         vm.getTripParticipants(trip)
     }
 
+    val participantsMap by vm.tripParticipants.collectAsState()
+
     val listState = rememberLazyListState()
 
     val hasReviews by remember {
@@ -301,10 +303,6 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
                     }
                 }
             } else {
-                val participantsMap = vm.tripParticipants.value
-
-
-
                 items(participantsMap.entries.toList()) { entry ->
                     val user = entry.key
                     if (user.id != uvm.loggedUser.id) {
@@ -400,8 +398,7 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
                         Button(
                             onClick = {
                                 val allKeys = mutableListOf("trip")
-                                val participants = vm.tripParticipants.value
-                                for (user in participants.keys) {
+                                for (user in participantsMap.keys) {
                                     if (user.id != uvm.loggedUser.id) {
                                         allKeys.add(user.id.toString())
                                     }

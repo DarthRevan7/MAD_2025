@@ -33,6 +33,8 @@ import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.TextButton
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,31 +43,36 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.voyago.activities.ProfilePhoto
-import com.example.voyago.model.ReviewModel
 import com.example.voyago.model.Trip
-import com.example.voyago.model.UserData
+import com.example.voyago.model.User
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
 
 @Composable
-fun TripApplications(vm: TripViewModel, uvm:UserViewModel, navController: NavController) {
-
-    uvm.updateAllRatings(ReviewModel())
-
-    val listState = rememberLazyListState()
+fun TripApplications(vm: TripViewModel, uvm: UserViewModel, navController: NavController) {
     val trip = vm.selectedTrip.value
 
-    vm.applications.value = vm.getTripApplicants(trip)
+    // Trigger data loading once when trip changes
+    LaunchedEffect(trip.id) {
+        vm.getTripParticipants(trip)
+        vm.getTripApplicants(trip)
+        vm.getTripRejectedUsers(trip)
+    }
+
+    // Collect StateFlows as Compose state
+    val participantsMap by vm.tripParticipants.collectAsState()
+    val applicantsMap by vm.tripApplicants.collectAsState()
+    val rejectedUsersMap by vm.tripRejectedUsers.collectAsState()
+
+    val listState = rememberLazyListState()
 
     LazyColumn(
         state = listState,
-        modifier = Modifier
-            .fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.Start
     ) {
-
-        //Trip photo
+        // Trip photo
         item {
             Hero(trip)
         }
@@ -74,7 +81,7 @@ fun TripApplications(vm: TripViewModel, uvm:UserViewModel, navController: NavCon
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        //Group Size and Available spots
+        // Group size and available spots
         item {
             Row(
                 modifier = Modifier
@@ -84,9 +91,11 @@ fun TripApplications(vm: TripViewModel, uvm:UserViewModel, navController: NavCon
             ) {
                 Text(
                     text = "${trip.groupSize} people" +
-                            if(trip.availableSpots() > 0) {
+                            if (trip.availableSpots() > 0) {
                                 " (${trip.availableSpots()} spots left)"
-                            } else { "" },
+                            } else {
+                                ""
+                            },
                     modifier = Modifier.align(Alignment.CenterVertically)
                 )
             }
@@ -96,31 +105,29 @@ fun TripApplications(vm: TripViewModel, uvm:UserViewModel, navController: NavCon
             TitleBox("Applications")
         }
 
-        //Approved users
+        // Approved users section title
         item {
             Text(
                 text = "Approved Applications:",
-                modifier = Modifier
-                    .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
                 fontWeight = FontWeight.Bold
             )
         }
 
-        if (trip.participants.size > 1) {
-            val participantsMap = vm.getTripParticipants(trip)
-
+        if (participantsMap.isNotEmpty()) {
             items(participantsMap.entries.toList()) { entry ->
                 val user = entry.key
-                val spots = entry.value
-                if (user.id != 1) {
-                    ShowParticipants(user, spots, uvm, navController)
+                val joinRequest = entry.value
+                if (user.id != 1) {  // Assuming you want to skip user with id == 1
+                    ShowParticipants(user, joinRequest, uvm, navController)
                 }
             }
-
         } else {
             item {
-                Row (
-                    modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                Row(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Text("There aren't any participants yet.")
@@ -128,29 +135,27 @@ fun TripApplications(vm: TripViewModel, uvm:UserViewModel, navController: NavCon
             }
         }
 
-        //Applications that must be still approved or rejected
+        // Pending applications section title
         item {
             Text(
                 text = "Pending Applications:",
-                modifier = Modifier
-                    .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
                 fontWeight = FontWeight.Bold
             )
         }
 
-        if (trip.appliedUsers.isNotEmpty()) {
-            val applicantsMap = vm.applications.value
-            val applicantsList = applicantsMap.keys.toList()
-
-            items(applicantsList) { user ->
-                val joinRequest: Trip.JoinRequest = applicantsMap[user]!!
+        if (applicantsMap.isNotEmpty()) {
+            items(applicantsMap.entries.toList()) { entry ->
+                val user = entry.key
+                val joinRequest = entry.value
                 ShowApplications(user, joinRequest, vm, uvm, navController)
             }
-
         } else {
             item {
-                Row (
-                    modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                Row(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center
                 ) {
                     if (trip.hasAvailableSpots()) {
@@ -162,31 +167,29 @@ fun TripApplications(vm: TripViewModel, uvm:UserViewModel, navController: NavCon
             }
         }
 
-        //Rejected users
+        // Rejected applications section title
         item {
             Text(
                 text = "Rejected Applications:",
-                modifier = Modifier
-                    .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
                 fontWeight = FontWeight.Bold
             )
         }
 
-        if (trip.rejectedUsers.isNotEmpty()) {
-            val participantsMap = vm.getTripRejectedUsers(trip)
-
-            items(participantsMap.entries.toList()) { entry ->
+        if (rejectedUsersMap.isNotEmpty()) {
+            items(rejectedUsersMap.entries.toList()) { entry ->
                 val user = entry.key
-                val spots = entry.value
+                val joinRequest = entry.value
                 if (user.id != 1) {
-                    ShowParticipants(user, spots, uvm, navController)
+                    ShowParticipants(user, joinRequest, uvm, navController)
                 }
             }
-
         } else {
             item {
-                Row (
-                    modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                Row(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Text("There aren't any rejected applications for this trip.")
@@ -196,8 +199,9 @@ fun TripApplications(vm: TripViewModel, uvm:UserViewModel, navController: NavCon
     }
 }
 
+
 @Composable
-fun ShowParticipants(user: UserData, joinRequest: Trip.JoinRequest, uvm: UserViewModel, navController: NavController) {
+fun ShowParticipants(user: User, joinRequest: Trip.JoinRequest, uvm: UserViewModel, navController: NavController) {
     var showPart by remember { mutableStateOf(false) }
 
     Row(
@@ -299,7 +303,7 @@ fun ShowParticipants(user: UserData, joinRequest: Trip.JoinRequest, uvm: UserVie
 }
 
 @Composable
-fun ShowApplications(user: UserData, joinRequest: Trip.JoinRequest, vm: TripViewModel, uvm: UserViewModel, navController: NavController) {
+fun ShowApplications(user: User, joinRequest: Trip.JoinRequest, vm: TripViewModel, uvm: UserViewModel, navController: NavController) {
     var showDialog by remember { mutableStateOf(false) }
     var isAcceptAction by remember { mutableStateOf(true) }
     var showPart by remember { mutableStateOf(false) }

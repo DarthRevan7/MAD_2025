@@ -295,7 +295,8 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
     }
 
     //Mutable list of applications
-    var applications = MutableStateFlow(emptyMap<User, Trip.JoinRequest>())
+    private val _applications = MutableStateFlow<Map<User, Trip.JoinRequest>>(emptyMap())
+    val applications: StateFlow<Map<User, Trip.JoinRequest>> = _applications
 
     // Participants with spots taken
     private val _tripParticipants = MutableStateFlow<Map<User, Trip.JoinRequest>>(emptyMap())
@@ -422,7 +423,7 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
         }
 
         // Update your applications value accordingly
-        applications.value = tripApplicants.value
+        _applications.value = tripApplicants.value
     }
 
     //Reject an application
@@ -434,7 +435,7 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
             trip.rejectedUsers = trip.rejectedUsers + (userId to joinRequest)
 
             // Assign just the list of users, ignoring requestedSpots here
-            applications.value = tripRejectedUsers.value
+            _applications.value = tripRejectedUsers.value
         }
     }
 
