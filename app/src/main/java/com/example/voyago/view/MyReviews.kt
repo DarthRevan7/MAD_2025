@@ -33,6 +33,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -66,12 +67,14 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
 
     val trip by vm.selectedTrip
 
-    val nonNullTrip = trip
+    LaunchedEffect(trip.id) {
+        vm.getTripParticipants(trip)
+    }
 
     val listState = rememberLazyListState()
 
     val hasReviews by remember {
-        derivedStateOf { vm.isReviewed(uvm.loggedUser.id, nonNullTrip.id) }
+        derivedStateOf { vm.isReviewed(uvm.loggedUser.id, trip.id) }
     }
 
     val titleMap = remember { mutableStateMapOf<String, String>() }
@@ -122,7 +125,7 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
         ) {
             //Trip image
             item {
-                Hero(nonNullTrip)
+                Hero(trip)
             }
 
             item {
@@ -137,11 +140,11 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
                         .padding(start = 24.dp, end = 24.dp)
                 ) {
                     Text(
-                        text = formatTripDate(toCalendar(nonNullTrip.startDate)) + " - " +
-                                formatTripDate(toCalendar(nonNullTrip.endDate)) + "\n " +
-                                "${nonNullTrip.groupSize} people" +
-                                if (nonNullTrip.availableSpots() > 0) {
-                                    " (${nonNullTrip.availableSpots()} spots left)"
+                        text = formatTripDate(toCalendar(trip.startDate)) + " - " +
+                                formatTripDate(toCalendar(trip.endDate)) + "\n " +
+                                "${trip.groupSize} people" +
+                                if (trip.availableSpots() > 0) {
+                                    " (${trip.availableSpots()} spots left)"
                                 } else {
                                     ""
                                 },
@@ -172,7 +175,7 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
 
             if(hasReviews) {
                 //Review of the trip made by the logged in user
-                val review = vm.tripReview(uvm.loggedUser.id, nonNullTrip.id)
+                val review = vm.tripReview(uvm.loggedUser.id, trip.id)
                 if(review.isValidReview()) {
                     item {
                         ShowReview(review, vm, true, uvm, navController)
@@ -286,7 +289,7 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
 
             if(hasReviews) {
                 //Review of the users made by the logged in user
-                val reviews = vm.getUsersReviewsTrip(uvm.loggedUser.id, nonNullTrip.id)
+                val reviews = vm.getUsersReviewsTrip(uvm.loggedUser.id, trip.id)
                 if(reviews.isNotEmpty()) {
                     items(reviews) { review ->
                         ShowReview(review, vm, true, uvm, navController)
@@ -298,9 +301,8 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
                     }
                 }
             } else {
-                //Field to complete
-                vm.getTripParticipants(nonNullTrip)
-                val participantsMap = vm.tripParticipants
+                val participantsMap = vm.tripParticipants.value
+
 
 
                 items(participantsMap.entries.toList()) { entry ->
@@ -398,7 +400,7 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
                         Button(
                             onClick = {
                                 val allKeys = mutableListOf("trip")
-                                val participants = vm.getTripParticipants(nonNullTrip)
+                                val participants = vm.tripParticipants.value
                                 for (user in participants.keys) {
                                     if (user.id != uvm.loggedUser.id) {
                                         allKeys.add(user.id.toString())
@@ -437,7 +439,7 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
 
                                         val review = Review(
                                             reviewId = -1,
-                                            tripId = nonNullTrip.id,
+                                            tripId = trip.id,
                                             isTripReview = isTripReview,
                                             reviewerId = uvm.loggedUser.id,
                                             reviewedUserId = reviewedUserId,

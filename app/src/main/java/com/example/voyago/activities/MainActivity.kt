@@ -1,6 +1,7 @@
 package com.example.voyago.activities
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
 import android.content.pm.PackageManager
@@ -108,8 +109,6 @@ import com.example.voyago.viewmodel.UserViewModel
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.example.voyago.model.ReviewModel
-import com.example.voyago.model.UserModel
 import com.example.voyago.viewmodel.ArticleFactory
 
 
@@ -197,7 +196,7 @@ class MainActivity : ComponentActivity() {
 
     companion object {
         private const val TAG = "Camera"
-        private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
+        @SuppressLint("ObsoleteSdkInt")
         private val REQUIRED_PERMISSIONS = mutableListOf(
             Manifest.permission.CAMERA,
             Manifest.permission.RECORD_AUDIO
@@ -852,6 +851,7 @@ fun TopBar() {
     )
 }
 
+@SuppressLint("ObsoleteSdkInt")
 @Composable
 fun CameraScreen(context: Context, onImageCaptured: (Uri?) -> Unit) {
     val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current

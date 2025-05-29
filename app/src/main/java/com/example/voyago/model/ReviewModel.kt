@@ -2,6 +2,9 @@ package com.example.voyago.model
 
 import android.util.Log
 import com.example.voyago.Collections
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 
 data class Review(
@@ -282,6 +285,7 @@ class ReviewModel {
         }
     }
 
+    /*
     suspend fun calculateRatingById(id: Int): Float? {
         return try {
             // Fetch reviews for the specific user (excluding trip reviews).
@@ -319,6 +323,8 @@ class ReviewModel {
         }
     }
 
+     */
+
     /*
     // Calculate average user rating by id
     fun calculateRatingById(id:Int): Float {
@@ -334,6 +340,33 @@ class ReviewModel {
     }
 
      */
+
+    fun calculateRatingById(id: Int): Flow<Float> = callbackFlow {
+        val query = Collections.reviews
+            .whereEqualTo("reviewedUserId", id)
+            .whereEqualTo("isTripReview", false)
+
+        val listener = query.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                Log.e("calculateRatingById", "Firestore error: ${error.message}")
+                trySend(5.0f)
+                return@addSnapshotListener
+            }
+
+            val reviews = snapshot?.toObjects(Review::class.java).orEmpty()
+            val rating = if (reviews.isNotEmpty()) {
+                val avg = reviews.map { it.score }.average().toFloat()
+                val scaled = avg / 2f
+                (scaled * 10).toInt() / 10f
+            } else {
+                5.0f
+            }
+
+            trySend(rating)
+        }
+
+        awaitClose { listener.remove() }
+    }
 
 
 

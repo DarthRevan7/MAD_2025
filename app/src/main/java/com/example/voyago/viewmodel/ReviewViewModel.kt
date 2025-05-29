@@ -8,6 +8,7 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.voyago.model.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -69,6 +70,8 @@ class ReviewViewModel(val reviewModel:ReviewModel): ViewModel() {
     fun updateSelectedUris(uris: List<Uri>) {
         _selectedUris.value = uris
     }
+
+    fun calculateRatingById(id: Int): Flow<Float> = reviewModel.calculateRatingById(id)
 
 }
 
