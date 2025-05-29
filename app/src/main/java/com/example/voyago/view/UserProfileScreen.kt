@@ -25,14 +25,11 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.navigation.NavController
 import com.example.voyago.activities.*
-import com.example.voyago.model.ReviewModel
 import com.example.voyago.viewmodel.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserProfileScreen(vm: TripViewModel, navController: NavController, vm2: ArticleViewModel, userId: Int, uvm: UserViewModel) {
-
-    uvm.updateAllRatings(ReviewModel())
 
     val user = uvm.getUserData(userId)
 

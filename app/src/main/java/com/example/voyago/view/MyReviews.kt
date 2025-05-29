@@ -63,8 +63,6 @@ import java.util.Calendar
 @Composable
 fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewModel, rvm: ReviewViewModel) {
 
-    uvm.updateAllRatings(ReviewModel())
-
     val trip by vm.selectedTrip
 
     LaunchedEffect(trip.id) {

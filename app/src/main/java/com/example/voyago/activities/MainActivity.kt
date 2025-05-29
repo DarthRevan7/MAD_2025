@@ -110,6 +110,9 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.voyago.viewmodel.ArticleFactory
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
+import com.google.firebase.FirebaseApp
 
 
 sealed class Screen(val route: String) {
@@ -122,6 +125,7 @@ sealed class Screen(val route: String) {
 
 class MainActivity : ComponentActivity() {
 
+
     private lateinit var viewBinding: ActivityCameraBinding
 
     private var imageCapture: ImageCapture? = null
@@ -131,6 +135,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        FirebaseApp.initializeApp(this)
+
         enableEdgeToEdge()
         context = this
 
@@ -792,14 +799,14 @@ fun ProfilePhoto(firstname: String, surname: String, isSmall: Boolean, profileIm
             contentAlignment = Alignment.Center,
             modifier = modifier
                 .size(width = 130.dp, height = 130.dp)
-                .background( color = Color.Blue , shape = CircleShape)
+                .background(color = Color.Blue, shape = CircleShape)
 
         ) {
             //Icon(profileImage)
             AsyncImage(profileImage,"profilePic",
                 modifier = Modifier
                     .fillMaxSize()
-                    .clip( shape = CircleShape)
+                    .clip(shape = CircleShape)
                     .border(0.dp, Color.White, CircleShape),
                 contentScale = ContentScale.Crop
             )

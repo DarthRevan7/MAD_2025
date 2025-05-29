@@ -63,9 +63,11 @@ class UserViewModel(val model:UserModel): ViewModel() {
         _profileImageUri.value = uri
     }
 
+    /*
     fun updateAllRatings(reviewModel: ReviewModel) {
         model.refreshAllRatings(reviewModel)
     }
+     */
 
 }
 

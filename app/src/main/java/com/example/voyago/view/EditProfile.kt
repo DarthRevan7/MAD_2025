@@ -46,15 +46,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.core.net.toUri
 import coil3.compose.AsyncImage
-import com.example.voyago.model.ReviewModel
 import com.example.voyago.model.User
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
 
 @Composable
 fun EditProfileScreen(navController: NavController, context:Context, vm: TripViewModel, uvm: UserViewModel) {
-
-    uvm.updateAllRatings(ReviewModel())
 
     val user = uvm.getUserData(1)
 

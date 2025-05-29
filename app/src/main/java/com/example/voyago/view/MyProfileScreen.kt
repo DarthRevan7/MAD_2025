@@ -72,11 +72,6 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: ArticleViewModel, uvm: UserViewModel) {
-
-    LaunchedEffect(Unit) {
-        uvm.updateAllRatings(ReviewModel())
-    }
-
     val user1 = uvm.getUserData(uvm.loggedUser.id)
 
     //Icons

@@ -78,10 +78,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.window.Popup
 import androidx.core.net.toUri
 import coil3.compose.rememberAsyncImagePainter
-import com.example.voyago.model.ReviewModel
 import com.example.voyago.model.Trip.Participant
 import com.example.voyago.model.toCalendar
-import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
 import kotlinx.coroutines.delay
@@ -92,8 +90,6 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean, uvm: UserViewModel) {
 
-    uvm.updateAllRatings(ReviewModel())
-
     //Trip that we are showing
     val trip = when (vm.userAction) {
         TripViewModel.UserAction.VIEW_TRIP -> vm.selectedTrip.value
@@ -101,6 +97,12 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
         else -> vm.selectedTrip.value
 
     }
+
+    LaunchedEffect(trip.id) {
+        vm.getTripParticipants(trip)
+    }
+
+    val participantsMap by vm.tripParticipants.collectAsState()
 
     Log.d("Action", "${vm.userAction}")
 
@@ -554,8 +556,6 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                 item {
                     TitleBox("Participants:")
                 }
-
-                val participantsMap = vm.getTripParticipants(trip)
 
                 items(participantsMap.entries.toList()) { entry ->
                     val user = entry.key
