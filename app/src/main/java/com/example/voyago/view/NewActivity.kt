@@ -157,7 +157,7 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                                 dateErrorMessage = ""
                             } else {
                                 showDateError = true
-                                dateErrorMessage = "Activity date must be within the trip period \n(${dateFormat.format(toCalendar(currentTrip.startDate).time)} - ${dateFormat.format(currentTrip.endDate.time)})"
+                                dateErrorMessage = "Activity date must be within the trip period \n(${dateFormat.format(toCalendar(currentTrip.startDate).time)} - ${dateFormat.format(toCalendar(currentTrip.endDate).time)})"
                             }
                         }, year, month, day
                     )
@@ -296,7 +296,7 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
 
                                 val newActivity = Trip.Activity(
                                     id = newId,
-                                    date = activityCalendar,
+                                    date = activityCalendar.timeInMillis,
                                     time = selectedTime,
                                     isGroupActivity = isGroupActivityChecked,
                                     description = activityDescription

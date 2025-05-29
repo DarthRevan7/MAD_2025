@@ -424,7 +424,7 @@ fun CreateNewTrip(navController: NavController, vm: TripViewModel) {
                                     estimatedPrice = fieldValues[2].toDouble(),
                                     groupSize = fieldValues[3].toInt(),
                                     activities = activities,
-                                    typeTravel = selected.map { TypeTravel.valueOf(it.uppercase().toString()) }.toList(),
+                                    typeTravel = selected.map { TypeTravel.valueOf(it.uppercase()).toString() },
                                     creatorId = creatorId,
                                     published = false,
                                     id = -1,
