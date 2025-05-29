@@ -34,7 +34,7 @@ var privateUsers = MutableStateFlow<List<UserData>>(
             profilePicture = null,
             typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.ADVENTURE),
             desiredDestination = listOf("Greece", "Italy", "Japan"),
-            rating = 5.0f,
+            rating = 4.5f,
             reliability = 90
         ),
 
@@ -51,7 +51,7 @@ var privateUsers = MutableStateFlow<List<UserData>>(
             profilePicture = null,
             typeTravel = listOf(TypeTravel.RELAX, TypeTravel.PARTY),
             desiredDestination = listOf("Romania", "USA", "South Korea"),
-            rating = 5.0f,
+            rating = 4.0f,
             reliability = 55
         ),
 
@@ -68,7 +68,7 @@ var privateUsers = MutableStateFlow<List<UserData>>(
             profilePicture = null,
             typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.CULTURE),
             desiredDestination = listOf("Peru", "Nepal", "Morocco"),
-            rating = 5.0f,
+            rating = 4.4f,
             reliability = 80
         ),
 
@@ -102,7 +102,7 @@ var privateUsers = MutableStateFlow<List<UserData>>(
             profilePicture = null,
             typeTravel = listOf(TypeTravel.CULTURE),
             desiredDestination = listOf("Thailand", "Italy", "Vietnam"),
-            rating = 5.0f,
+            rating = 3.7f,
             reliability = 67
         ),
 
@@ -119,7 +119,7 @@ var privateUsers = MutableStateFlow<List<UserData>>(
             profilePicture = null,
             typeTravel = listOf(TypeTravel.RELAX, TypeTravel.CULTURE),
             desiredDestination = listOf("Turkey", "Spain", "Malaysia"),
-            rating = 5.0f,
+            rating = 4.6f,
             reliability = 90
         )
     )
@@ -999,7 +999,7 @@ var privateReviews = MutableStateFlow<List<Review>>(
             tripId = 1,
             isTripReview = false,
             reviewerId = 6,
-            reviewedUserId = -1,
+            reviewedUserId = 1,
             title = "Thoughtful and adventurous companion",
             comment = "Traveling with Alice was such a joy. She’s incredibly respectful of group dynamics and always made insightful observations about the places we visited. Whether we were exploring museums or hiking together, she brought a calm energy that was deeply appreciated. I especially loved our conversations during free time — she has a way of turning every small moment into something memorable. Would definitely travel with her again!",
             score = 10,
