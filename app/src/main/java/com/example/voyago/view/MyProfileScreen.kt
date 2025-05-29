@@ -58,7 +58,6 @@ import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import coil3.toUri
 import com.example.voyago.R
 import com.example.voyago.activities.*
 import com.example.voyago.model.Article
@@ -66,7 +65,6 @@ import com.example.voyago.model.Review
 import com.example.voyago.model.ReviewModel
 import com.example.voyago.model.Trip
 import com.example.voyago.model.User
-import com.example.voyago.model.UserData
 import com.example.voyago.viewmodel.*
 import java.text.SimpleDateFormat
 import java.util.Locale

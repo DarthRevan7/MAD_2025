@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.navigation.NavController
 import com.example.voyago.activities.*
 import com.example.voyago.model.ReviewModel
@@ -51,7 +52,7 @@ fun UserProfileScreen(vm: TripViewModel, navController: NavController, vm2: Arti
                     .background(Color(0xdf, 0xd1, 0xe0, 255), shape = RectangleShape)) {
 
                 ProfilePhoto(
-                    user.firstname, user.surname, false, user.profilePicture,
+                    user.firstname, user.surname, false, user.profilePictureUrl?.toUri(),
                     modifier = Modifier
                         .align(Alignment.Center)
                         .offset(y = (-50).dp)

@@ -48,7 +48,6 @@ import androidx.core.net.toUri
 import coil3.compose.AsyncImage
 import com.example.voyago.model.ReviewModel
 import com.example.voyago.model.User
-import com.example.voyago.model.UserData
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
 

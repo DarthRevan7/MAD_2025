@@ -46,7 +46,6 @@ import androidx.navigation.NavHostController
 import com.example.voyago.viewmodel.ArticleViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.flow.filter
 
 @Composable
 fun HomePageScreen(

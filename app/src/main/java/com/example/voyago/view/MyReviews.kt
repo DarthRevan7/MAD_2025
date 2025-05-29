@@ -287,7 +287,7 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
             if(hasReviews) {
                 //Review of the users made by the logged in user
                 val reviews = vm.getUsersReviewsTrip(uvm.loggedUser.id, nonNullTrip.id)
-                if(reviews != null) {
+                if(reviews.isNotEmpty()) {
                     items(reviews) { review ->
                         ShowReview(review, vm, true, uvm, navController)
                     }

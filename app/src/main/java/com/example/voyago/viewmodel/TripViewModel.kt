@@ -2,7 +2,6 @@ package com.example.voyago.viewmodel
 
 import android.util.Log
 import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -12,7 +11,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import com.example.voyago.Collections.users
 import com.example.voyago.model.*
 import com.example.voyago.model.Trip.Activity
 import com.example.voyago.model.Trip.Participant
@@ -20,10 +18,6 @@ import com.example.voyago.view.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
@@ -557,11 +551,10 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
         viewModelScope.launch {
             reviewList = reviewModel.getUsersReviewsTrip(userId, tripId)
         }
-        if(reviewList == null) {
-            return emptyList()
-        }
-        else {
-            return reviewList!!
+        return if(reviewList == null) {
+            emptyList()
+        } else {
+            reviewList!!
         }
     }
 
@@ -571,11 +564,10 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
         viewModelScope.launch {
             reviewList = reviewModel.getUserReviews(id)
         }
-        if(reviewList == null) {
-            return emptyList()
-        }
-        else {
-            return reviewList!!
+        return if(reviewList == null) {
+            emptyList()
+        } else {
+            reviewList!!
         }
     }
 

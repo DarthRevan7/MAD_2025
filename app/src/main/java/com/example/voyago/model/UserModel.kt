@@ -2,15 +2,9 @@ package com.example.voyago.model
 
 import android.util.Log
 import com.example.voyago.Collections
-import com.google.android.gms.tasks.Task
-import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlin.coroutines.suspendCoroutine
 
 data class User(
     val id: Int = 0,

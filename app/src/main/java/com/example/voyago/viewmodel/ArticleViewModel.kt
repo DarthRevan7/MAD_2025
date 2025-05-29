@@ -5,12 +5,10 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.voyago.model.Article
 import com.example.voyago.model.*
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 
 
-class ArticleViewModel(private val model: TheArticlesModel) : ViewModel() {
+class ArticleViewModel(model: TheArticlesModel) : ViewModel() {
 
 
     val articleList: Flow<List<Article>> = model.getArticles()
