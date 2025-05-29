@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.voyago.model.Trip
+import com.example.voyago.model.toCalendar
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -130,9 +131,9 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
             item {
                 val context = LocalContext.current
                 val calendar = currentTrip.startDate
-                val year = calendar.get(Calendar.YEAR)
-                val month = calendar.get(Calendar.MONTH)
-                val day = calendar.get(Calendar.DAY_OF_MONTH)
+                val year = toCalendar(calendar).get(Calendar.YEAR)
+                val month = toCalendar(calendar).get(Calendar.MONTH)
+                val day = toCalendar(calendar).get(Calendar.DAY_OF_MONTH)
                 val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 
 
@@ -146,8 +147,8 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                                 set(Calendar.DAY_OF_MONTH, d)
                             }.stripTime()
 
-                            val isValid = !(pickedCalendar.before(currentTrip.startDate.stripTime()) ||
-                                    pickedCalendar.after(currentTrip.endDate.stripTime()))
+                            val isValid = !(pickedCalendar.before(toCalendar(currentTrip.startDate).stripTime()) ||
+                                    pickedCalendar.after(toCalendar(currentTrip.endDate).stripTime()))
 
                             activityDate = "$d/${m + 1}/$y"
 
@@ -156,7 +157,7 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                                 dateErrorMessage = ""
                             } else {
                                 showDateError = true
-                                dateErrorMessage = "Activity date must be within the trip period \n(${dateFormat.format(currentTrip.startDate.time)} - ${dateFormat.format(currentTrip.endDate.time)})"
+                                dateErrorMessage = "Activity date must be within the trip period \n(${dateFormat.format(toCalendar(currentTrip.startDate).time)} - ${dateFormat.format(currentTrip.endDate.time)})"
                             }
                         }, year, month, day
                     )

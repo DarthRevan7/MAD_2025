@@ -46,26 +46,6 @@ data class Review(
 
 class ReviewModel {
 
-    fun getReviews(): Flow<List<Review>> = callbackFlow {
-        val listener = Collections.reviews
-            .orderBy("id")
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    Log.e("Error", error.toString())
-                    trySend(emptyList())  // On error, send empty list
-                    return@addSnapshotListener
-                }
-
-                if (snapshot != null && !snapshot.isEmpty) {
-                    trySend(snapshot.toObjects(Review::class.java))
-                } else {
-                    // Snapshot exists but has no documents (no reviews yet)
-                    trySend(emptyList())
-                }
-            }
-        awaitClose { listener.remove() }
-    }
-
 
     suspend fun createReview(reviewToCreate: Review): Review? {
         return try {
@@ -308,22 +288,6 @@ class ReviewModel {
         }
     }
 
-    /*
-    // Calculate average user rating by id
-    fun calculateRatingById(id:Int): Float {
-        val reviewsForUser = _reviews.value.filter { !it.isTripReview && it.reviewedUserId == id }
-
-        return if (reviewsForUser.isNotEmpty()) {
-            val averageScore = reviewsForUser.map { it.score }.average().toFloat()
-            val scaled = averageScore / 2f  // Convert from 0–10 to 0–5
-            (scaled * 10).toInt() / 10f     // Truncate to 1 decimal place
-        } else {
-            5.0f // Default rating for users with no reviews
-        }
-    }
-
-     */
-
     suspend fun calculateRatingById(id: Int): Float? {
         return try {
             // Fetch reviews for the specific user (excluding trip reviews).
@@ -360,6 +324,24 @@ class ReviewModel {
             null
         }
     }
+
+    /*
+    // Calculate average user rating by id
+    fun calculateRatingById(id:Int): Float {
+        val reviewsForUser = _reviews.value.filter { !it.isTripReview && it.reviewedUserId == id }
+
+        return if (reviewsForUser.isNotEmpty()) {
+            val averageScore = reviewsForUser.map { it.score }.average().toFloat()
+            val scaled = averageScore / 2f  // Convert from 0–10 to 0–5
+            (scaled * 10).toInt() / 10f     // Truncate to 1 decimal place
+        } else {
+            5.0f // Default rating for users with no reviews
+        }
+    }
+
+     */
+
+
 
 
 }

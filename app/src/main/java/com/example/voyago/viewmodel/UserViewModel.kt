@@ -5,37 +5,54 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.voyago.model.*
+import kotlinx.coroutines.launch
 
 class UserViewModel(val model:UserModel): ViewModel() {
     //For now user with id = 1 is the logged user.
-    var loggedUser: UserData = model.getUserDataById(1)
+    var loggedUser: User =  User()
+    var userFlow = viewModelScope.launch { model.getUser(1).collect { userNotFlow -> loggedUser = userNotFlow } }
+
 
     //Edit user profile
-    fun editUserData(updatedUserData: UserData): List<UserData> {
-        val updatedList = model.editUserData(updatedUserData)
-        return updatedList
+    fun editUserData(updatedUserData: User) {
+        model.editUserData(updatedUserData)
     }
 
     //Get user information
-    fun getUserData(id: Int): UserData {
-        return model.getUserDataById(id)
+    fun getUserData(id: Int): User {
+        var user = User()
+        viewModelScope.launch { model.getUser(id).collect { u -> user = u } }
+        return user
     }
 
     //Given a list of username get a list of their ids
     fun getIdListFromUsernames(usernames: List<String>): List<Int> {
-        return model.users.value.filter { user ->
-            usernames.contains(user.username)
-        }.map { user ->
-            user.id
+
+        var userList = emptyList<User>()
+
+        viewModelScope.launch {
+            model.getUsersFromUsernames(usernames).collect { users -> userList = users }
         }
+
+        var idList : MutableList<Int> = mutableListOf()
+
+        userList.forEach { idList.add(it.id) }
+
+        return idList
     }
 
     fun doesUserExist(username: String): Boolean {
-        return model.users.value.any { user ->
-            user.username == username
+
+        var userList = emptyList<User>()
+
+        viewModelScope.launch {
+            model.getUsersFromUsernames(listOf(username)).collect { users -> userList = users }
         }
+
+        return userList.isNotEmpty()
     }
 
     // Camera

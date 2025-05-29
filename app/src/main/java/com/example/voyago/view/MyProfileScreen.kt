@@ -53,16 +53,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import coil3.toUri
 import com.example.voyago.R
 import com.example.voyago.activities.*
 import com.example.voyago.model.Article
 import com.example.voyago.model.Review
 import com.example.voyago.model.ReviewModel
 import com.example.voyago.model.Trip
+import com.example.voyago.model.User
 import com.example.voyago.model.UserData
 import com.example.voyago.viewmodel.*
 import java.text.SimpleDateFormat
@@ -110,13 +113,13 @@ fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: Articl
                     .padding(16.dp)
                     .offset(y = (-30).dp)
                     .clickable {
-                        uvm.setProfileImageUri(user1.profilePicture)
+                        uvm.setProfileImageUri(user1.profilePictureUrl?.toUri())
                         navController.navigate("edit_profile")
                     }
                 )
 
                 ProfilePhoto(
-                    user1.firstname, user1.surname, false, user1.profilePicture,
+                    user1.firstname, user1.surname, false, user1.profilePictureUrl?.toUri(),
                     modifier = Modifier
                         .align(Alignment.Center)
                         .offset(y = (-50).dp)
@@ -243,7 +246,7 @@ fun RatingAndReliability(rating: Float, reliability: Int) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun TabAboutTripsReview(user: UserData, vm: TripViewModel, vm2: ArticleViewModel, navController: NavController, uvm: UserViewModel) {
+fun TabAboutTripsReview(user: User, vm: TripViewModel, vm2: ArticleViewModel, navController: NavController, uvm: UserViewModel) {
 
     // TAB with About, Trips & Articles, Reviews
     val tabs = listOf("About", "Trips & Articles", "Reviews")

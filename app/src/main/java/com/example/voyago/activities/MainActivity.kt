@@ -242,9 +242,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()
-    val reviewModel = ReviewModel()
-    val userModel = UserModel()
-    userModel.refreshAllRatings(reviewModel)
     Scaffold(
         topBar = { TopBar() },
         bottomBar = { BottomBar(navController) }

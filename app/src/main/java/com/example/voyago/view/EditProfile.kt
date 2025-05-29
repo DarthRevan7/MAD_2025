@@ -44,8 +44,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.border
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.core.net.toUri
 import coil3.compose.AsyncImage
 import com.example.voyago.model.ReviewModel
+import com.example.voyago.model.User
 import com.example.voyago.model.UserData
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
@@ -72,7 +74,7 @@ fun EditProfileScreen(navController: NavController, context:Context, vm: TripVie
             val uri = result.data?.data // Get the URI from the result Intent
             if (uri != null) {
                 profileImageUri = uri // Update the rememberSaveable state
-                user.profilePicture = uri // Also update the user object
+                user.profilePictureUrl = uri.toString() // Also update the user object
                 showPopup = false // Dismiss the popup
             }
         }
@@ -313,10 +315,10 @@ fun EditProfileScreen(navController: NavController, context:Context, vm: TripVie
                         if(!errors.any{it}) {
 
                             if(profileImageUri == null){
-                                profileImageUri = user.profilePicture
+                                profileImageUri = user.profilePictureUrl?.toUri()
                             }
 
-                            val updatedUser = UserData(
+                            val updatedUser = User(
                                 id = 1,
                                 firstname = fieldValues[0],
                                 surname = fieldValues[1],
@@ -326,7 +328,7 @@ fun EditProfileScreen(navController: NavController, context:Context, vm: TripVie
                                 userDescription = fieldValues[5],
                                 dateOfBirth = user.dateOfBirth,
                                 password = user.password,
-                                profilePicture = profileImageUri,
+                                profilePictureUrl = profileImageUri.toString(),
                                 typeTravel = selected,
                                 desiredDestination = selectedDestinations.toList(),
                                 rating = user.rating,

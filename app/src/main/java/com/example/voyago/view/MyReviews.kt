@@ -299,7 +299,9 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
                 }
             } else {
                 //Field to complete
-                val participantsMap = vm.getTripParticipants(nonNullTrip)
+                vm.getTripParticipants(nonNullTrip)
+                val participantsMap = vm.tripParticipants
+
 
                 items(participantsMap.entries.toList()) { entry ->
                     val user = entry.key

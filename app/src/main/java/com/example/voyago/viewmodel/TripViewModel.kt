@@ -2,6 +2,7 @@ package com.example.voyago.viewmodel
 
 import android.util.Log
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -11,6 +12,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import com.example.voyago.Collections.users
 import com.example.voyago.model.*
 import com.example.voyago.model.Trip.Activity
 import com.example.voyago.model.Trip.Participant
@@ -18,6 +20,9 @@ import com.example.voyago.view.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -296,34 +301,102 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
     }
 
     //Mutable list of applications
-    var applications = mutableStateOf(emptyMap<UserData, Trip.JoinRequest>())
+    var applications = MutableStateFlow(emptyMap<User, Trip.JoinRequest>())
 
     // Participants with spots taken
-    fun getTripParticipants(trip: Trip): Map<UserData, Trip.JoinRequest> {
-        return trip.participants.mapNotNull { (userId, joinRequest) ->
-            userModel.getUsers(listOf(userId)).firstOrNull()?.let { user ->
-                user to joinRequest
+    private val _tripParticipants = MutableStateFlow<Map<User, Trip.JoinRequest>>(emptyMap())
+    val tripParticipants: StateFlow<Map<User, Trip.JoinRequest>> = _tripParticipants
+
+    fun getTripParticipants(trip: Trip) {
+        val userIds = trip.participants.keys.toList()
+
+        if (userIds.isEmpty()) {
+            _tripParticipants.value = emptyMap()
+            return
+        }
+
+        viewModelScope.launch {
+            userModel.getUsers(userIds).collect {
+                try {
+                    val userMap = it.associateBy { it.id }
+                    val mapped = trip.participants.mapNotNull { (userId, joinRequest) ->
+                        userMap[userId]?.let { user ->
+                            user to joinRequest
+                        }
+                    }.toMap()
+                    _tripParticipants.value = mapped
+                }
+                catch(e: Exception) {
+                    Log.e("TripViewModel", "Errore recupero utenti", e)
+                    _tripParticipants.value = emptyMap()
+                }
             }
-        }.toMap()
+        }
     }
 
 
-    // Applicants with requested spots
-    fun getTripApplicants(trip: Trip): Map<UserData, Trip.JoinRequest> {
-        return trip.appliedUsers.mapNotNull { (userId, joinRequest) ->
-            userModel.getUsers(listOf(userId)).firstOrNull()?.let { user ->
-                user to joinRequest
+    //Applicants with Requested Spots
+    private val _tripApplicants = MutableStateFlow<Map<User, Trip.JoinRequest>>(emptyMap())
+    val tripApplicants: StateFlow<Map<User, Trip.JoinRequest>> = _tripApplicants
+
+    fun getTripApplicants(trip: Trip) {
+        val userIds = trip.appliedUsers.keys.toList()
+
+        if (userIds.isEmpty()) {
+            _tripApplicants.value = emptyMap()
+            return
+        }
+
+        viewModelScope.launch {
+            userModel.getUsers(userIds).collect {
+                try {
+                    val userMap = it.associateBy { it.id }
+                    val mapped = trip.appliedUsers.mapNotNull { (userId, joinRequest) ->
+                        userMap[userId]?.let { user ->
+                            user to joinRequest
+                        }
+                    }.toMap()
+                    _tripApplicants.value = mapped
+                }
+                catch(e: Exception) {
+                    Log.e("TripViewModel", "Errore recupero utenti", e)
+                    _tripApplicants.value = emptyMap()
+                }
             }
-        }.toMap()
+        }
     }
 
-    // Rejected users with requested spots
-    fun getTripRejectedUsers(trip: Trip): Map<UserData, Trip.JoinRequest> {
-        return trip.rejectedUsers.mapNotNull { (userId, joinRequest) ->
-            userModel.getUsers(listOf(userId)).firstOrNull()?.let { user ->
-                user to joinRequest }
-        }.toMap()
+    //Rejected users with requested spots
+    private val _tripRejectedUsers = MutableStateFlow<Map<User, Trip.JoinRequest>>(emptyMap())
+    val tripRejectedUsers: StateFlow<Map<User, Trip.JoinRequest>> = _tripRejectedUsers
+
+    fun getTripRejectedUsers(trip: Trip) {
+        val userIds = trip.rejectedUsers.keys.toList()
+
+        if (userIds.isEmpty()) {
+            _tripRejectedUsers.value = emptyMap()
+            return
+        }
+
+        viewModelScope.launch {
+            userModel.getUsers(userIds).collect {
+                try {
+                    val userMap = it.associateBy { it.id }
+                    val mapped = trip.rejectedUsers.mapNotNull { (userId, joinRequest) ->
+                        userMap[userId]?.let { user ->
+                            user to joinRequest
+                        }
+                    }.toMap()
+                    _tripRejectedUsers.value = mapped
+                }
+                catch(e: Exception) {
+                    Log.e("TripViewModel", "Errore recupero utenti", e)
+                    _tripRejectedUsers.value = emptyMap()
+                }
+            }
+        }
     }
+
 
     //Approve an application
     fun acceptApplication(trip: Trip?, userId: Int) {
@@ -355,7 +428,7 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
         }
 
         // Update your applications value accordingly
-        applications.value = getTripApplicants(trip)
+        applications.value = tripApplicants.value
     }
 
     //Reject an application
@@ -367,7 +440,7 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
             trip.rejectedUsers = trip.rejectedUsers + (userId to joinRequest)
 
             // Assign just the list of users, ignoring requestedSpots here
-            applications.value = getTripApplicants(trip)
+            applications.value = tripRejectedUsers.value
         }
     }
 
@@ -468,8 +541,9 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
     fun tripReview(userId: Int, tripId :Int): Review {
         var review: Review? = null
         viewModelScope.launch {
-            review = reviewModel.getTripReview(userModel.getUserDataById(userId).id,
-                tripId)
+            var user = User()
+            userModel.getUser(userId).collect { userNotFlow -> user = userNotFlow }
+            review = reviewModel.getTripReview(user.id, tripId)
         }
         if(review == null) {
             return Review()

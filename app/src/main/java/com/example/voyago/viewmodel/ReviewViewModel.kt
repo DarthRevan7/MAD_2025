@@ -5,19 +5,18 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.CreationExtras
+import com.example.voyago.Collections
 import com.example.voyago.model.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 
 class ReviewViewModel(val reviewModel:ReviewModel): ViewModel() {
 
-    fun getReviews() {
-        reviewModel.getReviews()
-    }
 
     private suspend fun addNewReview(newReview: Review): Review? {
         val createdReview = reviewModel.createReview(newReview)
@@ -62,6 +61,8 @@ class ReviewViewModel(val reviewModel:ReviewModel): ViewModel() {
         }
     }
      */
+
+    
 
     // Select photos
     private val _selectedUris = MutableStateFlow<List<Uri>>(emptyList())
