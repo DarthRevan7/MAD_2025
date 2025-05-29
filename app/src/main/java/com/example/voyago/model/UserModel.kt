@@ -1,23 +1,23 @@
 package com.example.voyago.model
 
-class UserModel {
-    data class User(
-        val id: Int = 0,
-        var firstname: String = "",
-        var surname: String = "",
-        var username: String = "",
-        var country: String = "",
-        var email: String = "",
-        var userDescription: String = "",
-        var dateOfBirth: Long = 0L,
-        var password: String = "",
-        var profilePictureUrl: String? = null,
-        var typeTravel: List<TypeTravel> = emptyList(),
-        var desiredDestination: List<String> = emptyList(),
-        var rating: Float = 0f,
-        var reliability: Int = 0
-    )
+data class User(
+    val id: Int = 0,
+    var firstname: String = "",
+    var surname: String = "",
+    var username: String = "",
+    var country: String = "",
+    var email: String = "",
+    var userDescription: String = "",
+    var dateOfBirth: Long = 0L,
+    var password: String = "",
+    var profilePictureUrl: String? = null,
+    var typeTravel: List<TypeTravel> = emptyList(),
+    var desiredDestination: List<String> = emptyList(),
+    var rating: Float = 0f,
+    var reliability: Int = 0
+)
 
+class UserModel {
     // -------------------------------------------------
     private var _users = privateUsers
     var users = _users

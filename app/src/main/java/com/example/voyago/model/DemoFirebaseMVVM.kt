@@ -64,7 +64,6 @@ data class User(
 
 class TheUsersModel(){
 
-
     fun getUsers(): Flow<List<User>> = callbackFlow {//Observes update from the Server
         val listener = Collections.users.
         orderBy("born")

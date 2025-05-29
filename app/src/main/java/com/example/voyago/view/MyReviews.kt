@@ -173,7 +173,7 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
             if(hasReviews) {
                 //Review of the trip made by the logged in user
                 val review = vm.tripReview(uvm.loggedUser.id, nonNullTrip.id)
-                if(review != null) {
+                if(review.isValidReview()) {
                     item {
                         ShowReview(review, vm, true, uvm, navController)
                     }

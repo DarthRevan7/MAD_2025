@@ -23,11 +23,24 @@ data class Review(
     val date: Long = 0L
 ) {
 
+    constructor() : this (
+        reviewId = 0,
+        tripId = 0,
+        isTripReview = false,
+        reviewerId = 0,
+        reviewedUserId = 0,
+        title = "",
+        comment = "",
+        score = 0,
+        photos = emptyList(),
+        date = 0L
+    )
+
 
     //A valid review has filled fields
     fun isValidReview(): Boolean {
         return reviewId > 0 && reviewerId > 0 && (reviewedUserId > 0 || tripId > 0)  && score > 0
-                && title != "" && comment != ""
+                && title != "" && comment != "" && date > 0L
     }
 }
 
@@ -101,11 +114,6 @@ class ReviewModel {
 
 
     // --------------------------------------------------------------
-
-    private var _reviews = getReviews()
-    var reviews = _reviews
-
-    var nextReviewId = 0
 
     /*
     //Create a new review

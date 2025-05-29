@@ -187,11 +187,13 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
         filterDuration, filterGroupSize, filtersTripType, filterUpcomingTrips, filterCompletedTrips, filterBySeats, viewModelScope)
 
     //Reset filters
-    suspend fun resetFilters() {
+    fun resetFilters() {
         filterDestination = ""
 
         updateFilterPriceRange(0.0,0.0)
-        tripModel.setMaxMinPrice()
+        viewModelScope.launch {
+            tripModel.setMaxMinPrice()
+        }
         val minPrice = tripModel.minPrice.toFloat()
         val maxPrice = tripModel.maxPrice.toFloat()
         val bounds = minPrice..maxPrice
@@ -454,27 +456,64 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
     }
 
     //See if a user reviewed a trip
-    fun isReviewed(userId: Int, tripId: Int) = reviewModel.isReviewed(userId,tripId)
+    fun isReviewed(userId: Int, tripId: Int) : Boolean {
+        var result = false
+        viewModelScope.launch {
+            result = reviewModel.isReviewed(userId, tripId)
+        }
+        return result
+    }
 
     //Get review of a trip created by the logged in user
-    fun tripReview(userId: Int, tripId :Int) = reviewModel.getTripReview(userModel.getUserDataById(userId).id,
-        tripId)
+    fun tripReview(userId: Int, tripId :Int): Review {
+        var review: Review? = null
+        viewModelScope.launch {
+            review = reviewModel.getTripReview(userModel.getUserDataById(userId).id,
+                tripId)
+        }
+        if(review == null) {
+            return Review()
+        }
+        return review!!
+    }
 
     //Get reviews that a user did for the other participant to a certain trip
-    fun getUsersReviewsTrip(userId: Int, tripId: Int) = reviewModel.getUsersReviewsTrip(userId, tripId)
+    fun getUsersReviewsTrip(userId: Int, tripId: Int) : List<Review> {
+        var reviewList : List<Review>? = null
+        viewModelScope.launch {
+            reviewList = reviewModel.getUsersReviewsTrip(userId, tripId)
+        }
+        if(reviewList == null) {
+            return emptyList()
+        }
+        else {
+            return reviewList!!
+        }
+    }
 
     //Get user reviews
-    fun getUserReviews(id: Int): List<Review> = reviewModel.getUserReviews(id)
+    fun getUserReviews(id: Int): List<Review> {
+        var reviewList : List<Review>? = null
+        viewModelScope.launch {
+            reviewList = reviewModel.getUserReviews(id)
+        }
+        if(reviewList == null) {
+            return emptyList()
+        }
+        else {
+            return reviewList!!
+        }
+    }
 
     private fun updateAllTripStatuses() {
-        val trips = tripModel.getAllPublishedTrips(viewModelScope)
+        val trips = tripModel.allPublishedTrips.value
 
         for (trip in trips) {
             val oldStatus = trip.status
             val newStatus = trip.updateStatusBasedOnDate()
 
-            if (newStatus != oldStatus) {
-                tripModel.updateTripStatus(trip, newStatus)
+            if (newStatus.toString() != oldStatus) {
+                tripModel.updateTripStatus(trip.id, newStatus.toString())
             }
         }
     }

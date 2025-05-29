@@ -46,6 +46,7 @@ import androidx.navigation.NavHostController
 import com.example.voyago.viewmodel.ArticleViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.flow.filter
 
 @Composable
 fun HomePageScreen(
@@ -65,9 +66,9 @@ fun HomePageScreen(
     // 2. 按条件分组
     vm1.resetFilters()
 
-    val completedTrips = vm1.getCompletedTripsList().filter { trip -> trip.published }
+    val completedTrips = vm1.getCompletedTripsList().collectAsState(initial = emptyList()).value.filter { trip -> trip.published }
 
-    val upcomingTrips = vm1.getUpcomingTripsList().filter { trip -> trip.published }
+    val upcomingTrips = vm1.getUpcomingTripsList().collectAsState(initial = emptyList()).value.filter { trip -> trip.published }
 
     Column(
         modifier = Modifier
