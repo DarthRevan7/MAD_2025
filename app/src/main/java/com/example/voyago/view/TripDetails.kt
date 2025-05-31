@@ -79,6 +79,7 @@ import androidx.compose.ui.window.Popup
 import androidx.core.net.toUri
 import coil3.compose.rememberAsyncImagePainter
 import com.example.voyago.model.Trip.Participant
+import com.example.voyago.model.stringToCalendar
 import com.example.voyago.model.toCalendar
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
@@ -118,16 +119,16 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
     }
 
     //The user joined the trip but didn't created
-    val joined = trip.participants.containsKey(uvm.loggedUser.id) && trip.creatorId != uvm.loggedUser.id
+    val joined = trip.participants.containsKey(uvm.loggedUser.id.toString()) && trip.creatorId != uvm.loggedUser.id
 
     //Delete confirmation trip
     var showPopup by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
     //Manage join request
-    val askedTrips: Map<Int, Int> by vm.askedTrips.collectAsState()
+    val askedTrips: Map<String, Int> by vm.askedTrips.collectAsState()
     vm.syncAskedTrips(uvm.loggedUser.id) {}
-    val requestedSpots = trip.id.let { askedTrips[it] } ?: 0
+    val requestedSpots = trip.id.let { askedTrips[it.toString()] } ?: 0
     val hasAsked = requestedSpots > 0
 
     var showDialog by remember { mutableStateOf(false) }
@@ -192,7 +193,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
         set(Calendar.MILLISECOND, 0)
     }
 
-    val isAfterToday = toCalendar(trip.startDate).after(today)
+    val isAfterToday = trip.startDateAsCalendar().after(today)
     var publishError by rememberSaveable {mutableStateOf(false)}
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -218,8 +219,8 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                         .padding(start = 24.dp, end = 24.dp)
                 ) {
                     Text(
-                        text = formatTripDate(toCalendar(trip.startDate)) + " - " +
-                                formatTripDate(toCalendar(trip.endDate)) + "\n " +
+                        text = formatTripDate(trip.startDateAsCalendar()) + " - " +
+                                formatTripDate(trip.endDateAsCalendar()) + "\n " +
                                 "${trip.groupSize} people" +
                                 if (trip.availableSpots() > 0) {
                                     " (${trip.availableSpots()} spots left)"
@@ -273,7 +274,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                             Spacer(Modifier.weight(1f))
 
                             //Private Button (makes the trip private)
-                            if (!trip.participants.any { it.key != trip.creatorId }) {
+                            if (!trip.participants.any { it.key != trip.creatorId.toString() }) {
                                 Button(
                                     onClick = {
                                         vm.changePublishedStatus(trip.id)
@@ -335,8 +336,8 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                                         trip.photo,
                                         trip.title,
                                         trip.destination,
-                                        toCalendar(trip.startDate),
-                                        toCalendar(trip.endDate),
+                                        trip.startDateAsCalendar(),
+                                        trip.endDateAsCalendar(),
                                         trip.estimatedPrice,
                                         trip.groupSize,
                                         trip.activities,
@@ -434,8 +435,8 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                                     trip.photo,
                                     trip.title,
                                     trip.destination,
-                                    toCalendar(trip.startDate),
-                                    toCalendar(trip.endDate),
+                                    trip.startDateAsCalendar(),
+                                    trip.endDateAsCalendar(),
                                     trip.estimatedPrice,
                                     trip.groupSize,
                                     trip.activities,
@@ -490,7 +491,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                                 }
                             }
 
-                        } else if (trip.participants.containsKey(1)
+                        } else if (trip.participants.containsKey(uvm.loggedUser.id.toString())
                             && trip.status != Trip.TripStatus.COMPLETED.toString()
                             && trip.creatorId != 1) {
                             Button(
@@ -947,10 +948,10 @@ fun ItineraryText(trip: Trip, modifier: Modifier = Modifier) {
     val formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.US) // Same format used in your first view
 
     val itineraryString = trip.activities
-        .toSortedMap(compareBy { it.timeInMillis }) // Sort days chronologically
+        .toSortedMap(compareBy { it }) // Sort days chronologically
         .entries
         .joinToString("\n\n") { (day, activities) ->
-            val dayIndex = ((day.timeInMillis - trip.startDate) / (1000 * 60 * 60 * 24)).toInt() + 1
+            val dayIndex = ((stringToCalendar(day).timeInMillis - trip.startDateAsLong()) / (1000 * 60 * 60 * 24)).toInt() + 1
             val dayHeader = "Day $dayIndex:\n"
 
             val sortedActivities = activities.sortedBy { activity ->
@@ -1007,15 +1008,15 @@ fun DeleteButtonWithConfirmation(trip: Trip, navController: NavController, vm: T
             confirmButton = {
                 Button(
                     onClick = {
-                        val newOwner = trip.participants.entries.firstOrNull { it.key != trip.creatorId }
+                        val newOwner = trip.participants.entries.firstOrNull { it.key != trip.creatorId.toString() }
                         if (!trip.published || newOwner == null) {
                             vm.deleteTrip(trip.id)
                             vm.updatePublishedTrip()
                         } else {
                             trip.participants = trip.participants.toMutableMap().apply {
-                                remove(trip.creatorId)
+                                remove(trip.creatorId.toString())
                             }
-                            trip.creatorId = newOwner.key
+                            trip.creatorId = newOwner.key.toInt()
                         }
                         navController.popBackStack()
                         showDialog.value = false

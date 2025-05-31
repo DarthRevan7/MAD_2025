@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.util.Calendar
+import kotlin.text.toInt
 
 class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val reviewModel: ReviewModel): ViewModel() {
     //Use in the new Trip interface
@@ -263,7 +264,7 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
     //Import an already published trip as a private trip of the logged in user (id=1)
     fun addImportedTrip(photo: String, title: String, destination: String, startDate: Calendar,
                         endDate: Calendar, estimatedPrice: Double, groupSize: Int,
-                        activities: Map<Calendar, List<Activity>>, typeTravel: List<String>,
+                        activities: Map<String, List<Activity>>, typeTravel: List<String>,
                         creatorId: Int, published: Boolean, onResult: (Boolean, Trip?) -> Unit) {
         tripModel.importTrip(photo, title, destination, startDate, endDate, estimatedPrice,
             groupSize, activities, listOf(typeTravel.toString()), creatorId, published) { success, trip ->
@@ -311,11 +312,11 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
         }
 
         viewModelScope.launch {
-            userModel.getUsers(userIds).collect {
+            userModel.getUsers(userIds.map { it ->  it.toInt() }).collect {
                 try {
                     val userMap = it.associateBy { it.id }
                     val mapped = trip.participants.mapNotNull { (userId, joinRequest) ->
-                        userMap[userId]?.let { user ->
+                        userMap[userId.toInt()]?.let { user ->
                             user to joinRequest
                         }
                     }.toMap()
@@ -343,11 +344,11 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
         }
 
         viewModelScope.launch {
-            userModel.getUsers(userIds).collect {
+            userModel.getUsers(userIds.map { it ->  it.toInt() }).collect {
                 try {
                     val userMap = it.associateBy { it.id }
                     val mapped = trip.appliedUsers.mapNotNull { (userId, joinRequest) ->
-                        userMap[userId]?.let { user ->
+                        userMap[userId.toInt()]?.let { user ->
                             user to joinRequest
                         }
                     }.toMap()
@@ -374,11 +375,11 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
         }
 
         viewModelScope.launch {
-            userModel.getUsers(userIds).collect {
+            userModel.getUsers(userIds.map { it ->  it.toInt() }).collect {
                 try {
                     val userMap = it.associateBy { it.id }
                     val mapped = trip.rejectedUsers.mapNotNull { (userId, joinRequest) ->
-                        userMap[userId]?.let { user ->
+                        userMap[userId.toInt()]?.let { user ->
                             user to joinRequest
                         }
                     }.toMap()
@@ -395,19 +396,19 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
 
     //Approve an application
     fun acceptApplication(trip: Trip?, userId: Int) {
-        if (trip == null || userId !in trip.appliedUsers) return
+        if (trip == null || userId.toString() !in trip.appliedUsers) return
 
-        val requestedSpots = trip.appliedUsers[userId]?.requestedSpots ?: return
+        val requestedSpots = trip.appliedUsers[userId.toString()]?.requestedSpots ?: return
 
         val usedSpots = trip.participants.values.sumOf { it.requestedSpots }
 
-        val joinRequest = trip.appliedUsers[userId] ?: return
+        val joinRequest = trip.appliedUsers[userId.toString()] ?: return
 
         if (usedSpots + requestedSpots > trip.groupSize) return
 
         // Accept applicant
-        trip.participants = trip.participants + (userId to joinRequest)
-        trip.appliedUsers = trip.appliedUsers - userId
+        trip.participants = trip.participants + (userId.toString() to joinRequest)
+        trip.appliedUsers = trip.appliedUsers - userId.toString()
 
         // Recalculate used spots
         val updatedUsedSpots = trip.participants.values.sumOf{ it.requestedSpots }
@@ -428,11 +429,11 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
 
     //Reject an application
     fun rejectApplication(trip: Trip?, userId: Int) {
-        if (trip != null && userId in trip.appliedUsers) {
-            val joinRequest = trip.appliedUsers[userId]?: return
+        if (trip != null && userId.toString() in trip.appliedUsers) {
+            val joinRequest = trip.appliedUsers[userId.toString()]?: return
 
-            trip.appliedUsers = trip.appliedUsers - userId
-            trip.rejectedUsers = trip.rejectedUsers + (userId to joinRequest)
+            trip.appliedUsers = trip.appliedUsers - userId.toString()
+            trip.rejectedUsers = trip.rejectedUsers + (userId.toString() to joinRequest)
 
             // Assign just the list of users, ignoring requestedSpots here
             _applications.value = tripRejectedUsers.value

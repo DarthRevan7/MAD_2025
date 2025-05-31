@@ -39,6 +39,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.clickable
+import com.example.voyago.model.stringToCalendar
 import com.example.voyago.viewmodel.TripViewModel
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -236,7 +237,7 @@ fun ActivitiesListContent(trip: Trip?, vm: TripViewModel, navController: NavCont
         return
     }
 
-    val sortedDays = trip.activities.keys.sortedBy { it.timeInMillis }
+    val sortedDays = trip.activities.keys.sortedBy { it }
 
     // Check if all activity lists are empty
     val hasNoActivities = trip.activities.values.all { it.isEmpty() }
@@ -253,7 +254,7 @@ fun ActivitiesListContent(trip: Trip?, vm: TripViewModel, navController: NavCont
             )
         } else {
             sortedDays.forEach { day ->
-                val dayIndex = ((day.timeInMillis - trip.startDate) / (1000 * 60 * 60 * 24)).toInt() + 1
+                val dayIndex = ((stringToCalendar(day).timeInMillis - trip.startDateAsLong()) / (1000 * 60 * 60 * 24)).toInt() + 1
                 val formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.US)
                 val activitiesForDay = (trip.activities[day] ?: emptyList())
                     .sortedBy { LocalTime.parse(it.time, formatter) }

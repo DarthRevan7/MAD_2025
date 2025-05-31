@@ -65,6 +65,7 @@ import coil3.request.crossfade
 import com.example.voyago.model.Trip
 import com.example.voyago.model.TypeTravel
 import com.example.voyago.viewmodel.TripViewModel
+import com.google.firebase.Timestamp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -413,14 +414,14 @@ fun CreateNewTrip(navController: NavController, vm: TripViewModel) {
                             if (!tripImageError && !fieldErrors.any{it} && !typeTravelError && validateDateOrder(startCalendar, endCalendar)) {
                                 val creatorId = 1
 
-                                val activities = mutableMapOf<Calendar, MutableList<Trip.Activity>>()
+                                val activities = mutableMapOf<String, MutableList<Trip.Activity>>()
 
                                 val newTrip = Trip(
                                     photo = imageUri.toString(),
                                     title = fieldValues[0],
                                     destination = fieldValues[1],
-                                    startDate = startCalendar!!.timeInMillis,
-                                    endDate = endCalendar!!.timeInMillis,
+                                    startDate = Timestamp(startCalendar!!.time),
+                                    endDate = Timestamp(endCalendar!!.time),
                                     estimatedPrice = fieldValues[2].toDouble(),
                                     groupSize = fieldValues[3].toInt(),
                                     activities = activities,

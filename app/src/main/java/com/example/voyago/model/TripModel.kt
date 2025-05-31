@@ -1,11 +1,13 @@
 package com.example.voyago.model
 
+import android.R
 import android.util.Log
 import com.example.voyago.Collections
 import com.example.voyago.model.Trip.Activity
 import com.example.voyago.model.Trip.Participant
 import com.example.voyago.model.Trip.TripStatus
 import com.example.voyago.view.SelectableItem
+import com.google.firebase.Timestamp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.onFailure
@@ -16,13 +18,15 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.Calendar
+import java.util.Date
 import kotlin.collections.forEach
 
 
 //Function that converts a Long in a Calendar
-fun toCalendar(timeDate : Long) : Calendar {
+// TODO[flavi]: delete, replace with getter
+fun toCalendar(timeDate : Timestamp) : Calendar {
     var calendarDate = Calendar.getInstance()
-    calendarDate.timeInMillis = timeDate
+    calendarDate.time = timeDate.toDate()
     return calendarDate
 }
 
@@ -32,27 +36,34 @@ data class Trip(
     var photo: String = "",
     var title: String = "",
     var destination: String = "",
-    var startDate: Long = 0L,
-    var endDate: Long = 0L,
+    var startDate: Timestamp = Timestamp(Date(0)),
+    var endDate: Timestamp = Timestamp(Date(0)),
     var estimatedPrice: Double = 0.0,
     var groupSize: Int = 0,
-    var participants: Map<Int, JoinRequest> = emptyMap(),                   // userId, id JoinedRequest
-    var activities: Map<Calendar, List<Activity>> = emptyMap(),     // Map<Date, Activity>
+    var participants: Map<String, JoinRequest> = emptyMap(),                   // userId, id JoinedRequest
+    var activities: Map<String, List<Activity>> = emptyMap(),     // Map<Date, Activity>
     var status: String = "",
     var typeTravel: List<String> = emptyList(),
     var creatorId: Int = 0,
-    var appliedUsers: Map<Int, JoinRequest> = emptyMap(),                   // userId, id JoinedRequest
-    var rejectedUsers: Map<Int, JoinRequest> = emptyMap(),                  // userId, number of spots
+    var appliedUsers: Map<String, JoinRequest> = emptyMap(),                   // userId, id JoinedRequest
+    var rejectedUsers: Map<String, JoinRequest> = emptyMap(),                  // userId, number of spots
     var published: Boolean = false
 ) {
 
+    fun startDateAsCalendar(): Calendar = toCalendar(startDate)
+    fun endDateAsCalendar(): Calendar = toCalendar(endDate)
+    fun startDateAsLong(): Long = startDate.toDate().time
+    fun endDateAsLong(): Long = endDate.toDate().time
+
     data class Activity(
         val id: Int = 0,
-        var date: Long = 0L,         // yyyy-mm-dd
+        var date: Timestamp = Timestamp(Date(0)),         // yyyy-mm-dd
         var time: String = "",           // hh:mm
         var isGroupActivity: Boolean = false,
-        var description: String = ""
-    )
+        var description: String = "",
+    ){
+        fun dateAsCalendar(): Calendar = toCalendar(date)
+    }
 
     data class JoinRequest(
         val userId: Int = 0,
@@ -77,8 +88,8 @@ data class Trip(
         photo = "",
         title = "",
         destination = "",
-        startDate = 0L,
-        endDate = 0L,
+        startDate = Timestamp(Date(0)),
+        endDate = Timestamp(Date(0)),
         estimatedPrice = -1.0,
         groupSize = -1,
         participants = emptyMap(),
@@ -95,7 +106,7 @@ data class Trip(
 
     //Function that updates the status of the trip based on the current date
     fun updateStatusBasedOnDate(): TripStatus {
-        val today = Calendar.getInstance().timeInMillis
+        val today = Timestamp(Calendar.getInstance().time)
 
         return when {
             endDate < today -> TripStatus.COMPLETED
@@ -133,7 +144,7 @@ data class Trip(
     //Function that returns true if the logged in user can join the trip
     fun loggedInUserCanJoin(id: Int): Boolean {
         return this.status == TripStatus.NOT_STARTED.toString() && hasAvailableSpots() && creatorId != id
-                && !participants.containsKey(id) && !appliedUsers.containsKey(id)
+                && !participants.containsKey(id.toString()) && !appliedUsers.containsKey(id.toString())
     }
 
     //Function that returns true if the Trip has available spots
@@ -179,13 +190,14 @@ data class Trip(
 
     //Function that returns true if the Trip has at least an activity for each day
     fun hasActivityForEachDay(): Boolean {
-        val current = toCalendar(startDate)
-        val end = toCalendar(endDate)
+        val current = startDateAsCalendar()
+        val end = endDateAsCalendar()
 
         while (!current.after(end)) {
             val hasActivity = activities.any { (activityDate, _) ->
-                activityDate.get(Calendar.YEAR) == current.get(Calendar.YEAR) &&
-                        activityDate.get(Calendar.DAY_OF_YEAR) == current.get(Calendar.DAY_OF_YEAR)
+                stringToCalendar(activityDate).get(Calendar.YEAR) == current.get(Calendar.YEAR) &&
+                        stringToCalendar(activityDate).get(Calendar.DAY_OF_YEAR) == current.get(Calendar.DAY_OF_YEAR)
+
             }
 
             if (!hasActivity) return false
@@ -195,6 +207,12 @@ data class Trip(
         return true
     }
 
+}
+
+fun stringToCalendar(string: String): Calendar {
+    val date = Calendar.getInstance()
+    date.timeInMillis = string.toLong()
+    return date
 }
 
 //Possible type of travel
@@ -313,7 +331,7 @@ class TripModel {
                     .addSnapshotListener { snapshot, error ->
                         if (snapshot != null) {
                             val joinedTrips = snapshot.toObjects(Trip::class.java)
-                                .filter { it.participants.containsKey(userId) }
+                                .filter { it.participants.containsKey(userId.toString()) }
 
                             trySend(joinedTrips).onFailure {
                                 Log.e("Firestore", "Failed to send joined trips", it)
@@ -502,7 +520,7 @@ class TripModel {
     //Function that imports a Trip in the "My Trip" section of the logged in user as private
     fun importTrip(photo: String, title: String, destination: String, startDate: Calendar,
                    endDate: Calendar, estimatedPrice: Double, groupSize: Int,
-                   activities: Map<Calendar, List<Activity>>, typeTravel: List<String>,
+                   activities: Map<String, List<Activity>>, typeTravel: List<String>,
                    creatorId: Int, published: Boolean, onResult: (Boolean, Trip?) -> Unit) {
         val docRef = Collections.trips.document() // Firestore-generated ID
         val tripId = docRef.id.hashCode()
@@ -512,12 +530,12 @@ class TripModel {
             photo = photo,
             title = title,
             destination = destination,
-            startDate = startDate.timeInMillis,
-            endDate = endDate.timeInMillis,
+            startDate = Timestamp(startDate.time),
+            endDate = Timestamp(endDate.time),
             estimatedPrice = estimatedPrice,
             groupSize = groupSize,
             participants = mapOf(
-                creatorId to Trip.JoinRequest(
+                creatorId.toString() to Trip.JoinRequest(
                     userId = creatorId,
                     requestedSpots = 1,
                     unregisteredParticipants = emptyList(),
@@ -597,7 +615,7 @@ class TripModel {
         val currentTrip = trip ?: Trip()
 
         val updatedActivities = currentTrip.activities.toMutableMap().apply {
-            val dateKey: Calendar = toCalendar(activity.date)
+            val dateKey: String = activity.dateAsCalendar().timeInMillis.toString()
             val updatedList: List<Activity> = getOrDefault(dateKey, emptyList()) + activity
             put(dateKey, updatedList)
         }
@@ -646,9 +664,9 @@ class TripModel {
                 }
 
                 // Add updated activity to its new date
-                val newDateKey = updatedActivity.date
-                val updatedList = originalActivities.getOrDefault(toCalendar(newDateKey), emptyList<Activity>()) + updatedActivity
-                originalActivities[toCalendar(newDateKey)] = updatedList
+                val newDateKey = updatedActivity.dateAsCalendar().timeInMillis.toString()
+                val updatedList = originalActivities.getOrDefault(newDateKey, emptyList<Activity>()) + updatedActivity
+                originalActivities[newDateKey] = updatedList
 
                 val updatedTrip = currentTrip.copy(activities = originalActivities)
 
@@ -674,15 +692,15 @@ class TripModel {
             return
         }
 
-        val dateKey = activity.date
+        val dateKey = activity.dateAsCalendar().timeInMillis.toString()
         val updatedActivities = trip.activities
             .toMutableMap()
             .apply {
-                val updatedList = getOrDefault(toCalendar(dateKey), emptyList()) - activity
+                val updatedList = getOrDefault(dateKey, emptyList()) - activity
                 if (updatedList.isEmpty()) {
-                    remove(toCalendar(dateKey))
+                    remove(dateKey)
                 } else {
-                    put(toCalendar(dateKey), updatedList)
+                    put(dateKey, updatedList)
                 }
             }
             .toMap()
@@ -722,8 +740,8 @@ class TripModel {
     //MANAGEMENT OF APPLICATIONS TO TRIPS
 
     //Function that adds a request to join to a specific Trip
-    private val _askedTrips = MutableStateFlow<Map<Int, Int>>(emptyMap())
-    val askedTrips: StateFlow<Map<Int, Int>> = _askedTrips
+    private val _askedTrips = MutableStateFlow<Map<String, Int>>(emptyMap())
+    val askedTrips: StateFlow<Map<String, Int>> = _askedTrips
 
     fun requestToJoin(trip: Trip, userId: Int, spots: Int,
                       unregisteredParticipants: List<Participant>,
@@ -742,7 +760,7 @@ class TripModel {
 
         tripDocRef.update(joinRequestMap)
             .addOnSuccessListener {
-                _askedTrips.value = _askedTrips.value + (trip.id to spots)
+                _askedTrips.value = _askedTrips.value + (trip.id.toString() to spots)
                 onResult(true)
             }
             .addOnFailureListener { e ->
@@ -757,14 +775,14 @@ class TripModel {
 
         // Remove the userId from appliedUsers map locally
         val updatedAppliedUsers = trip.appliedUsers.toMutableMap().apply {
-            remove(userId)
+            remove(userId.toString())
         }
 
         // Update Firestore document's appliedUsers field
         docRef.update("appliedUsers", updatedAppliedUsers)
             .addOnSuccessListener {
                 // Optionally update local state if needed
-                _askedTrips.value = _askedTrips.value - trip.id
+                _askedTrips.value = _askedTrips.value - trip.id.toString()
                 onResult(true)
             }
             .addOnFailureListener { e ->
@@ -780,8 +798,8 @@ class TripModel {
             .addOnSuccessListener { querySnapshot ->
                 val askedMap = querySnapshot.documents.mapNotNull { doc ->
                     val trip = doc.toObject(Trip::class.java)
-                    val requestedSpots = trip?.appliedUsers?.get(userId)?.requestedSpots ?: 0
-                    if (requestedSpots > 0 && trip != null) trip.id to requestedSpots else null
+                    val requestedSpots = trip?.appliedUsers?.get(userId.toString())?.requestedSpots ?: 0
+                    if (requestedSpots > 0 && trip != null) trip.id.toString() to requestedSpots else null
                 }.toMap()
                 _askedTrips.value = askedMap
                 onResult(true)

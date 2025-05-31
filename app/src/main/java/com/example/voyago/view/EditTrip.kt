@@ -57,6 +57,7 @@ import com.example.voyago.model.Trip
 import com.example.voyago.model.TypeTravel
 import com.example.voyago.model.toCalendar
 import com.example.voyago.viewmodel.TripViewModel
+import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -117,11 +118,11 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
 
 
     //Date Handling
-    var startDate by rememberSaveable { mutableStateOf(toCalendar(trip.startDate).toStringDate()) }
-    var startCalendar by rememberSaveable { mutableStateOf<Calendar?>(toCalendar(trip.startDate)) }
+    var startDate by rememberSaveable { mutableStateOf(trip.startDateAsCalendar().toStringDate()) }
+    var startCalendar by rememberSaveable { mutableStateOf<Calendar?>(trip.startDateAsCalendar()) }
 
-    var endDate by rememberSaveable { mutableStateOf(toCalendar(trip.endDate).toStringDate()) }
-    var endCalendar by rememberSaveable { mutableStateOf<Calendar?>(toCalendar(trip.endDate)) }
+    var endDate by rememberSaveable { mutableStateOf(trip.endDateAsCalendar().toStringDate()) }
+    var endCalendar by rememberSaveable { mutableStateOf<Calendar?>(trip.endDateAsCalendar()) }
 
     var dateError by rememberSaveable { mutableStateOf("") }
 
@@ -427,8 +428,8 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                                             photo = imageUri?.toString() ?: trip.photo,
                                             title = fieldValues[0].toString(),
                                             destination = fieldValues[1].toString(),
-                                            startDate = startCalendar!!.timeInMillis,
-                                            endDate = endCalendar!!.timeInMillis,
+                                            startDate = Timestamp(startCalendar!!.time),
+                                            endDate = Timestamp(endCalendar!!.time),
                                             estimatedPrice = fieldValues[2].toString().toDouble(),
                                             groupSize = fieldValues[3].toString().toInt(),
                                             activities = currentTrip.activities,

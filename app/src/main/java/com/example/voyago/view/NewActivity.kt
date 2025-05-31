@@ -45,6 +45,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 import com.example.voyago.viewmodel.TripViewModel
+import com.google.firebase.Timestamp
 
 
 @SuppressLint("UnrememberedMutableState")
@@ -296,7 +297,7 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
 
                                 val newActivity = Trip.Activity(
                                     id = newId,
-                                    date = activityCalendar.timeInMillis,
+                                    date = Timestamp(activityCalendar.time),
                                     time = selectedTime,
                                     isGroupActivity = isGroupActivityChecked,
                                     description = activityDescription

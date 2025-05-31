@@ -140,8 +140,8 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
                         .padding(start = 24.dp, end = 24.dp)
                 ) {
                     Text(
-                        text = formatTripDate(toCalendar(trip.startDate)) + " - " +
-                                formatTripDate(toCalendar(trip.endDate)) + "\n " +
+                        text = formatTripDate(trip.startDateAsCalendar()) + " - " +
+                                formatTripDate(trip.endDateAsCalendar()) + "\n " +
                                 "${trip.groupSize} people" +
                                 if (trip.availableSpots() > 0) {
                                     " (${trip.availableSpots()} spots left)"

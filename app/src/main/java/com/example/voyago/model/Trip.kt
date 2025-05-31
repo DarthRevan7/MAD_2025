@@ -11,15 +11,16 @@ data class Trip(
     var endDate: Calendar,
     var estimatedPrice: Double,
     var groupSize: Int,
-    var participants: Map<Int, JoinRequest>,                   // userId, id JoinedRequest
-    var activities: Map<Calendar, List<Activity>>,     // Map<Date, Activity>
+    var participants: Map<String, JoinRequest>,                   // userId, id JoinedRequest
+    var activities: Map<String, List<Activity>>,     // Map<Date, Activity>
     var status: TripStatus,
     var typeTravel: List<TypeTravel>,
     var creatorId: Int,
-    var appliedUsers: Map<Int, JoinRequest>,                   // userId, id JoinedRequest
-    var rejectedUsers: Map<Int, JoinRequest>,                  // userId, number of spots
+    var appliedUsers: Map<String, JoinRequest>,                   // userId, id JoinedRequest
+    var rejectedUsers: Map<String, JoinRequest>,                  // userId, number of spots
     var published: Boolean
 ) {
+
 
     data class Activity(
         val id: Int,

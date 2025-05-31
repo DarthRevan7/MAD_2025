@@ -41,6 +41,7 @@ import androidx.navigation.NavController
 import com.example.voyago.model.Trip
 import com.example.voyago.model.toCalendar
 import com.example.voyago.viewmodel.TripViewModel
+import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -296,7 +297,7 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
 
                                 val updatedActivity = Trip.Activity(
                                     id = activityId, // preserve the original ID
-                                    date = activityCalendar.timeInMillis,
+                                    date = Timestamp(activityCalendar.time),
                                     time = selectedTime,
                                     isGroupActivity = isGroupActivityChecked,
                                     description = activityDescription

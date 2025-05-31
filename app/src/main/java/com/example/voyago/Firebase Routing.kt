@@ -5,6 +5,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.firestore.firestore
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.auth
 
 object Collections{
     private const val C_USERS = "users"
@@ -14,6 +15,7 @@ object Collections{
 
     private val db: FirebaseFirestore
         get() = Firebase.firestore
+    
 
     init {
         db.firestoreSettings = FirebaseFirestoreSettings.Builder()
