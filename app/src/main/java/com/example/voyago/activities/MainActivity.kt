@@ -154,18 +154,18 @@ class MainActivity : ComponentActivity() {
 
     }
 
-    private fun startCamera() {
+    /*private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
         cameraProviderFuture.addListener({
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
             // Preview
-            val preview = Preview.Builder()
+            *//*val preview = Preview.Builder()
                 .build()
                 .also {
                     it.setSurfaceProvider(viewBinding.viewFinder.surfaceProvider)
-                }
+                }*//*
 
             imageCapture = ImageCapture.Builder().build()
 
@@ -186,7 +186,7 @@ class MainActivity : ComponentActivity() {
                 Log.e(TAG, "Use case binding failed", exc)
             }
         }, ContextCompat.getMainExecutor(this))
-    }
+    }*/
 
     private fun requestPermissions() {
         activityResultLauncher.launch(REQUIRED_PERMISSIONS)
@@ -221,9 +221,9 @@ class MainActivity : ComponentActivity() {
             }
             if (!permissionGranted) {
                 Toast.makeText(baseContext, "Permission request denied", Toast.LENGTH_SHORT).show()
-            } else {
-                startCamera()
-            }
+            } /*else {
+                *//*startCamera()*//*
+            }*/
         }
 
     private class LuminosityAnalyzer(private val listener: (Double) -> Unit) : ImageAnalysis.Analyzer {

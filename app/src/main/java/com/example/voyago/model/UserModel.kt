@@ -2,9 +2,11 @@ package com.example.voyago.model
 
 import android.util.Log
 import com.example.voyago.Collections
+import com.google.firebase.Timestamp
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import java.util.Date
 
 data class User(
     val id: Int = 0,
@@ -14,7 +16,7 @@ data class User(
     var country: String = "",
     var email: String = "",
     var userDescription: String = "",
-    var dateOfBirth: Long = 0L,
+    var dateOfBirth: Timestamp = Timestamp(Date(0)),
     var password: String = "",
     var profilePictureUrl: String? = null,
     var typeTravel: List<TypeTravel> = emptyList(),
