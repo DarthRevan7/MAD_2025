@@ -1,6 +1,5 @@
 package com.example.voyago.model
 
-import android.R
 import android.util.Log
 import com.example.voyago.Collections
 import com.example.voyago.model.Trip.Activity
@@ -9,6 +8,7 @@ import com.example.voyago.model.Trip.TripStatus
 import com.example.voyago.view.SelectableItem
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
@@ -19,15 +19,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
-import java.util.Locale
 import kotlin.collections.forEach
+import kotlin.toString
 
 
 //Function that converts a Long in a Calendar
-// TODO[flavi]: delete, replace with getter
 fun toCalendar(timeDate : Timestamp) : Calendar {
     var calendarDate = Calendar.getInstance()
     calendarDate.time = timeDate.toDate()
@@ -211,6 +209,23 @@ data class Trip(
         return true
     }
 
+    fun updateApplicationStatus(
+        onSuccess: () -> Unit = {},
+        onFailure: (Exception) -> Unit = {}
+    ) {
+        val db = FirebaseFirestore.getInstance()
+        db.collection("trips")
+            .document(this.id.toString())
+            .update(
+                mapOf(
+                    "participants" to participants,
+                    "appliedUsers" to appliedUsers,
+                    "rejectedUsers" to rejectedUsers
+                )
+            )
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onFailure(it) }
+    }
 }
 
 fun stringToCalendar(string: String): Calendar {
@@ -846,4 +861,5 @@ class TripModel {
                 onResult(false)
             }
     }
+
 }

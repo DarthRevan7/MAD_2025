@@ -423,6 +423,15 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
             }
         }
 
+        trip.updateApplicationStatus(
+            onSuccess = {
+                Log.d("TripViewModel", "Accepted application and updated Firestore")
+            },
+            onFailure = {
+                Log.e("TripViewModel", "Failed to update trip in Firestore", it)
+            }
+        )
+
         // Update your applications value accordingly
         _applications.value = tripApplicants.value
     }
@@ -434,6 +443,15 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
 
             trip.appliedUsers = trip.appliedUsers - userId.toString()
             trip.rejectedUsers = trip.rejectedUsers + (userId.toString() to joinRequest)
+
+            trip.updateApplicationStatus(
+                onSuccess = {
+                    Log.d("TripViewModel", "Accepted application and updated Firestore")
+                },
+                onFailure = {
+                    Log.e("TripViewModel", "Failed to update trip in Firestore", it)
+                }
+            )
 
             // Assign just the list of users, ignoring requestedSpots here
             _applications.value = tripRejectedUsers.value
