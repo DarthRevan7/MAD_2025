@@ -17,8 +17,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
+import java.util.Locale
 import kotlin.collections.forEach
 
 
@@ -211,7 +213,13 @@ data class Trip(
 
 fun stringToCalendar(string: String): Calendar {
     val date = Calendar.getInstance()
-    date.timeInMillis = string.toLong()
+    println("String Date: $string")
+    val parts = string.split("-")
+    val day = parts[0].toInt()
+    val month = parts[1].toInt() - 1
+    val year = parts[2].toInt()
+    date.set(year, month, day)
+//    date.timeInMillis = string.toLong()
     return date
 }
 
