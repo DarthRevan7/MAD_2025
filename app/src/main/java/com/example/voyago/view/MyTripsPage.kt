@@ -1,6 +1,7 @@
 package com.example.voyago.view
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,6 +42,8 @@ import com.example.voyago.viewmodel.UserViewModel
 @Composable
 fun MyTripsPage(navController: NavController, vm: TripViewModel, uvm: UserViewModel) {
 
+    //Get the logged in user (id=1)
+    val loggedUser by uvm.loggedUser.collectAsState()
     //List of trip created and published by the logged in user (id=1)
     val publishedTrips by vm.publishedTrips.collectAsState()
     //List of trip created, but not published by the logged in user (id=1)
@@ -48,13 +51,15 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel, uvm: UserViewMo
     //List of trip the logged in user (id=1) joined
     val joinedTrips by vm.joinedTrips.collectAsState()
 
-    val loggedUser by uvm.loggedUser.collectAsState()
-
-    LaunchedEffect(Unit) {
-        vm.creatorPublicFilter(loggedUser.id)
-        vm.creatorPrivateFilter(loggedUser.id)
-        vm.tripUserJoined(loggedUser.id)
+    LaunchedEffect(loggedUser.id) {
+        if (loggedUser.id != 0) {
+            Log.d("Trips", "my trips id: ${loggedUser.id}")
+            vm.creatorPublicFilter(loggedUser.id)
+            vm.creatorPrivateFilter(loggedUser.id)
+            vm.tripUserJoined(loggedUser.id)
+        }
     }
+
 
     Scaffold(
         floatingActionButton = {
@@ -140,6 +145,15 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel, uvm: UserViewMo
                 items(joinedTrips, key = { it.id }) { trip ->
                     vm.userAction = TripViewModel.UserAction.VIEW_TRIP
                     TripCard(trip, navController, vm, vm.userAction == TripViewModel.UserAction.VIEW_TRIP)
+                }
+            } else {
+                item {
+                    Row (
+                        modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text("You haven't joined any trip yet.")
+                    }
                 }
             }
         }

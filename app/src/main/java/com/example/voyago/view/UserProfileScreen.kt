@@ -17,6 +17,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,10 +42,23 @@ fun UserProfileScreen(
 ) {
     // Collect user data as state
     val user by uvm.getUserData(userId).collectAsState(initial = null)
+    //List of trip created and published by the logged in user (id=1)
+    val publishedTrips by vm.publishedTrips.collectAsState()
+    //List of trip the logged in user (id=1) joined
+    val joinedTrips by vm.joinedTrips.collectAsState()
 
     if (user == null) {
         Log.d("UserProfileScreen", "User data is null")
         return
+    }
+
+    LaunchedEffect(user?.id) {
+        if (user?.id != 0) {
+            Log.d("Trips", "my trips id: ${user?.id}")
+            vm.creatorPublicFilter(user!!.id)
+            vm.creatorPrivateFilter(user!!.id)
+            vm.tripUserJoined(user!!.id)
+        }
     }
 
     val listState = rememberLazyListState()
@@ -110,7 +124,7 @@ fun UserProfileScreen(
         }
 
         item {
-            TabAboutTripsReview(user!!, vm, vm2, navController, uvm)
+            TabAboutTripsReview(user!!, joinedTrips, publishedTrips, vm, vm2, navController, uvm)
         }
     }
 }

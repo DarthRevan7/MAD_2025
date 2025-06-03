@@ -1,6 +1,7 @@
 package com.example.voyago.view
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -62,18 +63,30 @@ import com.example.voyago.R
 import com.example.voyago.activities.*
 import com.example.voyago.model.Article
 import com.example.voyago.model.Review
-import com.example.voyago.model.ReviewModel
 import com.example.voyago.model.Trip
 import com.example.voyago.model.User
 import com.example.voyago.viewmodel.*
 import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: ArticleViewModel, uvm: UserViewModel) {
-    val user1 by uvm.loggedUser.collectAsState()
+    //Get the logged in user (id=1)
+    val user by uvm.loggedUser.collectAsState()
+    //List of trip created and published by the logged in user (id=1)
+    val publishedTrips by vm.publishedTrips.collectAsState()
+    //List of trip the logged in user (id=1) joined
+    val joinedTrips by vm.joinedTrips.collectAsState()
+
+    LaunchedEffect(user.id) {
+        if (user.id != 0) {
+            Log.d("Trips", "my trips id: ${user.id}")
+            vm.creatorPublicFilter(user.id)
+            vm.creatorPrivateFilter(user.id)
+            vm.tripUserJoined(user.id)
+        }
+    }
 
     //Icons
     val painterLogout = painterResource(R.drawable.logout)
@@ -107,13 +120,13 @@ fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: Articl
                     .padding(16.dp)
                     .offset(y = (-30).dp)
                     .clickable {
-                        uvm.setProfileImageUri(user1.profilePictureUrl?.toUri())
+                        uvm.setProfileImageUri(user.profilePictureUrl?.toUri())
                         navController.navigate("edit_profile")
                     }
                 )
 
                 ProfilePhoto(
-                    user1,
+                    user,
                     false,
                     modifier = Modifier
                         .align(Alignment.Center)
@@ -121,7 +134,7 @@ fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: Articl
                     uvm
                 )
                 Text(
-                    text = user1.username,
+                    text = user.username,
                     style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.ExtraBold,
                     modifier = Modifier
@@ -131,7 +144,7 @@ fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: Articl
                 )
 
                 Text(
-                    text = user1.firstname + " " + user1.surname,
+                    text = user.firstname + " " + user.surname,
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
@@ -143,7 +156,7 @@ fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: Articl
                 Spacer( Modifier.height(20.dp))
 
                 Text(
-                    text = user1.country,
+                    text = user.country,
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Normal,
                     modifier = Modifier
@@ -163,15 +176,15 @@ fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: Articl
                 horizontalArrangement = Arrangement.Center
             ) {
                 RatingAndReliability(
-                    user1.rating,
-                    user1.reliability
+                    user.rating,
+                    user.reliability
                 )
             }
         }
 
         item {
             //Tab About, My Trips, Review
-            TabAboutTripsReview(user1, vm, vm2, navController, uvm)
+            TabAboutTripsReview(user, joinedTrips, publishedTrips, vm, vm2, navController, uvm)
         }
     }
 }
@@ -242,13 +255,10 @@ fun RatingAndReliability(rating: Float, reliability: Int) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun TabAboutTripsReview(user: User, vm: TripViewModel, vm2: ArticleViewModel, navController: NavController, uvm: UserViewModel) {
+fun TabAboutTripsReview(user: User, joinedTrips: List<Trip>, publishedTrips: List<Trip>, vm: TripViewModel, vm2: ArticleViewModel, navController: NavController, uvm: UserViewModel) {
 
     // TAB with About, Trips & Articles, Reviews
     val tabs = listOf("About", "Trips & Articles", "Reviews")
-
-    val joinedTrips by vm.joinedTrips.collectAsState()
-    val publishedTrips by vm.publishedTrips.collectAsState()
 
     var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
 

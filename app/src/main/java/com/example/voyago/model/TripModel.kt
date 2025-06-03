@@ -240,11 +240,11 @@ class TripModel {
     private val _publishedTrips = MutableStateFlow<List<Trip>>(emptyList())
     val publishedTrips: StateFlow<List<Trip>> = _publishedTrips
 
-    fun filterPublishedByCreator(id: Int, coroutineScope: CoroutineScope) = callbackFlow<List<Trip>> {
+    fun filterPublishedByCreator(id: Int, coroutineScope: CoroutineScope) {
         coroutineScope.launch {
-            callbackFlow<List<Trip>> {
+            callbackFlow {
                 val listener = Collections.trips
-                    .whereEqualTo("creatorId", id)
+                    .whereEqualTo("creatorId", id.toLong())
                     .whereEqualTo("published", true)
                     .addSnapshotListener { snapshot, error ->
                         if (snapshot != null) {
@@ -261,15 +261,16 @@ class TripModel {
         }
     }
 
+
     //Function that returns the Trips created, but not published by the logged in user
     private val _privateTrips = MutableStateFlow<List<Trip>>(emptyList())
     val privateTrips: StateFlow<List<Trip>> = _privateTrips
 
-    fun filterPrivateByCreator(id: Int, coroutineScope: CoroutineScope) = callbackFlow<List<Trip>> {
+    fun filterPrivateByCreator(id: Int, coroutineScope: CoroutineScope) {
         coroutineScope.launch {
-            callbackFlow<List<Trip>> {
+            callbackFlow {
                 val listener = Collections.trips
-                    .whereEqualTo("creatorId", id)
+                    .whereEqualTo("creatorId", id.toLong())
                     .whereEqualTo("published", false)
                     .addSnapshotListener { snapshot, error ->
                         if (snapshot != null) {
@@ -281,7 +282,7 @@ class TripModel {
                     }
                 awaitClose { listener.remove() }
             }.collect { trips ->
-                _publishedTrips.value = trips
+                _privateTrips.value = trips
             }
         }
     }
