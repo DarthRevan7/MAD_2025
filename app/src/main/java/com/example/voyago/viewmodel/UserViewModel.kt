@@ -14,8 +14,16 @@ import kotlinx.coroutines.launch
 
 class UserViewModel(val model:UserModel): ViewModel() {
     //For now user with id = 1 is the logged user.
-    var loggedUser: User =  User()
-    var userFlow = viewModelScope.launch { model.getUser(1).collect { userNotFlow -> loggedUser = userNotFlow } }
+    private val _loggedUser = MutableStateFlow<User>(User())
+    val loggedUser: StateFlow<User> = _loggedUser
+
+    init {
+        viewModelScope.launch {
+            model.getUser(1).collect { user ->
+                _loggedUser.value = user
+            }
+        }
+    }
 
     private val _userData = MutableStateFlow<User>(User())
     val userData: StateFlow<User> = _userData

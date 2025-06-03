@@ -105,6 +105,8 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
 
     val participantsMap by vm.tripParticipants.collectAsState()
 
+    val loggedUser by uvm.loggedUser.collectAsState()
+
     Log.d("Action", "${vm.userAction}")
 
     DisposableEffect(Unit) {
@@ -119,7 +121,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
     }
 
     //The user joined the trip but didn't created
-    val joined = trip.participants.containsKey(uvm.loggedUser.id.toString()) && trip.creatorId != uvm.loggedUser.id
+    val joined = trip.participants.containsKey(loggedUser.id.toString()) && trip.creatorId != loggedUser.id
 
     //Delete confirmation trip
     var showPopup by remember { mutableStateOf(false) }
@@ -127,7 +129,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
 
     //Manage join request
     val askedTrips: Map<String, Int> by vm.askedTrips.collectAsState()
-    vm.syncAskedTrips(uvm.loggedUser.id) {}
+    vm.syncAskedTrips(loggedUser.id) {}
     val requestedSpots = trip.id.let { askedTrips[it.toString()] } ?: 0
     val hasAsked = requestedSpots > 0
 
@@ -465,12 +467,12 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                         Spacer(Modifier.padding(5.dp))
 
                         //If the user can join the trip
-                        if (trip.canJoin() && trip.creatorId != uvm.loggedUser.id) {
+                        if (trip.canJoin() && trip.creatorId != loggedUser.id) {
                             //Ask to Join/Asked to Join Button
                             Button(
                                 onClick = {
                                     if (hasAsked) {
-                                        vm.cancelAskToJoin(trip, uvm.loggedUser.id)
+                                        vm.cancelAskToJoin(trip, loggedUser.id)
                                     } else {
                                         selectedSpots = 1
                                         showDialog = true
@@ -491,7 +493,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                                 }
                             }
 
-                        } else if (trip.participants.containsKey(uvm.loggedUser.id.toString())
+                        } else if (trip.participants.containsKey(loggedUser.id.toString())
                             && trip.status != Trip.TripStatus.COMPLETED.toString()
                             && trip.creatorId != 1) {
                             Button(
@@ -758,7 +760,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                             if (selectedSpots > 1) {
                                 dialogPhase = 1
                             } else {
-                                vm.askToJoin(trip, uvm.loggedUser.id, selectedSpots, emptyList(), emptyList())
+                                vm.askToJoin(trip, loggedUser.id, selectedSpots, emptyList(), emptyList())
                                 showDialog = false
                             }
                         } else {
@@ -802,7 +804,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                             if (!hasErrors) {
                                 vm.askToJoin(
                                     trip,
-                                    uvm.loggedUser.id,
+                                    loggedUser.id,
                                     selectedSpots,
                                     unregisteredParticipants,
                                     uvm.getIdListFromUsernames(registeredUsernames)

@@ -48,10 +48,12 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel, uvm: UserViewMo
     //List of trip the logged in user (id=1) joined
     val joinedTrips by vm.joinedTrips.collectAsState()
 
+    val loggedUser by uvm.loggedUser.collectAsState()
+
     LaunchedEffect(Unit) {
-        vm.creatorPublicFilter(uvm.loggedUser.id)
-        vm.creatorPrivateFilter(uvm.loggedUser.id)
-        vm.tripUserJoined(uvm.loggedUser.id)
+        vm.creatorPublicFilter(loggedUser.id)
+        vm.creatorPrivateFilter(loggedUser.id)
+        vm.tripUserJoined(loggedUser.id)
     }
 
     Scaffold(

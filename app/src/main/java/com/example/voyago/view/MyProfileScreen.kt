@@ -72,7 +72,7 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: ArticleViewModel, uvm: UserViewModel) {
-    val user1 = uvm.getUserData(uvm.loggedUser.id)
+    val user1 by uvm.loggedUser.collectAsState()
 
     //Icons
     val painterLogout = painterResource(R.drawable.logout)
