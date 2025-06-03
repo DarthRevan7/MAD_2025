@@ -317,7 +317,7 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
                                     .size(60.dp)
                                     .background(Color.Gray, shape = CircleShape)
                             ) {
-                                ProfilePhoto(user.firstname, user.surname, true, null)
+                                ProfilePhoto(true, Modifier, uvm)
                             }
                             Text(
                                 "${user.firstname} ${user.surname}",

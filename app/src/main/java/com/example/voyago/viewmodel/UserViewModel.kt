@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.voyago.model.*
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 class UserViewModel(val model:UserModel): ViewModel() {
@@ -15,6 +16,7 @@ class UserViewModel(val model:UserModel): ViewModel() {
     var loggedUser: User =  User()
     var userFlow = viewModelScope.launch { model.getUser(1).collect { userNotFlow -> loggedUser = userNotFlow } }
 
+    var userGotFromDB = MutableStateFlow<User>(User())
 
     //Edit user profile
     fun editUserData(updatedUserData: User) {
@@ -25,6 +27,7 @@ class UserViewModel(val model:UserModel): ViewModel() {
     fun getUserData(id: Int): User {
         var user = User()
         viewModelScope.launch { model.getUser(id).collect { u -> user = u } }
+        userGotFromDB.value = user
         return user
     }
 

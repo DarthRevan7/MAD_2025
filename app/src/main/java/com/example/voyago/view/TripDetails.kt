@@ -1056,7 +1056,7 @@ fun ShowReview(review: Review, vm: TripViewModel, myTrip: Boolean, uvm: UserView
                     .size(30.dp)
                     .background(Color.Gray, shape = CircleShape)
             ) {
-                ProfilePhoto(reviewer.firstname, reviewer.surname, true, null)
+                ProfilePhoto(true, Modifier, uvm)
             }
             Text(
                 "${reviewer.firstname} ${reviewer.surname}",
@@ -1074,7 +1074,7 @@ fun ShowReview(review: Review, vm: TripViewModel, myTrip: Boolean, uvm: UserView
                     .size(30.dp)
                     .background(Color.Gray, shape = CircleShape)
             ) {
-                ProfilePhoto(userReviewed.firstname, userReviewed.surname, true, null)
+                ProfilePhoto(true, Modifier, uvm)
             }
             Text(
                 "${userReviewed.firstname} ${userReviewed.surname}",

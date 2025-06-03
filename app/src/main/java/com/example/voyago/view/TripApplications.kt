@@ -219,7 +219,7 @@ fun ShowParticipants(user: User, joinRequest: Trip.JoinRequest, uvm: UserViewMod
                 .size(30.dp)
                 .background(Color.Gray, shape = CircleShape)
         ) {
-            ProfilePhoto(user.firstname, user.surname, true, null)
+            ProfilePhoto(true, Modifier, uvm)
         }
 
         // Participant information
@@ -323,7 +323,7 @@ fun ShowApplications(user: User, joinRequest: Trip.JoinRequest, vm: TripViewMode
                 .size(30.dp)
                 .background(Color.Gray, shape = CircleShape)
         ) {
-            ProfilePhoto(user.firstname, user.surname, true, null)
+            ProfilePhoto(true, Modifier, uvm)
         }
         // User information
         Row(

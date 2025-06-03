@@ -49,10 +49,11 @@ fun UserProfileScreen(vm: TripViewModel, navController: NavController, vm2: Arti
                     .background(Color(0xdf, 0xd1, 0xe0, 255), shape = RectangleShape)) {
 
                 ProfilePhoto(
-                    user.firstname, user.surname, false, user.profilePictureUrl?.toUri(),
+                    false,
                     modifier = Modifier
                         .align(Alignment.Center)
-                        .offset(y = (-50).dp)
+                        .offset(y = (-50).dp),
+                    uvm
                 )
                 Text(
                     text = user.username,

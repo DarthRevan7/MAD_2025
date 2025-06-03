@@ -112,10 +112,11 @@ fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: Articl
                 )
 
                 ProfilePhoto(
-                    user1.firstname, user1.surname, false, user1.profilePictureUrl?.toUri(),
+                    false,
                     modifier = Modifier
                         .align(Alignment.Center)
-                        .offset(y = (-50).dp)
+                        .offset(y = (-50).dp),
+                    uvm
                 )
                 Text(
                     text = user1.username,
@@ -582,7 +583,7 @@ fun ShowUserReview(review: Review, navController: NavController, uvm: UserViewMo
                         .size(30.dp)
                         .background(Color.Gray, shape = CircleShape)
                 ) {
-                    ProfilePhoto(reviewer.firstname, reviewer.surname, true, null)
+                    ProfilePhoto(true, uvm = uvm, modifier = Modifier)
                 }
 
                 // Reviewer name

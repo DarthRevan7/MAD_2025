@@ -49,6 +49,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -762,10 +763,17 @@ fun NavGraphBuilder.profileNavGraph(
 }
 
 @Composable
-fun ProfilePhoto(firstname: String, surname: String, isSmall: Boolean, profileImage: Uri?, modifier: Modifier = Modifier) {
-    val initials = "${firstname.first()}"+"${surname.first()}"
+fun ProfilePhoto(isSmall: Boolean, modifier : Modifier, uvm: UserViewModel) {
+    val user by uvm.userGotFromDB.collectAsState()
 
-    if(profileImage == null)
+    var initials = "WU"     //Waiting User
+
+    if (user.firstname.isNotEmpty() && user.surname.isNotEmpty()) {
+         initials = "${user.firstname.first()}"+"${user.surname.first()}"
+    }
+
+
+    if(user.profilePictureUrl == null)
     {
         Box(
             contentAlignment = Alignment.Center,
@@ -803,7 +811,7 @@ fun ProfilePhoto(firstname: String, surname: String, isSmall: Boolean, profileIm
 
         ) {
             //Icon(profileImage)
-            AsyncImage(profileImage,"profilePic",
+            AsyncImage(user.profilePictureUrl,"profilePic",
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(shape = CircleShape)
