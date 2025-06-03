@@ -7,7 +7,9 @@ import com.example.voyago.model.Trip.Activity
 import com.example.voyago.model.Trip.Participant
 import com.example.voyago.model.Trip.TripStatus
 import com.example.voyago.view.SelectableItem
+import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.onFailure
@@ -511,64 +513,90 @@ class TripModel {
 
     //Function that creates a new Trip
     fun createNewTrip(newTrip: Trip, onResult: (Boolean, Trip?) -> Unit) {
-        val docRef = Collections.trips.document() // Let Firestore generate a unique document ID
-        val generatedId = docRef.id.hashCode()     // Use a hash of the string ID as an Int
+        val firestore = Firebase.firestore
+        val counterRef = firestore.collection("metadata").document("tripCounter")
 
-        val tripWithId = newTrip.copy(id = generatedId)
+        firestore.runTransaction { transaction ->
+            val snapshot = transaction.get(counterRef)
+            val lastTripId = snapshot.getLong("lastTripId") ?: 0
+            val newTripId = lastTripId + 1
 
-        docRef.set(tripWithId)
-            .addOnSuccessListener {
-                onResult(true, tripWithId)
-            }
-            .addOnFailureListener { e ->
-                Log.e("Firestore", "Failed to create trip", e)
-                onResult(false, null)
-            }
+            // Set the new ID back to the counter document
+            transaction.update(counterRef, "lastTripId", newTripId)
+
+            // Create the trip with the new ID
+            val tripWithId = newTrip.copy(id = newTripId.toInt())
+
+            // Create a new document in the trips collection
+            val tripDocRef = firestore.collection("trips").document(newTripId.toString())
+            transaction.set(tripDocRef, tripWithId)
+
+            tripWithId
+        }.addOnSuccessListener { trip ->
+            onResult(true, trip)
+        }.addOnFailureListener { e ->
+            Log.e("Firestore", "Failed to create trip", e)
+            onResult(false, null)
+        }
     }
+
 
     //Function that imports a Trip in the "My Trip" section of the logged in user as private
     fun importTrip(photo: String, title: String, destination: String, startDate: Calendar,
                    endDate: Calendar, estimatedPrice: Double, groupSize: Int,
-                   activities: Map<String, List<Activity>>, typeTravel: List<String>,
-                   creatorId: Int, published: Boolean, onResult: (Boolean, Trip?) -> Unit) {
-        val docRef = Collections.trips.document() // Firestore-generated ID
-        val tripId = docRef.id.hashCode()
+                   activities: Map<String, List<Activity>>, typeTravel: List<String>, creatorId: Int,
+                   published: Boolean, onResult: (Boolean, Trip?) -> Unit) {
+        val firestore = Firebase.firestore
+        val counterRef = firestore.collection("metadata").document("tripCounter")
 
-        val newTrip = Trip(
-            id = tripId,
-            photo = photo,
-            title = title,
-            destination = destination,
-            startDate = Timestamp(startDate.time),
-            endDate = Timestamp(endDate.time),
-            estimatedPrice = estimatedPrice,
-            groupSize = groupSize,
-            participants = mapOf(
-                creatorId.toString() to Trip.JoinRequest(
-                    userId = creatorId,
-                    requestedSpots = 1,
-                    unregisteredParticipants = emptyList(),
-                    registeredParticipants = emptyList()
-                )
-            ),
-            activities = activities,
-            status = TripStatus.NOT_STARTED.toString(),
-            typeTravel = listOf(typeTravel.toString()),
-            creatorId = creatorId,
-            appliedUsers = emptyMap(),
-            rejectedUsers = emptyMap(),
-            published = published
-        )
+        firestore.runTransaction { transaction ->
+            //Get and increment trip ID counter
+            val snapshot = transaction.get(counterRef)
+            val lastTripId = snapshot.getLong("lastTripId") ?: 0
+            val newTripId = lastTripId + 1
+            transaction.update(counterRef, "lastTripId", newTripId)
 
-        docRef.set(newTrip)
-            .addOnSuccessListener {
-                onResult(true, newTrip)
-            }
-            .addOnFailureListener { e ->
-                Log.e("Firestore", "Failed to import trip", e)
-                onResult(false, null)
-            }
+            //Create new Firestore doc reference
+            val docRef = firestore.collection("trips").document(newTripId.toString())
+
+            //Build Trip object with new ID
+            val newTrip = Trip(
+                id = newTripId.toInt(),
+                photo = photo,
+                title = title,
+                destination = destination,
+                startDate = Timestamp(startDate.time),
+                endDate = Timestamp(endDate.time),
+                estimatedPrice = estimatedPrice,
+                groupSize = groupSize,
+                participants = mapOf(
+                    creatorId.toString() to Trip.JoinRequest(
+                        userId = creatorId,
+                        requestedSpots = 1,
+                        unregisteredParticipants = emptyList(),
+                        registeredParticipants = emptyList()
+                    )
+                ),
+                activities = activities,
+                status = TripStatus.NOT_STARTED.toString(),
+                typeTravel = typeTravel,
+                creatorId = creatorId,
+                appliedUsers = emptyMap(),
+                rejectedUsers = emptyMap(),
+                published = published
+            )
+
+            //Save to Firestore
+            transaction.set(docRef, newTrip)
+            newTrip
+        }.addOnSuccessListener { trip ->
+            onResult(true, trip)
+        }.addOnFailureListener { e ->
+            Log.e("Firestore", "Failed to import trip", e)
+            onResult(false, null)
+        }
     }
+
 
     //EDIT TRIP
 
