@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.voyago.model.*
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -34,12 +35,10 @@ class UserViewModel(val model:UserModel): ViewModel() {
     }
 
     //Get user information
-    fun getUserData(id: Int): User {
-        var user = User()
-        viewModelScope.launch { model.getUser(id).collect { u -> user = u } }
-        _userData.value = user
-        return user
+    fun getUserData(id: Int): Flow<User?> {
+        return model.getUser(id)
     }
+
 
     //Given a list of username get a list of their ids
     fun getIdListFromUsernames(usernames: List<String>): List<Int> {

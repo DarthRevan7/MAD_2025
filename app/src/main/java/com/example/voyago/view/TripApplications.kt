@@ -276,9 +276,7 @@ fun ShowParticipants(user: User, joinRequest: Trip.JoinRequest, uvm: UserViewMod
     if (showPart) {
         AlertDialog(
             onDismissRequest = { showPart = false },
-            title = {
-                Text("Participants Info")
-            },
+            title = { Text("Participants Info") },
             text = {
                 Column {
                     joinRequest.unregisteredParticipants.forEach { participant ->
@@ -287,9 +285,7 @@ fun ShowParticipants(user: User, joinRequest: Trip.JoinRequest, uvm: UserViewMod
                         Spacer(modifier = Modifier.height(8.dp))
                     }
                     joinRequest.registeredParticipants.forEach { userid ->
-                        Text("Username: ${uvm.getUserData(userid).username}",
-                            Modifier.clickable { navController.navigate("user_profile/${userid}") }
-                        )
+                        ParticipantUsername(userid, uvm, navController)
                     }
                 }
             },
@@ -301,6 +297,25 @@ fun ShowParticipants(user: User, joinRequest: Trip.JoinRequest, uvm: UserViewMod
         )
     }
 }
+
+@Composable
+fun ParticipantUsername(
+    userId: Int,
+    uvm: UserViewModel,
+    navController: NavController
+) {
+    val user by uvm.getUserData(userId).collectAsState(initial = User()) // or initial = null if you prefer
+
+    if (user!!.id != 0) { // Assuming 0 means default empty user
+        Text(
+            "Username: ${user!!.username}",
+            Modifier.clickable { navController.navigate("user_profile/${userId}") }
+        )
+    } else {
+        Text("Loading...") // or empty
+    }
+}
+
 
 @Composable
 fun ShowApplications(user: User, joinRequest: Trip.JoinRequest, vm: TripViewModel, uvm: UserViewModel, navController: NavController) {
@@ -445,10 +460,9 @@ fun ShowApplications(user: User, joinRequest: Trip.JoinRequest, vm: TripViewMode
                         Spacer(modifier = Modifier.height(8.dp))
                     }
                     joinRequest.registeredParticipants.forEach { userid ->
-                        Text("Username: ${uvm.getUserData(userid).username}",
-                            Modifier.clickable { navController.navigate("user_profile/${userid}") }
-                            )
+                        ParticipantUsername(userid, uvm, navController)
                     }
+
                 }
             },
             confirmButton = {

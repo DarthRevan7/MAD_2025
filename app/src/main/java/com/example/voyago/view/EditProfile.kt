@@ -53,7 +53,7 @@ import com.example.voyago.viewmodel.UserViewModel
 @Composable
 fun EditProfileScreen(navController: NavController, context:Context, vm: TripViewModel, uvm: UserViewModel) {
 
-    val user = uvm.getUserData(1)
+    val user by uvm.loggedUser.collectAsState()
 
     var profileImageUri = uvm.profileImageUri.value
     //var profileImageUri by rememberSaveable { mutableStateOf<Uri?>(user.profilePicture) }

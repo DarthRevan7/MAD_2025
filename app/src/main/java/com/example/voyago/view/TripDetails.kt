@@ -535,17 +535,21 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
             }
 
             item {
-                uvm.getUserData(trip.creatorId)
-                val user by uvm.userData.collectAsState()
-                ShowParticipants(
-                    user,
-                    Trip.JoinRequest(
-                        uvm.getUserData(trip.creatorId).id,
-                        1,
-                        emptyList(),
-                        emptyList()
-                    ), uvm, navController
-                )
+                val user = uvm.getUserData(trip.creatorId).collectAsState(initial = null).value
+
+                if (user != null) {
+                    ShowParticipants(
+                        user = user,
+                        joinRequest = Trip.JoinRequest(
+                            user.id,
+                            1,
+                            emptyList(),
+                            emptyList()
+                        ),
+                        uvm = uvm,
+                        navController = navController
+                    )
+                }
             }
 
                 //Reviews section
@@ -1052,49 +1056,54 @@ fun DeleteButtonWithConfirmation(trip: Trip, navController: NavController, vm: T
 @SuppressLint("DiscouragedApi")
 @Composable
 fun ShowReview(review: Review, vm: TripViewModel, myTrip: Boolean, uvm: UserViewModel, navController: NavController) {
-    val reviewer = uvm.getUserData(review.reviewerId)
+
+    val reviewer by uvm.getUserData(review.reviewerId).collectAsState(initial = null)
+    val userReviewed by uvm.getUserData(review.reviewedUserId).collectAsState(initial = null)
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
     ) {
-        //Profile photo of the reviewer
         if (!myTrip && review.isTripReview) {
-            Box(
-                contentAlignment = Alignment.CenterStart,
-                modifier = Modifier
-                    .size(30.dp)
-                    .background(Color.Gray, shape = CircleShape)
-            ) {
-                ProfilePhoto(reviewer, true, Modifier, uvm)
+            if (reviewer != null) {
+                Box(
+                    contentAlignment = Alignment.CenterStart,
+                    modifier = Modifier
+                        .size(30.dp)
+                        .background(Color.Gray, shape = CircleShape)
+                ) {
+                    ProfilePhoto(reviewer!!, true, Modifier, uvm)
+                }
+                Text(
+                    "${reviewer!!.firstname} ${reviewer!!.surname}",
+                    modifier = Modifier
+                        .padding(start = 16.dp)
+                        .clickable {
+                            navController.navigate("user_profile/${review.reviewerId}")
+                        }
+                )
             }
-            Text(
-                "${reviewer.firstname} ${reviewer.surname}",
-                modifier = Modifier
-                    .padding(start = 16.dp)
-                    .clickable {
-                        navController.navigate("user_profile/${review.reviewerId}")
-                    }
-            )
         } else if (myTrip && !review.isTripReview) {
-            val userReviewed = uvm.getUserData(review.reviewedUserId)
-            Box(
-                contentAlignment = Alignment.CenterStart,
-                modifier = Modifier
-                    .size(30.dp)
-                    .background(Color.Gray, shape = CircleShape)
-            ) {
-                ProfilePhoto(userReviewed, true, Modifier, uvm)
+            if (userReviewed != null) {
+                Box(
+                    contentAlignment = Alignment.CenterStart,
+                    modifier = Modifier
+                        .size(30.dp)
+                        .background(Color.Gray, shape = CircleShape)
+                ) {
+                    ProfilePhoto(userReviewed!!, true, Modifier, uvm)
+                }
+                Text(
+                    "${userReviewed!!.firstname} ${userReviewed!!.surname}",
+                    modifier = Modifier
+                        .padding(start = 16.dp)
+                        .clickable {
+                            navController.navigate("user_profile/${userReviewed!!.id}")
+                        }
+                )
             }
-            Text(
-                "${userReviewed.firstname} ${userReviewed.surname}",
-                modifier = Modifier
-                    .padding(start = 16.dp)
-                    .clickable{
-                        navController.navigate("user_profile/${userReviewed.id}")
-                    }
-            )
         }
 
         //Stars rating

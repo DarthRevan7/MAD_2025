@@ -67,6 +67,7 @@ import com.example.voyago.model.Trip
 import com.example.voyago.model.User
 import com.example.voyago.viewmodel.*
 import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -435,8 +436,8 @@ fun TabAboutTripsReview(user: User, vm: TripViewModel, vm2: ArticleViewModel, na
 @SuppressLint("DiscouragedApi")
 @Composable
 fun ShowUserTrip(trip: Trip, vm: TripViewModel, navController: NavController) {
-    val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
-    val formattedDate = dateFormat.format(trip.startDate)
+    val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    val formattedDate = dateFormat.format(trip.startDateAsLong())
 
     Row(
         modifier = Modifier
@@ -557,44 +558,36 @@ fun ShowUserArticle(article: Article) {
 
 @Composable
 fun ShowUserReview(review: Review, navController: NavController, uvm: UserViewModel) {
-    val reviewer = uvm.getUserData(review.reviewerId)
+
+    val reviewer by uvm.getUserData(review.reviewerId).collectAsState(initial = User())
 
     Column {
-
-        // Reviewer Row (photo + name)
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp)
         ) {
-            // Clickable area for photo + name
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .clickable {
-
-                        navController.navigate("user_profile/${review.reviewerId}")
-                    }
+                modifier = Modifier.clickable {
+                    navController.navigate("user_profile/${review.reviewerId}")
+                }
             ) {
-                // Profile photo
                 Box(
                     contentAlignment = Alignment.CenterStart,
                     modifier = Modifier
                         .size(30.dp)
                         .background(Color.Gray, shape = CircleShape)
                 ) {
-                    ProfilePhoto(reviewer, true, uvm = uvm, modifier = Modifier)
+                    ProfilePhoto(reviewer!!, true, uvm = uvm, modifier = Modifier)
                 }
-
-                // Reviewer name
                 Text(
-                    text = "${reviewer.firstname} ${reviewer.surname}",
+                    text = "${reviewer!!.firstname} ${reviewer!!.surname}",
                     modifier = Modifier.padding(start = 16.dp)
                 )
             }
 
-            // Stars rating aligned to end
             Row(
                 modifier = Modifier.weight(1f),
                 horizontalArrangement = Arrangement.End,
@@ -604,7 +597,6 @@ fun ShowUserReview(review: Review, navController: NavController, uvm: UserViewMo
             }
         }
 
-        // Review title
         Row {
             Text(
                 text = review.title,
@@ -613,7 +605,6 @@ fun ShowUserReview(review: Review, navController: NavController, uvm: UserViewMo
             )
         }
 
-        // Review content
         Row {
             Text(
                 text = review.comment,
@@ -624,6 +615,7 @@ fun ShowUserReview(review: Review, navController: NavController, uvm: UserViewMo
         Spacer(Modifier.padding(16.dp))
     }
 }
+
 
 
 
