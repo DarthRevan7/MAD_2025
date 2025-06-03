@@ -533,11 +533,20 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
             }
 
             item {
-                ShowParticipants(uvm.getUserData(trip.creatorId),
-                    Trip.JoinRequest(uvm.getUserData(trip.creatorId).id, 1, emptyList(), emptyList()),uvm, navController)
+                uvm.getUserData(trip.creatorId)
+                val user by uvm.userData.collectAsState()
+                ShowParticipants(
+                    user,
+                    Trip.JoinRequest(
+                        uvm.getUserData(trip.creatorId).id,
+                        1,
+                        emptyList(),
+                        emptyList()
+                    ), uvm, navController
+                )
             }
 
-            //Reviews section
+                //Reviews section
             if (reviews.isNotEmpty()) {
                 item {
                     TitleBox("Reviews")
@@ -1056,7 +1065,7 @@ fun ShowReview(review: Review, vm: TripViewModel, myTrip: Boolean, uvm: UserView
                     .size(30.dp)
                     .background(Color.Gray, shape = CircleShape)
             ) {
-                ProfilePhoto(true, Modifier, uvm)
+                ProfilePhoto(reviewer, true, Modifier, uvm)
             }
             Text(
                 "${reviewer.firstname} ${reviewer.surname}",
@@ -1074,7 +1083,7 @@ fun ShowReview(review: Review, vm: TripViewModel, myTrip: Boolean, uvm: UserView
                     .size(30.dp)
                     .background(Color.Gray, shape = CircleShape)
             ) {
-                ProfilePhoto(true, Modifier, uvm)
+                ProfilePhoto(userReviewed, true, Modifier, uvm)
             }
             Text(
                 "${userReviewed.firstname} ${userReviewed.surname}",

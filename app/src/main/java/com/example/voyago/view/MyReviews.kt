@@ -52,11 +52,10 @@ import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.example.voyago.activities.ProfilePhoto
 import com.example.voyago.model.Review
-import com.example.voyago.model.ReviewModel
-import com.example.voyago.model.toCalendar
 import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
+import com.google.firebase.Timestamp
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
@@ -317,7 +316,7 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
                                     .size(60.dp)
                                     .background(Color.Gray, shape = CircleShape)
                             ) {
-                                ProfilePhoto(true, Modifier, uvm)
+                                ProfilePhoto(user, true, Modifier, uvm)
                             }
                             Text(
                                 "${user.firstname} ${user.surname}",
@@ -442,7 +441,7 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
                                             comment = comment,
                                             score = score,
                                             photos = photos,
-                                            date = currentDate.timeInMillis
+                                            date = Timestamp(currentDate.time)
                                         )
 
                                         reviewsToSubmit.add(review)

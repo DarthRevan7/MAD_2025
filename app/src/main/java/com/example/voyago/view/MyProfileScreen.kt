@@ -112,6 +112,7 @@ fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: Articl
                 )
 
                 ProfilePhoto(
+                    user1,
                     false,
                     modifier = Modifier
                         .align(Alignment.Center)
@@ -583,7 +584,7 @@ fun ShowUserReview(review: Review, navController: NavController, uvm: UserViewMo
                         .size(30.dp)
                         .background(Color.Gray, shape = CircleShape)
                 ) {
-                    ProfilePhoto(true, uvm = uvm, modifier = Modifier)
+                    ProfilePhoto(reviewer, true, uvm = uvm, modifier = Modifier)
                 }
 
                 // Reviewer name

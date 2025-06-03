@@ -49,6 +49,7 @@ fun UserProfileScreen(vm: TripViewModel, navController: NavController, vm2: Arti
                     .background(Color(0xdf, 0xd1, 0xe0, 255), shape = RectangleShape)) {
 
                 ProfilePhoto(
+                    user,
                     false,
                     modifier = Modifier
                         .align(Alignment.Center)

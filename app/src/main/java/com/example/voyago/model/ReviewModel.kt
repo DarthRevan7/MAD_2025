@@ -2,10 +2,13 @@ package com.example.voyago.model
 
 import android.util.Log
 import com.example.voyago.Collections
+import com.google.firebase.Timestamp
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
+import java.util.Calendar
+import java.util.Date
 
 data class Review(
     val reviewId: Int = 0,
@@ -17,8 +20,11 @@ data class Review(
     var comment: String = "",
     var score: Int = 0,
     var photos: List<String> = emptyList(),
-    val date: Long = 0L
+    val date: Timestamp = Timestamp(Date(0))
 ) {
+
+    fun dateAsCalendar(): Calendar = toCalendar(date)
+    fun dateAsLong(): Long = date.toDate().time
 
     constructor() : this (
         reviewId = 0,
@@ -30,14 +36,14 @@ data class Review(
         comment = "",
         score = 0,
         photos = emptyList(),
-        date = 0L
+        date = Timestamp(Date(0))
     )
 
 
     //A valid review has filled fields
     fun isValidReview(): Boolean {
         return reviewId > 0 && reviewerId > 0 && (reviewedUserId > 0 || tripId > 0)  && score > 0
-                && title != "" && comment != "" && date > 0L
+                && title != "" && comment != "" && date > Timestamp(Date(0))
     }
 }
 

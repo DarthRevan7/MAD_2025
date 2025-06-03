@@ -110,6 +110,7 @@ import com.example.voyago.viewmodel.UserViewModel
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.example.voyago.model.User
 import com.example.voyago.viewmodel.ArticleFactory
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
@@ -763,8 +764,8 @@ fun NavGraphBuilder.profileNavGraph(
 }
 
 @Composable
-fun ProfilePhoto(isSmall: Boolean, modifier : Modifier, uvm: UserViewModel) {
-    val user by uvm.userGotFromDB.collectAsState()
+fun ProfilePhoto(user: User, isSmall: Boolean, modifier : Modifier, uvm: UserViewModel) {
+    //val user by uvm.userGotFromDB.collectAsState()
 
     var initials = "WU"     //Waiting User
 
