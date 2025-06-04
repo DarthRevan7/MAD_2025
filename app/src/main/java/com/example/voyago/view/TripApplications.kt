@@ -433,6 +433,10 @@ fun ShowApplications(user: User, joinRequest: Trip.JoinRequest, vm: TripViewMode
                     } else {
                         vm.rejectApplication(vm.selectedTrip.value, user.id)
                     }
+                    val trip = vm.selectedTrip.value
+                    vm.getTripParticipants(trip)
+                    vm.getTripApplicants(trip)
+                    vm.getTripRejectedUsers(trip)
                     showDialog = false
                 }) {
                     Text("Yes")
