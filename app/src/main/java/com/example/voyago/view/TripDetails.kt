@@ -87,6 +87,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.TimeUnit
 
 @Composable
 fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean, uvm: UserViewModel) {
@@ -958,6 +959,25 @@ fun TitleBox(title:String) {
     }
 }
 
+fun Calendar.daysUntil(other: Calendar): Int {
+    // Normalize both calendars to midnight to avoid partial day errors
+    val thisMidnight = this.clone() as Calendar
+    thisMidnight.set(Calendar.HOUR_OF_DAY, 0)
+    thisMidnight.set(Calendar.MINUTE, 0)
+    thisMidnight.set(Calendar.SECOND, 0)
+    thisMidnight.set(Calendar.MILLISECOND, 0)
+
+    val otherMidnight = other.clone() as Calendar
+    otherMidnight.set(Calendar.HOUR_OF_DAY, 0)
+    otherMidnight.set(Calendar.MINUTE, 0)
+    otherMidnight.set(Calendar.SECOND, 0)
+    otherMidnight.set(Calendar.MILLISECOND, 0)
+
+    val diff = thisMidnight.get(Calendar.DAY_OF_YEAR) - otherMidnight.get(Calendar.DAY_OF_YEAR)
+    return diff
+}
+
+
 @Composable
 fun ItineraryText(trip: Trip, modifier: Modifier = Modifier) {
     val formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.US) // Same format used in your first view
@@ -966,7 +986,8 @@ fun ItineraryText(trip: Trip, modifier: Modifier = Modifier) {
         .toSortedMap(compareBy { it }) // Sort days chronologically
         .entries
         .joinToString("\n\n") { (day, activities) ->
-            val dayIndex = ((stringToCalendar(day).timeInMillis - trip.startDateAsLong()) / (1000 * 60 * 60 * 24)).toInt() + 1
+            val dayIndex = stringToCalendar(day).daysUntil(trip.startDateAsCalendar()) + 1
+
             val dayHeader = "Day $dayIndex:\n"
 
             val sortedActivities = activities.sortedBy { activity ->
@@ -991,6 +1012,10 @@ fun ItineraryText(trip: Trip, modifier: Modifier = Modifier) {
         fontWeight = FontWeight.Bold,
         modifier = modifier
     )
+
+    println("Trip start date (timestamp): ${trip.startDate}")
+    println("Trip start date (millis): ${trip.startDate.toDate().time}")
+    println("Trip start date (formatted): ${trip.startDate.toDate()}")
 }
 
 @Composable

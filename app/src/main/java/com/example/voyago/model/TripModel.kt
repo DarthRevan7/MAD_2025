@@ -19,8 +19,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
+import java.util.Locale
 import kotlin.collections.forEach
 import kotlin.toString
 
@@ -229,16 +231,18 @@ data class Trip(
 }
 
 fun stringToCalendar(string: String): Calendar {
-    val date = Calendar.getInstance()
-    println("String Date: $string")
-    val parts = string.split("-")
-    val day = parts[0].toInt()
-    val month = parts[1].toInt() - 1
-    val year = parts[2].toInt()
-    date.set(year, month, day)
-//    date.timeInMillis = string.toLong()
-    return date
+    val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+    val date = formatter.parse(string)
+    return Calendar.getInstance().apply {
+        if (date != null) {
+            date.month += 1
+            time = date
+        }
+    }
 }
+
+
+
 
 //Possible type of travel
 enum class TypeTravel {
