@@ -1087,7 +1087,7 @@ fun ShowReview(review: Review, vm: TripViewModel, myTrip: Boolean, uvm: UserView
 
     val reviewer by uvm.getUserData(review.reviewerId).collectAsState(initial = User())
 
-    
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier

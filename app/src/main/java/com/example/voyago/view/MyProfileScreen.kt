@@ -133,6 +133,7 @@ fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: Articl
                         .offset(y = (-50).dp),
                     uvm
                 )
+
                 Text(
                     text = user.username,
                     style = MaterialTheme.typography.headlineLarge,

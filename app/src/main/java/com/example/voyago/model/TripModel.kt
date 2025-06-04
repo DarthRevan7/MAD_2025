@@ -45,7 +45,7 @@ data class Trip(
     var estimatedPrice: Double = 0.0,
     var groupSize: Int = 0,
     var participants: Map<String, JoinRequest> = emptyMap(),                   // userId, id JoinedRequest
-    var activities: Map<String, List<Activity>> = emptyMap(),     // Map<Date, Activity>
+    var activities: Map<String, List<Activity>> = emptyMap(),                  // Map<Date, Activity>
     var status: String = "",
     var typeTravel: List<String> = emptyList(),
     var creatorId: Int = 0,

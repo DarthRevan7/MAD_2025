@@ -792,7 +792,6 @@ fun ProfilePhoto(user: User, isSmall: Boolean, modifier : Modifier, uvm: UserVie
          initials = "${user.firstname.first()}"+"${user.surname.first()}"
     }
 
-
     if(user.profilePictureUrl == null)
     {
         Box(
