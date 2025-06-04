@@ -53,7 +53,7 @@ import java.util.Locale
 fun EditActivity(navController: NavController, vm: TripViewModel, activityId: Int) {
 
     var currentTrip = Trip()
-    if(vm.userAction == TripViewModel.UserAction.EDIT_TRIP) {
+    if(vm.userAction == TripViewModel.UserAction.EDIT_ACTIVITY) {
         currentTrip = vm.editTrip
     } else if(vm.userAction == TripViewModel.UserAction.CREATE_TRIP) {
         currentTrip = vm.newTrip

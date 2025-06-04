@@ -49,7 +49,7 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
     var userAction:UserAction = UserAction.NOTHING
 
     enum class UserAction {
-        EDIT_TRIP, CREATE_TRIP, VIEW_TRIP, NOTHING, SEARCHING, FILTER_SELECTION, VIEW_OTHER_TRIP
+        EDIT_TRIP, CREATE_TRIP, VIEW_TRIP, NOTHING, SEARCHING, FILTER_SELECTION, VIEW_OTHER_TRIP, EDIT_ACTIVITY
     }
 
     //EXPLORE

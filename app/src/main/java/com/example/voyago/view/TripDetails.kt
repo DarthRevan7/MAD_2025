@@ -80,7 +80,9 @@ import androidx.core.net.toUri
 import coil3.compose.rememberAsyncImagePainter
 import com.example.voyago.model.Trip.Participant
 import com.example.voyago.model.User
+import com.example.voyago.model.isTimestampLong
 import com.example.voyago.model.stringToCalendar
+import com.example.voyago.model.timestampToCalendar
 import com.example.voyago.model.toCalendar
 import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.TripViewModel
@@ -526,7 +528,8 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                 ItineraryText(
                     trip,
                     modifier = Modifier
-                        .padding(start = 24.dp, top = 16.dp, end = 20.dp)
+                        .padding(start = 24.dp, top = 16.dp, end = 20.dp),
+                    vm
                 )
             }
 
@@ -963,7 +966,7 @@ fun TitleBox(title:String) {
 }
 
 fun Calendar.daysUntil(other: Calendar): Int {
-    // Normalize both calendars to midnight to avoid partial day errors
+    // Normalize both calendars to midnight
     val thisMidnight = this.clone() as Calendar
     thisMidnight.set(Calendar.HOUR_OF_DAY, 0)
     thisMidnight.set(Calendar.MINUTE, 0)
@@ -976,21 +979,32 @@ fun Calendar.daysUntil(other: Calendar): Int {
     otherMidnight.set(Calendar.SECOND, 0)
     otherMidnight.set(Calendar.MILLISECOND, 0)
 
-    val diff = thisMidnight.get(Calendar.DAY_OF_YEAR) - otherMidnight.get(Calendar.DAY_OF_YEAR)
-    return diff
+    val millisPerDay = 1000 * 60 * 60 * 24
+    val diffMillis = thisMidnight.timeInMillis - otherMidnight.timeInMillis
+
+    return (diffMillis / millisPerDay).toInt()
 }
 
 
+
 @Composable
-fun ItineraryText(trip: Trip, modifier: Modifier = Modifier) {
+fun ItineraryText(trip: Trip, modifier: Modifier = Modifier, vm: TripViewModel) {
     val formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.US) // Same format used in your first view
 
     val itineraryString = trip.activities
         .toSortedMap(compareBy { it }) // Sort days chronologically
         .entries
         .joinToString("\n\n") { (day, activities) ->
-            val dayIndex = stringToCalendar(day).daysUntil(trip.startDateAsCalendar()) + 1
-
+            Log.d("L1", "Trip Details")
+            val dayIndex = if (isTimestampLong(day)) {
+                Log.d("L1", "Day is a timestamp: $day")
+                Log.d("L1", "Day as Calendar: ${timestampToCalendar(day)}")
+                timestampToCalendar(day).daysUntil(trip.startDateAsCalendar()) + 1
+            } else {
+                Log.d("L1", "Day is a string: $day")
+                Log.d("L1", "Day as calendar: ${stringToCalendar(day, vm.userAction == TripViewModel.UserAction.EDIT_TRIP)}")
+                stringToCalendar(day, true).daysUntil(trip.startDateAsCalendar()) + 1
+            }
             val dayHeader = "Day $dayIndex:\n"
 
             val sortedActivities = activities.sortedBy { activity ->

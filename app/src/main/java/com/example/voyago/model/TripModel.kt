@@ -199,8 +199,8 @@ data class Trip(
 
         while (!current.after(end)) {
             val hasActivity = activities.any { (activityDate, _) ->
-                stringToCalendar(activityDate).get(Calendar.YEAR) == current.get(Calendar.YEAR) &&
-                        stringToCalendar(activityDate).get(Calendar.DAY_OF_YEAR) == current.get(Calendar.DAY_OF_YEAR)
+                stringToCalendar(activityDate, false).get(Calendar.YEAR) == current.get(Calendar.YEAR) &&
+                        stringToCalendar(activityDate, false).get(Calendar.DAY_OF_YEAR) == current.get(Calendar.DAY_OF_YEAR)
 
             }
 
@@ -230,16 +230,33 @@ data class Trip(
     }
 }
 
-fun stringToCalendar(string: String): Calendar {
+fun stringToCalendar(string: String, details: Boolean): Calendar {
     val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.US)
     val date = formatter.parse(string)
     return Calendar.getInstance().apply {
-        if (date != null) {
+        if (date != null && details) {
             date.month += 1
+            time = date
+        }
+        if (date != null && !details) {
             time = date
         }
     }
 }
+
+fun isTimestampLong(input: String): Boolean {
+    return input.toLongOrNull() != null
+}
+
+fun timestampToCalendar(timestamp: String): Calendar {
+    Log.d("L2", "timestamp: $timestamp")
+    val millis = timestamp.toLong()
+    return Calendar.getInstance().apply {
+        timeInMillis = millis
+        add(Calendar.MONTH, 1)
+    }
+}
+
 
 //Possible type of travel
 enum class TypeTravel {
@@ -668,15 +685,19 @@ class TripModel {
         val currentTrip = trip ?: Trip()
 
         val updatedActivities = currentTrip.activities.toMutableMap().apply {
-            val dateKey: String = activity.dateAsCalendar().timeInMillis.toString()
+            val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+            val dateKey: String = dateFormat.format(activity.dateAsCalendar().time)
+            Log.d("L2", "dateKey: $dateKey")
             val updatedList: List<Activity> = getOrDefault(dateKey, emptyList()) + activity
             put(dateKey, updatedList)
         }
 
         val updatedTrip = currentTrip.copy(activities = updatedActivities)
 
-        Collections.trips.document(updatedTrip.id.toString())
-            .set(updatedTrip)
+        if (trip?.id != -1) {
+            Collections.trips.document(updatedTrip.id.toString())
+                .set(updatedTrip)
+        }
 
         return updatedTrip
     }

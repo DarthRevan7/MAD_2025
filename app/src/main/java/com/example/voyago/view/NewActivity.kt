@@ -294,16 +294,8 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                             descriptionTouched.value = true
 
                             if (!showDateError && !descriptionHasErrors) {
-
-
-                                val dateformatter = SimpleDateFormat("yyyy-mm-dd", Locale.US)
-                                val year = activityCalendar.get(Calendar.YEAR)
-                                val month = activityCalendar.get(Calendar.MONTH) + 1 // Calendar.MONTH is zero-based
-                                val day = activityCalendar.get(Calendar.DAY_OF_MONTH)
-                                val stringDate = String.format(Locale.US, "%04d-%02d-%02d", year, month, day)
-                                val formattedDate2 = dateformatter.parse(stringDate)
-                                val timestampTrue = Timestamp(formattedDate2!!)
-
+                                // Directly use the calendar's time as timestamp
+                                val timestampTrue = Timestamp(activityCalendar.time)
 
                                 val newActivity = Trip.Activity(
                                     id = newId,
@@ -314,9 +306,9 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                                 )
 
                                 vm.addActivityToTrip(newActivity)
-
                                 navController.popBackStack()
                             }
+
 
                         },
                         modifier = Modifier

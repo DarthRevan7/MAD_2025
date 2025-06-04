@@ -55,7 +55,6 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.example.voyago.model.Trip
 import com.example.voyago.model.TypeTravel
-import com.example.voyago.model.toCalendar
 import com.example.voyago.viewmodel.TripViewModel
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
@@ -409,6 +408,7 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                     //Next Button
                     Button(
                         onClick = {
+                            vm.userAction = TripViewModel.UserAction.EDIT_TRIP
 
                             typeTravelError = selected.isEmpty()
 

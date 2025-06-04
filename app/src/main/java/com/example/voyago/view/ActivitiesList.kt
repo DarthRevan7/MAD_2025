@@ -1,6 +1,7 @@
 package com.example.voyago.view
 
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,11 +40,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.clickable
+import com.example.voyago.model.isTimestampLong
 import com.example.voyago.model.stringToCalendar
+import com.example.voyago.model.timestampToCalendar
 import com.example.voyago.viewmodel.TripViewModel
+import java.text.SimpleDateFormat
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import java.util.TimeZone
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -254,7 +259,16 @@ fun ActivitiesListContent(trip: Trip?, vm: TripViewModel, navController: NavCont
             )
         } else {
             sortedDays.forEach { day ->
-                val dayIndex = stringToCalendar(day).daysUntil(trip.startDateAsCalendar()) + 1
+                Log.d("L1", "Activity List")
+                val dayIndex = if (isTimestampLong(day)) {
+                    Log.d("L1", "Day is a timestamp: $day")
+                    Log.d("L1", "Day as calendar: ${timestampToCalendar(day)}")
+                    timestampToCalendar(day).daysUntil(trip.startDateAsCalendar()) + 1
+                } else {
+                    Log.d("L1", "Day is a string: $day")
+                    Log.d("L1", "Day as calendar: ${stringToCalendar(day, vm.userAction == TripViewModel.UserAction.EDIT_TRIP)}")
+                    stringToCalendar(day, vm.userAction == TripViewModel.UserAction.EDIT_TRIP).daysUntil(trip.startDateAsCalendar()) + 1
+                }
                 val formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.US)
                 val activitiesForDay = (trip.activities[day] ?: emptyList())
                     .sortedBy { LocalTime.parse(it.time, formatter) }
