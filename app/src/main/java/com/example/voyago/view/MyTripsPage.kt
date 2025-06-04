@@ -53,7 +53,6 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel, uvm: UserViewMo
 
     LaunchedEffect(loggedUser.id) {
         if (loggedUser.id != 0) {
-            Log.d("Trips", "my trips id: ${loggedUser.id}")
             vm.creatorPublicFilter(loggedUser.id)
             vm.creatorPrivateFilter(loggedUser.id)
             vm.tripUserJoined(loggedUser.id)

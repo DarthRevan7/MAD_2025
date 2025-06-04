@@ -4,8 +4,10 @@ import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.voyago.model.*
+import com.google.android.play.core.integrity.v
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -60,6 +62,11 @@ class ReviewViewModel(val reviewModel:ReviewModel): ViewModel() {
         }
     }
      */
+
+    val tripReviews = reviewModel.tripReviews
+    fun getTripReviews(tripId:Int) = reviewModel.getTripReviews(tripId, viewModelScope)
+
+
 
     
 

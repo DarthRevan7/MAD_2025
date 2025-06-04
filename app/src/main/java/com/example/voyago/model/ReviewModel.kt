@@ -3,9 +3,14 @@ package com.example.voyago.model
 import android.util.Log
 import com.example.voyago.Collections
 import com.google.firebase.Timestamp
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.Calendar
 import java.util.Date
@@ -110,26 +115,49 @@ class ReviewModel {
 
      */
 
-    suspend fun getTripReviews(tripId: Int): List<Review> {
-        return try {
-            val querySnapshot = Collections.reviews
-                .whereEqualTo("tripId", tripId)
-                .get()
-                .await()
+    private val _tripReviews = MutableStateFlow<List<Review>>(emptyList())
+    val tripReviews: StateFlow<List<Review>> = _tripReviews
 
-            querySnapshot.documents.mapNotNull { doc ->
-                try {
-                    doc.toObject(Review::class.java)?.takeIf { it.isTripReview }
-                } catch (e: Exception) {
-                    Log.e("Firestore", "Failed to deserialize review ${doc.id}", e)
-                    null
+    /*
+    fun getReviews(tripId: Int) : Flow<List<Review>> = callbackFlow {
+        val listener = Collections.reviews
+            .whereEqualTo("tripId", tripId)
+            .addSnapshotListener { snapshot, error ->
+                if (snapshot != null) {
+                    trySend(snapshot.toObjects(Review::class.java))
+                } else {
+                    Log.e("Error", error.toString())
+                    trySend(emptyList())
                 }
             }
-        } catch (e: Exception) {
-            Log.e("Firestore", "Failed to fetch reviews for trip $tripId", e)
-            emptyList()
+        awaitClose { listener.remove() }
+    }
+
+     */
+
+    fun getTripReviews(tripId: Int, coroutineScope: CoroutineScope) {
+        coroutineScope.launch {
+            callbackFlow {
+                val listener = Collections.reviews
+                    .whereEqualTo("tripId", tripId)
+                    .whereEqualTo("isTripReview", true)
+                    .addSnapshotListener { snapshot, error ->
+                        if (snapshot != null) {
+                            trySend(snapshot.toObjects(Review::class.java))
+                        } else {
+                            Log.e("Error", error.toString())
+                            trySend(emptyList())
+                        }
+                    }
+                awaitClose { listener.remove() }
+            }.collect { reviews ->
+                _tripReviews.value = reviews
+            }
         }
     }
+
+
+
 
 
     /*

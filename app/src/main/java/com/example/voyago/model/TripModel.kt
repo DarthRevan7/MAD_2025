@@ -241,9 +241,6 @@ fun stringToCalendar(string: String): Calendar {
     }
 }
 
-
-
-
 //Possible type of travel
 enum class TypeTravel {
     CULTURE,

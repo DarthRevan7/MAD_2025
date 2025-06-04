@@ -79,8 +79,10 @@ import androidx.compose.ui.window.Popup
 import androidx.core.net.toUri
 import coil3.compose.rememberAsyncImagePainter
 import com.example.voyago.model.Trip.Participant
+import com.example.voyago.model.User
 import com.example.voyago.model.stringToCalendar
 import com.example.voyago.model.toCalendar
+import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
 import kotlinx.coroutines.delay
@@ -90,7 +92,7 @@ import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
 
 @Composable
-fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean, uvm: UserViewModel) {
+fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean, uvm: UserViewModel, rvm: ReviewViewModel) {
 
     //Trip that we are showing
     val trip = when (vm.userAction) {
@@ -98,10 +100,6 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
         TripViewModel.UserAction.VIEW_OTHER_TRIP -> vm.otherTrip.value
         else -> vm.selectedTrip.value
 
-    }
-
-    LaunchedEffect(trip.id) {
-        vm.getTripParticipants(trip)
     }
 
     val participantsMap by vm.tripParticipants.collectAsState()
@@ -180,12 +178,17 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
 
     }
 
+    val reviews by rvm.tripReviews.collectAsState()
+
     //Manage reviews
-    val reviews by vm.tripReviews.collectAsState()
     LaunchedEffect(trip.id) {
-        vm.getTripReviews(trip.id)
+        if (trip.id != 0) {
+            rvm.getTripReviews(trip.id)
+            vm.getTripParticipants(trip)
+        }
     }
 
+//    val reviews by vm.tripReviews.collectAsState()
 
     val listState = rememberLazyListState()
 
@@ -1082,17 +1085,17 @@ fun DeleteButtonWithConfirmation(trip: Trip, navController: NavController, vm: T
 @Composable
 fun ShowReview(review: Review, vm: TripViewModel, myTrip: Boolean, uvm: UserViewModel, navController: NavController) {
 
-    val reviewer by uvm.getUserData(review.reviewerId).collectAsState(initial = null)
-    val userReviewed by uvm.getUserData(review.reviewedUserId).collectAsState(initial = null)
+    val reviewer by uvm.getUserData(review.reviewerId).collectAsState(initial = User())
 
+    
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
     ) {
-        if (!myTrip && review.isTripReview) {
-            if (reviewer != null) {
+        if (!myTrip && !review.isTripReview) {
+            if (reviewer != null && reviewer?.isValid() == true) {
                 Box(
                     contentAlignment = Alignment.CenterStart,
                     modifier = Modifier
@@ -1110,7 +1113,9 @@ fun ShowReview(review: Review, vm: TripViewModel, myTrip: Boolean, uvm: UserView
                         }
                 )
             }
-        } else if (myTrip && !review.isTripReview) {
+        } else if (myTrip && !review.isTripReview && review.reviewedUserId > 0) {
+            val userReviewed by uvm.getUserData(review.reviewedUserId).collectAsState(initial = User())
+
             if (userReviewed != null) {
                 Box(
                     contentAlignment = Alignment.CenterStart,

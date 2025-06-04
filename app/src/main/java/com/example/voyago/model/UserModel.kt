@@ -23,7 +23,18 @@ data class User(
     var desiredDestination: List<String> = emptyList(),
     var rating: Float = 0f,
     var reliability: Int = 0
-)
+) {
+    fun isValid(): Boolean {
+        return firstname.isNotBlank() &&
+                surname.isNotBlank() &&
+                username.isNotBlank() &&
+                country.isNotBlank() &&
+                email.isNotBlank() &&
+                userDescription.isNotBlank() &&
+                dateOfBirth.toDate().time > 0 &&
+                password.isNotBlank()
+    }
+}
 
 class UserModel {
     //SUBSET OF USER LIST

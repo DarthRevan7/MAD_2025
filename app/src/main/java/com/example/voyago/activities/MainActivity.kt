@@ -356,7 +356,11 @@ fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = Factory
             )
-            TripDetails(navController = navController, vm = tripViewModel, owner = false, uvm = userViewModel)
+            val reviewViewModel: ReviewViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = Factory
+            )
+            TripDetails(navController = navController, vm = tripViewModel, owner = false, uvm = userViewModel, rvm = reviewViewModel)
         }
 
         composable("user_profile/{userId}",
@@ -433,7 +437,11 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = Factory
             )
-            TripDetails(navController = navController, vm = tripViewModel, owner = true, uvm = userViewModel)
+            val reviewViewModel: ReviewViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = Factory
+            )
+            TripDetails(navController = navController, vm = tripViewModel, owner = true, uvm = userViewModel, rvm = reviewViewModel)
         }
 
         composable("my_reviews") { entry ->
@@ -599,11 +607,16 @@ fun NavGraphBuilder.homeNavGraph(
                 viewModelStoreOwner = homeEntry,
                 factory = Factory
             )
+            val reviewViewModel: ReviewViewModel = viewModel(
+                viewModelStoreOwner = homeEntry,
+                factory = Factory
+            )
             TripDetails(
                 navController = navController,
                 vm = homeVm,
                 owner = false,
-                uvm = userViewModel
+                uvm = userViewModel,
+                rvm = reviewViewModel
             )
         }
 
@@ -757,7 +770,13 @@ fun NavGraphBuilder.profileNavGraph(
                 viewModelStoreOwner = profileNavGraphEntry,
                 factory = Factory
             )
-            TripDetails(navController = navController, vm = tripViewModel, owner = false, uvm = userViewModel)
+            val reviewViewModel: ReviewViewModel = viewModel(
+                viewModelStoreOwner = profileNavGraphEntry,
+                factory = Factory
+            )
+            TripDetails(navController = navController, vm = tripViewModel, owner = false,
+                uvm = userViewModel,
+                rvm = reviewViewModel)
         }
 
     }

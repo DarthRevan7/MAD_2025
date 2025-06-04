@@ -532,15 +532,10 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
 
 
     //Get Trip reviews
-    private val _tripReviews = MutableStateFlow<List<Review>>(emptyList())
-    val tripReviews: StateFlow<List<Review>> = _tripReviews
-
-    fun getTripReviews(id: Int){
-        viewModelScope.launch {
-            val reviewsList = reviewModel.getTripReviews(id)
-            _tripReviews.value = reviewsList
-        }
-    }
+//    val tripReviews =
+//    fun getTripReviews(id: Int){
+//        reviewModel.getReviews(id, viewModelScope)
+//    }
 
     //See if a user reviewed a trip
     fun isReviewed(userId: Int, tripId: Int) : Boolean {
