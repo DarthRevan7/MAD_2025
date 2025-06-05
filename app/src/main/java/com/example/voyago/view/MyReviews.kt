@@ -73,7 +73,7 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
     val listState = rememberLazyListState()
 
     val hasReviews by remember {
-        derivedStateOf { vm.isReviewed(uvm.loggedUser.value.id, trip.id) }
+        derivedStateOf { rvm.isReviewed.value }
     }
 
     val titleMap = remember { mutableStateMapOf<String, String>() }

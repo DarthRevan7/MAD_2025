@@ -537,14 +537,6 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
 //        reviewModel.getReviews(id, viewModelScope)
 //    }
 
-    //See if a user reviewed a trip
-    fun isReviewed(userId: Int, tripId: Int) : Boolean {
-        var result = false
-        viewModelScope.launch {
-            result = reviewModel.isReviewed(userId, tripId)
-        }
-        return result
-    }
 
     //Get review of a trip created by the logged in user
     fun tripReview(userId: Int, tripId :Int): Review {

@@ -108,6 +108,8 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
 
     val loggedUser by uvm.loggedUser.collectAsState()
 
+
+
     Log.d("Action", "${vm.userAction}")
 
     DisposableEffect(Unit) {
@@ -182,12 +184,14 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
 
     //Get reviews of the trip
     val reviews by rvm.tripReviews.collectAsState()
+    val isReviewed by rvm.isReviewed.collectAsState()
 
     //Manage reviews
-    LaunchedEffect(trip.id) {
+    LaunchedEffect(trip.id, loggedUser.id) {
         if (trip.id != 0) {
             rvm.getTripReviews(trip.id)
             vm.getTripParticipants(trip)
+            rvm.isReviewed(trip.id, loggedUser.id)
         }
     }
 
@@ -323,7 +327,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                                         Text("My Reviews")
                                     }
 
-                                    if (!vm.isReviewed(1, trip.id)) {
+                                    if (!isReviewed) {
                                         Box(
                                             modifier = Modifier
                                                 .size(15.dp)
