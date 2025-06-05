@@ -292,7 +292,6 @@ fun ActivitiesListContent(trip: Trip?, vm: TripViewModel, navController: NavCont
                                 .padding(bottom = 8.dp)
                                 .fillMaxWidth()
                         ) {
-
                             //Edit Activity Button
                             Icon(
                                 imageVector = Icons.Default.Edit,
@@ -301,6 +300,7 @@ fun ActivitiesListContent(trip: Trip?, vm: TripViewModel, navController: NavCont
                                 modifier = Modifier
                                     .size(20.dp)
                                     .clickable {
+                                        vm.userAction = TripViewModel.UserAction.EDIT_ACTIVITY
                                         navController.navigate("edit_Activity/${activity.id}")
                                     }
                             )
