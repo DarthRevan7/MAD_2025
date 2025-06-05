@@ -426,28 +426,7 @@ class ReviewModel {
         }
     }
 
-//    fun checkIfReviewed(userId: Int, tripId: Int, coroutineScope: CoroutineScope) {
-//        coroutineScope.launch {
-//            try {
-//                val snapshot = Collections.reviews
-//                    .whereEqualTo("isTripReview", true)
-//                    .whereEqualTo("reviewerId", userId)
-//                    .whereEqualTo("tripId", tripId)
-//                    .limit(1)
-//                    .get()
-//                    .await()
-//
-//                val reviewed = !snapshot.isEmpty
-//                _isReviewed.value = reviewed
-//                Log.d("FirestoreHelper", "isReviewed updated: $reviewed")
-//
-//            } catch (e: Exception) {
-//                Log.e("FirestoreHelper", "Error checking review status", e)
-//                _isReviewed.value = false
-//            }
-//        }
-//    }
-
+    // Check if a user has reviewed a trip
     fun isReviewed(userId: Int, tripId: Int, coroutineScope: CoroutineScope) {
         coroutineScope.launch {
             callbackFlow {

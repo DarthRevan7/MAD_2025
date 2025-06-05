@@ -531,30 +531,6 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
     }
 
 
-    //Get Trip reviews
-//    val tripReviews =
-//    fun getTripReviews(id: Int){
-//        reviewModel.getReviews(id, viewModelScope)
-//    }
-
-
-
-
-//    //Get reviews that a user did for the other participant to a certain trip
-//    fun getUsersReviewsTrip(userId: Int, tripId: Int) : List<Review> {
-//        var reviewList : List<Review>? = null
-//        viewModelScope.launch {
-//            reviewList = reviewModel.getUsersReviewsTrip(userId, tripId)
-//        }
-//        return if(reviewList == null) {
-//            emptyList()
-//        } else {
-//            reviewList!!
-//        }
-//    }
-
-
-
     private fun updateAllTripStatuses() {
         val trips = tripModel.allPublishedTrips.value
 

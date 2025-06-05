@@ -72,9 +72,8 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
     LaunchedEffect(trip.id) {
         vm.getTripParticipants(trip)
         rvm.getTripReview(trip.id, uvm.loggedUser.value.id)
-        Log.d("L3", "trip.id: ${trip.id}, rvm.getTripReview = ${rvm.tripReview.value}")
         rvm.getUsersReviews(uvm.loggedUser.value.id, trip.id)
-        rvm.isReviewed(trip.id, uvm.loggedUser.value.id)
+        rvm.isReviewed(uvm.loggedUser.value.id, trip.id)
     }
 
     val participantsMap by vm.tripParticipants.collectAsState()

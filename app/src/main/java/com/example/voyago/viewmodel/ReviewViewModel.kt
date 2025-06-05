@@ -73,7 +73,7 @@ class ReviewViewModel(val reviewModel:ReviewModel): ViewModel() {
 
     //Tells if a trip has been reviewed by the user
     val isReviewed = reviewModel.isReviewed
-    fun isReviewed(tripId: Int, userId: Int) = reviewModel.checkIfReviewed(tripId, userId, viewModelScope)
+    fun isReviewed(userId: Int, tripId: Int) = reviewModel.isReviewed(userId, tripId, viewModelScope)
 
     //Get review of a trip by user
     val tripReview = reviewModel.tripReview

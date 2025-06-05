@@ -188,7 +188,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
         if (trip.id != 0) {
             rvm.getTripReviews(trip.id)
             vm.getTripParticipants(trip)
-            rvm.isReviewed(trip.id, loggedUser.id)
+            rvm.isReviewed(loggedUser.id, trip.id)
         }
 
     }
