@@ -43,6 +43,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
@@ -100,17 +101,25 @@ import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import com.example.voyago.view.MyReviews
 import com.example.voyago.viewmodel.ReviewFactory
 import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.UserFactory
 import com.example.voyago.viewmodel.UserViewModel
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.voyago.model.ReviewModel
 import com.example.voyago.model.UserModel
+import com.example.voyago.view.NotificationView
 import com.example.voyago.viewmodel.ArticleFactory
+import com.example.voyago.viewmodel.NotificationViewModel
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
+import com.google.firebase.messaging.FirebaseMessaging
 
 
 sealed class Screen(val route: String) {
@@ -119,6 +128,7 @@ sealed class Screen(val route: String) {
     object Home : Screen("home_root")
     object Chats : Screen("chats_root")
     object Profile : Screen("profile_root")
+    object Notifications : Screen("notifications")
 }
 
 class MainActivity : ComponentActivity() {
@@ -136,6 +146,17 @@ class MainActivity : ComponentActivity() {
         context = this
 
         cameraExecutor = Executors.newSingleThreadExecutor()
+
+
+        FirebaseMessaging.getInstance().subscribeToTopic("all")
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Log.d("FCM", "Subscribed to 'all' topic")
+                } else {
+                    Log.e("FCM", "Failed to subscribe to 'all' topic", task.exception)
+                }
+            }
+
 
         // Check for camera permissions
         if (!allPermissionsGranted()) {
@@ -244,9 +265,13 @@ fun MainScreen() {
     val navController = rememberNavController()
     val reviewModel = ReviewModel()
     val userModel = UserModel()
+    val notificationViewModel = NotificationViewModel()
     userModel.refreshAllRatings(reviewModel)
     Scaffold(
-        topBar = { TopBar() },
+        topBar = { TopBar(
+            nvm = notificationViewModel,
+            navController = navController)
+        },
         bottomBar = { BottomBar(navController) }
     ) { innerPadding ->
         NavigationGraph(navController = navController, modifier = Modifier.padding(innerPadding))
@@ -321,6 +346,10 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
                     navController.popBackStack()
                 }
             )
+        }
+        val notificationViewModel = NotificationViewModel()
+        composable(Screen.Notifications.route) {
+            NotificationView(notificationViewModel)
         }
     }
 }
@@ -810,12 +839,16 @@ fun ProfilePhoto(firstname: String, surname: String, isSmall: Boolean, profileIm
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar() {
+fun TopBar(nvm: NotificationViewModel, navController: NavController) {
 
     //Top Bar Images
     val painterLogo = painterResource(R.drawable.logo)
     val painterNews = painterResource(R.drawable.news)
     val painterNotification = painterResource(R.drawable.notifications)
+
+//    val snackbarHostState = remember { SnackbarHostState() }
+//    val scope = rememberCoroutineScope()
+//    val context = LocalContext.current
 
     TopAppBar(
         colors = topAppBarColors(
@@ -831,6 +864,7 @@ fun TopBar() {
 
         },
         actions = {
+            val context = LocalContext.current
             IconButton(onClick = {/*TO DO*/}) {
                 Image(
                     painter = painterNews,
@@ -838,13 +872,21 @@ fun TopBar() {
                     modifier = Modifier.padding(end = 10.dp)
                 )
             }
-            IconButton(onClick = {/*TO DO*/}) {
-                Image(
-                    painter = painterNotification,
-                    contentDescription = "notification",
-                    modifier = Modifier.padding(end = 10.dp)
-                )
-
+            IconButton(onClick = {
+                nvm.markNotificationsRead()
+                navController.navigate(Screen.Notifications.route)
+            }) {
+                Box {
+                    Image(painter = painterNotification, contentDescription = "notification")
+                    if (nvm.hasNewNotification.value) {
+                        Box(
+                            modifier = Modifier
+                                .size(12.dp)
+                                .background(Color.Red, shape = CircleShape)
+                                .align(Alignment.TopEnd)
+                        )
+                    }
+                }
             }
         },
         modifier = Modifier.shadow(8.dp)
