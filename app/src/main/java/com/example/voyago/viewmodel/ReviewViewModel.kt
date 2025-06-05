@@ -73,7 +73,15 @@ class ReviewViewModel(val reviewModel:ReviewModel): ViewModel() {
 
     //Tells if a trip has been reviewed by the user
     val isReviewed = reviewModel.isReviewed
-    fun isReviewed(tripId: Int, userId: Int) = reviewModel.isReviewed(tripId, userId, viewModelScope)
+    fun isReviewed(tripId: Int, userId: Int) = reviewModel.checkIfReviewed(tripId, userId, viewModelScope)
+
+    //Get review of a trip by user
+    val tripReview = reviewModel.tripReview
+    fun getTripReview(tripId: Int, userId: Int) = reviewModel.getTripReview(tripId, userId, viewModelScope)
+
+    //Get users reviews by Logged IN user ID
+    val usersReviews = reviewModel.usersTripReviews
+    fun getUsersReviews(userId: Int, tripId: Int) = reviewModel.getUsersReviewsTrip(userId, tripId, viewModelScope)
 
     // Select photos
     private val _selectedUris = MutableStateFlow<List<Uri>>(emptyList())

@@ -538,32 +538,20 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
 //    }
 
 
-    //Get review of a trip created by the logged in user
-    fun tripReview(userId: Int, tripId :Int): Review {
-        var review: Review? = null
-        viewModelScope.launch {
-            var user = User()
-            userModel.getUser(userId).collect { userNotFlow -> user = userNotFlow }
-            review = reviewModel.getTripReview(user.id, tripId)
-        }
-        if(review == null) {
-            return Review()
-        }
-        return review!!
-    }
 
-    //Get reviews that a user did for the other participant to a certain trip
-    fun getUsersReviewsTrip(userId: Int, tripId: Int) : List<Review> {
-        var reviewList : List<Review>? = null
-        viewModelScope.launch {
-            reviewList = reviewModel.getUsersReviewsTrip(userId, tripId)
-        }
-        return if(reviewList == null) {
-            emptyList()
-        } else {
-            reviewList!!
-        }
-    }
+
+//    //Get reviews that a user did for the other participant to a certain trip
+//    fun getUsersReviewsTrip(userId: Int, tripId: Int) : List<Review> {
+//        var reviewList : List<Review>? = null
+//        viewModelScope.launch {
+//            reviewList = reviewModel.getUsersReviewsTrip(userId, tripId)
+//        }
+//        return if(reviewList == null) {
+//            emptyList()
+//        } else {
+//            reviewList!!
+//        }
+//    }
 
 
 

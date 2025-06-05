@@ -104,13 +104,10 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
 
     }
 
+    //Trip participants map
     val participantsMap by vm.tripParticipants.collectAsState()
-
+    // The logged in user
     val loggedUser by uvm.loggedUser.collectAsState()
-
-
-
-    Log.d("Action", "${vm.userAction}")
 
     DisposableEffect(Unit) {
         onDispose {
@@ -193,6 +190,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
             vm.getTripParticipants(trip)
             rvm.isReviewed(trip.id, loggedUser.id)
         }
+
     }
 
     val listState = rememberLazyListState()
@@ -327,7 +325,8 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                                         Text("My Reviews")
                                     }
 
-                                    if (!isReviewed) {
+                                    Log.d("L3", "isReviewed: $isReviewed")
+                                    if (isReviewed == false) {
                                         Box(
                                             modifier = Modifier
                                                 .size(15.dp)

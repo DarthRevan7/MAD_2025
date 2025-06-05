@@ -63,18 +63,29 @@ import java.util.Calendar
 fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewModel, rvm: ReviewViewModel) {
 
     val trip by vm.selectedTrip
+    val tripReview by rvm.tripReview.collectAsState()
+
+    val usersReviews by rvm.usersReviews.collectAsState()
+
+    val hasReviews by rvm.isReviewed.collectAsState()
 
     LaunchedEffect(trip.id) {
         vm.getTripParticipants(trip)
+        rvm.getTripReview(trip.id, uvm.loggedUser.value.id)
+        Log.d("L3", "trip.id: ${trip.id}, rvm.getTripReview = ${rvm.tripReview.value}")
+        rvm.getUsersReviews(uvm.loggedUser.value.id, trip.id)
+        rvm.isReviewed(trip.id, uvm.loggedUser.value.id)
     }
 
     val participantsMap by vm.tripParticipants.collectAsState()
 
     val listState = rememberLazyListState()
-
-    val hasReviews by remember {
-        derivedStateOf { rvm.isReviewed.value }
+    LaunchedEffect(Unit) {
+        Log.d("L3", "rvm.getTripReview = ${rvm.tripReview.value}")
     }
+
+
+
 
     val titleMap = remember { mutableStateMapOf<String, String>() }
     val reviewMap = remember { mutableStateMapOf<String, String>() }
@@ -172,12 +183,13 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
                 Spacer(Modifier.padding(5.dp))
             }
 
+            Log.d("L3", "Has reviews: $hasReviews")
             if(hasReviews) {
                 //Review of the trip made by the logged in user
-                val review = vm.tripReview(uvm.loggedUser.value.id, trip.id)
-                if(review.isValidReview()) {
+//                val review = vm.tripReview(uvm.loggedUser.value.id, trip.id)
+                if(tripReview.isValidReview()) {
                     item {
-                        ShowReview(review, vm, true, uvm, navController)
+                        ShowReview(tripReview, vm, true, uvm, navController)
                     }
                 } else
                 {
@@ -288,9 +300,9 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
 
             if(hasReviews) {
                 //Review of the users made by the logged in user
-                val reviews = vm.getUsersReviewsTrip(uvm.loggedUser.value.id, trip.id)
-                if(reviews.isNotEmpty()) {
-                    items(reviews) { review ->
+//                val reviews = vm.getUsersReviewsTrip(uvm.loggedUser.value.id, trip.id)
+                if(usersReviews.isNotEmpty()) {
+                    items(usersReviews) { review ->
                         ShowReview(review, vm, true, uvm, navController)
                     }
                 }
