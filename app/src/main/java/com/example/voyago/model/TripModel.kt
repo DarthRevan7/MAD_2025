@@ -199,8 +199,8 @@ data class Trip(
 
         while (!current.after(end)) {
             val hasActivity = activities.any { (activityDate, _) ->
-                stringToCalendar(activityDate, false).get(Calendar.YEAR) == current.get(Calendar.YEAR) &&
-                        stringToCalendar(activityDate, false).get(Calendar.DAY_OF_YEAR) == current.get(Calendar.DAY_OF_YEAR)
+                stringToCalendar(activityDate).get(Calendar.YEAR) == current.get(Calendar.YEAR) &&
+                        stringToCalendar(activityDate).get(Calendar.DAY_OF_YEAR) == current.get(Calendar.DAY_OF_YEAR)
 
             }
 
@@ -230,15 +230,11 @@ data class Trip(
     }
 }
 
-fun stringToCalendar(string: String, details: Boolean): Calendar {
+fun stringToCalendar(string: String): Calendar {
     val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.US)
     val date = formatter.parse(string)
     return Calendar.getInstance().apply {
-        if (date != null && details) {
-            date.month += 1
-            time = date
-        }
-        if (date != null && !details) {
+        if (date != null) {
             time = date
         }
     }

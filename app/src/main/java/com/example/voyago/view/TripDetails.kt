@@ -998,12 +998,10 @@ fun ItineraryText(trip: Trip, modifier: Modifier = Modifier, vm: TripViewModel) 
             Log.d("L1", "Trip Details")
             val dayIndex = if (isTimestampLong(day)) {
                 Log.d("L1", "Day is a timestamp: $day")
-                Log.d("L1", "Day as Calendar: ${timestampToCalendar(day)}")
                 timestampToCalendar(day).daysUntil(trip.startDateAsCalendar()) + 1
             } else {
                 Log.d("L1", "Day is a string: $day")
-                Log.d("L1", "Day as calendar: ${stringToCalendar(day, vm.userAction == TripViewModel.UserAction.EDIT_TRIP)}")
-                stringToCalendar(day, true).daysUntil(trip.startDateAsCalendar()) + 1
+                stringToCalendar(day).daysUntil(trip.startDateAsCalendar()) + 1
             }
             val dayHeader = "Day $dayIndex:\n"
 

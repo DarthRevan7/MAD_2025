@@ -266,8 +266,8 @@ fun ActivitiesListContent(trip: Trip?, vm: TripViewModel, navController: NavCont
                     timestampToCalendar(day).daysUntil(trip.startDateAsCalendar()) + 1
                 } else {
                     Log.d("L1", "Day is a string: $day")
-                    Log.d("L1", "Day as calendar: ${stringToCalendar(day, vm.userAction == TripViewModel.UserAction.EDIT_TRIP)}")
-                    stringToCalendar(day, vm.userAction == TripViewModel.UserAction.EDIT_TRIP).daysUntil(trip.startDateAsCalendar()) + 1
+                    Log.d("L1", "Day as calendar: ${stringToCalendar(day)}")
+                    stringToCalendar(day).daysUntil(trip.startDateAsCalendar()) + 1
                 }
                 val formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.US)
                 val activitiesForDay = (trip.activities[day] ?: emptyList())
