@@ -19,12 +19,45 @@ import kotlinx.coroutines.launch
 class ReviewViewModel(val reviewModel:ReviewModel): ViewModel() {
 
 
-    private suspend fun addNewReview(newReview: Review): Review? {
-        val createdReview = reviewModel.createReview(newReview)
-        return createdReview
+    fun addNewReview(newReview: Review, onResult: (Boolean, Review?) -> Unit) {
+        reviewModel.createReview(newReview) { success, createdReview ->
+            if (success && createdReview != null) {
+                Log.d("AddReview", "Review added successfully: ${createdReview.reviewId}")
+            }
+            onResult(success, createdReview)
+        }
     }
 
-    fun addAllTripReviews(reviews: List<Review>) {
+    fun addAllTripReviews(reviews: List<Review>, onComplete: (Boolean, List<Review>) -> Unit) {
+        val createdReviews = mutableListOf<Review>()
+        var completedCount = 0
+        var success = true
+
+        if (reviews.isEmpty()) {
+            onComplete(true, emptyList())
+            return
+        }
+
+        reviews.forEach { review ->
+            addNewReview(review) { resultSuccess, createdReview ->
+                completedCount++
+
+                if (!resultSuccess || createdReview == null) {
+                    success = false
+                } else {
+                    createdReviews.add(createdReview)
+                }
+
+                // When all are done
+                if (completedCount == reviews.size) {
+                    onComplete(success, createdReviews)
+                }
+            }
+        }
+    }
+
+
+    /*fun addAllTripReviews(reviews: List<Review>) {
         // Get the coroutine scope
         val scope = CoroutineScope(Dispatchers.IO)
 
@@ -52,7 +85,7 @@ class ReviewViewModel(val reviewModel:ReviewModel): ViewModel() {
             }
             Log.d("AddReviews", "Completata l'elaborazione di tutte le recensioni.")
         }
-    }
+    }*/
 
     /*
     fun addAllTripReviews(reviews: List<Review>) {

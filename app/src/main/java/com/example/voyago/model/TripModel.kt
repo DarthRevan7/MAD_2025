@@ -569,7 +569,6 @@ class TripModel {
         }
     }
 
-
     //Function that imports a Trip in the "My Trip" section of the logged in user as private
     fun importTrip(photo: String, title: String, destination: String, startDate: Calendar,
                    endDate: Calendar, estimatedPrice: Double, groupSize: Int,

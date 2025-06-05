@@ -455,16 +455,18 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
                                             photos = photos,
                                             date = Timestamp(currentDate.time)
                                         )
-
+                                        Log.d("Date", "Current date: ${currentDate.time}, Timestamp: ${currentDate.time}")
                                         reviewsToSubmit.add(review)
                                     }
 
                                     composableScope.launch {
-                                        Log.d("MyReviewScreen", "Chiamata a addAllTripReviews dal Composable.")
-                                        rvm.addAllTripReviews(reviewsToSubmit)
+                                        rvm.addAllTripReviews(reviewsToSubmit) {success, reviews ->
+                                            if (success) {
+                                                navController.popBackStack()
+                                            }
+                                        }
                                     }
 
-                                    navController.popBackStack()
                                 }
 
                             },

@@ -2,7 +2,9 @@ package com.example.voyago.model
 
 import android.util.Log
 import com.example.voyago.Collections
+import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.awaitClose
@@ -56,7 +58,7 @@ data class Review(
 class ReviewModel {
 
 
-    suspend fun createReview(reviewToCreate: Review): Review? {
+    /*suspend fun createReview(reviewToCreate: Review): Review? {
         return try {
             val dataToAdd = reviewToCreate.copy(reviewId = 0) // Invalid ID for object creation
 
@@ -70,7 +72,7 @@ class ReviewModel {
             Log.e("FirestoreHelper", "Errore durante la creazione della recensione", e)
             null
         }
-    }
+    }*/
 
     //We will maybe not use this. Consider editing for soft delete.
     suspend fun deleteReview(reviewId: Int): Boolean {
@@ -396,37 +398,10 @@ class ReviewModel {
         }
     }
 
+    // Check if a user has reviewed a trip
     private val _isReviewed = MutableStateFlow(false)
     val isReviewed: StateFlow<Boolean> = _isReviewed
 
-    private var checkReviewJob: Job? = null
-
-    fun checkIfReviewed(userId: Int, tripId: Int, coroutineScope: CoroutineScope) {
-        // Cancel any previous check
-        checkReviewJob?.cancel()
-
-        checkReviewJob = coroutineScope.launch {
-            try {
-                val snapshot = Collections.reviews
-                    .whereEqualTo("isTripReview", true)
-                    .whereEqualTo("reviewerId", userId)
-                    .whereEqualTo("tripId", tripId)
-                    .limit(1)
-                    .get()
-                    .await()
-
-                val reviewed = !snapshot.isEmpty
-                _isReviewed.value = reviewed
-                Log.d("FirestoreHelper", "isReviewed updated: $reviewed")
-
-            } catch (e: Exception) {
-                Log.e("FirestoreHelper", "Error checking review status", e)
-                _isReviewed.value = false
-            }
-        }
-    }
-
-    // Check if a user has reviewed a trip
     fun isReviewed(userId: Int, tripId: Int, coroutineScope: CoroutineScope) {
         coroutineScope.launch {
             callbackFlow {
@@ -521,5 +496,32 @@ class ReviewModel {
         }
     }
 
+    fun createReview(review: Review, onResult: (Boolean, Review?) -> Unit) {
+        val firestore = Firebase.firestore
+        val counterRef = firestore.collection("metadata").document("reviewCounter")
+
+        firestore.runTransaction { transaction ->
+            val snapshot = transaction.get(counterRef)
+            val lastReviewId = snapshot.getLong("lastReviewId") ?: 0
+            val newReviewId = lastReviewId + 1
+
+            // Set the new ID back to the counter document
+            transaction.update(counterRef, "lastReviewId", newReviewId)
+
+            // Create the trip with the new ID
+            val reviewWithId = review.copy(reviewId = newReviewId.toInt())
+
+            // Create a new document in the trips collection
+            val tripDocRef = firestore.collection("reviews").document(newReviewId.toString())
+            transaction.set(tripDocRef, reviewWithId)
+
+            reviewWithId
+        }.addOnSuccessListener { review ->
+            onResult(true, review)
+        }.addOnFailureListener { e ->
+            Log.e("Firestore", "Failed to create review", e)
+            onResult(false, null)
+        }
+    }
 
 }
