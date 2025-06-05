@@ -180,6 +180,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
 
     }
 
+    //Get reviews of the trip
     val reviews by rvm.tripReviews.collectAsState()
 
     //Manage reviews
@@ -189,8 +190,6 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
             vm.getTripParticipants(trip)
         }
     }
-
-//    val reviews by vm.tripReviews.collectAsState()
 
     val listState = rememberLazyListState()
 

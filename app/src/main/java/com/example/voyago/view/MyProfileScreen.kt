@@ -71,7 +71,7 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: ArticleViewModel, uvm: UserViewModel) {
+fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: ArticleViewModel, uvm: UserViewModel, rvm: ReviewViewModel) {
     //Get the logged in user (id=1)
     val user by uvm.loggedUser.collectAsState()
     //List of trip created and published by the logged in user (id=1)
@@ -85,6 +85,7 @@ fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: Articl
             vm.creatorPublicFilter(user.id)
             vm.creatorPrivateFilter(user.id)
             vm.tripUserJoined(user.id)
+            rvm.getUserReviews(user.id)
         }
     }
 
@@ -185,7 +186,7 @@ fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: Articl
 
         item {
             //Tab About, My Trips, Review
-            TabAboutTripsReview(user, joinedTrips, publishedTrips, vm, vm2, navController, uvm)
+            TabAboutTripsReview(user, joinedTrips, publishedTrips, vm, vm2, navController, uvm, rvm)
         }
     }
 }
@@ -256,7 +257,7 @@ fun RatingAndReliability(rating: Float, reliability: Int) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun TabAboutTripsReview(user: User, joinedTrips: List<Trip>, publishedTrips: List<Trip>, vm: TripViewModel, vm2: ArticleViewModel, navController: NavController, uvm: UserViewModel) {
+fun TabAboutTripsReview(user: User, joinedTrips: List<Trip>, publishedTrips: List<Trip>, vm: TripViewModel, vm2: ArticleViewModel, navController: NavController, uvm: UserViewModel, rvm: ReviewViewModel) {
 
     // TAB with About, Trips & Articles, Reviews
     val tabs = listOf("About", "Trips & Articles", "Reviews")
@@ -267,6 +268,15 @@ fun TabAboutTripsReview(user: User, joinedTrips: List<Trip>, publishedTrips: Lis
     LaunchedEffect(Unit) {
         vm.creatorPublicFilter(user.id)
         vm.tripUserJoined(user.id)
+    }
+
+    //List of reviews of the logged in user (id=1)
+    val reviews by rvm.userReviews.collectAsState()
+
+    LaunchedEffect(user.id) {
+        if (user.id != 0) {
+            rvm.getUserReviews(user.id)
+        }
     }
 
     TabRow(
@@ -426,12 +436,11 @@ fun TabAboutTripsReview(user: User, joinedTrips: List<Trip>, publishedTrips: Lis
                                 .height((7*43).dp)
                                 .verticalScroll(rememberScrollState())
                         ) {
-                            val reviewsList = vm.getUserReviews(user.id)
-                            if (reviewsList.isEmpty()){
+                            if (reviews.isEmpty()){
                                 Text(text = "No reviews yet",
                                     textAlign = TextAlign.Center)
                             } else {
-                                reviewsList.forEach { review ->
+                                reviews.forEach { review ->
                                     ShowUserReview(review, navController, uvm)
                                 }
                             }

@@ -33,13 +33,7 @@ import androidx.compose.runtime.getValue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserProfileScreen(
-    vm: TripViewModel,
-    navController: NavController,
-    vm2: ArticleViewModel,
-    userId: Int,
-    uvm: UserViewModel
-) {
+fun UserProfileScreen(vm: TripViewModel, navController: NavController, vm2: ArticleViewModel, userId: Int, uvm: UserViewModel, rvm: ReviewViewModel) {
     // Collect user data as state
     val user by uvm.getUserData(userId).collectAsState(initial = null)
     //List of trip created and published by the logged in user (id=1)
@@ -124,7 +118,7 @@ fun UserProfileScreen(
         }
 
         item {
-            TabAboutTripsReview(user!!, joinedTrips, publishedTrips, vm, vm2, navController, uvm)
+            TabAboutTripsReview(user!!, joinedTrips, publishedTrips, vm, vm2, navController, uvm, rvm)
         }
     }
 }

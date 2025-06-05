@@ -63,12 +63,13 @@ class ReviewViewModel(val reviewModel:ReviewModel): ViewModel() {
     }
      */
 
+    //Reviews of a trip
     val tripReviews = reviewModel.tripReviews
     fun getTripReviews(tripId:Int) = reviewModel.getTripReviews(tripId, viewModelScope)
 
-
-
-    
+    //Reviews of a user
+    val userReviews = reviewModel.userReviews
+    fun getUserReviews(userId: Int) = reviewModel.getUserReviews(userId, viewModelScope)
 
     // Select photos
     private val _selectedUris = MutableStateFlow<List<Uri>>(emptyList())

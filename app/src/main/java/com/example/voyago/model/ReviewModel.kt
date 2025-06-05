@@ -115,25 +115,9 @@ class ReviewModel {
 
      */
 
+    //Get the reviews of a trip
     private val _tripReviews = MutableStateFlow<List<Review>>(emptyList())
     val tripReviews: StateFlow<List<Review>> = _tripReviews
-
-    /*
-    fun getReviews(tripId: Int) : Flow<List<Review>> = callbackFlow {
-        val listener = Collections.reviews
-            .whereEqualTo("tripId", tripId)
-            .addSnapshotListener { snapshot, error ->
-                if (snapshot != null) {
-                    trySend(snapshot.toObjects(Review::class.java))
-                } else {
-                    Log.e("Error", error.toString())
-                    trySend(emptyList())
-                }
-            }
-        awaitClose { listener.remove() }
-    }
-
-     */
 
     fun getTripReviews(tripId: Int, coroutineScope: CoroutineScope) {
         coroutineScope.launch {
@@ -156,7 +140,38 @@ class ReviewModel {
         }
     }
 
+    // Get live updates of reviews about a user (non-trip-specific)
+    private val _userReviews = MutableStateFlow<List<Review>>(emptyList())
+    val userReviews: StateFlow<List<Review>> = _userReviews
 
+    fun getUserReviews(userId: Int, coroutineScope: CoroutineScope) {
+        coroutineScope.launch {
+            callbackFlow {
+                val listener = Collections.reviews
+                    .whereEqualTo("reviewedUserId", userId)
+                    .whereEqualTo("isTripReview", false)
+                    .addSnapshotListener { snapshot, error ->
+                        if (snapshot != null) {
+                            val reviews = snapshot.documents.mapNotNull { document ->
+                                try {
+                                    document.toObject(Review::class.java)?.copy(reviewId = document.id.toInt())
+                                } catch (e: Exception) {
+                                    Log.e("FirestoreHelper", "Error parsing review ${document.id}", e)
+                                    null
+                                }
+                            }
+                            trySend(reviews)
+                        } else {
+                            Log.e("FirestoreHelper", "Error fetching user reviews", error)
+                            trySend(emptyList())
+                        }
+                    }
+                awaitClose { listener.remove() }
+            }.collect { reviews ->
+                _userReviews.value = reviews
+            }
+        }
+    }
 
 
 
@@ -291,33 +306,7 @@ class ReviewModel {
 
      */
 
-    suspend fun getUserReviews(id: Int): List<Review>? {
-        return try {
-            // Query Firestore for reviews about a specific user (reviewedUserId).
-            val querySnapshot = Collections.reviews
-                .whereEqualTo("reviewedUserId", id)
-                .whereEqualTo("isTripReview", false) // Exclude trip-specific reviews.
-                .get()
-                .await()
 
-            // Map documents to Review objects.
-            val reviews = querySnapshot.documents.mapNotNull { document ->
-                try {
-                    document.toObject(Review::class.java)?.copy(reviewId = document.id.toInt())
-                } catch (e: Exception) {
-                    Log.e("FirestoreHelper", "Error parsing review ${document.id}", e)
-                    null
-                }
-            }
-
-            Log.d("FirestoreHelper", "Found ${reviews.size} reviews for user $id.")
-            reviews // Return list (can be empty).
-        } catch (e: Exception) {
-            // Log error; return null on failure.
-            Log.e("FirestoreHelper", "Error getting reviews for user $id", e)
-            null
-        }
-    }
 
     /*
     suspend fun calculateRatingById(id: Int): Float? {
