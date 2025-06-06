@@ -20,9 +20,9 @@ import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun NotificationView(nvm: NotificationViewModel) {
-    LaunchedEffect(Unit) {
-        nvm.loadAllNotifications()
-    }
+//    LaunchedEffect(Unit) {
+//        nvm.loadAllNotifications()
+//    }
 
     Column(modifier = Modifier.padding(16.dp)) {
         Text("Notifications", style = MaterialTheme.typography.titleLarge)

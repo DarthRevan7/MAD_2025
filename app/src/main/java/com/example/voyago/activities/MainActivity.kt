@@ -121,7 +121,6 @@ import com.google.firebase.FirebaseApp
 import com.example.voyago.model.ReviewModel
 import com.example.voyago.model.UserModel
 import com.example.voyago.view.NotificationView
-import com.example.voyago.viewmodel.ArticleFactory
 import com.example.voyago.viewmodel.NotificationViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -277,7 +276,7 @@ fun MainScreen() {
     val reviewModel = ReviewModel()
     val userModel = UserModel()
     val notificationViewModel = NotificationViewModel()
-    userModel.refreshAllRatings(reviewModel)
+    //userModel.refreshAllRatings(reviewModel)
     Scaffold(
         topBar = { TopBar(
             nvm = notificationViewModel,
