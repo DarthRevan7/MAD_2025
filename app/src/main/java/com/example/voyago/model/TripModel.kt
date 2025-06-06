@@ -199,8 +199,14 @@ data class Trip(
 
         while (!current.after(end)) {
             val hasActivity = activities.any { (activityDate, _) ->
-                stringToCalendar(activityDate).get(Calendar.YEAR) == current.get(Calendar.YEAR) &&
-                        stringToCalendar(activityDate).get(Calendar.DAY_OF_YEAR) == current.get(Calendar.DAY_OF_YEAR)
+                if (isTimestampLong(activityDate.toString())) {
+                    timestampToCalendar(activityDate).get(Calendar.YEAR) == current.get(Calendar.YEAR) &&
+                            timestampToCalendar(activityDate).get(Calendar.DAY_OF_YEAR) == current.get(Calendar.DAY_OF_YEAR)
+                } else {
+                    stringToCalendar(activityDate).get(Calendar.YEAR) == current.get(Calendar.YEAR) &&
+                            stringToCalendar(activityDate).get(Calendar.DAY_OF_YEAR) == current.get(Calendar.DAY_OF_YEAR)
+
+                }
 
             }
 
@@ -245,11 +251,9 @@ fun isTimestampLong(input: String): Boolean {
 }
 
 fun timestampToCalendar(timestamp: String): Calendar {
-    Log.d("L2", "timestamp: $timestamp")
     val millis = timestamp.toLong()
     return Calendar.getInstance().apply {
         timeInMillis = millis
-        add(Calendar.MONTH, 1)
     }
 }
 
@@ -733,7 +737,8 @@ class TripModel {
                 }
 
                 // Add updated activity to its new date
-                val newDateKey = updatedActivity.dateAsCalendar().timeInMillis.toString()
+                val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+                val newDateKey: String = dateFormat.format(updatedActivity.dateAsCalendar().time)
                 val updatedList = originalActivities.getOrDefault(newDateKey, emptyList<Activity>()) + updatedActivity
                 originalActivities[newDateKey] = updatedList
 
