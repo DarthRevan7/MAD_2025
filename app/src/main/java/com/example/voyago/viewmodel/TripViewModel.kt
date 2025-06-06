@@ -267,7 +267,7 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
                         activities: Map<String, List<Activity>>, typeTravel: List<String>,
                         creatorId: Int, published: Boolean, onResult: (Boolean, Trip?) -> Unit) {
         tripModel.importTrip(photo, title, destination, startDate, endDate, estimatedPrice,
-            groupSize, activities, listOf(typeTravel.toString()), creatorId, published) { success, trip ->
+            groupSize, activities, typeTravel, creatorId, published) { success, trip ->
             onResult(success, trip)
         }
     }
@@ -483,12 +483,14 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
     fun addActivityToTrip(activity: Activity) {
         //Creating a new trip
         if(userAction == UserAction.CREATE_TRIP) {
+            Log.d("L2", "Edit activity to trip: $activity")
             tripModel.addActivityToTrip(activity, newTrip).let { updatedTrip ->
                 newTrip = updatedTrip
                 _selectedTrip.value = newTrip
             }
         } else if(userAction == UserAction.EDIT_TRIP) {
             //I am editing an existing trip
+            Log.d("L2", "Edit activity to trip: $activity")
             tripModel.addActivityToTrip(activity, editTrip).let { updatedTrip ->
                 editTrip = updatedTrip
                 _selectedTrip.value = editTrip
