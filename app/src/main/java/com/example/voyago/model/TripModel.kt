@@ -511,7 +511,7 @@ class TripModel {
         val listener = Collections.trips
             .whereEqualTo("status", "COMPLETED")
             .addSnapshotListener { snapshot, error ->
-                if (snapshot != null) {
+                if (snapshot != null) { //I want to commit this
                     trySend(snapshot.toObjects(Trip::class.java)).onFailure {
                         Log.e("Firestore", "Send failed", it)
                     }

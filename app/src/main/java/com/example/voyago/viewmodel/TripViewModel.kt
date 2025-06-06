@@ -272,7 +272,7 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
         }
     }
 
-
+    //Want to
     //Make published or private a trip
     fun changePublishedStatus(id: Int) {
         tripModel.changePublishedStatus(id) { success ->
