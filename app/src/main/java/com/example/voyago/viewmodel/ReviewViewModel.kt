@@ -18,7 +18,6 @@ import kotlinx.coroutines.launch
 
 class ReviewViewModel(val reviewModel:ReviewModel): ViewModel() {
 
-
     fun addNewReview(newReview: Review, onResult: (Boolean, Review?) -> Unit) {
         reviewModel.createReview(newReview) { success, createdReview ->
             if (success && createdReview != null) {
@@ -55,46 +54,6 @@ class ReviewViewModel(val reviewModel:ReviewModel): ViewModel() {
             }
         }
     }
-
-
-    /*fun addAllTripReviews(reviews: List<Review>) {
-        // Get the coroutine scope
-        val scope = CoroutineScope(Dispatchers.IO)
-
-        scope.launch {
-            Log.d(
-                "AddReviews",
-                "Avvio dell'elaborazione di ${reviews.size} recensioni in una singola coroutine."
-            )
-            for (review in reviews) {
-                val createdReview = addNewReview(review) // Call addNewReview
-
-                if (createdReview != null) {
-                    // Success for this review
-                    Log.d(
-                        "AddReviews",
-                        "Recensione ${createdReview.reviewId} aggiunta con successo."
-                    )
-                } else {
-                    // Errors for this review
-                    Log.e(
-                        "AddReviews",
-                        "Errore: la recensione non è stata creata per input: $review"
-                    )
-                }
-            }
-            Log.d("AddReviews", "Completata l'elaborazione di tutte le recensioni.")
-        }
-    }*/
-
-    /*
-    fun addAllTripReviews(reviews: List<Review>) {
-        for (review in reviews) {
-            addNewReview(review)
-
-        }
-    }
-     */
 
     //Reviews of a trip
     val tripReviews = reviewModel.tripReviews

@@ -329,17 +329,24 @@ class ReviewModel {
             val reviews = snapshot?.toObjects(Review::class.java).orEmpty()
             val rating = if (reviews.isNotEmpty()) {
                 val avg = reviews.map { it.score }.average().toFloat()
-                val scaled = avg / 2f
-                (scaled * 10).toInt() / 10f
+                String.format("%.1f", avg / 2f).toFloat()
             } else {
                 5.0f
             }
+
+            // 🔄 Update user's rating field in Firestore
+            Collections.users.document(id.toString())
+                .update("rating", rating)
+                .addOnFailureListener { e ->
+                    Log.e("calculateRatingById", "Failed to update user rating: ${e.message}")
+                }
 
             trySend(rating)
         }
 
         awaitClose { listener.remove() }
     }
+
 
     // -------------------------- THIS WORKS ---------------------------
 
