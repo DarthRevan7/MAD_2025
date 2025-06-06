@@ -3,9 +3,11 @@ package com.example.voyago.model
 import android.util.Log
 import com.example.voyago.Collections
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.tasks.await
 import java.util.Date
 
 data class User(
@@ -37,6 +39,19 @@ data class User(
 }
 
 class UserModel {
+
+    /*private val firestore = FirebaseFirestore.getInstance()
+
+    suspend fun getUser(uid: String): User? {
+        return try {
+            val snapshot = firestore.collection("users").document(uid).get().await()
+            snapshot.toObject(User::class.java)
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Failed to get user", e)
+            null
+        }
+    }*/
+
     //SUBSET OF USER LIST
 
     fun getUsersFromUsernames(usernameList : List<String>): Flow<List<User>> = callbackFlow {//Observes update from the Server

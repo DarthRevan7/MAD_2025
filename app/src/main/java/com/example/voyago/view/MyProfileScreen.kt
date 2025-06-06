@@ -66,6 +66,7 @@ import com.example.voyago.model.Review
 import com.example.voyago.model.Trip
 import com.example.voyago.model.User
 import com.example.voyago.viewmodel.*
+import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -112,7 +113,15 @@ fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: Articl
                     .size(60.dp)
                     .align(alignment = Alignment.TopEnd)
                     .padding(16.dp)
-                    .clickable {/*TODO*/}
+                    .clickable {
+                        val auth = FirebaseAuth.getInstance()
+
+                        auth.signOut()
+                        navController.navigate("login") {
+                            popUpTo(0) { inclusive = true } // clear back stack
+                        }
+
+                    }
                 )
 
                 Image(painter = painterEdit, "edit", modifier = Modifier

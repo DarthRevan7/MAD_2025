@@ -28,11 +28,3 @@ object Collections{
     val reviews = db.collection(C_REVIEWS)
     val articles = db.collection(C_ARTICLES)
 }
-
-fun Any?.toEpochMillisOrZero(): Long {
-    return when (this) {
-        is Long -> this
-        is Timestamp -> this.toDate().time
-        else -> 0L
-    }
-}

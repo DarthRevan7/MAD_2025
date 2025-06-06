@@ -1,4 +1,4 @@
-//package com.example.voyago.model
+package com.example.voyago.model//package com.example.voyago.model
 //
 //import com.example.voyago.model.Trip.Activity
 //import com.example.voyago.model.Trip.Participant

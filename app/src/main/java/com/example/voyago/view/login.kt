@@ -3,12 +3,11 @@ package com.example.voyago.view
 import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -19,30 +18,35 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import com.google.firebase.auth.FirebaseAuth
+import androidx.compose.material3.OutlinedTextField
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VoyagoLoginScreen(
-    onBackClick: () -> Unit = {},
-    onLoginClick: (String, String) -> Unit = { _, _ -> },
+fun LoginScreen(
+    navController: NavHostController, auth: FirebaseAuth,
     onSignInClick: () -> Unit = {},
-    onForgotPasswordClick: () -> Unit = {},
-    errorMessage: String? = null,
-    onErrorDismiss: () -> Unit = {}
+    onForgotPasswordClick: () -> Unit = {}
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    Column(
+    var emailTouched by remember { mutableStateOf(false) }
+    var passwordTouched by remember { mutableStateOf(false) }
+
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF5F5F5))
     ) {
 
-
+        item {
         // Main Content
         Column(
             modifier = Modifier
@@ -97,7 +101,7 @@ fun VoyagoLoginScreen(
             // Email TextField
             OutlinedTextField(
                 value = email,
-                onValueChange = { email = it },
+                onValueChange = { email = it; emailTouched = true },
                 placeholder = {
                     Text(
                         text = "email@domain.com",
@@ -106,8 +110,14 @@ fun VoyagoLoginScreen(
                 },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
+                isError = emailTouched && email.isBlank(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 shape = RoundedCornerShape(12.dp),
+                supportingText = {
+                    if (emailTouched && email.isBlank()) {
+                        Text("This field cannot be empty")
+                    }
+                },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFF6B46C1),
                     unfocusedBorderColor = Color.LightGray,
@@ -121,7 +131,7 @@ fun VoyagoLoginScreen(
             // Password TextField
             OutlinedTextField(
                 value = password,
-                onValueChange = { password = it },
+                onValueChange = { password = it; passwordTouched = true },
                 placeholder = {
                     Text(
                         text = "password",
@@ -130,9 +140,15 @@ fun VoyagoLoginScreen(
                 },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
+                isError = passwordTouched && password.isBlank(),
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 shape = RoundedCornerShape(12.dp),
+                supportingText = {
+                    if (passwordTouched && password.isBlank()) {
+                        Text("This field cannot be empty")
+                    }
+                },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFF6B46C1),
                     unfocusedBorderColor = Color.LightGray,
@@ -145,7 +161,23 @@ fun VoyagoLoginScreen(
 
             // Login Button
             Button(
-                onClick = { onLoginClick(email, password) },
+                onClick = {
+                    if (email.isBlank() || password.isBlank()) {
+                        errorMessage = "Email and password cannot be empty"
+                        return@Button
+                    } else {
+                        auth.signInWithEmailAndPassword(email, password)
+                            .addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
+                                    navController.navigate("home_main") {
+                                        popUpTo("login") { inclusive = true }
+                                    }
+                                } else {
+                                    errorMessage = "Wrong email or password"
+                                }
+                            }
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -170,7 +202,7 @@ fun VoyagoLoginScreen(
                     text = "Forgot your password?",
                     color = Color(0xFF6B46C1),
                     fontSize = 16.sp,
-                    textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline
+                    textDecoration = TextDecoration.Underline
                 )
             }
 
@@ -235,15 +267,20 @@ fun VoyagoLoginScreen(
                     color = Color.White
                 )
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
         }
+            }
     }
 }
 
+/*
 @Preview(showBackground = true, device = "spec:width=412dp,height=892dp")
 @Composable
 fun VoyagoLoginScreenPreview() {
     MaterialTheme {
-        VoyagoLoginScreen()
+        LoginScreen(
+        )
     }
 }
 
@@ -251,8 +288,8 @@ fun VoyagoLoginScreenPreview() {
 @Composable
 fun VoyagoLoginScreenWithErrorPreview() {
     MaterialTheme {
-        VoyagoLoginScreen(
+        LoginScreen(
             errorMessage = "Wrong email or password"
         )
     }
-}
+}*/

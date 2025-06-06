@@ -120,6 +120,7 @@ import com.google.android.gms.common.GoogleApiAvailability
 import com.google.firebase.FirebaseApp
 import com.example.voyago.model.ReviewModel
 import com.example.voyago.model.UserModel
+import com.example.voyago.view.LoginScreen
 import com.example.voyago.view.NotificationView
 import com.example.voyago.viewmodel.NotificationViewModel
 import com.google.firebase.auth.FirebaseAuth
@@ -340,29 +341,37 @@ fun BottomBar(navController: NavHostController) {
 
 @Composable
 fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modifier) {
-    NavHost(navController = navController, startDestination = Screen.Home.route, modifier = modifier) {
+    val auth = FirebaseAuth.getInstance()
+    val currentUser = auth.currentUser
+    val startDest = if (currentUser == null) "login" else Screen.Home.route
+
+    NavHost(navController = navController, startDestination = startDest, modifier = modifier) {
+        composable("login") {
+            LoginScreen(navController = navController, auth = auth)
+        }
+        composable("register") {
+            //RegisterScreen(navController = navController, auth = auth)
+        }
+
         exploreNavGraph(navController)
         myTripsNavGraph(navController)
         homeNavGraph(navController)
         chatsNavGraph()
         profileNavGraph(navController)
+
         composable("camera") {
             val context = LocalContext.current
             CameraScreen(
                 context = context,
-                //modifier = Modifier.fillMaxSize(),
                 onImageCaptured = { uri ->
                     Toast.makeText(context, "Saved to: $uri", Toast.LENGTH_SHORT).show()
                     navController.popBackStack()
                 }
             )
         }
-        val notificationViewModel = NotificationViewModel()
-        composable(Screen.Notifications.route) {
-            NotificationView(notificationViewModel)
-        }
     }
 }
+
 
 
 fun NavGraphBuilder.exploreNavGraph(navController: NavController) {

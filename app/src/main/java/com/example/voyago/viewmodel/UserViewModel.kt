@@ -1,6 +1,7 @@
 package com.example.voyago.viewmodel
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -8,12 +9,14 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.voyago.model.*
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class UserViewModel(val model:UserModel): ViewModel() {
+
     //For now user with id = 1 is the logged user.
     private val _loggedUser = MutableStateFlow<User>(User())
     val loggedUser: StateFlow<User> = _loggedUser
@@ -25,6 +28,23 @@ class UserViewModel(val model:UserModel): ViewModel() {
             }
         }
     }
+
+    /*init {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        if (uid != null) {
+            viewModelScope.launch {
+                val user = model.getUser(uid)
+                if (user != null) {
+                    _loggedUser.value = user
+                } else {
+                    Log.e("UserViewModel", "User document not found for uid: $uid")
+                    // You could also emit a default/fallback value or show an error
+                }
+            }
+        } else {
+            Log.e("UserViewModel", "No user is currently logged in")
+        }
+    }*/
 
     private val _userData = MutableStateFlow<User>(User())
     val userData: StateFlow<User> = _userData
