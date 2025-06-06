@@ -110,7 +110,7 @@ class ReviewViewModel(val reviewModel:ReviewModel): ViewModel() {
 
     //Get review of a trip by user
     val tripReview = reviewModel.tripReview
-    fun getTripReview(tripId: Int, userId: Int) = reviewModel.getTripReview(tripId, userId, viewModelScope)
+    fun getTripReview(tripId: Int, userId: Int) = reviewModel.getTripReview(userId, tripId, viewModelScope)
 
     //Get users reviews by Logged IN user ID
     val usersReviews = reviewModel.usersTripReviews

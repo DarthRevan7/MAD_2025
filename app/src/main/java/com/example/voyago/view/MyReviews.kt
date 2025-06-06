@@ -71,7 +71,7 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
 
     LaunchedEffect(trip.id) {
         vm.getTripParticipants(trip)
-        rvm.getTripReview(trip.id, uvm.loggedUser.value.id)
+        rvm.getTripReview(tripId = trip.id, userId = uvm.loggedUser.value.id)
         rvm.getUsersReviews(uvm.loggedUser.value.id, trip.id)
         rvm.isReviewed(uvm.loggedUser.value.id, trip.id)
     }
