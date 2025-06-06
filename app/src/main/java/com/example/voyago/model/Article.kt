@@ -1,6 +1,7 @@
 package com.example.voyago.model
 
 import android.util.Log
+import com.example.voyago.Collections
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.firestore.QuerySnapshot
@@ -57,7 +58,6 @@ fun parseArticles(snapshot: QuerySnapshot): List<Article> {
 
 
 object CollectionsArticles{
-    private const val C_Articles = "articles"
 
     private val db: FirebaseFirestore
         get() = Firebase.firestore
@@ -68,9 +68,7 @@ object CollectionsArticles{
             .build()
     }
 
-
-
-    val articles = db.collection(C_Articles)
+    val articles = Collections.articles
 
 }
 
