@@ -1,0 +1,320 @@
+package com.example.voyago.view
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun VoyagoCreateAccountStep2Screen(
+    onBackClick: () -> Unit = {},
+    onCreateAccountClick: (String, List<String>, List<String>) -> Unit = { _, _, _ -> }
+) {
+    var username by remember { mutableStateOf("") }
+    var selectedTravelTypes by remember { mutableStateOf(setOf<String>()) }
+    var selectedDestinations by remember { mutableStateOf(setOf<String>()) }
+    var searchQuery by remember { mutableStateOf("") }
+    var showDestinationSearch by remember { mutableStateOf(false) }
+
+    val travelTypes = listOf("Adventure", "Party", "Culture", "Relax")
+    val allDestinations = listOf("France", "Romania", "Rome", "Roddi", "Rozzano")
+
+    val filteredDestinations = if (searchQuery.isEmpty()) {
+        allDestinations
+    } else {
+        allDestinations.filter { it.contains(searchQuery, ignoreCase = true) }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF5F5F5))
+    ) {
+
+        // Main Content
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 24.dp)
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(40.dp))
+
+            // Profile Icon
+            Box(
+                modifier = Modifier
+                    .size(80.dp)
+                    .background(
+                        Color(0xFFE1D5F7),
+                        shape = CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = null,
+                    modifier = Modifier.size(40.dp),
+                    tint = Color(0xFF6B46C1)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Title
+            Text(
+                text = "Create an account",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Subtitle
+            Text(
+                text = "Complete your account and choose your preferences",
+                fontSize = 16.sp,
+                color = Color.Gray,
+                textAlign = TextAlign.Center,
+                lineHeight = 22.sp
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Username TextField
+            OutlinedTextField(
+                value = username,
+                onValueChange = { username = it },
+                placeholder = {
+                    Text(
+                        text = "username",
+                        color = Color.Gray
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFF6B46C1),
+                    unfocusedBorderColor = Color.LightGray,
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White
+                )
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Travel Preferences Section
+            Text(
+                text = "Preferences about the type of travel",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.Black,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Travel Type Chips
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                travelTypes.chunked(2).forEach { rowItems ->
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        rowItems.forEach { type ->
+                            FilterChip(
+                                onClick = {
+                                    selectedTravelTypes = if (selectedTravelTypes.contains(type)) {
+                                        selectedTravelTypes - type
+                                    } else {
+                                        selectedTravelTypes + type
+                                    }
+                                },
+                                label = {
+                                    Text(
+                                        text = type,
+                                        fontSize = 14.sp,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        textAlign = TextAlign.Center
+                                    )
+                                },
+                                selected = selectedTravelTypes.contains(type),
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = Color(0xFF6B46C1),
+                                    selectedLabelColor = Color.White,
+                                    containerColor = Color.White,
+                                    labelColor = Color.Gray
+                                ),
+                                border = FilterChipDefaults.filterChipBorder(
+                                    enabled = true,
+                                    selected = selectedTravelTypes.contains(type),
+                                    borderColor = Color.LightGray,
+                                    selectedBorderColor = Color(0xFF6B46C1)
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Destinations Section
+            Text(
+                text = "Most desired destinations",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.Black,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Selected Destinations Chips
+            if (selectedDestinations.isNotEmpty()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    selectedDestinations.take(3).forEach { destination ->
+                        AssistChip(
+                            onClick = {
+                                selectedDestinations = selectedDestinations - destination
+                            },
+                            label = { Text(destination, fontSize = 14.sp) },
+                            trailingIcon = {
+                                Icon(
+                                    Icons.Default.Close,
+                                    contentDescription = "Remove",
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            },
+                            colors = AssistChipDefaults.assistChipColors(
+                                containerColor = Color(0xFFE1D5F7),
+                                labelColor = Color(0xFF6B46C1)
+                            )
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            // Destination Search/Selection
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp)
+                ) {
+                    items(filteredDestinations) { destination ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    selectedDestinations = if (selectedDestinations.contains(destination)) {
+                                        selectedDestinations - destination
+                                    } else {
+                                        selectedDestinations + destination
+                                    }
+                                }
+                                .padding(vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = destination,
+                                fontSize = 16.sp,
+                                color = Color.Black
+                            )
+                            if (selectedDestinations.contains(destination)) {
+                                Icon(
+                                    Icons.Default.Check,
+                                    contentDescription = "Selected",
+                                    tint = Color(0xFF4CAF50),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                        if (destination != filteredDestinations.last()) {
+                            Divider(color = Color.LightGray, thickness = 0.5.dp)
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Create Account Button
+            Button(
+                onClick = {
+                    onCreateAccountClick(
+                        username,
+                        selectedTravelTypes.toList(),
+                        selectedDestinations.toList()
+                    )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF6B46C1)
+                )
+            ) {
+                Text(
+                    text = "Create account",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White
+                )
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+        }
+    }
+}
+
+@Preview(showBackground = true, device = "spec:width=412dp,height=892dp")
+@Composable
+fun VoyagoCreateAccountStep2ScreenPreview() {
+    MaterialTheme {
+        VoyagoCreateAccountStep2Screen()
+    }
+}

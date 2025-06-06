@@ -34,7 +34,7 @@ var privateUsers = MutableStateFlow<List<UserData>>(
             profilePicture = null,
             typeTravel = listOf(TypeTravel.CULTURE, TypeTravel.ADVENTURE),
             desiredDestination = listOf("Greece", "Italy", "Japan"),
-            rating = 4.5f,
+            rating = 5.0f,
             reliability = 90
         ),
 
@@ -51,7 +51,7 @@ var privateUsers = MutableStateFlow<List<UserData>>(
             profilePicture = null,
             typeTravel = listOf(TypeTravel.RELAX, TypeTravel.PARTY),
             desiredDestination = listOf("Romania", "USA", "South Korea"),
-            rating = 4.0f,
+            rating = 5.0f,
             reliability = 55
         ),
 
@@ -68,7 +68,7 @@ var privateUsers = MutableStateFlow<List<UserData>>(
             profilePicture = null,
             typeTravel = listOf(TypeTravel.ADVENTURE, TypeTravel.CULTURE),
             desiredDestination = listOf("Peru", "Nepal", "Morocco"),
-            rating = 4.4f,
+            rating = 5.0f,
             reliability = 80
         ),
 
@@ -102,7 +102,7 @@ var privateUsers = MutableStateFlow<List<UserData>>(
             profilePicture = null,
             typeTravel = listOf(TypeTravel.CULTURE),
             desiredDestination = listOf("Thailand", "Italy", "Vietnam"),
-            rating = 3.7f,
+            rating = 5.0f,
             reliability = 67
         ),
 
@@ -119,7 +119,7 @@ var privateUsers = MutableStateFlow<List<UserData>>(
             profilePicture = null,
             typeTravel = listOf(TypeTravel.RELAX, TypeTravel.CULTURE),
             desiredDestination = listOf("Turkey", "Spain", "Malaysia"),
-            rating = 4.6f,
+            rating = 5.0f,
             reliability = 90
         )
     )
@@ -999,7 +999,7 @@ var privateReviews = MutableStateFlow<List<Review>>(
             tripId = 1,
             isTripReview = false,
             reviewerId = 6,
-            reviewedUserId = 1,
+            reviewedUserId = -1,
             title = "Thoughtful and adventurous companion",
             comment = "Traveling with Alice was such a joy. She’s incredibly respectful of group dynamics and always made insightful observations about the places we visited. Whether we were exploring museums or hiking together, she brought a calm energy that was deeply appreciated. I especially loved our conversations during free time — she has a way of turning every small moment into something memorable. Would definitely travel with her again!",
             score = 10,
@@ -1309,69 +1309,3 @@ var privateReviews = MutableStateFlow<List<Review>>(
     )
 )
 
-fun sampleArticles(): List<Article> {
-    val titles = listOf(
-        "The Hidden Gems of Kyoto: Beyond the Tourist Trail",
-        "5 Must-Visit Cafés in Paris",
-        "A Foodie's Guide to Bangkok Street Eats",
-        "Discovering the Fjords of Norway by Boat",
-        "Exploring the Ancient Ruins of Petra",
-        "Safari Adventures in the Serengeti",
-        "Road Tripping the Pacific Coast Highway",
-        "A Weekend in New York City: Top 10 Spots",
-        "The Ultimate Guide to Iceland’s Waterfalls",
-        "Wine Tasting Tours in Tuscany"
-    )
-    val descriptions = listOf(
-        "Discover Kyoto’s best-kept secrets, from hidden temples to historic noodle shops. Escape the crowds and explore the city like a local!",
-        "From the Left Bank to the Right Bank, these five cafés are sure to make your trip to Paris more stylish.",
-        "Dive into the vibrant street food scene of Bangkok—pad thai, mango sticky rice, and more await!",
-        "Experience Norway’s dramatic fjords on a scenic boat tour, complete with waterfalls and mountain views.",
-        "Walk through the rose-red city carved into stone and learn the history of this archaeological wonder.",
-        "Join us for an unforgettable journey across the plains of the Serengeti, home to the Big Five.",
-        "Hit the open road along California’s stunning coastline, with stops in Malibu, Big Sur, and beyond.",
-        "Pack your bags for a whirlwind weekend in NYC—Central Park, Times Square, Brooklyn Bridge and more.",
-        "Chase the thundering cascades of Gullfoss, Seljalandsfoss, and others in stunning Iceland.",
-        "Sip your way through rolling hills and vineyards in Tuscany’s most renowned wine regions."
-    )
-    val imageNames = listOf(
-        "kyoto", "paris", "bali", "brazil", "dubai",
-        "sydney", "rio", "colorado", "fiji", "japan"
-    )
-    val authors = listOf(
-        1, 2, 3, 4,
-        5, 6, 1, 2,
-        3, 4
-    )
-    val tagsList = listOf(
-        listOf("Travel", "Culture", "Japan"),
-        listOf("Food", "Paris", "Cafés"),
-        listOf("Food", "Thailand", "Street Food"),
-        listOf("Nature", "Norway", "Cruise"),
-        listOf("History", "Jordan", "Archaeology"),
-        listOf("Wildlife", "Africa", "Safari"),
-        listOf("Road Trip", "USA", "Scenic"),
-        listOf("City", "USA", "Weekend"),
-        listOf("Nature", "Iceland", "Waterfalls"),
-        listOf("Wine", "Italy", "Tuscany")
-    )
-
-    return List(10) { index ->
-        val calendar = Calendar.getInstance().apply {
-            set(2025, Calendar.MAY, 1 + index, 9 + (index % 3) * 3, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
-
-        Article(
-            id = index + 1,
-            title = titles[index],
-            text = descriptions[index],
-            photo = imageNames[index],
-            authorId = authors[index],
-            date =Calendar.getInstance().timeInMillis,
-            contentUrl = "https://example.com/articles/${titles[index].lowercase().replace("""[^a-z0-9]+""".toRegex(), "-")}",
-            tags = tagsList[index]
-        )
-    }
-}

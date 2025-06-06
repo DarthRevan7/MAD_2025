@@ -462,6 +462,11 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
                                     composableScope.launch {
                                         rvm.addAllTripReviews(reviewsToSubmit) {success, reviews ->
                                             if (success) {
+                                                for (review in reviews) {
+                                                    if (review.reviewerId != -1) {
+                                                        rvm.calculateRatingById(review.reviewedUserId)
+                                                    }
+                                                }
                                                 navController.popBackStack()
                                             }
                                         }
