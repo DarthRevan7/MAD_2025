@@ -4,7 +4,6 @@ import android.util.Log
 import com.example.voyago.Collections
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
-import com.google.firebase.firestore.PropertyName
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -22,9 +21,7 @@ import java.util.Date
 data class Review(
     val reviewId: Int = 0,
     val tripId: Int = 0,
-    @get:PropertyName("isTripReview")
-    @set:PropertyName("isTripReview")
-    var isTripReview: Boolean = false,
+    val isTripReview: Boolean = false,
     var reviewerId: Int = 0,
     var reviewedUserId: Int = 0,
     var title: String = "",
