@@ -353,7 +353,6 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
         }
-            }
     }
 
 
@@ -387,6 +386,7 @@ fun handleGoogleSignInResult(
         setError("Google sign-in canceled.")
     }
 }
+
 
 /*
 @Preview(showBackground = true, device = "spec:width=412dp,height=892dp")
