@@ -1,6 +1,5 @@
 package com.example.voyago.view
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -12,7 +11,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Person
@@ -36,14 +34,16 @@ data class RegistrationFormValues(
     val password: String,
     val dateOfBirth: String,
     val country: String
-): Serializable
+) : Serializable
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateAccount2Screen(navController: NavController,
+fun CreateAccount2Screen(
+    navController: NavController,
     onCreateAccountClick: (String, List<String>, List<String>) -> Unit = { _, _, _ -> }
 ) {
-    val fields = navController.previousBackStackEntry?.savedStateHandle?.get<RegistrationFormValues>("registrationFormValues")
+    val fields =
+        navController.previousBackStackEntry?.savedStateHandle?.get<RegistrationFormValues>("registrationFormValues")
 
     var username by remember { mutableStateOf("") }
     var selectedTravelTypes by remember { mutableStateOf(setOf<String>()) }
@@ -122,7 +122,7 @@ fun CreateAccount2Screen(navController: NavController,
             // Username TextField
             OutlinedTextField(
                 value = username,
-                onValueChange = { username = it },
+                onValueChange = { username = it; usernameTouched = true },
                 placeholder = {
                     Text(
                         text = "username",
@@ -131,6 +131,14 @@ fun CreateAccount2Screen(navController: NavController,
                 },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
+                isError = usernameTouched && !isValidUsername(username),
+                supportingText = {
+                    if (usernameTouched && username.isEmpty()) {
+                        Text("This field cannot be empty.")
+                    } else if (usernameTouched && !isValidUsername(username)) {
+                        Text("Username must start with a letter and be 3-20 characters long.")
+                    }
+                },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -261,11 +269,12 @@ fun CreateAccount2Screen(navController: NavController,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    selectedDestinations = if (selectedDestinations.contains(destination)) {
-                                        selectedDestinations - destination
-                                    } else {
-                                        selectedDestinations + destination
-                                    }
+                                    selectedDestinations =
+                                        if (selectedDestinations.contains(destination)) {
+                                            selectedDestinations - destination
+                                        } else {
+                                            selectedDestinations + destination
+                                        }
                                 }
                                 .padding(vertical = 8.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -323,6 +332,16 @@ fun CreateAccount2Screen(navController: NavController,
         }
     }
 }
+
+fun isValidUsername(username: String): Boolean {
+    val trimmed = username.trim()
+
+    // Username must start with a letter, and contain only letters, digits, or underscores
+    val regex = Regex("^[a-zA-Z][a-zA-Z0-9_]{2,19}$")
+
+    return regex.matches(trimmed)
+}
+
 
 /*
 @Preview(showBackground = true, device = "spec:width=412dp,height=892dp")
