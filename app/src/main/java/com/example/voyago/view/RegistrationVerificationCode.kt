@@ -20,16 +20,20 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.example.voyago.model.User
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VoyagoRegistrationVerificationCodeScreen(
-    onBackClick: () -> Unit = {},
+fun RegistrationVerificationCodeScreen(
+    navController: NavController,
     onConfirmClick: (String) -> Unit = { _ -> },
     onSendAgainClick: () -> Unit = {},
-    errorMessage: String? = null,
-    onErrorDismiss: () -> Unit = {}
+    errorMessage: String? = null
 ) {
+    val user =
+        navController.previousBackStackEntry?.savedStateHandle?.get<User>("userValues")
+
     var code by remember { mutableStateOf("") }
 
     Column(
@@ -81,7 +85,7 @@ fun VoyagoRegistrationVerificationCodeScreen(
 
             // Subtitle
             Text(
-                text = "Enter the code  sent to your E-mail to confirm your registration",
+                text = "Click on the link sent to your E-mail to confirm your registration",
                 fontSize = 16.sp,
                 color = Color.Gray,
                 textAlign = TextAlign.Center,
@@ -90,94 +94,6 @@ fun VoyagoRegistrationVerificationCodeScreen(
             )
 
             Spacer(modifier = Modifier.height(40.dp))
-
-            // Code TextField
-            OutlinedTextField(
-                value = code,
-                onValueChange = { code = it },
-                placeholder = {
-                    Text(
-                        text = "code",
-                        color = Color.Gray
-                    )
-                },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF6B46C1),
-                    unfocusedBorderColor = Color.LightGray,
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
-                )
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Confirm Button
-            Button(
-                onClick = { onConfirmClick(code) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF6B46C1)
-                )
-            ) {
-                Text(
-                    text = "Confirm",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Error Message
-            errorMessage?.let { message ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFFFEBEE)
-                    ),
-                    shape = RoundedCornerShape(8.dp),
-                    border = BorderStroke(
-                        1.dp,
-                        Color(0xFFE57373)
-                    )
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(12.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = message,
-                            color = Color(0xFFD32F2F),
-                            fontSize = 14.sp,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Or text
-            Text(
-                text = "or",
-                color = Color.Gray,
-                fontSize = 16.sp
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
 
             // Send Again Button
             Button(
@@ -201,11 +117,12 @@ fun VoyagoRegistrationVerificationCodeScreen(
     }
 }
 
+/*
 @Preview(showBackground = true, device = "spec:width=412dp,height=892dp")
 @Composable
 fun VoyagoRegistrationVerificationCodeScreenPreview() {
     MaterialTheme {
-        VoyagoRegistrationVerificationCodeScreen()
+        RegistrationVerificationCodeScreen()
     }
 }
 
@@ -213,8 +130,8 @@ fun VoyagoRegistrationVerificationCodeScreenPreview() {
 @Composable
 fun VoyagoRegistrationVerificationCodeScreenWithErrorPreview() {
     MaterialTheme {
-        VoyagoRegistrationVerificationCodeScreen(
+        RegistrationVerificationCodeScreen(
             errorMessage = "Invalid code"
         )
     }
-}
+}*/

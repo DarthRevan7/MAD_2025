@@ -275,9 +275,9 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
         }
-            }
     }
 }
+
 
 /*
 @Preview(showBackground = true, device = "spec:width=412dp,height=892dp")

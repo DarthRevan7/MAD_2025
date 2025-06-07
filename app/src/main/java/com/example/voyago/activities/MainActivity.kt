@@ -111,6 +111,7 @@ import com.example.voyago.view.CreateAccountScreen
 import com.example.voyago.viewmodel.ArticleFactory
 import com.google.firebase.FirebaseApp
 import com.example.voyago.view.LoginScreen
+import com.example.voyago.view.RegistrationVerificationCodeScreen
 import com.example.voyago.view.RetrievePassword
 import com.example.voyago.viewmodel.NotificationViewModel
 import com.google.firebase.auth.FirebaseAuth
@@ -326,6 +327,9 @@ fun NavGraphBuilder.loginNavGraph(navController: NavHostController, auth: Fireba
         }
         composable("register2") {
             CreateAccount2Screen(navController)
+        }
+        composable("register_verification_code") {
+            RegistrationVerificationCodeScreen(navController)
         }
     }
 }

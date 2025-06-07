@@ -51,7 +51,6 @@ import java.time.format.DateTimeParseException
 @Composable
 fun CreateAccountScreen(
     navController: NavController,
-    onContinueClick: (name: String, surname: String, email: String, password: String, dateOfBirth: String, country: String) -> Unit = { _, _, _, _, _, _ -> },
     onGoogleSignUpClick: () -> Unit = {}
 ) {
     var name by remember { mutableStateOf("") }
