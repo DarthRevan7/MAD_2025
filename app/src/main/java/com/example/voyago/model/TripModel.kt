@@ -1,5 +1,6 @@
 package com.example.voyago.model
 
+import android.net.Uri
 import android.util.Log
 import com.example.voyago.Collections
 import com.example.voyago.model.Trip.Activity
@@ -37,7 +38,7 @@ fun toCalendar(timeDate : Timestamp) : Calendar {
 //Trip data structure
 data class Trip(
     val id: Int = 0,
-    var photo: String = "",
+    var photo: String? = null,
     var title: String = "",
     var destination: String = "",
     var startDate: Timestamp = Timestamp(Date(0)),
@@ -53,6 +54,35 @@ data class Trip(
     var rejectedUsers: Map<String, JoinRequest> = emptyMap(),                  // userId, number of spots
     var published: Boolean = false
 ) {
+
+    private var cachedPhotoUrl: String? = null
+
+    suspend fun getPhoto(): String {
+        if (photo == null) {
+            return com.example.voyago.StorageHelper.getImageDownloadUrl("trips/placeholder_image.png") ?: ""
+        }
+        val url = com.example.voyago.StorageHelper.getImageDownloadUrl(photo!!)
+        return url ?: com.example.voyago.StorageHelper.getImageDownloadUrl("trips/placeholder_image.png") ?: ""
+    }
+
+    suspend fun setPhoto(newPhotoUri: android.net.Uri): Boolean {
+        val extension = getFileExtension(newPhotoUri)
+        val newPath = "trips/${id}.$extension"
+        val (success, url) = com.example.voyago.StorageHelper.uploadImageToStorage(newPhotoUri, newPath)
+        return if (success && url != null) {
+            photo = newPath
+            cachedPhotoUrl = url
+            true
+        } else {
+            false
+        }
+    }
+
+    private fun getFileExtension(uri: android.net.Uri): String {
+        val path = uri.path ?: return "jpg"
+        val dot = path.lastIndexOf('.')
+        return if (dot != -1 && dot < path.length - 1) path.substring(dot + 1) else "jpg"
+    }
 
     fun startDateAsCalendar(): Calendar = toCalendar(startDate)
     fun endDateAsCalendar(): Calendar = toCalendar(endDate)
@@ -89,7 +119,6 @@ data class Trip(
     }
     constructor() : this (
         id = -1,
-        photo = "",
         title = "",
         destination = "",
         startDate = Timestamp(Date(0)),
@@ -129,7 +158,7 @@ data class Trip(
 
         var endDate = toCalendar(this.endDate)
 
-        condition = photo != "" && title != "" && destination != ""
+        condition = title != "" && destination != ""
 
         condition = condition && startDate != yesterday && endDate != yesterday
 
@@ -574,7 +603,7 @@ class TripModel {
     }
 
     //Function that imports a Trip in the "My Trip" section of the logged in user as private
-    fun importTrip(photo: String, title: String, destination: String, startDate: Calendar,
+    fun importTrip(title: String, destination: String, startDate: Calendar,
                    endDate: Calendar, estimatedPrice: Double, groupSize: Int,
                    activities: Map<String, List<Activity>>, typeTravel: List<String>, creatorId: Int,
                    published: Boolean, onResult: (Boolean, Trip?) -> Unit) {
@@ -594,7 +623,6 @@ class TripModel {
             //Build Trip object with new ID
             val newTrip = Trip(
                 id = newTripId.toInt(),
-                photo = photo,
                 title = title,
                 destination = destination,
                 startDate = Timestamp(startDate.time),

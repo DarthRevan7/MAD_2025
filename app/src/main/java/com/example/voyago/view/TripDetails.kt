@@ -28,8 +28,12 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -50,6 +54,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.StarHalf
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.Remove
@@ -61,8 +66,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.setValue
 import com.example.voyago.activities.ProfilePhoto
 import com.example.voyago.model.Review
@@ -70,7 +73,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -859,40 +861,42 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
 @SuppressLint("DiscouragedApi")
 @Composable
 fun Hero(trip: Trip) {
+    val context = LocalContext.current
+    var imageUrl by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(trip.id) {
+        imageUrl = trip.getPhoto()
+    }
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(300.dp)
     ) {
-        val context = LocalContext.current
-        val drawableId = remember(trip.photo) {
-            context.resources.getIdentifier(trip.photo, "drawable", context.packageName)
-        }
-
-        //The photo is saved as a uri (the user selected it from the gallery)
-        if(trip.photo.isUriString()) {
-            AsyncImage(
-                model = ImageRequest.Builder(context)
-                    .data(trip.photo.toUri())
-                    .crossfade(true)
-                    .build(),
-                contentDescription = "Selected Trip Photo",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
-        }
-        //The photo is saved as a drawable (the trip was already in the database and the user hadn't edit its photo)
-        else {
-            AsyncImage(
-                model = ImageRequest.Builder(context)
-                    .data(drawableId)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = trip.photo,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxSize()
-            )
+        when {
+            imageUrl != null -> {
+                AsyncImage(
+                    model = ImageRequest.Builder(context)
+                        .data(imageUrl)
+                        .build(),
+                    contentDescription = "Trip Photo",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+            else -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.LightGray),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AddPhotoAlternate,
+                        contentDescription = "Placeholder",
+                        tint = Color.White,
+                        modifier = Modifier.size(64.dp)
+                    )
+                }
+            }
         }
 
         //Title and Destination of the trip

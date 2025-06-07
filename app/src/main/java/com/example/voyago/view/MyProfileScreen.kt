@@ -28,7 +28,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
@@ -40,6 +43,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -60,23 +66,33 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.example.voyago.R
-import com.example.voyago.activities.*
+import com.example.voyago.activities.ProfilePhoto
 import com.example.voyago.model.Article
 import com.example.voyago.model.Review
 import com.example.voyago.model.Trip
 import com.example.voyago.model.User
-import com.example.voyago.viewmodel.*
+import com.example.voyago.viewmodel.ArticleViewModel
+import com.example.voyago.viewmodel.ReviewViewModel
+import com.example.voyago.viewmodel.TripViewModel
+import com.example.voyago.viewmodel.UserViewModel
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.auth.api.signin.GoogleSignIn
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: ArticleViewModel, uvm: UserViewModel, rvm: ReviewViewModel) {
+fun MyProfileScreen(
+    vm: TripViewModel,
+    navController: NavController,
+    vm2: ArticleViewModel,
+    uvm: UserViewModel,
+    rvm: ReviewViewModel
+) {
     val context = LocalContext.current
-    
+
     //Get the logged in user (id=1)
     val user by uvm.loggedUser.collectAsState()
     //List of trip created and published by the logged in user (id=1)
@@ -107,40 +123,45 @@ fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: Articl
     ) {
         item {
             //Box with Profile Photo, Username and Logout, Back and Edit icons
-            Box(modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .height(300.dp)
-                    .background(Color(0xdf, 0xd1, 0xe0, 255), shape = RectangleShape)) {
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(300.dp)
+                        .background(Color(0xdf, 0xd1, 0xe0, 255), shape = RectangleShape)
+            ) {
 
-                Image(painter = painterLogout, "logout", modifier = Modifier
-                    .size(60.dp)
-                    .align(alignment = Alignment.TopEnd)
-                    .padding(16.dp)
-                    .clickable {
-                        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                            .requestIdToken(context.getString(R.string.default_web_client_id))
-                            .requestEmail()
-                            .build()
-                        val googleSignInClient = GoogleSignIn.getClient(context, gso)
-                        val auth = FirebaseAuth.getInstance()
-                        auth.signOut()
-                        googleSignInClient.signOut()
-                        navController.navigate("home_main") {
-                            popUpTo(0) { inclusive = true } // clear back stack
+                Image(
+                    painter = painterLogout, "logout", modifier = Modifier
+                        .size(60.dp)
+                        .align(alignment = Alignment.TopEnd)
+                        .padding(16.dp)
+                        .clickable {
+                            val gso =
+                                GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                                    .requestIdToken(context.getString(R.string.default_web_client_id))
+                                    .requestEmail()
+                                    .build()
+                            val googleSignInClient = GoogleSignIn.getClient(context, gso)
+                            val auth = FirebaseAuth.getInstance()
+                            auth.signOut()
+                            googleSignInClient.signOut()
+                            navController.navigate("home_main") {
+                                popUpTo(0) { inclusive = true } // clear back stack
+                            }
                         }
-                    }
                 )
 
-                Image(painter = painterEdit, "edit", modifier = Modifier
-                    .size(60.dp)
-                    .align(alignment = Alignment.BottomEnd)
-                    .padding(16.dp)
-                    .offset(y = (-30).dp)
-                    .clickable {
-                        uvm.setProfileImageUri(user.profilePictureUrl?.toUri())
-                        navController.navigate("edit_profile")
-                    }
+                Image(
+                    painter = painterEdit, "edit", modifier = Modifier
+                        .size(60.dp)
+                        .align(alignment = Alignment.BottomEnd)
+                        .padding(16.dp)
+                        .offset(y = (-30).dp)
+                        .clickable {
+                            uvm.setProfileImageUri(user.profilePictureUrl?.toUri())
+                            navController.navigate("edit_profile")
+                        }
                 )
 
                 ProfilePhoto(
@@ -172,7 +193,7 @@ fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: Articl
                         .offset(y = (-50).dp)
                 )
 
-                Spacer( Modifier.height(20.dp))
+                Spacer(Modifier.height(20.dp))
 
                 Text(
                     text = user.country,
@@ -274,7 +295,16 @@ fun RatingAndReliability(rating: Float, reliability: Int) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun TabAboutTripsReview(user: User, joinedTrips: List<Trip>, publishedTrips: List<Trip>, vm: TripViewModel, vm2: ArticleViewModel, navController: NavController, uvm: UserViewModel, rvm: ReviewViewModel) {
+fun TabAboutTripsReview(
+    user: User,
+    joinedTrips: List<Trip>,
+    publishedTrips: List<Trip>,
+    vm: TripViewModel,
+    vm2: ArticleViewModel,
+    navController: NavController,
+    uvm: UserViewModel,
+    rvm: ReviewViewModel
+) {
 
     // TAB with About, Trips & Articles, Reviews
     val tabs = listOf("About", "Trips & Articles", "Reviews")
@@ -304,23 +334,28 @@ fun TabAboutTripsReview(user: User, joinedTrips: List<Trip>, publishedTrips: Lis
         tabs.forEachIndexed { index, title ->
             Tab(
                 selected = selectedTabIndex == index,
-                onClick = {selectedTabIndex = index},
+                onClick = { selectedTabIndex = index },
                 text = {
-                    Text(title, color = if (index == selectedTabIndex) {
-                        Color(0x65, 0x55, 0x8f, 255)
-                    } else {
-                        Color.Black
-                    })
+                    Text(
+                        title, color = if (index == selectedTabIndex) {
+                            Color(0x65, 0x55, 0x8f, 255)
+                        } else {
+                            Color.Black
+                        }
+                    )
                 }
             )
         }
     }
 
     Box(
-        modifier = Modifier.fillMaxSize().background(Color.White).padding(16.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+            .padding(16.dp)
     ) {
 
-        when(selectedTabIndex) {
+        when (selectedTabIndex) {
 
             0 -> {
                 Column(
@@ -328,7 +363,8 @@ fun TabAboutTripsReview(user: User, joinedTrips: List<Trip>, publishedTrips: Lis
                     modifier = Modifier.fillMaxSize()
                 ) {
                     Text(user.userDescription)
-                    Text(text = "Preferences about the type of travel:",
+                    Text(
+                        text = "Preferences about the type of travel:",
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(top = 16.dp)
                     )
@@ -339,7 +375,7 @@ fun TabAboutTripsReview(user: User, joinedTrips: List<Trip>, publishedTrips: Lis
                         user.typeTravel.forEach { type ->
                             SuggestionChip(
                                 onClick = {},
-                                label = {Text(type.toString().lowercase())},
+                                label = { Text(type.toString().lowercase()) },
                                 colors = SuggestionChipDefaults.elevatedSuggestionChipColors(
                                     labelColor = Color(0x4f, 0x37, 0x8b, 255)
                                 )
@@ -348,7 +384,8 @@ fun TabAboutTripsReview(user: User, joinedTrips: List<Trip>, publishedTrips: Lis
                         }
                     }
 
-                    Text(text = "Most desired destinations:",
+                    Text(
+                        text = "Most desired destinations:",
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(top = 16.dp)
                     )
@@ -359,7 +396,7 @@ fun TabAboutTripsReview(user: User, joinedTrips: List<Trip>, publishedTrips: Lis
                         user.desiredDestination.forEach { destination ->
                             SuggestionChip(
                                 onClick = {},
-                                label = {Text(destination)},
+                                label = { Text(destination) },
                                 colors = SuggestionChipDefaults.elevatedSuggestionChipColors(
                                     labelColor = Color(0x4f, 0x37, 0x8b, 255)
                                 )
@@ -382,7 +419,10 @@ fun TabAboutTripsReview(user: User, joinedTrips: List<Trip>, publishedTrips: Lis
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(140.dp)
-                            .background(Color(0xdf, 0xd1, 0xe0, 255), shape = RoundedCornerShape(10.dp))
+                            .background(
+                                Color(0xdf, 0xd1, 0xe0, 255),
+                                shape = RoundedCornerShape(10.dp)
+                            )
                             .padding(10.dp)
                     ) {
                         if (publishedTrips.isEmpty() && joinedTrips.isEmpty()) {
@@ -408,7 +448,8 @@ fun TabAboutTripsReview(user: User, joinedTrips: List<Trip>, publishedTrips: Lis
                         }
                     }
 
-                    Text(text = "Articles:",
+                    Text(
+                        text = "Articles:",
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(top = 16.dp, bottom = 10.dp)
                     )
@@ -417,16 +458,20 @@ fun TabAboutTripsReview(user: User, joinedTrips: List<Trip>, publishedTrips: Lis
                         modifier = Modifier
                             .height(140.dp)
                             .wrapContentWidth()
-                            .background(Color(0xdf, 0xd1, 0xe0, 255), shape = RoundedCornerShape(10.dp))
+                            .background(
+                                Color(0xdf, 0xd1, 0xe0, 255),
+                                shape = RoundedCornerShape(10.dp)
+                            )
                             .padding(10.dp)
                     ) {
                         Column(
                             verticalArrangement = Arrangement.spacedBy(5.dp),
                             modifier = Modifier
-                                .height((3*43).dp)
+                                .height((3 * 43).dp)
                                 .verticalScroll(rememberScrollState())
                         ) {
-                            val articles by vm2.articlesByUserId(user.id).collectAsState(initial = emptyList())
+                            val articles by vm2.articlesByUserId(user.id)
+                                .collectAsState(initial = emptyList())
 
                             articles.forEach { item ->
                                 ShowUserArticle(item)
@@ -444,18 +489,23 @@ fun TabAboutTripsReview(user: User, joinedTrips: List<Trip>, publishedTrips: Lis
                         modifier = Modifier
                             .fillMaxWidth()
                             .wrapContentHeight()
-                            .background(Color(0xdf, 0xd1, 0xe0, 255), shape = RoundedCornerShape(10.dp))
+                            .background(
+                                Color(0xdf, 0xd1, 0xe0, 255),
+                                shape = RoundedCornerShape(10.dp)
+                            )
                             .padding(10.dp)
                     ) {
                         Column(
                             verticalArrangement = Arrangement.spacedBy(5.dp),
                             modifier = Modifier
-                                .height((7*43).dp)
+                                .height((7 * 43).dp)
                                 .verticalScroll(rememberScrollState())
                         ) {
-                            if (reviews.isEmpty()){
-                                Text(text = "No reviews yet",
-                                    textAlign = TextAlign.Center)
+                            if (reviews.isEmpty()) {
+                                Text(
+                                    text = "No reviews yet",
+                                    textAlign = TextAlign.Center
+                                )
                             } else {
                                 reviews.forEach { review ->
                                     ShowUserReview(review, navController, uvm)
@@ -476,12 +526,21 @@ fun ShowUserTrip(trip: Trip, vm: TripViewModel, navController: NavController) {
     val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     val formattedDate = dateFormat.format(trip.startDateAsLong())
 
+    val context = LocalContext.current
+    var imageUrl by remember { mutableStateOf<String?>(null) }
+    val coroutineScope = rememberCoroutineScope()
+    LaunchedEffect(trip.id) {
+        coroutineScope.launch {
+            imageUrl = trip.getPhoto()
+        }
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(60.dp)
             .background(Color(0xf9, 0xf6, 0xf9, 255))
-            .clickable{
+            .clickable {
                 vm.userAction = TripViewModel.UserAction.VIEW_OTHER_TRIP
                 vm.setOtherTrip(trip)
                 navController.navigate("trip_details")
@@ -495,21 +554,10 @@ fun ShowUserTrip(trip: Trip, vm: TripViewModel, navController: NavController) {
                 .clip(CircleShape)
                 .background(Color.Gray) // fallback background
         ) {
-            if (trip.photo.isNotBlank()) {
-                val context = LocalContext.current
-
-                val imageModel = if (!trip.photo.isUriString()) {
-                    // Local drawable resource
-                    context.resources.getIdentifier(trip.photo, "drawable", context.packageName)
-                } else {
-                    // URI string
-                    trip.photo
-                }
-
+            if (imageUrl != null) {
                 AsyncImage(
                     model = ImageRequest.Builder(context)
-                        .data(imageModel)
-                        .crossfade(true)
+                        .data(imageUrl)
                         .build(),
                     contentDescription = "Trip or Article Image",
                     contentScale = ContentScale.Crop,
@@ -582,7 +630,7 @@ fun ShowUserArticle(article: Article) {
         Spacer(modifier = Modifier.width(12.dp))
 
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = article.title?:"No title", maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(text = article.title ?: "No title", maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
 
         Text(
@@ -650,6 +698,43 @@ fun ShowUserReview(review: Review, navController: NavController, uvm: UserViewMo
         }
 
         Spacer(Modifier.padding(16.dp))
+    }
+}
+
+@Composable
+fun TripImageProfile(trip: Trip) {
+    val context = LocalContext.current
+    var imageUrl by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(trip.id) {
+        imageUrl = trip.getPhoto()
+    }
+    when {
+        imageUrl != null -> {
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(imageUrl)
+                    .build(),
+                contentDescription = "Trip Photo",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+
+        else -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.LightGray),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Filled.AddPhotoAlternate,
+                    contentDescription = "Add Photo",
+                    tint = Color.White,
+                    modifier = Modifier.size(64.dp)
+                )
+            }
+        }
     }
 }
 

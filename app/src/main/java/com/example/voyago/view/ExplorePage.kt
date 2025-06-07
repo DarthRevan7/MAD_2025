@@ -18,35 +18,39 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import com.example.voyago.viewmodel.*
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.example.voyago.R
 import com.example.voyago.model.Trip
+import com.example.voyago.viewmodel.Factory
+import com.example.voyago.viewmodel.TripViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,7 +72,7 @@ fun ExplorePage(navController: NavController, vm: TripViewModel = viewModel(fact
         vm.updatePublishedTrip()
         vm.setMaxMinPrice()
 
-        if(vm.userAction != TripViewModel.UserAction.SEARCHING && vm.userAction != TripViewModel.UserAction.VIEW_TRIP) {
+        if (vm.userAction != TripViewModel.UserAction.SEARCHING && vm.userAction != TripViewModel.UserAction.VIEW_TRIP) {
             vm.resetFilters()
         }
         vm.applyFilters()
@@ -110,7 +114,9 @@ fun ExplorePage(navController: NavController, vm: TripViewModel = viewModel(fact
             item {
                 Box(
                     contentAlignment = Alignment.TopCenter,
-                    modifier = Modifier.padding(16.dp).fillMaxWidth()
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth()
                 ) {
                     Text("No trips for the selected filters.")
                 }
@@ -141,37 +147,7 @@ fun TripCard(trip: Trip, navController: NavController, vm: TripViewModel, edit: 
         }
     ) {
         Box {
-            if(!trip.photo.isUriString()) {
-                //AsyncImage with resources.Drawable
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(
-                            LocalContext.current.resources.getIdentifier(
-                                trip.photo,
-                                "drawable",
-                                LocalContext.current.packageName
-                            )
-                        )
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = trip.destination,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                )
-            } else {
-                //Async Image with Uri
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(trip.photo)
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = "Selected Trip Photo",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
+            TripImageExplore(trip)
 
             //Destination and Title information
             Box(
@@ -235,5 +211,24 @@ fun TripCard(trip: Trip, navController: NavController, vm: TripViewModel, edit: 
                 BookedBanner(Modifier.align(Alignment.TopEnd))
             }
         }
+    }
+}
+
+@Composable
+fun TripImageExplore(trip: Trip) {
+    val context = LocalContext.current
+    var imageUrl by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(trip.photo) {
+        imageUrl = trip.getPhoto()
+    }
+    if (imageUrl != null && imageUrl!!.isNotBlank()) {
+        AsyncImage(
+            model = ImageRequest.Builder(context)
+                .data(imageUrl)
+                .build(),
+            contentDescription = "Trip Photo",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
     }
 }
