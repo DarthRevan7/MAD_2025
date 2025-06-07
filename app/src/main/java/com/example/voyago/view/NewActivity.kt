@@ -148,6 +148,10 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                                 set(Calendar.DAY_OF_MONTH, d)
                             }.stripTime()
 
+                            // 获取行程的开始和结束日期，并清除时间部分
+                            val tripStartCal = toCalendar(currentTrip.startDate).stripTime()
+                            val tripEndCal = toCalendar(currentTrip.endDate).stripTime()
+
                             val isValid = !(pickedCalendar.before(toCalendar(currentTrip.startDate).stripTime()) ||
                                     pickedCalendar.after(toCalendar(currentTrip.endDate).stripTime()))
 
@@ -161,7 +165,25 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                                 dateErrorMessage = "Activity date must be within the trip period \n(${dateFormat.format(toCalendar(currentTrip.startDate).time)} - ${dateFormat.format(toCalendar(currentTrip.endDate).time)})"
                             }
                         }, year, month, day
-                    )
+                    ).apply {
+                        // 设置日期选择器的最小和最大日期限制
+                        val tripStartCal = toCalendar(currentTrip.startDate) // 获取行程开始日期
+                        val tripEndCal = toCalendar(currentTrip.endDate) // 获取行程结束日期
+
+                        // 设置时间为一天的开始和结束，确保整天都可以选择
+                        tripStartCal.set(Calendar.HOUR_OF_DAY, 0) // 开始日期设置为00:00:00
+                        tripStartCal.set(Calendar.MINUTE, 0)
+                        tripStartCal.set(Calendar.SECOND, 0)
+                        tripStartCal.set(Calendar.MILLISECOND, 0)
+
+                        tripEndCal.set(Calendar.HOUR_OF_DAY, 23) // 结束日期设置为23:59:59
+                        tripEndCal.set(Calendar.MINUTE, 59)
+                        tripEndCal.set(Calendar.SECOND, 59)
+                        tripEndCal.set(Calendar.MILLISECOND, 999)
+
+                        datePicker.minDate = tripStartCal.timeInMillis // 设置最小可选日期
+                        datePicker.maxDate = tripEndCal.timeInMillis // 设置最大可选日期
+                    }
                 }
 
                 Button(
