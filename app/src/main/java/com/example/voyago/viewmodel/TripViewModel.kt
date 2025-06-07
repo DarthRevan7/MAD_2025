@@ -499,52 +499,54 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
     }
 
     //Delete activity from a specific trip
+    //Delete activity from a specific trip
     fun deleteActivity(activity: Trip.Activity) {
         Log.d("TripViewModel", "Deleting activity: ${activity.id}")
 
-        val currentTrip = _selectedTrip.value
-
-        // 根据你的用户操作类型更新相应的 trip
         when (userAction) {
             UserAction.CREATE_TRIP -> {
-                // 从 newTrip 中删除活动
+                // 对于新创建的行程，只在本地删除
                 val updatedActivities = newTrip.activities.toMutableMap()
-
                 updatedActivities.forEach { (day, activities) ->
                     val filteredActivities = activities.filter { it.id != activity.id }
-                    updatedActivities[day] = filteredActivities
+                    if (filteredActivities.isEmpty()) {
+                        updatedActivities.remove(day)
+                    } else {
+                        updatedActivities[day] = filteredActivities
+                    }
                 }
-
                 newTrip = newTrip.copy(activities = updatedActivities)
-
-                // 更新 selectedTrip 以反映更改
                 _selectedTrip.value = newTrip
             }
 
             UserAction.EDIT_TRIP -> {
-                // 从 editTrip 中删除活动
-                val updatedActivities = editTrip.activities.toMutableMap()
-
-                updatedActivities.forEach { (day, activities) ->
-                    val filteredActivities = activities.filter { it.id != activity.id }
-                    updatedActivities[day] = filteredActivities
+                // 对于编辑现有行程，调用 TripModel 删除并同步到数据库
+                tripModel.removeActivityFromTrip(activity.id, editTrip) { success, updatedTrip ->
+                    if (success && updatedTrip != null) {
+                        editTrip = updatedTrip
+                        _selectedTrip.value = updatedTrip
+                        Log.d("TripViewModel", "Activity deleted and synced to Firebase successfully")
+                    } else {
+                        Log.e("TripViewModel", "Failed to delete activity from Firebase")
+                    }
                 }
-
-                editTrip = editTrip.copy(activities = updatedActivities)
-
-                // 更新 selectedTrip 以反映更改
-                _selectedTrip.value = editTrip
             }
 
-            UserAction.VIEW_TRIP -> TODO()
-            UserAction.NOTHING -> TODO()
-            UserAction.SEARCHING -> TODO()
-            UserAction.FILTER_SELECTION -> TODO()
-            UserAction.VIEW_OTHER_TRIP -> TODO()
-            UserAction.EDIT_ACTIVITY -> TODO()
+            else -> {
+                // 对于其他情况，如果是已保存的行程，也调用 TripModel
+                val currentTrip = _selectedTrip.value
+                if (currentTrip.id != -1) {
+                    tripModel.removeActivityFromTrip(activity.id, currentTrip) { success, updatedTrip ->
+                        if (success && updatedTrip != null) {
+                            _selectedTrip.value = updatedTrip
+                            Log.d("TripViewModel", "Activity deleted and synced to Firebase successfully")
+                        } else {
+                            Log.e("TripViewModel", "Failed to delete activity from Firebase")
+                        }
+                    }
+                }
+            }
         }
-
-        Log.d("TripViewModel", "Activity deleted successfully")
     }
 
     //Edit a specific activity from a specific trip
