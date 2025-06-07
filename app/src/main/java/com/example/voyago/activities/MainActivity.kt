@@ -15,16 +15,19 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
-import androidx.compose.foundation.*
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -47,6 +50,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,7 +63,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -75,7 +83,11 @@ import androidx.navigation.navigation
 import coil3.compose.AsyncImage
 import com.example.voyago.model.NavItem
 import com.example.voyago.R
+import com.example.voyago.model.NavItem
+import com.example.voyago.model.User
 import com.example.voyago.view.ActivitiesList
+import com.example.voyago.view.CreateAccount2Screen
+import com.example.voyago.view.CreateAccountScreen
 import com.example.voyago.view.CreateNewTrip
 import com.example.voyago.view.EditActivity
 import com.example.voyago.view.EditProfileScreen
@@ -83,23 +95,25 @@ import com.example.voyago.view.EditTrip
 import com.example.voyago.view.ExplorePage
 import com.example.voyago.view.FiltersSelection
 import com.example.voyago.view.HomePageScreen
+import com.example.voyago.view.LoginScreen
 import com.example.voyago.view.MyProfileScreen
+import com.example.voyago.view.MyReviews
 import com.example.voyago.view.MyTripsPage
 import com.example.voyago.view.NewActivity
+import com.example.voyago.view.NotificationView
+import com.example.voyago.view.RegistrationVerificationCodeScreen
+import com.example.voyago.view.RetrievePassword
 import com.example.voyago.view.TripApplications
 import com.example.voyago.view.TripDetails
 import com.example.voyago.view.UserProfileScreen
+import com.example.voyago.viewmodel.ArticleFactory
 import com.example.voyago.viewmodel.ArticleViewModel
 import com.example.voyago.viewmodel.Factory
-import com.example.voyago.viewmodel.TripViewModel
-import java.text.SimpleDateFormat
-import java.util.Locale
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
-import androidx.compose.runtime.getValue
-import com.example.voyago.view.MyReviews
+import com.example.voyago.viewmodel.NotificationFactory
+import com.example.voyago.viewmodel.NotificationViewModel
 import com.example.voyago.viewmodel.ReviewFactory
 import com.example.voyago.viewmodel.ReviewViewModel
+import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserFactory
 import com.example.voyago.viewmodel.UserViewModel
 import androidx.compose.ui.viewinterop.AndroidView
@@ -111,13 +125,14 @@ import com.example.voyago.view.CreateAccount2Screen
 import com.example.voyago.view.CreateAccountScreen
 import com.example.voyago.viewmodel.ArticleFactory
 import com.google.firebase.FirebaseApp
-import com.example.voyago.view.LoginScreen
-import com.example.voyago.view.NotificationView
-import com.example.voyago.view.RetrievePassword
-import com.example.voyago.viewmodel.NotificationViewModel
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.firestore
 import com.google.firebase.messaging.FirebaseMessaging
-import com.example.voyago.viewmodel.NotificationFactory
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 
 sealed class Screen(val route: String) {
@@ -130,6 +145,30 @@ sealed class Screen(val route: String) {
     object Login : Screen("login_root")
 }
 
+fun createNewUser(
+    firebaseUser: FirebaseUser, newUser: User, onResult: (Boolean, User?) -> Unit
+) {
+    val firestore = com.google.firebase.Firebase.firestore
+    val counterRef = firestore.collection("metadata").document("userCounter")
+
+    newUser.email = firebaseUser.email ?: ""
+
+    firestore.runTransaction { transaction ->
+        val snapshot = transaction.get(counterRef)
+        val lastUserId = snapshot.getLong("lastUserId") ?: 0
+        val newUserId = lastUserId + 1
+        transaction.update(counterRef, "lastUserId", newUserId)
+        val userWithId = newUser.copy(id = newUserId.toInt())
+        val userDocRef = firestore.collection("users").document(newUserId.toString())
+        transaction.set(userDocRef, userWithId)
+        userWithId
+    }.addOnSuccessListener { user ->
+        onResult(true, user)
+    }.addOnFailureListener { e ->
+        onResult(false, null)
+    }
+}
+
 class MainActivity : ComponentActivity() {
     private lateinit var cameraExecutor: ExecutorService
 
@@ -139,6 +178,40 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         FirebaseApp.initializeApp(this)
+
+        val viewModel: UserViewModel by viewModels { UserFactory }
+
+        val data = intent?.data
+        val mode = data?.getQueryParameter("mode")
+        val oobCode = data?.getQueryParameter("oobCode")
+
+        if (mode == "verifyEmail" && oobCode != null) {
+            FirebaseAuth.getInstance().applyActionCode(oobCode)
+                .addOnSuccessListener {
+                    val currentUser = FirebaseAuth.getInstance().currentUser
+                    val pendingUser = viewModel.pendingUser
+
+                    if (currentUser != null && currentUser.isEmailVerified && pendingUser != null) {
+                        createNewUser(
+                            firebaseUser = currentUser,
+                            newUser = pendingUser,
+                            onResult = { success, _ ->
+                                if (success) {
+                                    viewModel.clearUser()
+                                    viewModel.setUserVerified(true)
+                                }
+                            }
+                        )
+                    } else {
+                        Toast.makeText(this, "User data missing or not verified", Toast.LENGTH_LONG)
+                            .show()
+                    }
+                }
+                .addOnFailureListener {
+                    Toast.makeText(this, "Verification failed: ${it.message}", Toast.LENGTH_LONG)
+                        .show()
+                }
+        }
 
         enableEdgeToEdge()
         context = this
@@ -162,7 +235,7 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            MainScreen()
+            MainScreen(viewModel)
         }
 
     }
@@ -204,13 +277,30 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MainScreen() {
+fun MainScreen(viewModel: UserViewModel) {
     val navController = rememberNavController()
     val notificationViewModel = NotificationViewModel()
+    val userVerified by viewModel.userVerified.collectAsState()
+
+    LaunchedEffect(userVerified) {
+        if (userVerified) {
+            navController.navigate("profile_overview") {
+                popUpTo(navController.graph.findStartDestination().id) {
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
+            }
+            viewModel.resetUserVerified()
+        }
+    }
+
     Scaffold(
-        topBar = { TopBar(
-            nvm = notificationViewModel,
-            navController = navController)
+        topBar = {
+            TopBar(
+                nvm = notificationViewModel,
+                navController = navController
+            )
         },
         bottomBar = { BottomBar(navController) }
     ) { innerPadding ->
@@ -267,7 +357,6 @@ fun BottomBar(navController: NavHostController) {
 }
 
 
-
 @Composable
 fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modifier) {
     val auth = FirebaseAuth.getInstance()
@@ -299,9 +388,9 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
             )
         }
         val notificationViewModel = NotificationViewModel()
-                composable(Screen.Notifications.route) {
-                    NotificationView(notificationViewModel)
-                }
+        composable(Screen.Notifications.route) {
+            NotificationView(notificationViewModel)
+        }
     }
 }
 
@@ -314,7 +403,8 @@ fun RequireAuth(navController: NavController, content: @Composable () -> Unit) {
         content()
     } else {
         LaunchedEffect(Unit) {
-            Toast.makeText(context, "Please log in to access this section", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Please log in to access this section", Toast.LENGTH_SHORT)
+                .show()
             navController.navigate(Screen.Login.route)
         }
     }
@@ -331,8 +421,25 @@ fun NavGraphBuilder.loginNavGraph(navController: NavHostController, auth: Fireba
         composable("register") {
             CreateAccountScreen(navController)
         }
-        composable("register2") {
-            CreateAccount2Screen(navController)
+        composable("register2") { entry ->
+            val loginGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Login.route)
+            }
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = loginGraphEntry,
+                factory = Factory
+            )
+            CreateAccount2Screen(navController, userViewModel)
+        }
+        composable("register_verification_code") { entry ->
+            val loginGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Login.route)
+            }
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = loginGraphEntry,
+                factory = Factory
+            )
+            RegistrationVerificationCodeScreen(navController, userViewModel)
         }
     }
 }
@@ -370,16 +477,20 @@ fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = NotificationFactory
             )
-            TripDetails(navController = navController,
+            TripDetails(
+                navController = navController,
                 vm = tripViewModel,
                 owner = false,
                 uvm = userViewModel,
                 rvm = reviewViewModel,
-                nvm = notificationViewModel)
+                nvm = notificationViewModel
+            )
         }
 
-        composable("user_profile/{userId}",
-            arguments = listOf(navArgument("userId") { type = NavType.IntType })) { entry ->
+        composable(
+            "user_profile/{userId}",
+            arguments = listOf(navArgument("userId") { type = NavType.IntType })
+        ) { entry ->
             val exploreGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.Explore.route)
             }
@@ -425,8 +536,6 @@ fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
 }
 
 
-
-
 fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
 
     navigation(startDestination = "my_trips_main", route = Screen.MyTrips.route) {
@@ -468,12 +577,14 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = NotificationFactory
             )
-            TripDetails(navController = navController,
+            TripDetails(
+                navController = navController,
                 vm = tripViewModel,
                 owner = true,
                 uvm = userViewModel,
                 rvm = reviewViewModel,
-                nvm = notificationViewModel)
+                nvm = notificationViewModel
+            )
         }
 
         composable("my_reviews") { entry ->
@@ -492,8 +603,10 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = ReviewFactory
             )
-            MyReviews(navController = navController, vm = tripViewModel, uvm = userViewModel,
-                rvm = reviewViewModel)
+            MyReviews(
+                navController = navController, vm = tripViewModel, uvm = userViewModel,
+                rvm = reviewViewModel
+            )
         }
 
         composable("trip_applications") { entry ->
@@ -555,8 +668,10 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
             NewActivity(navController = navController, vm = tripViewModel)
         }
 
-        composable("edit_activity/{activityId}",
-            arguments = listOf(navArgument("activityId") { type = NavType.IntType })) { entry ->
+        composable(
+            "edit_activity/{activityId}",
+            arguments = listOf(navArgument("activityId") { type = NavType.IntType })
+        ) { entry ->
             val exploreGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.MyTrips.route)
             }
@@ -568,8 +683,10 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
             EditActivity(navController = navController, vm = tripViewModel, activityId)
         }
 
-        composable("user_profile/{userId}",
-            arguments = listOf(navArgument("userId") { type = NavType.IntType })) { entry ->
+        composable(
+            "user_profile/{userId}",
+            arguments = listOf(navArgument("userId") { type = NavType.IntType })
+        ) { entry ->
             val exploreGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.MyTrips.route)
             }
@@ -662,8 +779,10 @@ fun NavGraphBuilder.homeNavGraph(
             )
         }
 
-        composable("user_profile/{userId}",
-            arguments = listOf(navArgument("userId") { type = NavType.IntType })) { entry ->
+        composable(
+            "user_profile/{userId}",
+            arguments = listOf(navArgument("userId") { type = NavType.IntType })
+        ) { entry ->
             val profileNavGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.Home.route)
             }
@@ -693,7 +812,6 @@ fun NavGraphBuilder.homeNavGraph(
         }
     }
 }
-
 
 
 fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
@@ -745,8 +863,10 @@ fun NavGraphBuilder.profileNavGraph(
             }
         }
 
-        composable("user_profile/{userId}",
-            arguments = listOf(navArgument("userId") { type = NavType.IntType })) { entry ->
+        composable(
+            "user_profile/{userId}",
+            arguments = listOf(navArgument("userId") { type = NavType.IntType })
+        ) { entry ->
             val profileNavGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.Profile.route)
             }
@@ -797,7 +917,7 @@ fun NavGraphBuilder.profileNavGraph(
             )
         }
 
-        composable("camera") {entry ->
+        composable("camera") { entry ->
 
             val profileNavGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.Profile.route)
@@ -835,42 +955,42 @@ fun NavGraphBuilder.profileNavGraph(
                 viewModelStoreOwner = profileNavGraphEntry,
                 factory = NotificationFactory
             )
-            TripDetails(navController = navController, vm = tripViewModel, owner = false,
+            TripDetails(
+                navController = navController, vm = tripViewModel, owner = false,
                 uvm = userViewModel,
                 rvm = reviewViewModel,
-                nvm = notificationViewModel)
+                nvm = notificationViewModel
+            )
         }
 
     }
 }
 
 @Composable
-fun ProfilePhoto(user: User, isSmall: Boolean, modifier : Modifier, uvm: UserViewModel) {
+fun ProfilePhoto(user: User, isSmall: Boolean, modifier: Modifier, uvm: UserViewModel) {
     //val user by uvm.userGotFromDB.collectAsState()
 
     var initials = "WU"     //Waiting User
 
     if (user.firstname.isNotEmpty() && user.surname.isNotEmpty()) {
-         initials = "${user.firstname.first()}"+"${user.surname.first()}"
+        initials = "${user.firstname.first()}" + "${user.surname.first()}"
     }
 
-    if(user.profilePictureUrl == null)
-    {
+    if (user.profilePictureUrl == null) {
         Box(
             contentAlignment = Alignment.Center,
             modifier = modifier
                 .size(130.dp)
                 .background(Color.Blue, shape = CircleShape)
         ) {
-            if(isSmall) {
+            if (isSmall) {
                 Text(
                     text = initials,
                     color = Color.White,
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Bold
                 )
-            }
-            else {
+            } else {
                 Text(
                     text = initials,
                     color = Color.White,
@@ -880,9 +1000,7 @@ fun ProfilePhoto(user: User, isSmall: Boolean, modifier : Modifier, uvm: UserVie
             }
 
         }
-    }
-    else
-    {
+    } else {
         //use the icon set in the user data
         Box(
             contentAlignment = Alignment.Center,
@@ -892,7 +1010,8 @@ fun ProfilePhoto(user: User, isSmall: Boolean, modifier : Modifier, uvm: UserVie
 
         ) {
             //Icon(profileImage)
-            AsyncImage(user.profilePictureUrl,"profilePic",
+            AsyncImage(
+                user.profilePictureUrl, "profilePic",
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(shape = CircleShape)
@@ -933,7 +1052,7 @@ fun TopBar(nvm: NotificationViewModel, navController: NavController) {
 
         },
         actions = {
-            IconButton(onClick = {/*TO DO*/}) {
+            IconButton(onClick = {/*TO DO*/ }) {
                 Image(
                     painter = painterNews,
                     contentDescription = "news",
@@ -1001,7 +1120,10 @@ fun CameraScreen(context: Context, onImageCaptured: (Uri?) -> Unit) {
         AndroidView({ previewView }, modifier = Modifier.fillMaxSize())
         IconButton(
             onClick = {
-                val name = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US).format(System.currentTimeMillis())
+                val name = SimpleDateFormat(
+                    "yyyy-MM-dd-HH-mm-ss-SSS",
+                    Locale.US
+                ).format(System.currentTimeMillis())
                 val contentValues = ContentValues().apply {
                     put(MediaStore.MediaColumns.DISPLAY_NAME, name)
                     put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")

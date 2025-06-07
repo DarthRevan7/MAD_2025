@@ -1,36 +1,49 @@
 package com.example.voyago.view
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.example.voyago.model.User
+import com.example.voyago.viewmodel.UserViewModel
+import com.google.firebase.auth.ActionCodeSettings
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VoyagoRegistrationVerificationCodeScreen(
-    onBackClick: () -> Unit = {},
-    onConfirmClick: (String) -> Unit = { _ -> },
-    onSendAgainClick: () -> Unit = {},
-    errorMessage: String? = null,
-    onErrorDismiss: () -> Unit = {}
-) {
-    var code by remember { mutableStateOf("") }
+fun RegistrationVerificationCodeScreen(navController: NavController, uvm: UserViewModel) {
+    val user =
+        navController.previousBackStackEntry?.savedStateHandle?.get<User>("userValues")
+
+    var message by remember { mutableStateOf("") }
+
 
     Column(
         modifier = Modifier
@@ -81,7 +94,7 @@ fun VoyagoRegistrationVerificationCodeScreen(
 
             // Subtitle
             Text(
-                text = "Enter the code  sent to your E-mail to confirm your registration",
+                text = "Click on the link sent to your E-mail to confirm your registration",
                 fontSize = 16.sp,
                 color = Color.Gray,
                 textAlign = TextAlign.Center,
@@ -91,97 +104,25 @@ fun VoyagoRegistrationVerificationCodeScreen(
 
             Spacer(modifier = Modifier.height(40.dp))
 
-            // Code TextField
-            OutlinedTextField(
-                value = code,
-                onValueChange = { code = it },
-                placeholder = {
-                    Text(
-                        text = "code",
-                        color = Color.Gray
-                    )
-                },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF6B46C1),
-                    unfocusedBorderColor = Color.LightGray,
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
-                )
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Confirm Button
-            Button(
-                onClick = { onConfirmClick(code) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF6B46C1)
-                )
-            ) {
-                Text(
-                    text = "Confirm",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Error Message
-            errorMessage?.let { message ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFFFEBEE)
-                    ),
-                    shape = RoundedCornerShape(8.dp),
-                    border = BorderStroke(
-                        1.dp,
-                        Color(0xFFE57373)
-                    )
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(12.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = message,
-                            color = Color(0xFFD32F2F),
-                            fontSize = 14.sp,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Or text
-            Text(
-                text = "or",
-                color = Color.Gray,
-                fontSize = 16.sp
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
             // Send Again Button
             Button(
-                onClick = onSendAgainClick,
+                onClick = {
+                    val auth = FirebaseAuth.getInstance()
+                    uvm.storeUser(user!!)
+                    auth.createUserWithEmailAndPassword(user.email, user.password)
+                        .addOnSuccessListener { result ->
+                            result.user?.sendEmailVerification()
+                                ?.addOnSuccessListener {
+                                    message = "Verification email sent. Please check your inbox."
+                                }
+                                ?.addOnFailureListener {
+                                    message = "Failed to send verification email."
+                                }
+                        }
+                        .addOnFailureListener {
+                            message = "Registration failed: ${it.message}"
+                        }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -197,24 +138,12 @@ fun VoyagoRegistrationVerificationCodeScreen(
                     color = Color.White
                 )
             }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Text(text = message)
         }
     }
 }
 
-@Preview(showBackground = true, device = "spec:width=412dp,height=892dp")
-@Composable
-fun VoyagoRegistrationVerificationCodeScreenPreview() {
-    MaterialTheme {
-        VoyagoRegistrationVerificationCodeScreen()
-    }
-}
 
-@Preview(showBackground = true, device = "spec:width=412dp,height=892dp")
-@Composable
-fun VoyagoRegistrationVerificationCodeScreenWithErrorPreview() {
-    MaterialTheme {
-        VoyagoRegistrationVerificationCodeScreen(
-            errorMessage = "Invalid code"
-        )
-    }
-}

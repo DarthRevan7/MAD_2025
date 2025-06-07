@@ -3,15 +3,14 @@ package com.example.voyago.model
 import android.util.Log
 import com.example.voyago.Collections
 import com.google.firebase.Timestamp
-import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.tasks.await
+import java.io.Serializable
 import java.util.Date
 
 data class User(
-    val id: Int = 0,
+    var id: Int = 0,
     var firstname: String = "",
     var surname: String = "",
     var username: String = "",
@@ -25,7 +24,7 @@ data class User(
     var desiredDestination: List<String> = emptyList(),
     var rating: Float = 0f,
     var reliability: Int = 0
-) {
+) : Serializable {
     fun isValid(): Boolean {
         return firstname.isNotBlank() &&
                 surname.isNotBlank() &&
@@ -54,25 +53,25 @@ class UserModel {
 
     //SUBSET OF USER LIST
 
-    fun getUsersFromUsernames(usernameList : List<String>): Flow<List<User>> = callbackFlow {//Observes update from the Server
+    fun getUsersFromUsernames(usernameList: List<String>): Flow<List<User>> =
+        callbackFlow {//Observes update from the Server
 
-        val query = Collections.users
-            .whereIn("username", usernameList)
+            val query = Collections.users
+                .whereIn("username", usernameList)
 
-        val listener = query.
-        orderBy("born")
-            .addSnapshotListener { s, er ->
-                if(s!=null)
-                    trySend(s.toObjects(User::class.java))
-                else {
-                    Log.e("Error", er.toString())
-                    trySend(emptyList())
+            val listener = query.orderBy("born")
+                .addSnapshotListener { s, er ->
+                    if (s != null)
+                        trySend(s.toObjects(User::class.java))
+                    else {
+                        Log.e("Error", er.toString())
+                        trySend(emptyList())
+                    }
                 }
+            awaitClose {
+                listener.remove()
             }
-        awaitClose {
-            listener.remove()
         }
-    }
 
     fun getUsers(userIds: List<Int>): Flow<List<User>> = callbackFlow {
         if (userIds.isEmpty()) {
@@ -99,7 +98,7 @@ class UserModel {
     }
 
     //Get a user given its id
-    fun getUser(userId: Int) : Flow<User> = callbackFlow {
+    fun getUser(userId: Int): Flow<User> = callbackFlow {
         if (userId <= 0) {
             close(IllegalArgumentException("Invalid userId"))
             return@callbackFlow
@@ -134,9 +133,6 @@ class UserModel {
         val docRef = Collections.users.document(userId)
         docRef.set(updatedUser)
     }
-
-
-
 
 
     // -------------------------------------------------

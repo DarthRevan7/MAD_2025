@@ -46,6 +46,16 @@ class UserViewModel(val model:UserModel): ViewModel() {
         }
     }*/
 
+    var pendingUser: User? = null
+
+    fun storeUser(user: User) {
+        pendingUser = user
+    }
+
+    fun clearUser() {
+        pendingUser = null
+    }
+
     private val _userData = MutableStateFlow<User>(User())
     val userData: StateFlow<User> = _userData
 
@@ -100,6 +110,18 @@ class UserViewModel(val model:UserModel): ViewModel() {
         model.refreshAllRatings(reviewModel)
     }
      */
+
+    // Add verification state
+    private val _userVerified = MutableStateFlow(false)
+    val userVerified: StateFlow<Boolean> = _userVerified
+
+    fun setUserVerified(value: Boolean) {
+        _userVerified.value = value
+    }
+
+    fun resetUserVerified() {
+        _userVerified.value = false
+    }
 
 }
 
