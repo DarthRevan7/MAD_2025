@@ -93,7 +93,7 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel, uvm: UserViewMo
             if (publishedTrips.isNotEmpty()) {
                 items(publishedTrips, key = { it.id }) { trip ->
                     vm.userAction = TripViewModel.UserAction.VIEW_TRIP
-                    TripCard(trip, navController, vm, vm.userAction == TripViewModel.UserAction.EDIT_TRIP)
+                    TripCard(trip, navController, vm, vm.userAction == TripViewModel.UserAction.EDIT_TRIP, isDraft = false)
                 }
             } else {
                 item {
@@ -118,7 +118,7 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel, uvm: UserViewMo
             if(privateTrips.isNotEmpty()) {
                 items(privateTrips, key = { it.id }) { trip ->
                     vm.userAction = TripViewModel.UserAction.EDIT_TRIP
-                    TripCard(trip, navController, vm, vm.userAction == TripViewModel.UserAction.EDIT_TRIP)
+                    TripCard(trip, navController, vm, vm.userAction == TripViewModel.UserAction.EDIT_TRIP,isDraft = true)
                 }
             } else {
                 item {
