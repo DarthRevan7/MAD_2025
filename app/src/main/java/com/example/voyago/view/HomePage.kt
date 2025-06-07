@@ -1,16 +1,21 @@
 package com.example.voyago.view
+
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -19,61 +24,68 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import com.example.voyago.model.Trip
-import coil3.compose.AsyncImage
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import java.util.Calendar
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import coil3.compose.AsyncImage
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
+import com.example.voyago.model.Trip
 import com.example.voyago.viewmodel.ArticleViewModel
 import com.example.voyago.viewmodel.TripViewModel
-import androidx.compose.runtime.setValue
+import java.util.Calendar
 
 @Composable
 fun HomePageScreen(
     navController: NavHostController,   // 如果你需要从首页再导航出去
     vm1: TripViewModel,                  // 或者别的 ViewModel
-    onTripClick: (Trip) -> Unit = {} ,
+    onTripClick: (Trip) -> Unit = {},
     vm2: ArticleViewModel,
 ) {
 
 
 //    val tripLists by vm1.tripList.collectAsState()
-    val articles by vm2.articleList.collectAsState(initial = emptyList() )
+    val articles by vm2.articleList.collectAsState(initial = emptyList())
     var displayCount by remember { mutableIntStateOf(5) }
     val scrollState = rememberScrollState()
-    // 1. 先拿到“现在”的时间点
+    // 1. 先拿到"现在"的时间点
     val now = remember { Calendar.getInstance() }
     // 2. 按条件分组
     vm1.resetFilters()
 
-    val completedTrips = vm1.getCompletedTripsList().collectAsState(initial = emptyList()).value.filter { trip -> trip.published }
+    val completedTrips = vm1.getCompletedTripsList()
+        .collectAsState(initial = emptyList()).value.filter { trip -> trip.published }
 
-    val upcomingTrips = vm1.getUpcomingTripsList().collectAsState(initial = emptyList()).value.filter { trip -> trip.published }
+    val upcomingTrips = vm1.getUpcomingTripsList()
+        .collectAsState(initial = emptyList()).value.filter { trip -> trip.published }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(scrollState)
-            .padding(   start =22.dp,
+            .padding(
+                start = 22.dp,
                 top = 21.dp,
                 end = 24.dp,
                 bottom = 12.dp
@@ -81,9 +93,10 @@ fun HomePageScreen(
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
 
-        SectionTag(text = "Popular Trips",  modifier = Modifier
-            .width(117.dp)
-            .height(32.dp)
+        SectionTag(
+            text = "Popular Trips", modifier = Modifier
+                .width(117.dp)
+                .height(32.dp)
 
         )
 
@@ -99,9 +112,10 @@ fun HomePageScreen(
                 navController.navigate("trip_details")
             }
         )
-        SectionTag(text = "Popular Completed Trips",  modifier = Modifier
-            .width(190.dp)
-            .height(32.dp)
+        SectionTag(
+            text = "Popular Completed Trips", modifier = Modifier
+                .width(190.dp)
+                .height(32.dp)
 
         )
 
@@ -116,19 +130,20 @@ fun HomePageScreen(
                 navController.navigate("trip_details")
             }
         )
-        SectionTag(text = "Article",  modifier = Modifier
-            .width(82.dp)
-            .height(32.dp)
+        SectionTag(
+            text = "Article", modifier = Modifier
+                .width(82.dp)
+                .height(32.dp)
 
         )
         val toDisplay = articles.take(displayCount)
 
         toDisplay.forEach { article ->
             ArticleShow(
-                imageUrl    = article.photo,
-                title       = article.title,
-                description = article.text,        // 或者拼成 “Discover • 3 days” 之类
-                modifier    = Modifier
+                imageUrl = article.photo,
+                title = article.title,
+                description = article.text,        // 或者拼成 "Discover • 3 days" 之类
+                modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
 
@@ -156,7 +171,6 @@ fun HomePageScreen(
 
     }
 }
-
 
 
 @Composable
@@ -204,7 +218,7 @@ fun PopularTravel(
     onTripClick: (Trip) -> Unit
 ) {
     val context = LocalContext.current
-    val pagerState = rememberPagerState{popularTrips.size}
+    val pagerState = rememberPagerState { popularTrips.size }
     HorizontalPager(
         state = pagerState,
         modifier = modifier
@@ -226,50 +240,37 @@ fun PopularTravel(
         ) {
             // 你自己的卡片实现，比如：
             TripCard(
-
                 proposal = proposal,
                 modifier = Modifier.matchParentSize(),
-
-                )
+            )
         }
     }
 }
 
 
-
-
+@OptIn(ExperimentalGlideComposeApi::class)
 @SuppressLint("DiscouragedApi")
 @Composable
 private fun TripCard(
-
     proposal: Trip,
-    modifier: Modifier = Modifier,         // ← 默认值
-
+    modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
-    val resId = remember(proposal.photo) {
-        context.resources.getIdentifier(proposal.photo, "drawable", context.packageName)
+    var imageUrl by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(proposal.photo) {
+        imageUrl = proposal.getPhoto()
     }
     Box(
         modifier = Modifier
             .size(width = 280.dp, height = 160.dp)
             .clip(RoundedCornerShape(16.dp))
-
     ) {
-        // 1. 背景图层
-        if (proposal.photo.isNotEmpty()) {
-            AsyncImage(
-                model = resId,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.matchParentSize()
-            )
-        } else {
-            // 占位色
-            Box(Modifier.matchParentSize().background(Color.LightGray))
-        }
-
-        // 2. 底部渐变叠加
+        GlideImage(
+            model = imageUrl,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.matchParentSize()
+        )
         Box(
             modifier = Modifier
                 .matchParentSize()
@@ -280,8 +281,6 @@ private fun TripCard(
                     )
                 )
         )
-
-        // 3. 文本层：标题 + 副标题
         Column(
             modifier = Modifier
                 .align(Alignment.BottomStart)
@@ -294,7 +293,7 @@ private fun TripCard(
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = proposal.title,  // 或者自定义“Discover • 3 days”那种格式
+                text = proposal.title,
                 style = MaterialTheme.typography.bodySmall.copy(color = Color.White),
                 maxLines = 1
             )
