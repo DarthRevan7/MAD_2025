@@ -934,21 +934,28 @@ fun TopBar(nvm: NotificationViewModel, navController: NavController) {
                 )
             }
             IconButton(onClick = {
-                nvm.markNotificationsRead()
+                //TODO CHANGE FOR LOGIN USER
+                nvm.markNotificationsRead("1")
                 navController.navigate(Screen.Notifications.route)
             }) {
-                Box {
-                    Image(painter = painterNotification, contentDescription = "notification")
+                Box(
+                    contentAlignment = Alignment.TopEnd // Makes the red dot align top-end
+                ) {
+                    Image(
+                        painter = painterNotification,
+                        contentDescription = "notification"
+                    )
                     if (nvm.hasNewNotification.value) {
                         Box(
                             modifier = Modifier
                                 .size(12.dp)
+                                .offset(x = 6.dp, y = (-6).dp) // Optional fine-tuning
                                 .background(Color.Red, shape = CircleShape)
-                                .align(Alignment.TopEnd)
                         )
                     }
                 }
             }
+
         },
         modifier = Modifier.shadow(8.dp)
     )

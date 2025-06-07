@@ -37,8 +37,9 @@ class NotificationViewModel : ViewModel() {
         _notifications.add(message)
     }
 
-    fun markNotificationsRead() {
+    fun markNotificationsRead(userId: String) {
         _hasNewNotification.value = false
+        markAllNotificationsRead(userId)
     }
 
     // Inside NotificationViewModel.kt
@@ -109,12 +110,15 @@ class NotificationViewModel : ViewModel() {
 
                 if (snapshots != null) {
                     _notifications.clear()
+                    var hasUnread = false
                     for (doc in snapshots) {
                         val title = doc.getString("title") ?: ""
                         val body = doc.getString("body") ?: ""
+                        val read = doc.getBoolean("read") ?: true
+                        if (!read) hasUnread = true
                         _notifications.add("$title: $body")
                     }
-                    _hasNewNotification.value = _notifications.isNotEmpty()
+                    _hasNewNotification.value = hasUnread
                 }
             }
     }

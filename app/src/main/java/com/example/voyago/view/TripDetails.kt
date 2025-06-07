@@ -394,8 +394,8 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                                     if (isAfterToday) {
                                         vm.changePublishedStatus(trip.id)
                                         vm.updatePublishedTrip()
-                                        val title = "Hello"
-                                        val body = "Message for user 1!"
+                                        val title = "Check this out!"
+                                        val body = "This trip looks interesting for you!"
                                         val userId = "1"
                                         //val userId = "$loggedUser.id"
                                         nvm.sendNotificationToUser(userId, title, body)

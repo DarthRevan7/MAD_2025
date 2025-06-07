@@ -20,6 +20,7 @@ import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun NotificationView(nvm: NotificationViewModel) {
+    //TODO CHANGE FOR LOGIN USER
     val userId = "1"
     LaunchedEffect(userId) {
         nvm.loadNotificationsForUser(userId)
