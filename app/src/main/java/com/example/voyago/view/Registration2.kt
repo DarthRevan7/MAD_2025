@@ -57,6 +57,7 @@ import com.example.voyago.model.TypeTravel
 import com.example.voyago.model.User
 import com.example.voyago.model.stringToCalendar
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
 import java.io.Serializable
 
 data class RegistrationFormValues(
@@ -81,9 +82,9 @@ fun CreateAccount2Screen(
     var selectedTravelTypes by remember { mutableStateOf(setOf<String>()) }
     var selectedDestinations by remember { mutableStateOf(setOf<String>()) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var message by remember { mutableStateOf("") }
 
     var searchQuery by remember { mutableStateOf("") }
-    var showDestinationSearch by remember { mutableStateOf(false) }
 
     var usernameTouched by remember { mutableStateOf(false) }
 
@@ -395,13 +396,28 @@ fun CreateAccount2Screen(
                         email = fields.email,
                         userDescription = "",
                         dateOfBirth = Timestamp(stringToCalendar(fields.dateOfBirth).time),
-                        password = fields.password,
                         profilePictureUrl = null,
                         typeTravel = selectedTravelTypes.map { TypeTravel.valueOf(it) },
                         desiredDestination = selectedDestinations.toList(),
                         rating = 5f,
                         reliability = 100
                     )
+
+                    val auth = FirebaseAuth.getInstance()
+                    auth.createUserWithEmailAndPassword(user.email, user.password)
+                        .addOnSuccessListener { result ->
+                            result.user?.sendEmailVerification()
+                                ?.addOnSuccessListener {
+                                    message = "Verification email sent. Please check your inbox."
+                                }
+                                ?.addOnFailureListener {
+                                    message = "Failed to send verification email."
+                                }
+                        }
+                        .addOnFailureListener {
+                            message = "Registration failed: ${it.message}"
+                        }
+
 
                     navController.currentBackStackEntry?.savedStateHandle?.set("userValues", user)
                     navController.navigate("register_verification_code")
@@ -429,6 +445,8 @@ fun CreateAccount2Screen(
             }
 
             Spacer(modifier = Modifier.height(32.dp))
+
+            Text(text = message)
         }
     }
 }
@@ -441,13 +459,3 @@ fun isValidUsername(username: String): Boolean {
 
     return regex.matches(trimmed)
 }
-
-
-/*
-@Preview(showBackground = true, device = "spec:width=412dp,height=892dp")
-@Composable
-fun VoyagoCreateAccountStep2ScreenPreview() {
-    MaterialTheme {
-        CreateAccount2Screen()
-    }
-}*/

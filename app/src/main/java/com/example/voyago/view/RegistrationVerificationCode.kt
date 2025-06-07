@@ -1,27 +1,39 @@
 package com.example.voyago.view
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.voyago.model.User
+import com.google.firebase.auth.ActionCodeSettings
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,7 +46,8 @@ fun RegistrationVerificationCodeScreen(
     val user =
         navController.previousBackStackEntry?.savedStateHandle?.get<User>("userValues")
 
-    var code by remember { mutableStateOf("") }
+    var message by remember { mutableStateOf("") }
+
 
     Column(
         modifier = Modifier
@@ -97,7 +110,22 @@ fun RegistrationVerificationCodeScreen(
 
             // Send Again Button
             Button(
-                onClick = onSendAgainClick,
+                onClick = {
+                    val auth = FirebaseAuth.getInstance()
+                    auth.createUserWithEmailAndPassword(user?.email!!, user.password)
+                        .addOnSuccessListener { result ->
+                            result.user?.sendEmailVerification()
+                                ?.addOnSuccessListener {
+                                    message = "Verification email sent. Please check your inbox."
+                                }
+                                ?.addOnFailureListener {
+                                    message = "Failed to send verification email."
+                                }
+                        }
+                        .addOnFailureListener {
+                            message = "Registration failed: ${it.message}"
+                        }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -113,25 +141,12 @@ fun RegistrationVerificationCodeScreen(
                     color = Color.White
                 )
             }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Text(text = message)
         }
     }
 }
 
-/*
-@Preview(showBackground = true, device = "spec:width=412dp,height=892dp")
-@Composable
-fun VoyagoRegistrationVerificationCodeScreenPreview() {
-    MaterialTheme {
-        RegistrationVerificationCodeScreen()
-    }
-}
 
-@Preview(showBackground = true, device = "spec:width=412dp,height=892dp")
-@Composable
-fun VoyagoRegistrationVerificationCodeScreenWithErrorPreview() {
-    MaterialTheme {
-        RegistrationVerificationCodeScreen(
-            errorMessage = "Invalid code"
-        )
-    }
-}*/

@@ -324,12 +324,25 @@ fun CreateAccountScreen(
             Button(
                 onClick = {
                     if (!isValidName(name) || !isValidName(surname) || !isValidEmail(email) ||
-                        !isValidPassword(password) || !isValidDateOfBirth(dateOfBirth) || !isValidCountry(country)) {
+                        !isValidPassword(password) || !isValidDateOfBirth(dateOfBirth) || !isValidCountry(
+                            country
+                        )
+                    ) {
                         errorMessage = "Please correct the errors above."
                         return@Button
                     } else {
-                        val fields = RegistrationFormValues(name, surname, email, password, dateOfBirth, country)
-                        navController.currentBackStackEntry?.savedStateHandle?.set("registrationFormValues", fields)
+                        val fields = RegistrationFormValues(
+                            name,
+                            surname,
+                            email,
+                            password,
+                            dateOfBirth,
+                            country
+                        )
+                        navController.currentBackStackEntry?.savedStateHandle?.set(
+                            "registrationFormValues",
+                            fields
+                        )
                         navController.navigate("register2")
                     }
                 },
@@ -478,13 +491,3 @@ val isCountryList = listOf(
 fun isValidCountry(input: String): Boolean {
     return isCountryList.any { it.equals(input.trim(), ignoreCase = true) }
 }
-
-
-/*
-@Preview(showBackground = true, device = "spec:width=412dp,height=892dp")
-@Composable
-fun VoyagoCreateAccountScreenPreview() {
-    MaterialTheme {
-        CreateAccountScreen()
-    }
-}*/

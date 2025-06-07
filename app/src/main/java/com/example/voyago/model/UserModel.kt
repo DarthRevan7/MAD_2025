@@ -10,7 +10,7 @@ import java.io.Serializable
 import java.util.Date
 
 data class User(
-    val id: Int = 0,
+    var id: Int = 0,
     var firstname: String = "",
     var surname: String = "",
     var username: String = "",
