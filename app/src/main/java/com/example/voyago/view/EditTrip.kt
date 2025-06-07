@@ -172,49 +172,72 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                     modifier = Modifier
                         .fillMaxWidth()
                 ) {
-                    //TextFields with various info
+                    //TextFields with various info 各种信息的文本字段
                     fieldValues.forEachIndexed { index, item ->
-                        //Title and Destination Fields
+                        //Title and Destination Fields 标题和目的地字段
                         if (index == 0 || index == 1) {
-                            val textHasErrors = item.toString().isBlank() ||
-                                    !item.toString().any { it.isLetter() }
-                            fieldErrors[index] = textHasErrors
+                            val textHasErrors = item.toString().isBlank() || // 检查是否为空
+                                    !item.toString().any { it.isLetter() } // 检查是否包含字母
 
-                            ValidatingInputTextField(
-                                item.toString(),
+                            fieldErrors[index] = textHasErrors // 设置错误状态
+
+                            ValidatingInputTextField( // 验证输入文本字段
+                                item.toString(), // 当前值
                                 {
-                                    fieldValues[index] = it
+                                    fieldValues[index] = it // 更新值的回调
                                 },
-                                textHasErrors,
-                                fieldNames[index]
+                                textHasErrors, // 是否有错误
+                                fieldNames[index] // 字段名称
                             )
-                        } else if (index == 2) { //Price Estimated Field
-                            val floatHasErrors = item.toString().isBlank() ||
-                                    item.toString().toDoubleOrNull()?.let { it <= 0.0 } != false ||
-                                    !item.toString().matches(Regex("^\\d+(\\.\\d+)?$"))
+                        } else if (index == 2) { //Price Estimated Field 价格估算字段
+                            // 修改后的价格验证逻辑 - 精确到两位小数
+                            val priceText = item.toString() // 获取价格文本
+                            val floatHasErrors = priceText.isBlank() || // 检查是否为空
+                                    priceText.toDoubleOrNull()?.let { it <= 0.0 } != false || // 检查是否大于0
+                                    !priceText.matches(Regex("^\\d+(\\.\\d{1,2})?$")) // 精确到两位小数的正则表达式
 
-                            fieldErrors[index] = floatHasErrors
+                            fieldErrors[index] = floatHasErrors // 设置错误状态
 
-                            ValidatingInputFloatField(
-                                item.toString(),
-                                {
-                                    fieldValues[index] = it
+                            ValidatingInputFloatField( // 验证输入浮点数字段
+                                item.toString(), // 当前值
+                                { newValue ->
+                                    // 处理输入时的实时验证和格式化
+                                    val filteredValue = newValue.filter { it.isDigit() || it == '.' } // 只允许数字和小数点
+
+                                    // 检查小数点的位置和数量
+                                    val decimalIndex = filteredValue.indexOf('.')
+                                    val processedValue = if (decimalIndex != -1) {
+                                        val beforeDecimal = filteredValue.substring(0, decimalIndex) // 小数点前的部分
+                                        val afterDecimal = filteredValue.substring(decimalIndex + 1) // 小数点后的部分
+
+                                        // 限制小数点后最多两位数字
+                                        if (afterDecimal.length <= 2) {
+                                            filteredValue
+                                        } else {
+                                            "$beforeDecimal.${afterDecimal.take(2)}" // 截取前两位小数
+                                        }
+                                    } else {
+                                        filteredValue // 没有小数点，直接使用
+                                    }
+
+                                    fieldValues[index] = processedValue // 更新处理后的值
                                 },
-                                floatHasErrors,
-                                fieldNames[index]
+                                floatHasErrors, // 是否有错误
+                                fieldNames[index] // 字段名称
                             )
-                        } else { //Group Size Field
-                            val intHasErrors = (item.toString().isBlank() || item.toString().toIntOrNull()?.let { it <= 1 } != false)
+                        } else { //Group Size Field 团队大小字段
+                            val intHasErrors = (item.toString().isBlank() || // 检查是否为空
+                                    item.toString().toIntOrNull()?.let { it <= 1 } != false) // 检查是否大于1
 
-                            fieldErrors[index] = intHasErrors
+                            fieldErrors[index] = intHasErrors // 设置错误状态
 
-                            ValidatingInputIntField(
-                                item.toString(),
+                            ValidatingInputIntField( // 验证输入整数字段
+                                item.toString(), // 当前值
                                 {
-                                    fieldValues[index] = it
+                                    fieldValues[index] = it // 更新值的回调
                                 },
-                                intHasErrors,
-                                fieldNames[index]
+                                intHasErrors, // 是否有错误
+                                fieldNames[index] // 字段名称
                             )
                         }
                     }
