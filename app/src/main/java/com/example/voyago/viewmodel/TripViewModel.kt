@@ -499,20 +499,53 @@ class TripViewModel(val tripModel:TripModel, val userModel: UserModel, val revie
     }
 
     //Delete activity from a specific trip
-    fun deleteActivity(activity: Activity) {
-        tripModel.removeActivityFromTrip(activity, _selectedTrip.value) { success, updatedTrip ->
-            if (success && updatedTrip != null) {
-                _selectedTrip.value = updatedTrip
+    fun deleteActivity(activity: Trip.Activity) {
+        Log.d("TripViewModel", "Deleting activity: ${activity.id}")
 
-                when (userAction) {
-                    UserAction.CREATE_TRIP -> newTrip = updatedTrip
-                    UserAction.EDIT_TRIP -> editTrip = updatedTrip
-                    else -> {}
+        val currentTrip = _selectedTrip.value
+
+        // 根据你的用户操作类型更新相应的 trip
+        when (userAction) {
+            UserAction.CREATE_TRIP -> {
+                // 从 newTrip 中删除活动
+                val updatedActivities = newTrip.activities.toMutableMap()
+
+                updatedActivities.forEach { (day, activities) ->
+                    val filteredActivities = activities.filter { it.id != activity.id }
+                    updatedActivities[day] = filteredActivities
                 }
-            }
-        }
-    }
 
+                newTrip = newTrip.copy(activities = updatedActivities)
+
+                // 更新 selectedTrip 以反映更改
+                _selectedTrip.value = newTrip
+            }
+
+            UserAction.EDIT_TRIP -> {
+                // 从 editTrip 中删除活动
+                val updatedActivities = editTrip.activities.toMutableMap()
+
+                updatedActivities.forEach { (day, activities) ->
+                    val filteredActivities = activities.filter { it.id != activity.id }
+                    updatedActivities[day] = filteredActivities
+                }
+
+                editTrip = editTrip.copy(activities = updatedActivities)
+
+                // 更新 selectedTrip 以反映更改
+                _selectedTrip.value = editTrip
+            }
+
+            UserAction.VIEW_TRIP -> TODO()
+            UserAction.NOTHING -> TODO()
+            UserAction.SEARCHING -> TODO()
+            UserAction.FILTER_SELECTION -> TODO()
+            UserAction.VIEW_OTHER_TRIP -> TODO()
+            UserAction.EDIT_ACTIVITY -> TODO()
+        }
+
+        Log.d("TripViewModel", "Activity deleted successfully")
+    }
 
     //Edit a specific activity from a specific trip
     fun editActivity(activityId: Int, updatedActivity: Activity) {

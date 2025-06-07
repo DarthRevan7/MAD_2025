@@ -246,6 +246,7 @@ fun ActivitiesListContent(trip: Trip?, vm: TripViewModel, navController: NavCont
 
     // Check if all activity lists are empty
     val hasNoActivities = trip.activities.values.all { it.isEmpty() }
+    var activityToDelete by rememberSaveable { mutableStateOf<Trip.Activity?>(null) }
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -283,7 +284,6 @@ fun ActivitiesListContent(trip: Trip?, vm: TripViewModel, navController: NavCont
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    var activityToDelete by rememberSaveable { mutableStateOf<Trip.Activity?>(null) }
 
                     activitiesForDay.forEach { activity ->
                         Row(
@@ -318,7 +318,8 @@ fun ActivitiesListContent(trip: Trip?, vm: TripViewModel, navController: NavCont
 
                             //Delete Activity Button
                             OutlinedButton(
-                                onClick = { activityToDelete = activity },
+                                onClick = { Log.d("DeleteButton", "Delete button clicked for activity: ${activity.id}")
+                                    activityToDelete = activity },
                                 modifier = Modifier.height(36.dp)
                             ) {
                                 Text("Delete", color = Color.Red)
@@ -328,19 +329,25 @@ fun ActivitiesListContent(trip: Trip?, vm: TripViewModel, navController: NavCont
 
                     activityToDelete?.let { activity ->
                         AlertDialog(
-                            onDismissRequest = { activityToDelete = null },
+                            onDismissRequest = {
+                                Log.d("DeleteDialog", "Dialog dismissed")
+                                activityToDelete = null },
                             title = { Text("Delete Activity") },
                             text = { Text("Are you sure you want to delete this activity?") },
                             confirmButton = {
                                 TextButton(onClick = {
+                                    Log.d("DeleteDialog", "Confirming delete for activity: ${activity.id}")
                                     vm.deleteActivity(activity)
                                     activityToDelete = null
+                                    Log.d("DeleteDialog", "Delete operation completed")
                                 }) {
                                     Text("Delete")
                                 }
                             },
                             dismissButton = {
-                                TextButton(onClick = { activityToDelete = null }) {
+                                TextButton(onClick = {
+                                    Log.d("DeleteDialog", "Delete cancelled")
+                                    activityToDelete = null }) {
                                     Text("Cancel")
                                 }
                             }
