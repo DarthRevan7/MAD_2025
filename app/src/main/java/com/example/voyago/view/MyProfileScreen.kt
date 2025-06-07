@@ -69,6 +69,8 @@ import com.example.voyago.viewmodel.*
 import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
 import java.util.Locale
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.auth.api.signin.GoogleSignIn
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -114,12 +116,18 @@ fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: Articl
                     .align(alignment = Alignment.TopEnd)
                     .padding(16.dp)
                     .clickable {
+                        val context = LocalContext.current
+                        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                            .requestIdToken(context.getString(R.string.default_web_client_id))
+                            .requestEmail()
+                            .build()
+                        val googleSignInClient = GoogleSignIn.getClient(context, gso)
                         val auth = FirebaseAuth.getInstance()
                         auth.signOut()
+                        googleSignInClient.signOut()
                         navController.navigate("home_main") {
                             popUpTo(0) { inclusive = true } // clear back stack
                         }
-
                     }
                 )
 

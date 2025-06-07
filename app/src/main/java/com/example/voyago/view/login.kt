@@ -24,6 +24,18 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.google.firebase.auth.FirebaseAuth
 import androidx.compose.material3.OutlinedTextField
+import android.app.Activity
+import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.GoogleAuthProvider
+import androidx.compose.ui.platform.LocalContext
+import com.example.voyago.R
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,10 +47,36 @@ fun LoginScreen(
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    val context = LocalContext.current
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     var emailTouched by remember { mutableStateOf(false) }
     var passwordTouched by remember { mutableStateOf(false) }
+
+    // Google Sign-In state
+    var isGoogleLoading by remember { mutableStateOf(false) }
+
+    // Configure Google Sign-In
+    val gso = remember {
+        GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(context.getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+    }
+    val googleSignInClient = remember { GoogleSignIn.getClient(context, gso) }
+
+    // Launcher for Google Sign-In
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        handleGoogleSignInResult(
+            result = result,
+            auth = auth,
+            navController = navController,
+            setError = { errorMessage = it },
+            setLoading = { isGoogleLoading = it }
+        )
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -271,11 +309,82 @@ fun LoginScreen(
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
+
+                // Google Sign-In Button
+                Button(
+                    onClick = {
+                        isGoogleLoading = true
+                        errorMessage = null
+                        val signInIntent = googleSignInClient.signInIntent
+                        googleSignInLauncher.launch(signInIntent)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.White
+                    ),
+                    border = BorderStroke(1.dp, Color.LightGray),
+                    enabled = !isGoogleLoading
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "G",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF4285F4),
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                        Text(
+                            text = if (isGoogleLoading) "Signing in..." else "Continue with Google",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.Black
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
             }
 
             Spacer(modifier = Modifier.height(16.dp))
         }
             }
+    }
+
+
+fun handleGoogleSignInResult(
+    result: androidx.activity.result.ActivityResult,
+    auth: FirebaseAuth,
+    navController: NavHostController,
+    setError: (String?) -> Unit,
+    setLoading: (Boolean) -> Unit
+) {
+    setLoading(false)
+    if (result.resultCode == Activity.RESULT_OK) {
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        try {
+            val account = task.getResult(ApiException::class.java)
+            val credential = GoogleAuthProvider.getCredential(account.idToken, null)
+            auth.signInWithCredential(credential)
+                .addOnCompleteListener { authResult ->
+                    if (authResult.isSuccessful) {
+                        navController.navigate("home_main") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    } else {
+                        setError("Google sign-in failed: ${authResult.exception?.localizedMessage ?: "Unknown error"}")
+                    }
+                }
+        } catch (e: Exception) {
+            setError("Google sign-in failed: ${e.localizedMessage ?: "Unknown error"}")
+        }
+    } else {
+        setError("Google sign-in canceled.")
     }
 }
 
