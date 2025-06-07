@@ -759,56 +759,50 @@ class TripModel {
             }
     }
 
-    //Delete an activity
+    //Delete an activity from a trip
     fun removeActivityFromTrip(activityId: Int, trip: Trip, onResult: (Boolean, Trip?) -> Unit) {
-        val docId = trip.id.toString()
-        val tripRef = Collections.trips.document(docId)
+        // 直接使用传入的trip对象，而不是从数据库重新获取
+        val updatedActivities = trip.activities.toMutableMap()
+        var found = false
 
-        tripRef.get()
-            .addOnSuccessListener { snapshot ->
-                val currentTrip = snapshot.toObject(Trip::class.java)
-                if (currentTrip == null) {
+        // 查找并删除指定ID的活动
+        for ((date, activities) in updatedActivities.toMap()) {
+            if (activities.any { it.id == activityId }) {
+                val filteredActivities = activities.filter { it.id != activityId }
+                if (filteredActivities.isEmpty()) {
+                    updatedActivities.remove(date)
+                } else {
+                    updatedActivities[date] = filteredActivities
+                }
+                found = true
+                break
+            }
+        }
+
+        if (!found) {
+            onResult(false, trip)
+            return
+        }
+
+        // 创建更新后的trip对象，保持所有原有数据
+        val updatedTrip = trip.copy(activities = updatedActivities)
+
+        // 只有当trip已经保存到数据库时才更新数据库
+        if (trip.id != -1) {
+            val docId = trip.id.toString()
+            Collections.trips.document(docId)
+                .set(updatedTrip)
+                .addOnSuccessListener {
+                    onResult(true, updatedTrip)
+                }
+                .addOnFailureListener { e ->
+                    Log.e("Firestore", "Failed to delete activity", e)
                     onResult(false, null)
-                    return@addOnSuccessListener
                 }
-
-                val updatedActivities = currentTrip.activities.toMutableMap()
-                var found = false
-
-                // 查找并删除指定ID的活动
-                for ((date, activities) in updatedActivities.toMap()) {
-                    if (activities.any { it.id == activityId }) {
-                        val filteredActivities = activities.filter { it.id != activityId }
-                        if (filteredActivities.isEmpty()) {
-                            updatedActivities.remove(date)
-                        } else {
-                            updatedActivities[date] = filteredActivities
-                        }
-                        found = true
-                        break
-                    }
-                }
-
-                if (!found) {
-                    onResult(false, trip)
-                    return@addOnSuccessListener
-                }
-
-                val updatedTrip = currentTrip.copy(activities = updatedActivities)
-
-                tripRef.set(updatedTrip)
-                    .addOnSuccessListener {
-                        onResult(true, updatedTrip)
-                    }
-                    .addOnFailureListener { e ->
-                        Log.e("Firestore", "Failed to delete activity", e)
-                        onResult(false, null)
-                    }
-            }
-            .addOnFailureListener { e ->
-                Log.e("Firestore", "Failed to fetch trip", e)
-                onResult(false, null)
-            }
+        } else {
+            // 如果trip还没有保存到数据库，直接返回更新后的trip
+            onResult(true, updatedTrip)
+        }
     }
 
     //DELETE A TRIP

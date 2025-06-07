@@ -145,6 +145,21 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                                 set(Calendar.SECOND, 0)
                             }
 
+                            // 检查选择的日期是否在行程日期范围内
+                            val tripStartCal = toCalendar(currentTrip.startDate) // 行程开始日期
+                            val tripEndCal = toCalendar(currentTrip.endDate) // 行程结束日期
+
+                            // 将行程开始和结束日期的时间部分设置为0，以便正确比较日期
+                            tripStartCal.set(Calendar.HOUR_OF_DAY, 0)
+                            tripStartCal.set(Calendar.MINUTE, 0)
+                            tripStartCal.set(Calendar.SECOND, 0)
+                            tripStartCal.set(Calendar.MILLISECOND, 0)
+
+                            tripEndCal.set(Calendar.HOUR_OF_DAY, 23)
+                            tripEndCal.set(Calendar.MINUTE, 59)
+                            tripEndCal.set(Calendar.SECOND, 59)
+                            tripEndCal.set(Calendar.MILLISECOND, 999)
+
                             val isValid = !(pickedCalendar.before(currentTrip.startDate) || pickedCalendar.after(currentTrip.endDate))
 
                             activityDate = "$d/${m + 1}/$y"
@@ -157,7 +172,25 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                                 dateErrorMessage = "Activity date must be within the trip period \n(${dateFormat.format(toCalendar(currentTrip.startDate).time)} - ${dateFormat.format(toCalendar(currentTrip.endDate).time)})"
                             }
                         }, year, month, day
-                    )
+                    ).apply {
+                        // 设置日期选择器的最小和最大日期限制
+                        val tripStartCal = toCalendar(currentTrip.startDate) // 获取行程开始日期
+                        val tripEndCal = toCalendar(currentTrip.endDate) // 获取行程结束日期
+
+                        // 设置时间为一天的开始和结束，确保整天都可以选择
+                        tripStartCal.set(Calendar.HOUR_OF_DAY, 0)
+                        tripStartCal.set(Calendar.MINUTE, 0)
+                        tripStartCal.set(Calendar.SECOND, 0)
+                        tripStartCal.set(Calendar.MILLISECOND, 0)
+
+                        tripEndCal.set(Calendar.HOUR_OF_DAY, 23)
+                        tripEndCal.set(Calendar.MINUTE, 59)
+                        tripEndCal.set(Calendar.SECOND, 59)
+                        tripEndCal.set(Calendar.MILLISECOND, 999)
+
+                        datePicker.minDate = tripStartCal.timeInMillis // 设置最小可选日期
+                        datePicker.maxDate = tripEndCal.timeInMillis // 设置最大可选日期
+                    }
                 }
 
                 Button(
