@@ -53,6 +53,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.voyago.viewmodel.UserViewModel
 import com.example.voyago.model.TypeTravel
 import com.example.voyago.model.User
 import com.example.voyago.model.stringToCalendar
@@ -71,10 +72,7 @@ data class RegistrationFormValues(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateAccount2Screen(
-    navController: NavController,
-    onCreateAccountClick: (String, List<String>, List<String>) -> Unit = { _, _, _ -> }
-) {
+fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
     val fields =
         navController.previousBackStackEntry?.savedStateHandle?.get<RegistrationFormValues>("registrationFormValues")
 
@@ -404,6 +402,7 @@ fun CreateAccount2Screen(
                     )
 
                     val auth = FirebaseAuth.getInstance()
+                    uvm.storeUser(user)
                     auth.createUserWithEmailAndPassword(user.email, user.password)
                         .addOnSuccessListener { result ->
                             result.user?.sendEmailVerification()
@@ -422,11 +421,6 @@ fun CreateAccount2Screen(
                     navController.currentBackStackEntry?.savedStateHandle?.set("userValues", user)
                     navController.navigate("register_verification_code")
 
-                    onCreateAccountClick(
-                        username,
-                        selectedTravelTypes.toList(),
-                        selectedDestinations.toList()
-                    )
                 },
                 modifier = Modifier
                     .fillMaxWidth()

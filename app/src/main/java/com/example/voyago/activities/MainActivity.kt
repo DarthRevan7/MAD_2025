@@ -15,6 +15,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -142,6 +143,56 @@ class MainActivity : ComponentActivity() {
 
         FirebaseApp.initializeApp(this)
 
+        fun createNewUser(
+            firebaseUser: FirebaseUser, newUser: User, navController: NavController,
+            onResult: (Boolean, User?) -> Unit
+        ) {
+            val firestore = Firebase.firestore
+            val counterRef = firestore.collection("metadata").document("userCounter")
+
+            // Make sure to set the email and id from FirebaseUser for consistency
+            newUser.email = firebaseUser.email ?: ""
+
+            firestore.runTransaction { transaction ->
+                val snapshot = transaction.get(counterRef)
+                val lastUserId = snapshot.getLong("lastUserId") ?: 0
+                val newUserId = lastUserId + 1
+
+                // Set the new ID back to the counter document
+                transaction.update(counterRef, "lastUserId", newUserId)
+
+                // Create the trip with the new ID
+                val userWithId = newUser.copy(id = newUserId.toInt())
+
+                // Create a new document in the trips collection
+                val userDocRef = firestore.collection("users").document(newUserId.toString())
+                transaction.set(userDocRef, userWithId)
+
+                userWithId
+            }.addOnSuccessListener { user ->
+                Toast.makeText(this, "User profile saved successfully!", Toast.LENGTH_SHORT)
+                    .show()
+                onResult(true, user)
+                navController.navigate("profile_overview") {
+                    popUpTo(navController.graph.findStartDestination().id) {
+                        saveState = true
+                    }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            }.addOnFailureListener { e ->
+                Toast.makeText(
+                    this,
+                    "Failed to save user profile: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+                onResult(false, null)
+            }
+        }
+
+        val viewModel: UserViewModel by viewModels()
+
+
         val data = intent?.data
         val mode = data?.getQueryParameter("mode")
         val oobCode = data?.getQueryParameter("oobCode")
@@ -149,39 +200,28 @@ class MainActivity : ComponentActivity() {
         if (mode == "verifyEmail" && oobCode != null) {
             FirebaseAuth.getInstance().applyActionCode(oobCode)
                 .addOnSuccessListener {
-                    Toast.makeText(this, "Email verified successfully!", Toast.LENGTH_SHORT).show()
-                    // Proceed to next step, e.g., save user to Firestore
+                    val currentUser = FirebaseAuth.getInstance().currentUser
+                    val pendingUser = viewModel.pendingUser
+
+                    if (currentUser != null && currentUser.isEmailVerified && pendingUser != null) {
+                        createNewUser(
+                            firebaseUser = currentUser,
+                            newUser = pendingUser,
+                            navController = navController,
+                            onResult = { success, _ ->
+                                if (success) viewModel.clearUser()
+                            }
+                        )
+                    } else {
+                        Toast.makeText(this, "User data missing or not verified", Toast.LENGTH_LONG)
+                            .show()
+                    }
                 }
                 .addOnFailureListener {
                     Toast.makeText(this, "Verification failed: ${it.message}", Toast.LENGTH_LONG)
                         .show()
                 }
         }
-
-        fun saveUserToFirestore(firebaseUser: FirebaseUser, user: User) {
-            val db = Firebase.firestore
-
-            // Make sure to set the email and id from FirebaseUser for consistency
-            user.email = firebaseUser.email ?: ""
-            user.id = firebaseUser.uid.hashCode()  // Or use any other unique ID generator
-
-            db.collection("users").document(firebaseUser.uid)
-                .set(user)
-                .addOnSuccessListener {
-                    Toast.makeText(this, "User profile saved successfully!", Toast.LENGTH_SHORT)
-                        .show()
-                    // Navigate to your app's main screen or do other logic here
-                }
-                .addOnFailureListener { e ->
-                    Toast.makeText(
-                        this,
-                        "Failed to save user profile: ${e.message}",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-        }
-
-
 
         enableEdgeToEdge()
         context = this
@@ -372,11 +412,25 @@ fun NavGraphBuilder.loginNavGraph(navController: NavHostController, auth: Fireba
         composable("register") {
             CreateAccountScreen(navController)
         }
-        composable("register2") {
-            CreateAccount2Screen(navController)
+        composable("register2") { entry ->
+            val loginGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Explore.route)
+            }
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = loginGraphEntry,
+                factory = Factory
+            )
+            CreateAccount2Screen(navController, userViewModel)
         }
-        composable("register_verification_code") {
-            RegistrationVerificationCodeScreen(navController)
+        composable("register_verification_code") { entry ->
+            val loginGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Explore.route)
+            }
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = loginGraphEntry,
+                factory = Factory
+            )
+            RegistrationVerificationCodeScreen(navController, userViewModel)
         }
     }
 }

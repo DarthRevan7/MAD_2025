@@ -46,6 +46,16 @@ class UserViewModel(val model:UserModel): ViewModel() {
         }
     }*/
 
+    var pendingUser: User? = null
+
+    fun storeUser(user: User) {
+        pendingUser = user
+    }
+
+    fun clearUser() {
+        pendingUser = null
+    }
+
     private val _userData = MutableStateFlow<User>(User())
     val userData: StateFlow<User> = _userData
 

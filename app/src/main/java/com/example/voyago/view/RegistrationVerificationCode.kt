@@ -32,17 +32,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.voyago.model.User
+import com.example.voyago.viewmodel.UserViewModel
 import com.google.firebase.auth.ActionCodeSettings
 import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegistrationVerificationCodeScreen(
-    navController: NavController,
-    onConfirmClick: (String) -> Unit = { _ -> },
-    onSendAgainClick: () -> Unit = {},
-    errorMessage: String? = null
-) {
+fun RegistrationVerificationCodeScreen(navController: NavController, uvm: UserViewModel) {
     val user =
         navController.previousBackStackEntry?.savedStateHandle?.get<User>("userValues")
 
@@ -112,7 +108,8 @@ fun RegistrationVerificationCodeScreen(
             Button(
                 onClick = {
                     val auth = FirebaseAuth.getInstance()
-                    auth.createUserWithEmailAndPassword(user?.email!!, user.password)
+                    uvm.storeUser(user!!)
+                    auth.createUserWithEmailAndPassword(user.email, user.password)
                         .addOnSuccessListener { result ->
                             result.user?.sendEmailVerification()
                                 ?.addOnSuccessListener {
