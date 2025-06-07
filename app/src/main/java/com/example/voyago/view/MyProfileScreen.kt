@@ -75,6 +75,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: ArticleViewModel, uvm: UserViewModel, rvm: ReviewViewModel) {
+    val context = LocalContext.current
+    
     //Get the logged in user (id=1)
     val user by uvm.loggedUser.collectAsState()
     //List of trip created and published by the logged in user (id=1)
@@ -116,7 +118,6 @@ fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: Articl
                     .align(alignment = Alignment.TopEnd)
                     .padding(16.dp)
                     .clickable {
-                        val context = LocalContext.current
                         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                             .requestIdToken(context.getString(R.string.default_web_client_id))
                             .requestEmail()
