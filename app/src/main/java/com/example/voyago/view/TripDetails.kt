@@ -84,6 +84,7 @@ import com.example.voyago.model.isTimestampLong
 import com.example.voyago.model.stringToCalendar
 import com.example.voyago.model.timestampToCalendar
 import com.example.voyago.model.toCalendar
+import com.example.voyago.viewmodel.NotificationViewModel
 import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
@@ -94,7 +95,7 @@ import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
 
 @Composable
-fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean, uvm: UserViewModel, rvm: ReviewViewModel) {
+fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean, uvm: UserViewModel, rvm: ReviewViewModel, nvm: NotificationViewModel) {
 
     //Trip that we are showing
     val trip = when (vm.userAction) {
@@ -387,11 +388,19 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                             horizontalArrangement = Arrangement.End
                         ) {
                             //Publish Button
+                            val context = LocalContext.current
                             Button(
                                 onClick = {
                                     if (isAfterToday) {
                                         vm.changePublishedStatus(trip.id)
                                         vm.updatePublishedTrip()
+                                        val title = "Hello"
+                                        val body = "Message for user 1!"
+                                        val userId = "1"
+                                        //val userId = "$loggedUser.id"
+                                        nvm.sendNotificationToUser(userId, title, body)
+                                        nvm.receiveNewNotification("$title: $body") // Local badge trigger
+                                        nvm.showLocalNotification(context, title, body)
                                         navController.popBackStack()
                                     } else {
                                         publishError = true

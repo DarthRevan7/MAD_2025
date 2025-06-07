@@ -20,9 +20,10 @@ import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun NotificationView(nvm: NotificationViewModel) {
-//    LaunchedEffect(Unit) {
-//        nvm.loadAllNotifications()
-//    }
+    val userId = "1"
+    LaunchedEffect(userId) {
+        nvm.loadNotificationsForUser(userId)
+    }
 
     Column(modifier = Modifier.padding(16.dp)) {
         Text("Notifications", style = MaterialTheme.typography.titleLarge)
@@ -38,13 +39,11 @@ fun NotificationView(nvm: NotificationViewModel) {
             onClick = {
                 val title = "Hello"
                 val body = "Message for user 1!"
-                val userId = "1"
+
                 nvm.sendNotificationToUser(userId, title, body)
                 nvm.receiveNewNotification("$title: $body") // Local badge trigger
                 nvm.showLocalNotification(context, title, body)
-//                nvm.sendGlobalNotification(title, body)
-//                nvm.receiveNewNotification("$title: $body") // triggers red dot
-//                nvm.showLocalNotification(context, title, body)
+
             }
 
         ) {

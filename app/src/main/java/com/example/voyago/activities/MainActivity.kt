@@ -111,10 +111,12 @@ import com.example.voyago.view.CreateAccountScreen
 import com.example.voyago.viewmodel.ArticleFactory
 import com.google.firebase.FirebaseApp
 import com.example.voyago.view.LoginScreen
+import com.example.voyago.view.NotificationView
 import com.example.voyago.view.RetrievePassword
 import com.example.voyago.viewmodel.NotificationViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.messaging.FirebaseMessaging
+import com.example.voyago.viewmodel.NotificationFactory
 
 
 sealed class Screen(val route: String) {
@@ -295,6 +297,10 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
                 }
             )
         }
+        val notificationViewModel = NotificationViewModel()
+                composable(Screen.Notifications.route) {
+                    NotificationView(notificationViewModel)
+                }
     }
 }
 
@@ -359,7 +365,16 @@ fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = Factory
             )
-            TripDetails(navController = navController, vm = tripViewModel, owner = false, uvm = userViewModel, rvm = reviewViewModel)
+            val notificationViewModel: NotificationViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = NotificationFactory
+            )
+            TripDetails(navController = navController,
+                vm = tripViewModel,
+                owner = false,
+                uvm = userViewModel,
+                rvm = reviewViewModel,
+                nvm = notificationViewModel)
         }
 
         composable("user_profile/{userId}",
@@ -448,7 +463,16 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = Factory
             )
-            TripDetails(navController = navController, vm = tripViewModel, owner = true, uvm = userViewModel, rvm = reviewViewModel)
+            val notificationViewModel: NotificationViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = NotificationFactory
+            )
+            TripDetails(navController = navController,
+                vm = tripViewModel,
+                owner = true,
+                uvm = userViewModel,
+                rvm = reviewViewModel,
+                nvm = notificationViewModel)
         }
 
         composable("my_reviews") { entry ->
@@ -623,12 +647,17 @@ fun NavGraphBuilder.homeNavGraph(
                 viewModelStoreOwner = homeEntry,
                 factory = Factory
             )
+            val notificationViewModel: NotificationViewModel = viewModel(
+                viewModelStoreOwner = homeEntry,
+                factory = NotificationFactory
+            )
             TripDetails(
                 navController = navController,
                 vm = homeVm,
                 owner = false,
                 uvm = userViewModel,
-                rvm = reviewViewModel
+                rvm = reviewViewModel,
+                nvm = notificationViewModel
             )
         }
 
@@ -801,9 +830,14 @@ fun NavGraphBuilder.profileNavGraph(
                 viewModelStoreOwner = profileNavGraphEntry,
                 factory = Factory
             )
+            val notificationViewModel: NotificationViewModel = viewModel(
+                viewModelStoreOwner = profileNavGraphEntry,
+                factory = NotificationFactory
+            )
             TripDetails(navController = navController, vm = tripViewModel, owner = false,
                 uvm = userViewModel,
-                rvm = reviewViewModel)
+                rvm = reviewViewModel,
+                nvm = notificationViewModel)
         }
 
     }

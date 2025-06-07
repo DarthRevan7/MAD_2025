@@ -75,6 +75,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: ArticleViewModel, uvm: UserViewModel, rvm: ReviewViewModel) {
+    val context = LocalContext.current
+
     //Get the logged in user (id=1)
     val user by uvm.loggedUser.collectAsState()
     //List of trip created and published by the logged in user (id=1)
@@ -105,7 +107,6 @@ fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: Articl
     ) {
         item {
             //Box with Profile Photo, Username and Logout, Back and Edit icons
-            val context = LocalContext.current
             Box(modifier =
                 Modifier
                     .fillMaxWidth()

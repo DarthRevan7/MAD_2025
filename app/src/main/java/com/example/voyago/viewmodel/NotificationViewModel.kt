@@ -14,6 +14,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import com.example.voyago.R
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.FieldValue
@@ -200,6 +201,17 @@ class NotificationViewModel : ViewModel() {
     }
 
 
+}
+
+object NotificationFactory : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        return when {
+            modelClass.isAssignableFrom(NotificationViewModel::class.java) -> {
+                NotificationViewModel() as T
+            }
+            else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
+        }
+    }
 }
 
 
