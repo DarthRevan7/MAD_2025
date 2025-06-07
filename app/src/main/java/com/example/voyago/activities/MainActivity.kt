@@ -103,6 +103,7 @@ import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.UserFactory
 import com.example.voyago.viewmodel.UserViewModel
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.voyago.model.User
@@ -907,6 +908,12 @@ fun ProfilePhoto(user: User, isSmall: Boolean, modifier : Modifier, uvm: UserVie
 @Composable
 fun TopBar(nvm: NotificationViewModel, navController: NavController) {
 
+    //TODO CHANGE FOR LOGIN USER
+    val userId = "1"
+    LaunchedEffect(userId) {
+        nvm.loadNotificationsForUser(userId)
+    }
+
     //Top Bar Images
     val painterLogo = painterResource(R.drawable.logo)
     val painterNews = painterResource(R.drawable.news)
@@ -948,13 +955,16 @@ fun TopBar(nvm: NotificationViewModel, navController: NavController) {
                     if (nvm.hasNewNotification.value) {
                         Box(
                             modifier = Modifier
-                                .size(12.dp)
-                                .offset(x = 6.dp, y = (-6).dp) // Optional fine-tuning
+                                .size(10.dp)
                                 .background(Color.Red, shape = CircleShape)
+                                .align(Alignment.TopEnd)
+                                .offset(x = (-2).dp, y = 2.dp)
+                                .zIndex(1f)
                         )
                     }
                 }
             }
+
 
         },
         modifier = Modifier.shadow(8.dp)
