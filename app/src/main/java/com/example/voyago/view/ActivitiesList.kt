@@ -186,7 +186,10 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
                                             }
                                         }
 
-                                    } else if(vm.userAction == TripViewModel.UserAction.EDIT_TRIP){
+                                    } else if(vm.userAction == TripViewModel.UserAction.EDIT_TRIP
+                                        ||
+                                        vm.userAction == TripViewModel.UserAction.EDIT_ACTIVITY
+                                        ){
                                         val updatedTrip = Trip(
                                             photo = vm.editTrip.photo,
                                             title = vm.editTrip.title,
