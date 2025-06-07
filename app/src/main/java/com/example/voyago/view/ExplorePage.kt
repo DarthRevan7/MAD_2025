@@ -44,9 +44,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
-import coil3.request.crossfade
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import com.example.voyago.R
 import com.example.voyago.model.Trip
 import com.example.voyago.viewmodel.Factory
@@ -214,6 +213,7 @@ fun TripCard(trip: Trip, navController: NavController, vm: TripViewModel, edit: 
     }
 }
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun TripImageExplore(trip: Trip) {
     val context = LocalContext.current
@@ -222,10 +222,8 @@ fun TripImageExplore(trip: Trip) {
         imageUrl = trip.getPhoto()
     }
     if (imageUrl != null && imageUrl!!.isNotBlank()) {
-        AsyncImage(
-            model = ImageRequest.Builder(context)
-                .data(imageUrl)
-                .build(),
+        GlideImage(
+            model = imageUrl,
             contentDescription = "Trip Photo",
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()

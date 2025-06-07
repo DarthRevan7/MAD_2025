@@ -62,9 +62,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.navigation.NavController
-import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
-import coil3.request.crossfade
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import com.example.voyago.R
 import com.example.voyago.activities.ProfilePhoto
 import com.example.voyago.model.Article
@@ -520,6 +519,7 @@ fun TabAboutTripsReview(
 }
 
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @SuppressLint("DiscouragedApi")
 @Composable
 fun ShowUserTrip(trip: Trip, vm: TripViewModel, navController: NavController) {
@@ -555,10 +555,8 @@ fun ShowUserTrip(trip: Trip, vm: TripViewModel, navController: NavController) {
                 .background(Color.Gray) // fallback background
         ) {
             if (imageUrl != null) {
-                AsyncImage(
-                    model = ImageRequest.Builder(context)
-                        .data(imageUrl)
-                        .build(),
+                GlideImage(
+                    model = imageUrl,
                     contentDescription = "Trip or Article Image",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
@@ -582,6 +580,7 @@ fun ShowUserTrip(trip: Trip, vm: TripViewModel, navController: NavController) {
     }
 }
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @SuppressLint("DiscouragedApi")
 @Composable
 fun ShowUserArticle(article: Article) {
@@ -613,11 +612,8 @@ fun ShowUserArticle(article: Article) {
                     article.photo
                 }
 
-                AsyncImage(
-                    model = ImageRequest.Builder(context)
-                        .data(imageModel)
-                        .crossfade(true)
-                        .build(),
+                GlideImage(
+                    model = imageModel,
                     contentDescription = "Trip or Article Image",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
@@ -701,6 +697,7 @@ fun ShowUserReview(review: Review, navController: NavController, uvm: UserViewMo
     }
 }
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun TripImageProfile(trip: Trip) {
     val context = LocalContext.current
@@ -710,10 +707,8 @@ fun TripImageProfile(trip: Trip) {
     }
     when {
         imageUrl != null -> {
-            AsyncImage(
-                model = ImageRequest.Builder(context)
-                    .data(imageUrl)
-                    .build(),
+            GlideImage(
+                model = imageUrl,
                 contentDescription = "Trip Photo",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()

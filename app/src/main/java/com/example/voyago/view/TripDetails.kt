@@ -19,37 +19,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
-import coil3.request.crossfade
-import com.example.voyago.model.Trip
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.StarHalf
@@ -60,43 +33,74 @@ import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.setValue
-import com.example.voyago.activities.ProfilePhoto
-import com.example.voyago.model.Review
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
-import androidx.core.net.toUri
+import androidx.navigation.NavController
+import coil3.compose.AsyncImage
 import coil3.compose.rememberAsyncImagePainter
+import coil3.request.ImageRequest
+import coil3.request.crossfade
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
+import com.example.voyago.activities.ProfilePhoto
+import com.example.voyago.model.Review
+import com.example.voyago.model.Trip
 import com.example.voyago.model.Trip.Participant
 import com.example.voyago.model.User
 import com.example.voyago.model.isTimestampLong
 import com.example.voyago.model.stringToCalendar
 import com.example.voyago.model.timestampToCalendar
-import com.example.voyago.model.toCalendar
 import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import java.util.concurrent.TimeUnit
+import java.util.Calendar
+import java.util.Locale
 
 @Composable
-fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean, uvm: UserViewModel, rvm: ReviewViewModel) {
+fun TripDetails(
+    navController: NavController,
+    vm: TripViewModel,
+    owner: Boolean,
+    uvm: UserViewModel,
+    rvm: ReviewViewModel
+) {
 
     //Trip that we are showing
     val trip = when (vm.userAction) {
@@ -123,7 +127,8 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
     }
 
     //The user joined the trip but didn't created
-    val joined = trip.participants.containsKey(loggedUser.id.toString()) && trip.creatorId != loggedUser.id
+    val joined =
+        trip.participants.containsKey(loggedUser.id.toString()) && trip.creatorId != loggedUser.id
 
     //Delete confirmation trip
     var showPopup by remember { mutableStateOf(false) }
@@ -155,9 +160,17 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
     //Initialization of the list of other participants
     LaunchedEffect(dialogPhase, selectedSpots) {
         if (dialogPhase == 1) {
-            isRegisteredList = List(selectedSpots - 1) { i -> isRegisteredList.getOrNull(i) == true }
-            registeredUsernames = List(selectedSpots - 1) { i -> registeredUsernames.getOrNull(i) ?: "" }
-            unregisteredParticipants = List(selectedSpots - 1) { i -> unregisteredParticipants.getOrNull(i) ?: Participant("", "", "") }
+            isRegisteredList =
+                List(selectedSpots - 1) { i -> isRegisteredList.getOrNull(i) == true }
+            registeredUsernames =
+                List(selectedSpots - 1) { i -> registeredUsernames.getOrNull(i) ?: "" }
+            unregisteredParticipants = List(selectedSpots - 1) { i ->
+                unregisteredParticipants.getOrNull(i) ?: Participant(
+                    "",
+                    "",
+                    ""
+                )
+            }
         }
 
         isRegisteredList = List(selectedSpots - 1) { index ->
@@ -205,7 +218,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
     }
 
     val isAfterToday = trip.startDateAsCalendar().after(today)
-    var publishError by rememberSaveable {mutableStateOf(false)}
+    var publishError by rememberSaveable { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
@@ -367,8 +380,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                                             }
                                         }
                                     }
-                                }
-                                ,
+                                },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(0x65, 0x55, 0x8f, 255)
                                 )
@@ -455,7 +467,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                                     trip.typeTravel,
                                     1,
                                     false
-                                ){ success, importedTrip ->
+                                ) { success, importedTrip ->
                                     if (success) {
                                         vm.updatePublishedTrip()
 
@@ -505,7 +517,8 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
 
                         } else if (trip.participants.containsKey(loggedUser.id.toString())
                             && trip.status != Trip.TripStatus.COMPLETED.toString()
-                            && trip.creatorId != 1) {
+                            && trip.creatorId != 1
+                        ) {
                             Button(
                                 onClick = {},
                                 colors = ButtonDefaults.buttonColors(
@@ -563,7 +576,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                 }
             }
 
-                //Reviews section
+            //Reviews section
             if (reviews.isNotEmpty()) {
                 item {
                     TitleBox("Reviews")
@@ -678,26 +691,34 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                             items(selectedSpots - 1) { i ->
 
                                 val isRegistered = isRegisteredList.getOrNull(i) == true
-                                val participant = unregisteredParticipants.getOrNull(i) ?: Participant("", "", "")
+                                val participant =
+                                    unregisteredParticipants.getOrNull(i) ?: Participant("", "", "")
 
                                 Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                                    Text("Participant ${i + 1}", style = MaterialTheme.typography.titleMedium)
+                                    Text(
+                                        "Participant ${i + 1}",
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
 
                                     // Checkbox registered user
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Checkbox(
                                             checked = isRegistered,
                                             onCheckedChange = { checked ->
-                                                isRegisteredList = isRegisteredList.toMutableList().also { it[i] = checked }
+                                                isRegisteredList = isRegisteredList.toMutableList()
+                                                    .also { it[i] = checked }
                                                 // Reset data
                                                 if (checked) {
-                                                    unregisteredParticipants = unregisteredParticipants.toMutableList().also {
-                                                        it[i] = Participant("", "", "")
-                                                    }
+                                                    unregisteredParticipants =
+                                                        unregisteredParticipants.toMutableList()
+                                                            .also {
+                                                                it[i] = Participant("", "", "")
+                                                            }
                                                 } else {
-                                                    registeredUsernames = registeredUsernames.toMutableList().also {
-                                                        it[i] = ""
-                                                    }
+                                                    registeredUsernames =
+                                                        registeredUsernames.toMutableList().also {
+                                                            it[i] = ""
+                                                        }
                                                 }
                                             }
                                         )
@@ -709,11 +730,17 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                                         ValidatingInputUsernameField(
                                             registeredUsernames[i],
                                             { newValue ->
-                                                registeredUsernames = registeredUsernames.toMutableList().also { it[i] = newValue }
-                                                usernameTouchedList = usernameTouchedList.toMutableList().also { it[i] = true }
+                                                registeredUsernames =
+                                                    registeredUsernames.toMutableList()
+                                                        .also { it[i] = newValue }
+                                                usernameTouchedList =
+                                                    usernameTouchedList.toMutableList()
+                                                        .also { it[i] = true }
                                             },
                                             usernameTouchedList[i] && (
-                                                    registeredUsernames[i].isBlank() || !registeredUsernames[i].any { it.isLetter()} || !uvm.doesUserExist(registeredUsernames[i])
+                                                    registeredUsernames[i].isBlank() || !registeredUsernames[i].any { it.isLetter() } || !uvm.doesUserExist(
+                                                        registeredUsernames[i]
+                                                    )
                                                     ),
                                             "Username"
                                         )
@@ -722,10 +749,12 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                                         ValidatingInputTextField(
                                             participant.name,
                                             { newValue ->
-                                                unregisteredParticipants = unregisteredParticipants.toMutableList().also {
-                                                    it[i] = it[i].copy(name = newValue)
-                                                }
-                                                nameTouchedList = nameTouchedList.toMutableList().also { it[i] = true }
+                                                unregisteredParticipants =
+                                                    unregisteredParticipants.toMutableList().also {
+                                                        it[i] = it[i].copy(name = newValue)
+                                                    }
+                                                nameTouchedList = nameTouchedList.toMutableList()
+                                                    .also { it[i] = true }
                                             },
                                             nameTouchedList[i] && (
                                                     participant.name.isBlank() ||                             // Empty or only whitespace
@@ -738,10 +767,13 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                                         ValidatingInputTextField(
                                             participant.surname,
                                             { newValue ->
-                                                unregisteredParticipants = unregisteredParticipants.toMutableList().also {
-                                                    it[i] = it[i].copy(surname = newValue)
-                                                }
-                                                surnameTouchedList = surnameTouchedList.toMutableList().also { it[i] = true }
+                                                unregisteredParticipants =
+                                                    unregisteredParticipants.toMutableList().also {
+                                                        it[i] = it[i].copy(surname = newValue)
+                                                    }
+                                                surnameTouchedList =
+                                                    surnameTouchedList.toMutableList()
+                                                        .also { it[i] = true }
                                             },
                                             surnameTouchedList[i] && (
                                                     participant.surname.isBlank() ||                             // Empty or only whitespace
@@ -754,10 +786,12 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                                         ValidatingInputEmailField(
                                             participant.email,
                                             { newValue ->
-                                                unregisteredParticipants = unregisteredParticipants.toMutableList().also {
-                                                    it[i] = it[i].copy(email = newValue)
-                                                }
-                                                emailTouchedList = emailTouchedList.toMutableList().also { it[i] = true }
+                                                unregisteredParticipants =
+                                                    unregisteredParticipants.toMutableList().also {
+                                                        it[i] = it[i].copy(email = newValue)
+                                                    }
+                                                emailTouchedList = emailTouchedList.toMutableList()
+                                                    .also { it[i] = true }
                                             },
                                             emailTouchedList[i] && participant.email.isBlank()
                                         )
@@ -775,7 +809,13 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                             if (selectedSpots > 1) {
                                 dialogPhase = 1
                             } else {
-                                vm.askToJoin(trip, loggedUser.id, selectedSpots, emptyList(), emptyList())
+                                vm.askToJoin(
+                                    trip,
+                                    loggedUser.id,
+                                    selectedSpots,
+                                    emptyList(),
+                                    emptyList()
+                                )
                                 showDialog = false
                             }
                         } else {
@@ -789,7 +829,9 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
                             for (i in 0 until selectedSpots - 1) {
                                 if (isRegisteredList[i]) {
                                     val username = registeredUsernames[i]
-                                    if (username.isBlank() || !username.any { it.isLetter() } || !uvm.doesUserExist(registeredUsernames[i])) {
+                                    if (username.isBlank() || !username.any { it.isLetter() } || !uvm.doesUserExist(
+                                            registeredUsernames[i]
+                                        )) {
                                         hasErrors = true
                                         updatedUsernameTouched[i] = true
                                     }
@@ -858,6 +900,7 @@ fun TripDetails(navController: NavController, vm: TripViewModel, owner: Boolean,
     }
 }
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @SuppressLint("DiscouragedApi")
 @Composable
 fun Hero(trip: Trip) {
@@ -873,15 +916,14 @@ fun Hero(trip: Trip) {
     ) {
         when {
             imageUrl != null -> {
-                AsyncImage(
-                    model = ImageRequest.Builder(context)
-                        .data(imageUrl)
-                        .build(),
+                GlideImage(
+                    model = imageUrl,
                     contentDescription = "Trip Photo",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                 )
             }
+
             else -> {
                 Box(
                     modifier = Modifier
@@ -953,14 +995,15 @@ fun getDayOfMonthSuffix(day: Int): String {
 }
 
 @Composable
-fun TitleBox(title:String) {
+fun TitleBox(title: String) {
     Box(
         modifier = Modifier
             .height(50.dp)
             .fillMaxWidth()
             .shadow(elevation = 8.dp, shape = RoundedCornerShape(8.dp), clip = false)
             .background(
-                color = Color(0xFFF4F4F4))
+                color = Color(0xFFF4F4F4)
+            )
     ) {
         Text(
             text = title,
@@ -992,10 +1035,10 @@ fun Calendar.daysUntil(other: Calendar): Int {
 }
 
 
-
 @Composable
 fun ItineraryText(trip: Trip, modifier: Modifier = Modifier, vm: TripViewModel) {
-    val formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.US) // Same format used in your first view
+    val formatter =
+        DateTimeFormatter.ofPattern("hh:mm a", Locale.US) // Same format used in your first view
 
     val itineraryString = trip.activities
         .toSortedMap(compareBy { it }) // Sort days chronologically
@@ -1044,9 +1087,10 @@ fun DeleteButtonWithConfirmation(trip: Trip, navController: NavController, vm: T
     val showDialog = remember { mutableStateOf(false) }
 
     //Delete Button
-    Button(onClick = {
-        showDialog.value = true
-    },
+    Button(
+        onClick = {
+            showDialog.value = true
+        },
         colors = ButtonDefaults.buttonColors(
             containerColor = Color(0xd8, 0x1f, 0x1f, 255)
         )
@@ -1069,7 +1113,8 @@ fun DeleteButtonWithConfirmation(trip: Trip, navController: NavController, vm: T
             confirmButton = {
                 Button(
                     onClick = {
-                        val newOwner = trip.participants.entries.firstOrNull { it.key != trip.creatorId.toString() }
+                        val newOwner =
+                            trip.participants.entries.firstOrNull { it.key != trip.creatorId.toString() }
                         if (!trip.published || newOwner == null) {
                             vm.deleteTrip(trip.id)
                             vm.updatePublishedTrip()
@@ -1101,7 +1146,13 @@ fun DeleteButtonWithConfirmation(trip: Trip, navController: NavController, vm: T
 
 @SuppressLint("DiscouragedApi")
 @Composable
-fun ShowReview(review: Review, vm: TripViewModel, myTrip: Boolean, uvm: UserViewModel, navController: NavController) {
+fun ShowReview(
+    review: Review,
+    vm: TripViewModel,
+    myTrip: Boolean,
+    uvm: UserViewModel,
+    navController: NavController
+) {
 
     val reviewer by uvm.getUserData(review.reviewerId).collectAsState(initial = User())
 
@@ -1132,7 +1183,8 @@ fun ShowReview(review: Review, vm: TripViewModel, myTrip: Boolean, uvm: UserView
                 )
             }
         } else if (myTrip && !review.isTripReview && review.reviewedUserId > 0) {
-            val userReviewed by uvm.getUserData(review.reviewedUserId).collectAsState(initial = User())
+            val userReviewed by uvm.getUserData(review.reviewedUserId)
+                .collectAsState(initial = User())
 
             if (userReviewed != null) {
                 Box(
@@ -1159,7 +1211,8 @@ fun ShowReview(review: Review, vm: TripViewModel, myTrip: Boolean, uvm: UserView
             modifier = Modifier
                 .weight(1f),
             horizontalArrangement = Arrangement.End,
-            verticalAlignment = Alignment.CenterVertically)
+            verticalAlignment = Alignment.CenterVertically
+        )
         {
             PrintStars(review.score)
         }
@@ -1170,7 +1223,8 @@ fun ShowReview(review: Review, vm: TripViewModel, myTrip: Boolean, uvm: UserView
         Text(
             text = review.title,
             modifier = Modifier.padding(start = 50.dp, end = 16.dp),
-            fontWeight = FontWeight.Bold)
+            fontWeight = FontWeight.Bold
+        )
     }
 
     //Review content
@@ -1191,7 +1245,7 @@ fun ShowReview(review: Review, vm: TripViewModel, myTrip: Boolean, uvm: UserView
             items(review.photos) { photoUri ->
 
                 //The photo is saved as a uri (the user selected it from the gallery)
-                if(photoUri.isUriString()) {
+                if (photoUri.isUriString()) {
                     Image(
                         painter = rememberAsyncImagePainter(photoUri),
                         contentDescription = "Review photo",
@@ -1223,7 +1277,6 @@ fun ShowReview(review: Review, vm: TripViewModel, myTrip: Boolean, uvm: UserView
                 }
 
 
-
             }
         }
     }
@@ -1233,34 +1286,39 @@ fun ShowReview(review: Review, vm: TripViewModel, myTrip: Boolean, uvm: UserView
 
 @Composable
 fun PrintStars(rating: Int) {
-    val full = rating/2
-    val half = rating - full*2
-    val empty = 5 - (full+half)
-    for(i in 1..full) {
+    val full = rating / 2
+    val half = rating - full * 2
+    val empty = 5 - (full + half)
+    for (i in 1..full) {
         Icon(
             imageVector = Icons.Default.Star,
             contentDescription = "filled star",
-            tint = Color(0xff, 0xb4, 0x00, 255))
+            tint = Color(0xff, 0xb4, 0x00, 255)
+        )
     }
-    if (half > 0 ) {
+    if (half > 0) {
         Icon(
             imageVector = Icons.AutoMirrored.Filled.StarHalf,
             contentDescription = "half star",
-            tint = Color(0xff, 0xb4, 0x00, 255))
+            tint = Color(0xff, 0xb4, 0x00, 255)
+        )
     }
     if (empty > 0) {
         for (i in 1..empty) {
             Icon(
                 imageVector = Icons.Default.StarBorder,
                 contentDescription = "empty star",
-                tint = Color(0xff, 0xb4, 0x00, 255))
+                tint = Color(0xff, 0xb4, 0x00, 255)
+            )
         }
     }
 }
 
 @Composable
-fun ValidatingInputUsernameField(text: String, updateState: (String) -> Unit,
-                             validatorHasErrors: Boolean, label: String) {
+fun ValidatingInputUsernameField(
+    text: String, updateState: (String) -> Unit,
+    validatorHasErrors: Boolean, label: String
+) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
     Column(

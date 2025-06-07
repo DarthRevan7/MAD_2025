@@ -1,8 +1,8 @@
 package com.example.voyago.model
 
-import android.net.Uri
 import android.util.Log
 import com.example.voyago.Collections
+import com.example.voyago.StorageHelper.debugListAllTripsImages
 import com.example.voyago.model.Trip.Activity
 import com.example.voyago.model.Trip.Participant
 import com.example.voyago.model.Trip.TripStatus
@@ -24,12 +24,10 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import kotlin.collections.forEach
-import kotlin.toString
 
 
 //Function that converts a Long in a Calendar
-fun toCalendar(timeDate : Timestamp) : Calendar {
+fun toCalendar(timeDate: Timestamp): Calendar {
     var calendarDate = Calendar.getInstance()
     calendarDate.time = timeDate.toDate()
     return calendarDate
@@ -58,17 +56,26 @@ data class Trip(
     private var cachedPhotoUrl: String? = null
 
     suspend fun getPhoto(): String {
-        if (photo == null) {
-            return com.example.voyago.StorageHelper.getImageDownloadUrl("trips/placeholder_image.png") ?: ""
+        debugListAllTripsImages()
+        if (photo == null || photo == "") {
+            return com.example.voyago.StorageHelper.getImageDownloadUrl("trips/placeholder_photo.png")
+                ?: ""
         }
-        val url = com.example.voyago.StorageHelper.getImageDownloadUrl(photo!!)
-        return url ?: com.example.voyago.StorageHelper.getImageDownloadUrl("trips/placeholder_image.png") ?: ""
+        var url = com.example.voyago.StorageHelper.getImageDownloadUrl(photo!!)
+        if (url == null) {
+            return com.example.voyago.StorageHelper.getImageDownloadUrl("trips/placeholder_photo.png")
+                ?: ""
+        }
+        return url ?: ""
     }
 
     suspend fun setPhoto(newPhotoUri: android.net.Uri): Boolean {
         val extension = getFileExtension(newPhotoUri)
         val newPath = "trips/${id}.$extension"
-        val (success, url) = com.example.voyago.StorageHelper.uploadImageToStorage(newPhotoUri, newPath)
+        val (success, url) = com.example.voyago.StorageHelper.uploadImageToStorage(
+            newPhotoUri,
+            newPath
+        )
         return if (success && url != null) {
             photo = newPath
             cachedPhotoUrl = url
@@ -95,7 +102,7 @@ data class Trip(
         var time: String = "",           // hh:mm
         var isGroupActivity: Boolean = false,
         var description: String = "",
-    ){
+    ) {
         fun dateAsCalendar(): Calendar = toCalendar(date)
     }
 
@@ -117,7 +124,8 @@ data class Trip(
         IN_PROGRESS,
         COMPLETED
     }
-    constructor() : this (
+
+    constructor() : this(
         id = -1,
         title = "",
         destination = "",
@@ -149,7 +157,7 @@ data class Trip(
     }
 
     //Function that returns true if the Trip is valid
-    fun isValid():Boolean {
+    fun isValid(): Boolean {
         var condition = true
         var yesterday = toCalendar(this.startDate)
         yesterday.add(Calendar.DATE, -1)
@@ -170,7 +178,7 @@ data class Trip(
     }
 
     //Function that returns true if a user can join the trip
-    fun canJoin():Boolean {
+    fun canJoin(): Boolean {
         return this.status == TripStatus.NOT_STARTED.toString() && hasAvailableSpots()
     }
 
@@ -181,7 +189,7 @@ data class Trip(
     }
 
     //Function that returns true if the Trip has available spots
-    fun hasAvailableSpots():Boolean {
+    fun hasAvailableSpots(): Boolean {
         return availableSpots() > 0
     }
 
@@ -203,24 +211,6 @@ data class Trip(
         return days
     }
 
-    //Function that prints the Trip
-    fun printTrip()
-    {
-        println("Trip data: ")
-        println(destination)
-        println(id)
-        println(title)
-        println(estimatedPrice)
-        println(groupSize)
-        println("Status: $status")
-        println("Published? $published")
-        println("Available spots: " + availableSpots().toString())
-        println("Can join? " + canJoin().toString())
-        println("Has available spots? " + hasAvailableSpots().toString())
-
-
-    }
-
     //Function that returns true if the Trip has at least an activity for each day
     fun hasActivityForEachDay(): Boolean {
         val current = startDateAsCalendar()
@@ -230,10 +220,14 @@ data class Trip(
             val hasActivity = activities.any { (activityDate, _) ->
                 if (isTimestampLong(activityDate.toString())) {
                     timestampToCalendar(activityDate).get(Calendar.YEAR) == current.get(Calendar.YEAR) &&
-                            timestampToCalendar(activityDate).get(Calendar.DAY_OF_YEAR) == current.get(Calendar.DAY_OF_YEAR)
+                            timestampToCalendar(activityDate).get(Calendar.DAY_OF_YEAR) == current.get(
+                        Calendar.DAY_OF_YEAR
+                    )
                 } else {
                     stringToCalendar(activityDate).get(Calendar.YEAR) == current.get(Calendar.YEAR) &&
-                            stringToCalendar(activityDate).get(Calendar.DAY_OF_YEAR) == current.get(Calendar.DAY_OF_YEAR)
+                            stringToCalendar(activityDate).get(Calendar.DAY_OF_YEAR) == current.get(
+                        Calendar.DAY_OF_YEAR
+                    )
 
                 }
 
@@ -427,16 +421,21 @@ class TripModel {
     val filteredList: StateFlow<List<Trip>> = _filteredList
 
     //Function that return the list of Trips after the application of the selected filters
-    fun filterFunction(tripsFlow: Flow<List<Trip>>, filterDestination: String,
-                       filterMinPrice: Double, filterMaxPrice: Double,
-                       filterDuration: Pair<Int, Int>, filterGroupSize: Pair<Int, Int>,
-                       filtersTripType: List<SelectableItem>, filterUpcomingTrips: Boolean,
-                       filterCompletedTrips: Boolean, filterBySeats: Int,
-                       coroutineScope: CoroutineScope) {
+    fun filterFunction(
+        tripsFlow: Flow<List<Trip>>, filterDestination: String,
+        filterMinPrice: Double, filterMaxPrice: Double,
+        filterDuration: Pair<Int, Int>, filterGroupSize: Pair<Int, Int>,
+        filtersTripType: List<SelectableItem>, filterUpcomingTrips: Boolean,
+        filterCompletedTrips: Boolean, filterBySeats: Int,
+        coroutineScope: CoroutineScope
+    ) {
         coroutineScope.launch {
             tripsFlow.collect { list ->
                 val filtered = list.filter { trip ->
-                    val destination = filterDestination.isBlank() || trip.destination.contains(filterDestination, ignoreCase = true)
+                    val destination = filterDestination.isBlank() || trip.destination.contains(
+                        filterDestination,
+                        ignoreCase = true
+                    )
 
                     val duration = (filterDuration.first == -1 && filterDuration.second == -1) ||
                             (trip.tripDuration() in filterDuration.first..filterDuration.second)
@@ -450,7 +449,8 @@ class TripModel {
                         trip.estimatedPrice in filterMinPrice..filterMaxPrice
                     }
 
-                    val completed = !filterCompletedTrips || trip.status == TripStatus.COMPLETED.toString()
+                    val completed =
+                        !filterCompletedTrips || trip.status == TripStatus.COMPLETED.toString()
                     val canJoin = !filterUpcomingTrips || trip.loggedInUserCanJoin(1)
                     val spots = trip.availableSpots() >= filterBySeats
 
@@ -528,7 +528,7 @@ class TripModel {
             }
         }
 
-        if(min == Int.MAX_VALUE && max == Int.MIN_VALUE) {
+        if (min == Int.MAX_VALUE && max == Int.MIN_VALUE) {
             min = -1
             max = -1
         }
@@ -603,10 +603,12 @@ class TripModel {
     }
 
     //Function that imports a Trip in the "My Trip" section of the logged in user as private
-    fun importTrip(title: String, destination: String, startDate: Calendar,
-                   endDate: Calendar, estimatedPrice: Double, groupSize: Int,
-                   activities: Map<String, List<Activity>>, typeTravel: List<String>, creatorId: Int,
-                   published: Boolean, onResult: (Boolean, Trip?) -> Unit) {
+    fun importTrip(
+        title: String, destination: String, startDate: Calendar,
+        endDate: Calendar, estimatedPrice: Double, groupSize: Int,
+        activities: Map<String, List<Activity>>, typeTravel: List<String>, creatorId: Int,
+        published: Boolean, onResult: (Boolean, Trip?) -> Unit
+    ) {
         val firestore = Firebase.firestore
         val counterRef = firestore.collection("metadata").document("tripCounter")
 
@@ -730,8 +732,10 @@ class TripModel {
     }
 
     //Function that edits an Activity
-    fun editActivityInSelectedTrip(activityId: Int, updatedActivity: Activity, trip: Trip,
-                                   onResult: (Boolean, Trip?) -> Unit) {
+    fun editActivityInSelectedTrip(
+        activityId: Int, updatedActivity: Activity, trip: Trip,
+        onResult: (Boolean, Trip?) -> Unit
+    ) {
         val docId = trip.id.toString()
         val tripRef = Collections.trips.document(docId)
 
@@ -767,7 +771,10 @@ class TripModel {
                 // Add updated activity to its new date
                 val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
                 val newDateKey: String = dateFormat.format(updatedActivity.dateAsCalendar().time)
-                val updatedList = originalActivities.getOrDefault(newDateKey, emptyList<Activity>()) + updatedActivity
+                val updatedList = originalActivities.getOrDefault(
+                    newDateKey,
+                    emptyList<Activity>()
+                ) + updatedActivity
                 originalActivities[newDateKey] = updatedList
 
                 val updatedTrip = currentTrip.copy(activities = originalActivities)
@@ -857,9 +864,11 @@ class TripModel {
     private val _askedTrips = MutableStateFlow<Map<String, Int>>(emptyMap())
     val askedTrips: StateFlow<Map<String, Int>> = _askedTrips
 
-    fun requestToJoin(trip: Trip, userId: Int, spots: Int,
-                      unregisteredParticipants: List<Participant>,
-                      registeredParticipants: List<Int>, onResult: (Boolean) -> Unit) {
+    fun requestToJoin(
+        trip: Trip, userId: Int, spots: Int,
+        unregisteredParticipants: List<Participant>,
+        registeredParticipants: List<Int>, onResult: (Boolean) -> Unit
+    ) {
         val docId = trip.id.toString()
         val tripDocRef = Collections.trips.document(docId)
 
@@ -912,7 +921,8 @@ class TripModel {
             .addOnSuccessListener { querySnapshot ->
                 val askedMap = querySnapshot.documents.mapNotNull { doc ->
                     val trip = doc.toObject(Trip::class.java)
-                    val requestedSpots = trip?.appliedUsers?.get(userId.toString())?.requestedSpots ?: 0
+                    val requestedSpots =
+                        trip?.appliedUsers?.get(userId.toString())?.requestedSpots ?: 0
                     if (requestedSpots > 0 && trip != null) trip.id.toString() to requestedSpots else null
                 }.toMap()
                 _askedTrips.value = askedMap

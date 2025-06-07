@@ -50,9 +50,8 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
-import coil3.request.crossfade
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import com.example.voyago.model.Trip
 import com.example.voyago.model.TypeTravel
 import com.example.voyago.viewmodel.TripViewModel
@@ -79,9 +78,9 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
 
     val fieldValues = rememberSaveable(
         saver = listSaver(
-        save = { it.toList() },
-        restore = { it.toMutableStateList() }
-    )) {
+            save = { it.toList() },
+            restore = { it.toMutableStateList() }
+        )) {
         mutableStateListOf(
             trip.title,
             trip.destination,
@@ -469,6 +468,7 @@ fun Calendar.toStringDate(): String {
     return format.format(this.time)
 }
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @SuppressLint("DiscouragedApi")
 @Composable
 fun TripImageEdit(trip: Trip, imageUri: Uri?, onUriSelected: (Uri?) -> Unit) {
@@ -482,7 +482,7 @@ fun TripImageEdit(trip: Trip, imageUri: Uri?, onUriSelected: (Uri?) -> Unit) {
     // Always fetch the current trip image if no new image is selected
     LaunchedEffect(trip.photo) {
         if (imageUri == null) {
-            trip.getPhoto()
+            remoteImageUrl = trip.getPhoto()
         }
     }
     Box(
@@ -493,11 +493,8 @@ fun TripImageEdit(trip: Trip, imageUri: Uri?, onUriSelected: (Uri?) -> Unit) {
     ) {
         when {
             imageUri != null -> {
-                AsyncImage(
-                    model = ImageRequest.Builder(context)
-                        .data(imageUri)
-                        .crossfade(true)
-                        .build(),
+                GlideImage(
+                    model = imageUri,
                     contentDescription = "Selected Trip Photo",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
@@ -505,11 +502,8 @@ fun TripImageEdit(trip: Trip, imageUri: Uri?, onUriSelected: (Uri?) -> Unit) {
             }
 
             remoteImageUrl != null -> {
-                AsyncImage(
-                    model = ImageRequest.Builder(context)
-                        .data(remoteImageUrl)
-                        .crossfade(true)
-                        .build(),
+                GlideImage(
+                    model = remoteImageUrl,
                     contentDescription = "Trip Photo",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()

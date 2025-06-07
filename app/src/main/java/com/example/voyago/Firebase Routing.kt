@@ -61,4 +61,17 @@ object StorageHelper {
             null
         }
     }
+
+    fun debugListAllTripsImages() {
+        val ref = storage.reference.child("trips")
+        ref.listAll()
+            .addOnSuccessListener { listResult ->
+                for (item in listResult.items) {
+                    android.util.Log.d("FirebaseStorage", "File: ${item.name}")
+                }
+            }
+            .addOnFailureListener { exception ->
+                android.util.Log.e("FirebaseStorage", "Error listing files", exception)
+            }
+    }
 }
