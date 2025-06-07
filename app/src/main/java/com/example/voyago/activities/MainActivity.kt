@@ -83,7 +83,6 @@ import androidx.navigation.navigation
 import coil3.compose.AsyncImage
 import com.example.voyago.model.NavItem
 import com.example.voyago.R
-import com.example.voyago.model.NavItem
 import com.example.voyago.model.User
 import com.example.voyago.view.ActivitiesList
 import com.example.voyago.view.CreateAccount2Screen
@@ -116,14 +115,7 @@ import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserFactory
 import com.example.voyago.viewmodel.UserViewModel
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.zIndex
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.example.voyago.model.User
-import com.example.voyago.view.CreateAccount2Screen
-import com.example.voyago.view.CreateAccountScreen
-import com.example.voyago.viewmodel.ArticleFactory
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -1065,6 +1057,9 @@ fun TopBar(nvm: NotificationViewModel, navController: NavController) {
                 navController.navigate(Screen.Notifications.route)
             }) {
                 Box(
+                    modifier = Modifier
+                        .padding(top = 7.dp, end = 10.dp)
+                        .size(45.dp), // ensure space for bell + dot
                     contentAlignment = Alignment.TopEnd // Makes the red dot align top-end
                 ) {
                     Image(
