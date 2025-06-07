@@ -105,6 +105,7 @@ fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: Articl
     ) {
         item {
             //Box with Profile Photo, Username and Logout, Back and Edit icons
+            val context = LocalContext.current
             Box(modifier =
                 Modifier
                     .fillMaxWidth()
@@ -116,7 +117,7 @@ fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: Articl
                     .align(alignment = Alignment.TopEnd)
                     .padding(16.dp)
                     .clickable {
-                        val context = LocalContext.current
+
                         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                             .requestIdToken(context.getString(R.string.default_web_client_id))
                             .requestEmail()
