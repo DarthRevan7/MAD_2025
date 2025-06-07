@@ -6,6 +6,9 @@ import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.firestore.firestore
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
+import com.google.firebase.storage.FirebaseStorage
+import android.net.Uri
+import kotlinx.coroutines.tasks.await
 
 object Collections{
     private const val C_USERS = "users"
@@ -27,4 +30,48 @@ object Collections{
     val trips = db.collection(C_TRIPS)
     val reviews = db.collection(C_REVIEWS)
     val articles = db.collection(C_ARTICLES)
+}
+
+object StorageHelper {
+    private val storage = FirebaseStorage.getInstance()
+
+    suspend fun uploadImageToStorage(uri: Uri, path: String): Pair<Boolean, String?> {
+        val ref = storage.reference.child(path)
+        return try {
+            ref.putFile(uri).await()
+            val downloadUrl = ref.downloadUrl.await().toString()
+            Pair(true, downloadUrl)
+        } catch (e: Exception) {
+            Pair(false, null)
+        }
+    }
+
+    fun deleteImageFromStorage(path: String, onResult: (Boolean) -> Unit) {
+        val ref = storage.reference.child(path)
+        ref.delete()
+            .addOnSuccessListener { onResult(true) }
+            .addOnFailureListener { onResult(false) }
+    }
+
+    suspend fun getImageDownloadUrl(path: String): String? {
+        val ref = storage.reference.child(path)
+        return try {
+            ref.downloadUrl.await().toString()
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    fun debugListAllTripsImages() {
+        val ref = storage.reference.child("trips")
+        ref.listAll()
+            .addOnSuccessListener { listResult ->
+                for (item in listResult.items) {
+                    android.util.Log.d("FirebaseStorage", "File: ${item.name}")
+                }
+            }
+            .addOnFailureListener { exception ->
+                android.util.Log.e("FirebaseStorage", "Error listing files", exception)
+            }
+    }
 }

@@ -36,6 +36,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -48,26 +49,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
 import androidx.navigation.NavController
-import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
-import coil3.request.crossfade
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import com.example.voyago.model.Trip
 import com.example.voyago.model.TypeTravel
 import com.example.voyago.viewmodel.TripViewModel
 import com.google.firebase.Timestamp
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
-
-fun initUri(vm: TripViewModel): String {
-    val trip = vm.selectedTrip.value
-    if (vm.editTrip.isValid()) {
-        return trip.photo
-    }
-    return "placeholder_photo"
-}
 
 
 @Composable
@@ -75,25 +67,20 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
     val trip = vm.editTrip
     vm.userAction = TripViewModel.UserAction.EDIT_TRIP
 
-    LaunchedEffect(
-        Unit
-    ) { initUri(vm = vm) }
+    var tripImageError by rememberSaveable { mutableStateOf(false) }
+    var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
+    var remoteImageUrl by remember { mutableStateOf<String?>(null) }
 
-    var imageUri by rememberSaveable {
-        mutableStateOf<Uri?>(
-            if (trip.photo.isUriString()) {
-                trip.photo.toUri()
-            } else {
-                null
-            }
-        )
+    // Load remote image if no local image is selected
+    LaunchedEffect(trip.id) {
+        remoteImageUrl = trip.getPhoto()
     }
-    var tripImageError by rememberSaveable {mutableStateOf(false)}
 
-    val fieldValues = rememberSaveable(saver = listSaver(
-        save = { it.toList() },
-        restore = { it.toMutableStateList() }
-    )) {
+    val fieldValues = rememberSaveable(
+        saver = listSaver(
+            save = { it.toList() },
+            restore = { it.toMutableStateList() }
+        )) {
         mutableStateListOf(
             trip.title,
             trip.destination,
@@ -125,6 +112,8 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
 
     var dateError by rememberSaveable { mutableStateOf("") }
 
+    val coroutineScope = rememberCoroutineScope()
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -145,9 +134,7 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                 TripImageEdit(
                     trip = trip,
                     imageUri = imageUri,
-                    onUriSelected = { uri ->
-                        imageUri = uri
-                    }
+                    onUriSelected = { uri -> imageUri = uri }
                 )
             }
 
@@ -225,9 +212,10 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                                 floatHasErrors, // 是否有错误
                                 fieldNames[index] // 字段名称
                             )
-                        } else { //Group Size Field 团队大小字段
-                            val intHasErrors = (item.toString().isBlank() || // 检查是否为空
-                                    item.toString().toIntOrNull()?.let { it <= 1 } != false) // 检查是否大于1
+                        } else { //Group Size Field
+                            val intHasErrors =
+                                (item.toString().isBlank() || item.toString().toIntOrNull()
+                                    ?.let { it <= 1 } != false)
 
                             fieldErrors[index] = intHasErrors // 设置错误状态
 
@@ -441,14 +429,14 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                                 ""
                             }
 
-                            if (!tripImageError && !fieldErrors.any{it} && !typeTravelError && validateDateOrder(startCalendar, endCalendar)) {
-                                if(vm.userAction == TripViewModel.UserAction.EDIT_TRIP) {
-
+                            if (!tripImageError && !fieldErrors.any { it } && !typeTravelError && validateDateOrder(
+                                    startCalendar,
+                                    endCalendar
+                                )) {
+                                if (vm.userAction == TripViewModel.UserAction.EDIT_TRIP) {
                                     val currentTrip = vm.editTrip
-
                                     if (currentTrip.isValid()) {
                                         val updatedTrip = Trip(
-                                            photo = imageUri?.toString() ?: trip.photo,
                                             title = fieldValues[0].toString(),
                                             destination = fieldValues[1].toString(),
                                             startDate = Timestamp(startCalendar!!.time),
@@ -456,7 +444,9 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                                             estimatedPrice = fieldValues[2].toString().toDouble(),
                                             groupSize = fieldValues[3].toString().toInt(),
                                             activities = currentTrip.activities,
-                                            typeTravel = selected.map { TypeTravel.valueOf(it.uppercase()).toString() },
+                                            typeTravel = selected.map {
+                                                TypeTravel.valueOf(it.uppercase()).toString()
+                                            },
                                             creatorId = currentTrip.creatorId,
                                             published = currentTrip.published,
                                             id = currentTrip.id,
@@ -465,13 +455,16 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                                             appliedUsers = currentTrip.appliedUsers,
                                             rejectedUsers = currentTrip.rejectedUsers
                                         )
-
                                         vm.editTrip = updatedTrip
                                         vm.setSelectedTrip(updatedTrip)
-                                        vm.editExistingTrip(vm.editTrip) { success ->
+                                        coroutineScope.launch {
+                                            val success = if (imageUri != null) {
+                                                updatedTrip.setPhoto(imageUri!!)
+                                            } else true
                                             if (success) {
-                                                //Go to the list of activities
-                                                navController.navigate("activities_list")
+                                                vm.editExistingTrip(updatedTrip) { success2 ->
+                                                    if (success2) navController.navigate("activities_list")
+                                                }
                                             }
                                         }
                                     }
@@ -497,64 +490,50 @@ fun Calendar.toStringDate(): String {
     return format.format(this.time)
 }
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @SuppressLint("DiscouragedApi")
 @Composable
-fun TripImageEdit(trip:Trip, imageUri: Uri?, onUriSelected: (Uri?) -> Unit) {
+fun TripImageEdit(trip: Trip, imageUri: Uri?, onUriSelected: (Uri?) -> Unit) {
     val context = LocalContext.current
-
-    //Returns result of media loader
     val pickMedia = rememberLauncherForActivityResult(
         contract = PickVisualMedia()
     ) { uri ->
         onUriSelected(uri)
     }
-
+    var remoteImageUrl by remember { mutableStateOf<String?>(null) }
+    // Always fetch the current trip image if no new image is selected
+    LaunchedEffect(trip.photo) {
+        if (imageUri == null) {
+            remoteImageUrl = trip.getPhoto()
+        }
+    }
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(250.dp),
         contentAlignment = Alignment.Center
     ) {
-        if (imageUri.toString().isUriString()) {
-            AsyncImage(
-                model = ImageRequest.Builder(context)
-                    .data(imageUri)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = "Selected Trip Photo",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
-        } else {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(
-                            LocalContext.current.resources.getIdentifier(
-                                trip.photo,
-                                "drawable",
-                                LocalContext.current.packageName
-                            )
-                        )
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = trip.destination,
+        when {
+            imageUri != null -> {
+                GlideImage(
+                    model = imageUri,
+                    contentDescription = "Selected Trip Photo",
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxSize()
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+
+            remoteImageUrl != null -> {
+                GlideImage(
+                    model = remoteImageUrl,
+                    contentDescription = "Trip Photo",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
                 )
             }
         }
-
-        //Icon Button select photo
         IconButton(
-            onClick = {
-                pickMedia.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
-            },
+            onClick = { pickMedia.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly)) },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(16.dp)

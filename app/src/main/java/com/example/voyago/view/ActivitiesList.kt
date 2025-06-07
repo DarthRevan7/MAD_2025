@@ -156,7 +156,6 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
 
                                     if(vm.userAction == TripViewModel.UserAction.CREATE_TRIP) {
                                         val updatedTrip = Trip(
-                                            photo = vm.newTrip.photo,
                                             title = vm.newTrip.title,
                                             destination = vm.newTrip.destination,
                                             startDate = vm.newTrip.startDate,
@@ -191,7 +190,6 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
                                         vm.userAction == TripViewModel.UserAction.EDIT_ACTIVITY
                                         ){
                                         val updatedTrip = Trip(
-                                            photo = vm.editTrip.photo,
                                             title = vm.editTrip.title,
                                             destination = vm.editTrip.destination,
                                             startDate = vm.editTrip.startDate,

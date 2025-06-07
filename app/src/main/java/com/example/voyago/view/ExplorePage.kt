@@ -18,36 +18,42 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import com.example.voyago.viewmodel.*
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.example.voyago.R
 import com.example.voyago.model.Trip
+import com.example.voyago.viewmodel.Factory
+import com.example.voyago.viewmodel.TripViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -69,7 +75,7 @@ fun ExplorePage(navController: NavController, vm: TripViewModel = viewModel(fact
         vm.updatePublishedTrip()
         vm.setMaxMinPrice()
 
-        if(vm.userAction != TripViewModel.UserAction.SEARCHING && vm.userAction != TripViewModel.UserAction.VIEW_TRIP) {
+        if (vm.userAction != TripViewModel.UserAction.SEARCHING && vm.userAction != TripViewModel.UserAction.VIEW_TRIP) {
             vm.resetFilters()
         }
         vm.applyFilters()
@@ -111,7 +117,9 @@ fun ExplorePage(navController: NavController, vm: TripViewModel = viewModel(fact
             item {
                 Box(
                     contentAlignment = Alignment.TopCenter,
-                    modifier = Modifier.padding(16.dp).fillMaxWidth()
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth()
                 ) {
                     Text("No trips for the selected filters.")
                 }
@@ -148,52 +156,8 @@ fun TripCard(
             navController.navigate("trip_details") // 导航到行程详情页面
         }
     ) {
-        Box { // 创建一个容器盒子
-            if(!trip.photo.isUriString()) { // 如果照片不是URI格式
-                //AsyncImage with resources.Drawable 使用资源文件的异步图片
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data( // 设置图片数据源
-                            LocalContext.current.resources.getIdentifier(
-                                trip.photo, // 图片名称
-                                "drawable", // 资源类型为drawable
-                                LocalContext.current.packageName // 当前应用包名
-                            )
-                        )
-                        .crossfade(true) // 启用交叉淡入动画效果
-                        .build(),
-                    contentDescription = trip.destination, // 图片内容描述
-                    contentScale = ContentScale.Crop, // 图片缩放方式为裁剪
-                    modifier = Modifier
-                        .fillMaxWidth() // 填满可用宽度
-                        .height(200.dp), // 设置高度为200dp
-                    colorFilter = if (isDraft) { // 根据是否为草稿状态应用颜色滤镜
-                        androidx.compose.ui.graphics.ColorFilter.colorMatrix(
-                            androidx.compose.ui.graphics.ColorMatrix().apply {
-                                setToSaturation(0f) // 设置饱和度为0，图片变为灰白色
-                            }
-                        )
-                    } else null // 正常状态下不应用颜色滤镜
-                )
-            } else {
-                //Async Image with Uri 使用URI的异步图片
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(trip.photo) // 使用URI作为图片数据源
-                        .crossfade(true) // 启用交叉淡入动画效果
-                        .build(),
-                    contentDescription = "Selected Trip Photo", // 图片内容描述
-                    contentScale = ContentScale.Crop, // 图片缩放方式为裁剪
-                    modifier = Modifier.fillMaxSize(), // 填满整个容器
-                    colorFilter = if (isDraft) { // 根据是否为草稿状态应用颜色滤镜
-                        androidx.compose.ui.graphics.ColorFilter.colorMatrix(
-                            androidx.compose.ui.graphics.ColorMatrix().apply {
-                                setToSaturation(0f) // 设置饱和度为0，图片变为灰白色
-                            }
-                        )
-                    } else null // 正常状态下不应用颜色滤镜
-                )
-            }
+        Box {
+            TripImageExplore(trip)
 
             // 草稿状态指示器
             if (isDraft) {
@@ -291,5 +255,23 @@ fun TripCard(
                 BookedBanner(Modifier.align(Alignment.TopEnd)) // 对齐到右上角
             }
         }
+    }
+}
+
+@OptIn(ExperimentalGlideComposeApi::class)
+@Composable
+fun TripImageExplore(trip: Trip) {
+    val context = LocalContext.current
+    var imageUrl by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(trip.photo) {
+        imageUrl = trip.getPhoto()
+    }
+    if (imageUrl != null && imageUrl!!.isNotBlank()) {
+        GlideImage(
+            model = imageUrl,
+            contentDescription = "Trip Photo",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
     }
 }

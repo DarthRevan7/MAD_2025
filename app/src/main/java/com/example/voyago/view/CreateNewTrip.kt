@@ -417,7 +417,6 @@ fun CreateNewTrip(navController: NavController, vm: TripViewModel) {
                                 val activities = mutableMapOf<String, MutableList<Trip.Activity>>()
 
                                 val newTrip = Trip(
-                                    photo = imageUri.toString(),
                                     title = fieldValues[0],
                                     destination = fieldValues[1],
                                     startDate = Timestamp(startCalendar!!.time),
