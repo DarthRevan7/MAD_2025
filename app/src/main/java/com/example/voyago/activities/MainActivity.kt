@@ -27,6 +27,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -98,6 +99,7 @@ import com.example.voyago.view.MyProfileScreen
 import com.example.voyago.view.MyReviews
 import com.example.voyago.view.MyTripsPage
 import com.example.voyago.view.NewActivity
+import com.example.voyago.view.NotificationView
 import com.example.voyago.view.RegistrationVerificationCodeScreen
 import com.example.voyago.view.RetrievePassword
 import com.example.voyago.view.TripApplications
@@ -106,6 +108,7 @@ import com.example.voyago.view.UserProfileScreen
 import com.example.voyago.viewmodel.ArticleFactory
 import com.example.voyago.viewmodel.ArticleViewModel
 import com.example.voyago.viewmodel.Factory
+import com.example.voyago.viewmodel.NotificationFactory
 import com.example.voyago.viewmodel.NotificationViewModel
 import com.example.voyago.viewmodel.ReviewFactory
 import com.example.voyago.viewmodel.ReviewViewModel
@@ -113,15 +116,10 @@ import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserFactory
 import com.example.voyago.viewmodel.UserViewModel
 import com.google.firebase.FirebaseApp
-import com.example.voyago.view.LoginScreen
-import com.example.voyago.view.NotificationView
-import com.example.voyago.view.RetrievePassword
-import com.example.voyago.viewmodel.NotificationViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.firestore
 import com.google.firebase.messaging.FirebaseMessaging
-import com.example.voyago.viewmodel.NotificationFactory
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.ExecutorService
@@ -381,9 +379,9 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
             )
         }
         val notificationViewModel = NotificationViewModel()
-                composable(Screen.Notifications.route) {
-                    NotificationView(notificationViewModel)
-                }
+        composable(Screen.Notifications.route) {
+            NotificationView(notificationViewModel)
+        }
     }
 }
 
@@ -476,7 +474,8 @@ fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
                 owner = false,
                 uvm = userViewModel,
                 rvm = reviewViewModel,
-                nvm = notificationViewModel)
+                nvm = notificationViewModel
+            )
         }
 
         composable(
@@ -569,12 +568,14 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = NotificationFactory
             )
-            TripDetails(navController = navController,
+            TripDetails(
+                navController = navController,
                 vm = tripViewModel,
                 owner = true,
                 uvm = userViewModel,
                 rvm = reviewViewModel,
-                nvm = notificationViewModel)
+                nvm = notificationViewModel
+            )
         }
 
         composable("my_reviews") { entry ->
@@ -945,10 +946,12 @@ fun NavGraphBuilder.profileNavGraph(
                 viewModelStoreOwner = profileNavGraphEntry,
                 factory = NotificationFactory
             )
-            TripDetails(navController = navController, vm = tripViewModel, owner = false,
+            TripDetails(
+                navController = navController, vm = tripViewModel, owner = false,
                 uvm = userViewModel,
                 rvm = reviewViewModel,
-                nvm = notificationViewModel)
+                nvm = notificationViewModel
+            )
         }
 
     }

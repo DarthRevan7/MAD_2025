@@ -1,19 +1,45 @@
 package com.example.voyago.view
 
-import androidx.compose.foundation.background
+import android.app.Activity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -22,20 +48,12 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.google.firebase.auth.FirebaseAuth
-import androidx.compose.material3.OutlinedTextField
-import android.app.Activity
-import android.content.Intent
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
+import com.example.voyago.R
 import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
-import androidx.compose.ui.platform.LocalContext
-import com.example.voyago.R
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -85,14 +103,14 @@ fun LoginScreen(
     ) {
 
         item {
-        // Main Content
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.height(60.dp))
+            // Main Content
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Spacer(modifier = Modifier.height(60.dp))
 
                 // Profile Icon
                 Box(
@@ -136,113 +154,113 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(40.dp))
 
-            // Email TextField
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it; emailTouched = true },
-                placeholder = {
-                    Text(
-                        text = "email@domain.com",
-                        color = Color.Gray
+                // Email TextField
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it; emailTouched = true },
+                    placeholder = {
+                        Text(
+                            text = "email@domain.com",
+                            color = Color.Gray
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    isError = emailTouched && email.isBlank(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    shape = RoundedCornerShape(12.dp),
+                    supportingText = {
+                        if (emailTouched && email.isBlank()) {
+                            Text("This field cannot be empty")
+                        }
+                    },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color(0xFF6B46C1),
+                        unfocusedBorderColor = Color.LightGray,
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White
                     )
-                },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                isError = emailTouched && email.isBlank(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                shape = RoundedCornerShape(12.dp),
-                supportingText = {
-                    if (emailTouched && email.isBlank()) {
-                        Text("This field cannot be empty")
-                    }
-                },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF6B46C1),
-                    unfocusedBorderColor = Color.LightGray,
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
                 )
-            )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-            // Password TextField
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it; passwordTouched = true },
-                placeholder = {
-                    Text(
-                        text = "password",
-                        color = Color.Gray
+                // Password TextField
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it; passwordTouched = true },
+                    placeholder = {
+                        Text(
+                            text = "password",
+                            color = Color.Gray
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    isError = passwordTouched && password.isBlank(),
+                    visualTransformation = PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    shape = RoundedCornerShape(12.dp),
+                    supportingText = {
+                        if (passwordTouched && password.isBlank()) {
+                            Text("This field cannot be empty")
+                        }
+                    },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color(0xFF6B46C1),
+                        unfocusedBorderColor = Color.LightGray,
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White
                     )
-                },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                isError = passwordTouched && password.isBlank(),
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                shape = RoundedCornerShape(12.dp),
-                supportingText = {
-                    if (passwordTouched && password.isBlank()) {
-                        Text("This field cannot be empty")
-                    }
-                },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF6B46C1),
-                    unfocusedBorderColor = Color.LightGray,
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
                 )
-            )
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-            // Login Button
-            Button(
-                onClick = {
-                    if (email.isBlank() || password.isBlank()) {
-                        errorMessage = "Email and password cannot be empty"
-                        return@Button
-                    } else {
-                        auth.signInWithEmailAndPassword(email, password)
-                            .addOnCompleteListener { task ->
-                                if (task.isSuccessful) {
-                                    navController.navigate("home_main") {
-                                        popUpTo("login") { inclusive = true }
+                // Login Button
+                Button(
+                    onClick = {
+                        if (email.isBlank() || password.isBlank()) {
+                            errorMessage = "Email and password cannot be empty"
+                            return@Button
+                        } else {
+                            auth.signInWithEmailAndPassword(email, password)
+                                .addOnCompleteListener { task ->
+                                    if (task.isSuccessful) {
+                                        navController.navigate("home_main") {
+                                            popUpTo("login") { inclusive = true }
+                                        }
+                                    } else {
+                                        errorMessage = "Wrong email or password"
                                     }
-                                } else {
-                                    errorMessage = "Wrong email or password"
                                 }
-                            }
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF6B46C1)
-                )
-            ) {
-                Text(
-                    text = "Login",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White
-                )
-            }
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF6B46C1)
+                    )
+                ) {
+                    Text(
+                        text = "Login",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-            // Forgot Password
-            TextButton(onClick = onForgotPasswordClick) {
-                Text(
-                    text = "Forgot your password?",
-                    color = Color(0xFF6B46C1),
-                    fontSize = 16.sp,
-                    textDecoration = TextDecoration.Underline
-                )
-            }
+                // Forgot Password
+                TextButton(onClick = onForgotPasswordClick) {
+                    Text(
+                        text = "Forgot your password?",
+                        color = Color(0xFF6B46C1),
+                        fontSize = 16.sp,
+                        textDecoration = TextDecoration.Underline
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -354,7 +372,7 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
-
+}
 
 fun handleGoogleSignInResult(
     result: androidx.activity.result.ActivityResult,
