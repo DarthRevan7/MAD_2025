@@ -760,7 +760,7 @@ class TripModel {
     }
 
     //Delete an activity
-    fun removeActivityFromTrip(activity: Activity, trip: Trip?, onResult: (Boolean, Trip?) -> Unit) {
+/*    fun removeActivityFromTrip(activity: Activity, trip: Trip?, onResult: (Boolean, Trip?) -> Unit) {
         if (trip == null) {
             onResult(false, null)
             return
@@ -791,7 +791,7 @@ class TripModel {
                 Log.e("Firestore", "Failed to remove activity from trip", e)
                 onResult(false, null)
             }
-    }
+    }*/
 
     //DELETE A TRIP
 
