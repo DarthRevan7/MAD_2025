@@ -20,10 +20,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VoyagoForgotPasswordScreen(
+fun RetrievePassword(
+    navController: NavController,
     onBackClick: () -> Unit = {},
     onSendClick: (String) -> Unit = { _ -> }
 ) {
@@ -133,10 +135,11 @@ fun VoyagoForgotPasswordScreen(
     }
 }
 
+/*
 @Preview(showBackground = true, device = "spec:width=412dp,height=892dp")
 @Composable
 fun VoyagoForgotPasswordScreenPreview() {
     MaterialTheme {
-        VoyagoForgotPasswordScreen()
+        RetrievePassword()
     }
-}
+}*/

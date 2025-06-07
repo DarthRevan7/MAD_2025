@@ -16,10 +16,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
-import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
@@ -44,13 +42,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -79,7 +75,6 @@ import androidx.navigation.navigation
 import coil3.compose.AsyncImage
 import com.example.voyago.model.NavItem
 import com.example.voyago.R
-import com.example.voyago.databinding.ActivityCameraBinding
 import com.example.voyago.view.ActivitiesList
 import com.example.voyago.view.CreateNewTrip
 import com.example.voyago.view.EditActivity
@@ -97,35 +92,28 @@ import com.example.voyago.view.UserProfileScreen
 import com.example.voyago.viewmodel.ArticleViewModel
 import com.example.voyago.viewmodel.Factory
 import com.example.voyago.viewmodel.TripViewModel
-import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import com.example.voyago.view.MyReviews
 import com.example.voyago.viewmodel.ReviewFactory
 import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.UserFactory
 import com.example.voyago.viewmodel.UserViewModel
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.voyago.model.User
+import com.example.voyago.view.CreateAccount2Screen
+import com.example.voyago.view.CreateAccountScreen
 import com.example.voyago.viewmodel.ArticleFactory
-import com.google.android.gms.common.ConnectionResult
-import com.google.android.gms.common.GoogleApiAvailability
 import com.google.firebase.FirebaseApp
-import com.example.voyago.model.ReviewModel
-import com.example.voyago.model.UserModel
 import com.example.voyago.view.LoginScreen
-import com.example.voyago.view.NotificationView
+import com.example.voyago.view.RetrievePassword
 import com.example.voyago.viewmodel.NotificationViewModel
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.SetOptions
 import com.google.firebase.messaging.FirebaseMessaging
 
 
@@ -136,14 +124,10 @@ sealed class Screen(val route: String) {
     object Chats : Screen("chats_root")
     object Profile : Screen("profile_root")
     object Notifications : Screen("notifications")
+    object Login : Screen("login_root")
 }
 
 class MainActivity : ComponentActivity() {
-
-
-    private lateinit var viewBinding: ActivityCameraBinding
-
-    private var imageCapture: ImageCapture? = null
     private lateinit var cameraExecutor: ExecutorService
 
     private lateinit var context: Context
@@ -180,40 +164,6 @@ class MainActivity : ComponentActivity() {
 
     }
 
-    /*private fun startCamera() {
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
-
-        cameraProviderFuture.addListener({
-            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
-
-            // Preview
-            *//*val preview = Preview.Builder()
-                .build()
-                .also {
-                    it.setSurfaceProvider(viewBinding.viewFinder.surfaceProvider)
-                }*//*
-
-            imageCapture = ImageCapture.Builder().build()
-
-            val imageAnalyzer = ImageAnalysis.Builder().build().also {
-                it.setAnalyzer(cameraExecutor, LuminosityAnalyzer { luma ->
-                    Log.d(TAG, "Average luminosity: $luma")
-                })
-            }
-
-            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-
-            try {
-                cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview, imageCapture, imageAnalyzer
-                )
-            } catch (exc: Exception) {
-                Log.e(TAG, "Use case binding failed", exc)
-            }
-        }, ContextCompat.getMainExecutor(this))
-    }*/
-
     private fun requestPermissions() {
         activityResultLauncher.launch(REQUIRED_PERMISSIONS)
     }
@@ -228,7 +178,6 @@ class MainActivity : ComponentActivity() {
     }
 
     companion object {
-        private const val TAG = "Camera"
         @SuppressLint("ObsoleteSdkInt")
         private val REQUIRED_PERMISSIONS = mutableListOf(
             Manifest.permission.CAMERA,
@@ -247,37 +196,14 @@ class MainActivity : ComponentActivity() {
             }
             if (!permissionGranted) {
                 Toast.makeText(baseContext, "Permission request denied", Toast.LENGTH_SHORT).show()
-            } /*else {
-                *//*startCamera()*//*
-            }*/
+            }
         }
-
-    private class LuminosityAnalyzer(private val listener: (Double) -> Unit) : ImageAnalysis.Analyzer {
-        private fun ByteBuffer.toByteArray(): ByteArray {
-            rewind()
-            val data = ByteArray(remaining())
-            get(data)
-            return data
-        }
-
-        override fun analyze(image: ImageProxy) {
-            val buffer = image.planes[0].buffer
-            val data = buffer.toByteArray()
-            val pixels = data.map { it.toInt() and 0xFF }
-            val luma = pixels.average()
-            listener(luma)
-            image.close()
-        }
-    }
 }
 
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()
-    val reviewModel = ReviewModel()
-    val userModel = UserModel()
     val notificationViewModel = NotificationViewModel()
-    //userModel.refreshAllRatings(reviewModel)
     Scaffold(
         topBar = { TopBar(
             nvm = notificationViewModel,
@@ -342,8 +268,7 @@ fun BottomBar(navController: NavHostController) {
 @Composable
 fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modifier) {
     val auth = FirebaseAuth.getInstance()
-    val currentUser = auth.currentUser
-    val startDest = if (currentUser == null) "login" else Screen.Home.route
+    val startDest = Screen.Home.route
 
     NavHost(navController = navController, startDestination = startDest, modifier = modifier) {
         composable("login") {
@@ -356,8 +281,9 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
         exploreNavGraph(navController)
         myTripsNavGraph(navController)
         homeNavGraph(navController)
-        chatsNavGraph()
+        chatsNavGraph(navController)
         profileNavGraph(navController)
+        loginNavGraph(navController, auth)
 
         composable("camera") {
             val context = LocalContext.current
@@ -372,7 +298,37 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
     }
 }
 
+@Composable
+fun RequireAuth(navController: NavController, content: @Composable () -> Unit) {
+    val context = LocalContext.current
+    val currentUser = FirebaseAuth.getInstance().currentUser
 
+    if (currentUser != null) {
+        content()
+    } else {
+        LaunchedEffect(Unit) {
+            Toast.makeText(context, "Please log in to access this section", Toast.LENGTH_SHORT).show()
+            navController.navigate(Screen.Login.route)
+        }
+    }
+}
+
+fun NavGraphBuilder.loginNavGraph(navController: NavHostController, auth: FirebaseAuth) {
+    navigation(startDestination = "login", route = Screen.Login.route) {
+        composable("login") {
+            LoginScreen(navController = navController, auth = auth)
+        }
+        composable("retrieve_password") {
+            RetrievePassword(navController = navController)
+        }
+        composable("register") {
+            CreateAccountScreen(navController)
+        }
+        composable("register2") {
+            CreateAccount2Screen(navController)
+        }
+    }
+}
 
 fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
     navigation(startDestination = "explore_main", route = Screen.Explore.route) {
@@ -459,18 +415,21 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
 
     navigation(startDestination = "my_trips_main", route = Screen.MyTrips.route) {
         composable("my_trips_main") { entry ->
-            val exploreGraphEntry = remember(entry) {
-                navController.getBackStackEntry(Screen.MyTrips.route)
+            RequireAuth(navController) {
+                val exploreGraphEntry = remember(entry) {
+                    navController.getBackStackEntry(Screen.MyTrips.route)
+                }
+                val tripViewModel: TripViewModel = viewModel(
+                    viewModelStoreOwner = exploreGraphEntry,
+                    factory = Factory
+                )
+                val userViewModel: UserViewModel = viewModel(
+                    viewModelStoreOwner = exploreGraphEntry,
+                    factory = Factory
+                )
+                MyTripsPage(navController = navController, vm = tripViewModel, uvm = userViewModel)
             }
-            val tripViewModel: TripViewModel = viewModel(
-                viewModelStoreOwner = exploreGraphEntry,
-                factory = Factory
-            )
-            val userViewModel: UserViewModel = viewModel(
-                viewModelStoreOwner = exploreGraphEntry,
-                factory = Factory
-            )
-            MyTripsPage(navController = navController, vm = tripViewModel, uvm = userViewModel)
+
         }
 
         composable("trip_details") { entry ->
@@ -707,10 +666,12 @@ fun NavGraphBuilder.homeNavGraph(
 
 
 
-fun NavGraphBuilder.chatsNavGraph() {
+fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
     navigation(startDestination = "chats_list", route = Screen.Chats.route) {
         composable("chats_list") {
-            Text("Chats List Screen")
+            RequireAuth(navController) {
+                Text("Chats List Screen")
+            }
         }
         composable("chat_detail/{chatId}") { backStackEntry ->
             Text("Chat Detail Screen with ID: ${backStackEntry.arguments?.getString("chatId")}")
@@ -725,35 +686,33 @@ fun NavGraphBuilder.profileNavGraph(
 
 ) {
 
-    navigation(
-        startDestination = "profile_overview",
-        route = Screen.Profile.route
-    ) {
+    navigation(startDestination = "profile_overview", route = Screen.Profile.route) {
         composable("profile_overview") { entry ->
-            // 取同一个 HomeGraph 的 VM
-            val profileNavGraphEntry = remember(entry) {
-                navController.getBackStackEntry(Screen.Profile.route)
+            RequireAuth(navController) {
+                val profileNavGraphEntry = remember(entry) {
+                    navController.getBackStackEntry(Screen.Profile.route)
+                }
+                val profileNavGraphEntryVm: TripViewModel = viewModel(
+                    viewModelStoreOwner = profileNavGraphEntry,
+                    factory = Factory
+                )
+                val userViewModel: UserViewModel = viewModel(
+                    viewModelStoreOwner = profileNavGraphEntry,
+                    factory = Factory
+                )
+                val reviewViewModel: ReviewViewModel = viewModel(
+                    viewModelStoreOwner = profileNavGraphEntry,
+                    factory = Factory
+                )
+                val vm2: ArticleViewModel = viewModel(factory = ArticleFactory)
+                MyProfileScreen(
+                    navController = navController,
+                    vm = profileNavGraphEntryVm,
+                    vm2 = vm2,
+                    uvm = userViewModel,
+                    rvm = reviewViewModel
+                )
             }
-            val profileNavGraphEntryVm: TripViewModel = viewModel(
-                viewModelStoreOwner = profileNavGraphEntry,
-                factory = Factory
-            )
-            val userViewModel: UserViewModel = viewModel(
-                viewModelStoreOwner = profileNavGraphEntry,
-                factory = Factory
-            )
-            val reviewViewModel: ReviewViewModel = viewModel(
-                viewModelStoreOwner = profileNavGraphEntry,
-                factory = Factory
-            )
-            val vm2: ArticleViewModel = viewModel(factory = ArticleFactory)
-            MyProfileScreen(
-                navController = navController,
-                vm = profileNavGraphEntryVm,
-                vm2 = vm2,
-                uvm = userViewModel,
-                rvm = reviewViewModel
-            )
         }
 
         composable("user_profile/{userId}",
@@ -919,10 +878,6 @@ fun TopBar(nvm: NotificationViewModel, navController: NavController) {
     val painterNews = painterResource(R.drawable.news)
     val painterNotification = painterResource(R.drawable.notifications)
 
-//    val snackbarHostState = remember { SnackbarHostState() }
-//    val scope = rememberCoroutineScope()
-//    val context = LocalContext.current
-
     TopAppBar(
         colors = topAppBarColors(
             containerColor = Color(0xe6, 0xe0, 0xe9, 255),
@@ -937,7 +892,6 @@ fun TopBar(nvm: NotificationViewModel, navController: NavController) {
 
         },
         actions = {
-            val context = LocalContext.current
             IconButton(onClick = {/*TO DO*/}) {
                 Image(
                     painter = painterNews,

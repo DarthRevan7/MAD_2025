@@ -1,5 +1,6 @@
 package com.example.voyago.view
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -23,24 +24,37 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import java.io.Serializable
+
+data class RegistrationFormValues(
+    val name: String,
+    val surname: String,
+    val email: String,
+    val password: String,
+    val dateOfBirth: String,
+    val country: String
+): Serializable
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VoyagoCreateAccountStep2Screen(
-    onBackClick: () -> Unit = {},
+fun CreateAccount2Screen(navController: NavController,
     onCreateAccountClick: (String, List<String>, List<String>) -> Unit = { _, _, _ -> }
 ) {
+    val fields = navController.previousBackStackEntry?.savedStateHandle?.get<RegistrationFormValues>("registrationFormValues")
+
     var username by remember { mutableStateOf("") }
     var selectedTravelTypes by remember { mutableStateOf(setOf<String>()) }
     var selectedDestinations by remember { mutableStateOf(setOf<String>()) }
     var searchQuery by remember { mutableStateOf("") }
     var showDestinationSearch by remember { mutableStateOf(false) }
 
+    var usernameTouched by remember { mutableStateOf(false) }
+
     val travelTypes = listOf("Adventure", "Party", "Culture", "Relax")
-    val allDestinations = listOf("France", "Romania", "Rome", "Roddi", "Rozzano")
+    val allDestinations = isCountryList
 
     val filteredDestinations = if (searchQuery.isEmpty()) {
         allDestinations
@@ -53,7 +67,6 @@ fun VoyagoCreateAccountStep2Screen(
             .fillMaxSize()
             .background(Color(0xFFF5F5F5))
     ) {
-
         // Main Content
         Column(
             modifier = Modifier
@@ -311,10 +324,11 @@ fun VoyagoCreateAccountStep2Screen(
     }
 }
 
+/*
 @Preview(showBackground = true, device = "spec:width=412dp,height=892dp")
 @Composable
 fun VoyagoCreateAccountStep2ScreenPreview() {
     MaterialTheme {
-        VoyagoCreateAccountStep2Screen()
+        CreateAccount2Screen()
     }
-}
+}*/

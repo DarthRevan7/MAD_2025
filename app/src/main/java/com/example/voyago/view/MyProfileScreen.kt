@@ -115,9 +115,8 @@ fun MyProfileScreen(vm: TripViewModel, navController: NavController, vm2: Articl
                     .padding(16.dp)
                     .clickable {
                         val auth = FirebaseAuth.getInstance()
-
                         auth.signOut()
-                        navController.navigate("login") {
+                        navController.navigate("home_main") {
                             popUpTo(0) { inclusive = true } // clear back stack
                         }
 
