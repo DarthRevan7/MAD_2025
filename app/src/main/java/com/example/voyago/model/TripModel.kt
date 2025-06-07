@@ -760,38 +760,56 @@ class TripModel {
     }
 
     //Delete an activity
-/*    fun removeActivityFromTrip(activity: Activity, trip: Trip?, onResult: (Boolean, Trip?) -> Unit) {
-        if (trip == null) {
-            onResult(false, null)
-            return
-        }
-
-        val dateKey = activity.dateAsCalendar().timeInMillis.toString()
-        val updatedActivities = trip.activities
-            .toMutableMap()
-            .apply {
-                val updatedList = getOrDefault(dateKey, emptyList()) - activity
-                if (updatedList.isEmpty()) {
-                    remove(dateKey)
-                } else {
-                    put(dateKey, updatedList)
-                }
-            }
-            .toMap()
-
-        val updatedTrip = trip.copy(activities = updatedActivities)
-
+    fun removeActivityFromTrip(activityId: Int, trip: Trip, onResult: (Boolean, Trip?) -> Unit) {
         val docId = trip.id.toString()
-        Collections.trips.document(docId)
-            .set(updatedTrip)
-            .addOnSuccessListener {
-                onResult(true, updatedTrip)
+        val tripRef = Collections.trips.document(docId)
+
+        tripRef.get()
+            .addOnSuccessListener { snapshot ->
+                val currentTrip = snapshot.toObject(Trip::class.java)
+                if (currentTrip == null) {
+                    onResult(false, null)
+                    return@addOnSuccessListener
+                }
+
+                val updatedActivities = currentTrip.activities.toMutableMap()
+                var found = false
+
+                // 查找并删除指定ID的活动
+                for ((date, activities) in updatedActivities.toMap()) {
+                    if (activities.any { it.id == activityId }) {
+                        val filteredActivities = activities.filter { it.id != activityId }
+                        if (filteredActivities.isEmpty()) {
+                            updatedActivities.remove(date)
+                        } else {
+                            updatedActivities[date] = filteredActivities
+                        }
+                        found = true
+                        break
+                    }
+                }
+
+                if (!found) {
+                    onResult(false, trip)
+                    return@addOnSuccessListener
+                }
+
+                val updatedTrip = currentTrip.copy(activities = updatedActivities)
+
+                tripRef.set(updatedTrip)
+                    .addOnSuccessListener {
+                        onResult(true, updatedTrip)
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("Firestore", "Failed to delete activity", e)
+                        onResult(false, null)
+                    }
             }
             .addOnFailureListener { e ->
-                Log.e("Firestore", "Failed to remove activity from trip", e)
+                Log.e("Firestore", "Failed to fetch trip", e)
                 onResult(false, null)
             }
-    }*/
+    }
 
     //DELETE A TRIP
 
