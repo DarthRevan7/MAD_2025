@@ -53,10 +53,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.voyago.viewmodel.UserViewModel
 import com.example.voyago.model.TypeTravel
 import com.example.voyago.model.User
 import com.example.voyago.model.stringToCalendar
+import com.example.voyago.viewmodel.UserViewModel
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import java.io.Serializable
@@ -403,7 +403,7 @@ fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
 
                     val auth = FirebaseAuth.getInstance()
                     uvm.storeUser(user)
-                    auth.createUserWithEmailAndPassword(user.email, user.password)
+                    auth.createUserWithEmailAndPassword(user.email, fields.password)
                         .addOnSuccessListener { result ->
                             result.user?.sendEmailVerification()
                                 ?.addOnSuccessListener {

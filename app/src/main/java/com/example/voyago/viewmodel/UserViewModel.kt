@@ -111,6 +111,18 @@ class UserViewModel(val model:UserModel): ViewModel() {
     }
      */
 
+    // Add verification state
+    private val _userVerified = MutableStateFlow(false)
+    val userVerified: StateFlow<Boolean> = _userVerified
+
+    fun setUserVerified(value: Boolean) {
+        _userVerified.value = value
+    }
+
+    fun resetUserVerified() {
+        _userVerified.value = false
+    }
+
 }
 
 object UserFactory : ViewModelProvider.Factory{

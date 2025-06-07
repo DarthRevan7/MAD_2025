@@ -49,6 +49,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -111,7 +112,6 @@ import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserFactory
 import com.example.voyago.viewmodel.UserViewModel
-import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -133,6 +133,30 @@ sealed class Screen(val route: String) {
     object Login : Screen("login_root")
 }
 
+fun createNewUser(
+    firebaseUser: FirebaseUser, newUser: User, onResult: (Boolean, User?) -> Unit
+) {
+    val firestore = com.google.firebase.Firebase.firestore
+    val counterRef = firestore.collection("metadata").document("userCounter")
+
+    newUser.email = firebaseUser.email ?: ""
+
+    firestore.runTransaction { transaction ->
+        val snapshot = transaction.get(counterRef)
+        val lastUserId = snapshot.getLong("lastUserId") ?: 0
+        val newUserId = lastUserId + 1
+        transaction.update(counterRef, "lastUserId", newUserId)
+        val userWithId = newUser.copy(id = newUserId.toInt())
+        val userDocRef = firestore.collection("users").document(newUserId.toString())
+        transaction.set(userDocRef, userWithId)
+        userWithId
+    }.addOnSuccessListener { user ->
+        onResult(true, user)
+    }.addOnFailureListener { e ->
+        onResult(false, null)
+    }
+}
+
 class MainActivity : ComponentActivity() {
     private lateinit var cameraExecutor: ExecutorService
 
@@ -143,55 +167,7 @@ class MainActivity : ComponentActivity() {
 
         FirebaseApp.initializeApp(this)
 
-        fun createNewUser(
-            firebaseUser: FirebaseUser, newUser: User, navController: NavController,
-            onResult: (Boolean, User?) -> Unit
-        ) {
-            val firestore = Firebase.firestore
-            val counterRef = firestore.collection("metadata").document("userCounter")
-
-            // Make sure to set the email and id from FirebaseUser for consistency
-            newUser.email = firebaseUser.email ?: ""
-
-            firestore.runTransaction { transaction ->
-                val snapshot = transaction.get(counterRef)
-                val lastUserId = snapshot.getLong("lastUserId") ?: 0
-                val newUserId = lastUserId + 1
-
-                // Set the new ID back to the counter document
-                transaction.update(counterRef, "lastUserId", newUserId)
-
-                // Create the trip with the new ID
-                val userWithId = newUser.copy(id = newUserId.toInt())
-
-                // Create a new document in the trips collection
-                val userDocRef = firestore.collection("users").document(newUserId.toString())
-                transaction.set(userDocRef, userWithId)
-
-                userWithId
-            }.addOnSuccessListener { user ->
-                Toast.makeText(this, "User profile saved successfully!", Toast.LENGTH_SHORT)
-                    .show()
-                onResult(true, user)
-                navController.navigate("profile_overview") {
-                    popUpTo(navController.graph.findStartDestination().id) {
-                        saveState = true
-                    }
-                    launchSingleTop = true
-                    restoreState = true
-                }
-            }.addOnFailureListener { e ->
-                Toast.makeText(
-                    this,
-                    "Failed to save user profile: ${e.message}",
-                    Toast.LENGTH_LONG
-                ).show()
-                onResult(false, null)
-            }
-        }
-
-        val viewModel: UserViewModel by viewModels()
-
+        val viewModel: UserViewModel by viewModels { UserFactory }
 
         val data = intent?.data
         val mode = data?.getQueryParameter("mode")
@@ -207,9 +183,11 @@ class MainActivity : ComponentActivity() {
                         createNewUser(
                             firebaseUser = currentUser,
                             newUser = pendingUser,
-                            navController = navController,
                             onResult = { success, _ ->
-                                if (success) viewModel.clearUser()
+                                if (success) {
+                                    viewModel.clearUser()
+                                    viewModel.setUserVerified(true)
+                                }
                             }
                         )
                     } else {
@@ -245,7 +223,7 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            MainScreen()
+            MainScreen(viewModel)
         }
 
     }
@@ -287,9 +265,24 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MainScreen() {
+fun MainScreen(viewModel: UserViewModel) {
     val navController = rememberNavController()
     val notificationViewModel = NotificationViewModel()
+    val userVerified by viewModel.userVerified.collectAsState()
+
+    LaunchedEffect(userVerified) {
+        if (userVerified) {
+            navController.navigate("profile_overview") {
+                popUpTo(navController.graph.findStartDestination().id) {
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
+            }
+            viewModel.resetUserVerified()
+        }
+    }
+
     Scaffold(
         topBar = {
             TopBar(
@@ -414,7 +407,7 @@ fun NavGraphBuilder.loginNavGraph(navController: NavHostController, auth: Fireba
         }
         composable("register2") { entry ->
             val loginGraphEntry = remember(entry) {
-                navController.getBackStackEntry(Screen.Explore.route)
+                navController.getBackStackEntry(Screen.Login.route)
             }
             val userViewModel: UserViewModel = viewModel(
                 viewModelStoreOwner = loginGraphEntry,
@@ -424,7 +417,7 @@ fun NavGraphBuilder.loginNavGraph(navController: NavHostController, auth: Fireba
         }
         composable("register_verification_code") { entry ->
             val loginGraphEntry = remember(entry) {
-                navController.getBackStackEntry(Screen.Explore.route)
+                navController.getBackStackEntry(Screen.Login.route)
             }
             val userViewModel: UserViewModel = viewModel(
                 viewModelStoreOwner = loginGraphEntry,
