@@ -64,40 +64,41 @@ class NotificationViewModel : ViewModel() {
         val db = FirebaseFirestore.getInstance()
         db.collection("users").document(recipientId).get()
             .addOnSuccessListener { document ->
-                val token = document.getString("fcmToken")
-                if (token != null) {
-                    // TEMP: Just log and store notification
-                    Log.d("FCM", "Simulated sending notification to $token")
-
-                    db.collection("notifications")
+                if (document.exists()) {
+                    // Store in user's subcollection
+                    db.collection("users")
+                        .document(recipientId)
+                        .collection("notifications")
                         .add(
                             mapOf(
-                                "recipientId" to recipientId,
                                 "title" to title,
                                 "body" to body,
-                                "timestamp" to FieldValue.serverTimestamp()
+                                "timestamp" to FieldValue.serverTimestamp(),
+                                "read" to false
                             )
                         )
                         .addOnSuccessListener {
-                            Log.d("FCM", "Notification stored successfully")
+                            Log.d("FCM", "Notification stored in user's subcollection")
                         }
                         .addOnFailureListener {
                             Log.e("FCM", "Error storing notification", it)
                         }
                 } else {
-                    Log.e("FCM", "Recipient token not found")
+                    Log.e("FCM", "User not found in Firestore")
                 }
             }
             .addOnFailureListener {
-                Log.e("FCM", "Failed to fetch recipient token", it)
+                Log.e("FCM", "Failed to fetch recipient document", it)
             }
     }
 
 
+
     fun loadNotificationsForUser(userId: String) {
         val db = FirebaseFirestore.getInstance()
-        db.collection("notifications")
-            .whereEqualTo("recipientId", userId)
+        db.collection("users")
+            .document(userId)
+            .collection("notifications")
             .orderBy("timestamp", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshots, e ->
                 if (e != null) {
@@ -180,6 +181,22 @@ class NotificationViewModel : ViewModel() {
             .build()
 
         notificationManager.notify(Random.nextInt(), notification)
+    }
+
+    fun markAllNotificationsRead(userId: String) {
+        val db = FirebaseFirestore.getInstance()
+        val userNotifications = db.collection("users")
+            .document(userId)
+            .collection("notifications")
+
+        userNotifications
+            .whereEqualTo("read", false)
+            .get()
+            .addOnSuccessListener { documents ->
+                for (doc in documents) {
+                    userNotifications.document(doc.id).update("read", true)
+                }
+            }
     }
 
 

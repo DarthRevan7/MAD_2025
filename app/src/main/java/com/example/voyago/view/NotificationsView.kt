@@ -37,10 +37,14 @@ fun NotificationView(nvm: NotificationViewModel) {
         Button(
             onClick = {
                 val title = "Hello"
-                val body = "This is a banner-like message!"
-                nvm.sendGlobalNotification(title, body)
-                nvm.receiveNewNotification("$title: $body") // triggers red dot
+                val body = "Message for user 1!"
+                val userId = "1"
+                nvm.sendNotificationToUser(userId, title, body)
+                nvm.receiveNewNotification("$title: $body") // Local badge trigger
                 nvm.showLocalNotification(context, title, body)
+//                nvm.sendGlobalNotification(title, body)
+//                nvm.receiveNewNotification("$title: $body") // triggers red dot
+//                nvm.showLocalNotification(context, title, body)
             }
 
         ) {
