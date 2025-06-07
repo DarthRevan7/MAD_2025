@@ -82,7 +82,6 @@ import com.example.voyago.model.User
 import com.example.voyago.model.isTimestampLong
 import com.example.voyago.model.stringToCalendar
 import com.example.voyago.model.timestampToCalendar
-import com.example.voyago.model.toCalendar
 import com.example.voyago.viewmodel.NotificationViewModel
 import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.TripViewModel
@@ -101,7 +100,7 @@ fun TripDetails(
     vm: TripViewModel,
     owner: Boolean,
     uvm: UserViewModel,
-    rvm: ReviewViewModel
+    rvm: ReviewViewModel,
     nvm: NotificationViewModel
 ) {
 
