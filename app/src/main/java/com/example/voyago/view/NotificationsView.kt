@@ -10,18 +10,23 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.voyago.viewmodel.NotificationViewModel
+import com.example.voyago.viewmodel.UserViewModel
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
-fun NotificationView(nvm: NotificationViewModel) {
-    //TODO CHANGE FOR LOGIN USER
-    val userId = "1"
+fun NotificationView(nvm: NotificationViewModel, uvm: UserViewModel) {
+
+    val user by uvm.loggedUser.collectAsState()
+    val userId = user.id.toString()
+
     LaunchedEffect(userId) {
         nvm.loadNotificationsForUser(userId)
     }
@@ -31,24 +36,6 @@ fun NotificationView(nvm: NotificationViewModel) {
         Spacer(modifier = Modifier.height(16.dp))
         nvm.notifications.forEach {
             Text("🔔 $it", modifier = Modifier.padding(8.dp))
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        val context = LocalContext.current
-        Button(
-            onClick = {
-                val title = "Hello"
-                val body = "Message for user 1!"
-
-                nvm.sendNotificationToUser(userId, title, body)
-                nvm.receiveNewNotification("$title: $body") // Local badge trigger
-                nvm.showLocalNotification(context, title, body)
-
-            }
-
-        ) {
-            Text("Send")
         }
 
     }
