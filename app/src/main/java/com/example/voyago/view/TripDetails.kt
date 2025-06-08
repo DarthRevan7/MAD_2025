@@ -435,13 +435,17 @@ fun TripDetails(
                                         //Send notifications
                                         val title = "Check this out!"
                                         val body = "This trip to ${trip.destination} looks interesting for you!"
+                                        val notificationType = "TRIP"
+                                        val idLink = trip.id
 
                                         uvm.getMatchingUserIdsByTypeTravel(trip.typeTravel) { compatibleUsers ->
                                             compatibleUsers.forEach { userIdInt ->
-                                                if (userIdInt != loggedUser.id){
-                                                    val userId = userIdInt.toString()
-                                                    nvm.sendNotificationToUser(userId, title, body)
-                                                }
+//                                                if (userIdInt != loggedUser.id){
+//                                                    val userId = userIdInt.toString()
+//                                                    nvm.sendNotificationToUser(userId, title, body, notificationType, idLink)
+//                                                }
+                                                val userId = userIdInt.toString()
+                                                nvm.sendNotificationToUser(userId, title, body, notificationType, idLink)
 
                                             }
 

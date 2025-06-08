@@ -20,6 +20,15 @@ import androidx.compose.ui.unit.dp
 import com.example.voyago.viewmodel.NotificationViewModel
 import com.example.voyago.viewmodel.UserViewModel
 import com.google.firebase.auth.FirebaseAuth
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.runtime.*
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.Alignment
 
 @Composable
 fun NotificationView(nvm: NotificationViewModel, uvm: UserViewModel) {
@@ -31,16 +40,44 @@ fun NotificationView(nvm: NotificationViewModel, uvm: UserViewModel) {
         nvm.loadNotificationsForUser(userId)
     }
 
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text("Notifications", style = MaterialTheme.typography.titleLarge)
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .padding(16.dp)) {
+
+        Text(
+            text = "Notifications",
+            style = MaterialTheme.typography.titleLarge
+        )
+
         Spacer(modifier = Modifier.height(16.dp))
-        nvm.notifications.forEach {
-            Text("🔔 $it", modifier = Modifier.padding(8.dp))
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(nvm.notifications) { notification ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Notifications,
+                        contentDescription = "Notification Icon",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(notification)
+                }
+            }
         }
-
+//        if (nvm.notifications.isEmpty()) {
+//            Text("No notifications yet.")
+//        } else {
+//
+//        }
     }
-
-
 }
 
 
