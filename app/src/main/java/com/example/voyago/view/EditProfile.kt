@@ -40,15 +40,20 @@ import androidx.navigation.NavController
 import androidx.compose.ui.window.Dialog
 import com.example.voyago.model.TypeTravel
 import android.net.Uri
+import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.border
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.core.net.toUri
 import coil3.compose.AsyncImage
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import com.example.voyago.model.User
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
+import com.google.firebase.storage.storage
+import kotlinx.coroutines.tasks.await
 
 @Composable
 fun EditProfileScreen(navController: NavController, context:Context, vm: TripViewModel, uvm: UserViewModel) {
@@ -304,15 +309,12 @@ fun EditProfileScreen(navController: NavController, context:Context, vm: TripVie
                     }
                 }
 
+                // 在 EditProfileScreen 中修改更新按钮的逻辑：
 
-                //Update datas
+                 //Update datas
                 Button(
                     onClick = {
                         if(!errors.any{it}) {
-
-                            if(profileImageUri == null){
-                                profileImageUri = user.profilePictureUrl?.toUri()
-                            }
 
                             val updatedUser = User(
                                 id = user.id,
@@ -324,25 +326,30 @@ fun EditProfileScreen(navController: NavController, context:Context, vm: TripVie
                                 userDescription = fieldValues[5],
                                 dateOfBirth = user.dateOfBirth,
                                 password = user.password,
-                                profilePictureUrl = profileImageUri.toString(),
+                                profilePictureUrl = user.profilePictureUrl,
                                 typeTravel = selected,
                                 desiredDestination = selectedDestinations.toList(),
                                 rating = user.rating,
                                 reliability = user.reliability
-
                             )
 
-
-
-                            uvm.editUserData(updatedUser)
-
-                            navController.navigate("profile_overview")
+                            // 🔄 使用 UserViewModel 的新方法
+                            uvm.updateUserWithProfileImage(
+                                updatedUser = updatedUser,
+                                newImageUri = profileImageUri
+                            ) { success ->
+                                if (success) {
+                                    navController.navigate("profile_overview")
+                                } else {
+                                    // 处理错误，可以显示 Toast 或错误消息
+                                    Log.e("EditProfile", "Failed to update profile")
+                                }
+                            }
                         }
                     },
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .padding(5.dp)
-
                 ) {
                     Text("Update Profile Info")
                 }
@@ -376,11 +383,35 @@ if(showPopup) {
 
 }
 
-@Composable
-fun ProfilePhotoEditing(firstname: String, surname: String, profileImageUri: Uri?,
-                        onCameraIconClick: () -> Unit, modifier: Modifier = Modifier) {
+// 在 EditProfile.kt 中修改 ProfilePhotoEditing 组件：
 
-    val initials = "${firstname.first()}"+"${surname.first()}"
+@OptIn(ExperimentalGlideComposeApi::class)
+@Composable
+fun ProfilePhotoEditing(
+    firstname: String,
+    surname: String,
+    profileImageUri: Uri?,
+    onCameraIconClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val initials = "${firstname.firstOrNull() ?: ""}${surname.firstOrNull() ?: ""}"
+    var firebaseImageUrl by remember { mutableStateOf<String?>(null) }
+
+    // 如果 profileImageUri 是 Firebase Storage 路径，获取实际 URL
+    LaunchedEffect(profileImageUri) {
+        if (profileImageUri != null && !profileImageUri.toString().startsWith("content://")) {
+            try {
+                // 如果是 Firebase Storage 路径，获取下载 URL
+                val path = profileImageUri.toString()
+                if (path.contains("/") && !path.startsWith("http")) {
+                    val storageRef = com.google.firebase.Firebase.storage.reference.child(path)
+                    firebaseImageUrl = storageRef.downloadUrl.await().toString()
+                }
+            } catch (e: Exception) {
+                Log.e("ProfilePhotoEditing", "Failed to get Firebase URL", e)
+            }
+        }
+    }
 
     Box(
         contentAlignment = Alignment.Center,
@@ -388,26 +419,46 @@ fun ProfilePhotoEditing(firstname: String, surname: String, profileImageUri: Uri
             .size(130.dp)
             .background(Color.Blue, shape = CircleShape)
     ) {
-        if(profileImageUri != null) {
-            AsyncImage(
-                model = profileImageUri,
-                contentDescription = "Profile Picture",
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip( shape = CircleShape)
-                    .border(0.dp, Color.White, CircleShape),
-                contentScale = ContentScale.Crop
-            )
-        } else {
-            Text(
-                text = initials,
-                color = Color.White,
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Bold
-            )
+        when {
+            // 优先显示本地选择的图片（编辑状态）
+            profileImageUri != null && profileImageUri.toString().startsWith("content://") -> {
+                AsyncImage(
+                    model = profileImageUri,
+                    contentDescription = "Profile Picture",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape)
+                        .border(0.dp, Color.White, CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            }
+
+            // 显示 Firebase Storage 中的图片
+            firebaseImageUrl != null -> {
+                GlideImage(
+                    model = firebaseImageUrl,
+                    contentDescription = "Profile Picture",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape)
+                        .border(0.dp, Color.White, CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            }
+
+            // 显示首字母
+            else -> {
+                Text(
+                    text = initials,
+                    color = Color.White,
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
 
-        Icon(Icons.Default.CameraAlt,
+        Icon(
+            Icons.Default.CameraAlt,
             "camera",
             modifier = Modifier
                 .align(Alignment.BottomEnd)

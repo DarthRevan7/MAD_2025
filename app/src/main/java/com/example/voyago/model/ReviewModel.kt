@@ -2,10 +2,12 @@ package com.example.voyago.model
 
 import android.util.Log
 import com.example.voyago.Collections
+import com.example.voyago.view.isUriString
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.PropertyName
 import com.google.firebase.firestore.firestore
+import com.google.firebase.storage.storage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.awaitClose
@@ -56,6 +58,36 @@ data class Review(
         return reviewId > 0 && reviewerId > 0 && (reviewedUserId > 0 || tripId > 0)  && score > 0
                 && title != "" && comment != "" && date > Timestamp(Date(0))
     }
+
+    // 添加获取单个照片URL的方法
+    suspend fun getPhotoUrl(photoPath: String): String? {
+        return try {
+            when {
+                photoPath.isUriString() -> {
+                    // 如果是 URI 格式，直接返回
+                    photoPath
+                }
+                photoPath.contains("/") -> {
+                    // 如果包含路径分隔符，说明是 Firebase Storage 路径
+                    val storageRef = Firebase.storage.reference.child(photoPath)
+                    storageRef.downloadUrl.await().toString()
+                }
+                else -> {
+                    // 否则是 drawable 资源名称
+                    photoPath
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("Review", "Failed to get photo URL for $photoPath", e)
+            null
+        }
+    }
+    // 获取所有照片URL的方法
+    suspend fun getPhotoUrls(): List<String?> {
+        return photos.map { photoPath ->
+            getPhotoUrl(photoPath)
+        }
+    }
 }
 
 class ReviewModel {
@@ -104,6 +136,7 @@ class ReviewModel {
             false
         }
     }
+
 
 
 
@@ -354,7 +387,12 @@ class ReviewModel {
     private val _tripReviews = MutableStateFlow<List<Review>>(emptyList())
     val tripReviews: StateFlow<List<Review>> = _tripReviews
 
+    // 在 ReviewModel 中替换 getTripReviews 方法：
+
     fun getTripReviews(tripId: Int, coroutineScope: CoroutineScope) {
+        Log.d("ReviewModel", "=== getTripReviews called ===")
+        Log.d("ReviewModel", "Requesting reviews for trip ID: $tripId")
+
         coroutineScope.launch {
             callbackFlow {
                 val listener = Collections.reviews
@@ -362,14 +400,33 @@ class ReviewModel {
                     .whereEqualTo("isTripReview", true)
                     .addSnapshotListener { snapshot, error ->
                         if (snapshot != null) {
-                            trySend(snapshot.toObjects(Review::class.java))
+                            val reviews = snapshot.toObjects(Review::class.java)
+                            Log.d("ReviewModel", " Firestore returned ${reviews.size} reviews for trip $tripId")
+
+                            // 详细日志每个 review
+                            reviews.forEachIndexed { index, review ->
+                                Log.d("ReviewModel", "Review $index:")
+                                Log.d("ReviewModel", "  - ID: ${review.reviewId}")
+                                Log.d("ReviewModel", "  - Title: '${review.title}'")
+                                Log.d("ReviewModel", "  - TripID: ${review.tripId}")
+                                Log.d("ReviewModel", "  - IsTripReview: ${review.isTripReview}")
+                                Log.d("ReviewModel", "  - ReviewerId: ${review.reviewerId}")
+                                Log.d("ReviewModel", "  - Score: ${review.score}")
+                                Log.d("ReviewModel", "  - Comment: '${review.comment}'")
+                            }
+
+                            trySend(reviews)
                         } else {
-                            Log.e("Error", error.toString())
+                            Log.e("ReviewModel", "❌ Error fetching reviews for trip $tripId", error)
                             trySend(emptyList())
                         }
                     }
-                awaitClose { listener.remove() }
+                awaitClose {
+                    Log.d("ReviewModel", "Closing listener for trip $tripId reviews")
+                    listener.remove()
+                }
             }.collect { reviews ->
+                Log.d("ReviewModel", "📝 Updating _tripReviews with ${reviews.size} reviews")
                 _tripReviews.value = reviews
             }
         }

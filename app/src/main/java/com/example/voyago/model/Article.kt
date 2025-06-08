@@ -7,9 +7,11 @@ import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.tasks.await
 
 data class Article(
     val id: Int? = null,
@@ -20,7 +22,40 @@ data class Article(
     var photo: String? = null,
     val contentUrl: String? = null,
     val tags: List<String> = emptyList()
+
 ) {
+    // 添加获取 Firebase Storage 图片 URL 的方法
+    suspend fun getPhoto(): String? {
+        return try {
+            if (photo.isNullOrEmpty()) {
+                // 如果没有照片，返回默认占位图
+                return com.example.voyago.StorageHelper.getImageDownloadUrl("articles/placeholder.jpg")
+            }
+
+            when {
+                // 如果已经是完整的 HTTP URL，直接返回
+                photo!!.startsWith("http") -> photo
+
+                // 如果包含路径分隔符，说明是 Firebase Storage 路径
+                photo!!.contains("/") -> {
+                    val storageRef = Firebase.storage.reference.child(photo!!)
+                    storageRef.downloadUrl.await().toString()
+                }
+
+                // 否则假设是在 articles/ 目录下
+                else -> {
+                    val storageRef = Firebase.storage.reference.child("articles/$photo")
+                    storageRef.downloadUrl.await().toString()
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("Article", "Failed to get photo URL for $photo", e)
+            // 返回默认占位图
+            com.example.voyago.StorageHelper.getImageDownloadUrl("articles/placeholder.jpg")
+        }
+    }
+
+
     // 可选：无参构造函数（其实默认参数已经自动生成了）
     constructor() : this(null, null, null, null, null, null, null, emptyList())
 }

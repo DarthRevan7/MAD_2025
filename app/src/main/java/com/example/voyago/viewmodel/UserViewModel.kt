@@ -43,7 +43,41 @@ class UserViewModel(val model:UserModel): ViewModel() {
     }
 
 
+    //  添加这个方法来处理头像上传和用户更新
+    fun updateUserWithProfileImage(
+        updatedUser: User,
+        newImageUri: android.net.Uri?,
+        onResult: (Boolean) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                if (newImageUri != null && newImageUri.toString() != updatedUser.profilePictureUrl) {
+                    Log.d("UserViewModel", "Uploading new profile image: $newImageUri")
 
+                    // 上传图片到 Firebase Storage
+                    val uploadSuccess = updatedUser.setProfilePhoto(newImageUri)
+
+                    if (uploadSuccess) {
+                        Log.d("UserViewModel", "Profile image uploaded successfully")
+                        // 更新用户数据
+                        editUserData(updatedUser)
+                        onResult(true)
+                    } else {
+                        Log.e("UserViewModel", "Failed to upload profile image")
+                        onResult(false)
+                    }
+                } else {
+                    // 没有新图片，直接更新其他信息
+                    Log.d("UserViewModel", "No new image, updating other profile info")
+                    editUserData(updatedUser)
+                    onResult(true)
+                }
+            } catch (e: Exception) {
+                Log.e("UserViewModel", "Error updating user profile", e)
+                onResult(false)
+            }
+        }
+    }
 
     var pendingUser: User? = null
 

@@ -52,6 +52,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -118,6 +119,8 @@ import com.example.voyago.viewmodel.UserViewModel
 import androidx.compose.ui.zIndex
 import com.example.voyago.model.ReviewModel
 import com.example.voyago.model.TripModel
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import com.example.voyago.model.UserModel
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
@@ -979,59 +982,67 @@ fun NavGraphBuilder.profileNavGraph(
     }
 }
 
+// 在 ProfilePhoto.kt 或相关文件中修改 ProfilePhoto 组件：
+
+// 在 ProfilePhoto 组件中修复：
+
+// 替代方案：不使用委托，直接使用 MutableState
+
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun ProfilePhoto(user: User, isSmall: Boolean, modifier: Modifier, uvm: UserViewModel) {
-    //val user by uvm.userGotFromDB.collectAsState()
+fun ProfilePhoto(
+    user: User,
+    small: Boolean = false,
+    modifier: Modifier = Modifier,
+    uvm: UserViewModel
+) {
+    // 🔄 替代方案：直接使用 MutableState
+    val profileImageUrl = remember { mutableStateOf<String?>(null) }
+    val initials = "${user.firstname.firstOrNull() ?: ""}${user.surname.firstOrNull() ?: ""}"
 
-    var initials = "WU"     //Waiting User
-
-    if (user.firstname.isNotEmpty() && user.surname.isNotEmpty()) {
-        initials = "${user.firstname.first()}" + "${user.surname.first()}"
+    // 异步获取 Firebase Storage URL
+    LaunchedEffect(user.profilePictureUrl) {
+        if (!user.profilePictureUrl.isNullOrEmpty()) {
+            try {
+                profileImageUrl.value = user.getProfilePhoto() // 使用 .value
+            } catch (e: Exception) {
+                Log.e("ProfilePhoto", "Failed to load profile photo", e)
+                profileImageUrl.value = null
+            }
+        }
     }
 
-    if (user.profilePictureUrl == null) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = modifier
-                .size(130.dp)
-                .background(Color.Blue, shape = CircleShape)
-        ) {
-            if (isSmall) {
-                Text(
-                    text = initials,
-                    color = Color.White,
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Bold
-                )
-            } else {
-                Text(
-                    text = initials,
-                    color = Color.White,
-                    style = MaterialTheme.typography.headlineLarge,
-                    fontWeight = FontWeight.Bold
+    val size = if (small) 50.dp else 120.dp
+
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .size(size)
+            .background(Color.Blue, shape = CircleShape)
+    ) {
+        when {
+            // 如果有 Firebase Storage URL，使用 GlideImage
+            profileImageUrl.value != null -> { // 使用 .value
+                GlideImage(
+                    model = profileImageUrl.value,
+                    contentDescription = "Profile Picture",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape)
+                        .border(if (small) 1.dp else 2.dp, Color.White, CircleShape),
+                    contentScale = ContentScale.Crop
                 )
             }
 
-        }
-    } else {
-        //use the icon set in the user data
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = modifier
-                .size(width = 130.dp, height = 130.dp)
-                .background(color = Color.Blue, shape = CircleShape)
-
-        ) {
-            //Icon(profileImage)
-            AsyncImage(
-                user.profilePictureUrl, "profilePic",
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(shape = CircleShape)
-                    .border(0.dp, Color.White, CircleShape),
-                contentScale = ContentScale.Crop
-            )
-
+            // 其他情况保持不变...
+            else -> {
+                Text(
+                    text = initials,
+                    color = Color.White,
+                    style = if (small) MaterialTheme.typography.bodyLarge else MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }
