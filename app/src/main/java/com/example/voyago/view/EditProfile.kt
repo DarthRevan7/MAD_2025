@@ -2,18 +2,28 @@ package com.example.voyago.view
 
 import android.app.Activity.RESULT_OK
 import android.content.Context
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,43 +31,55 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.navigation.NavController
-import androidx.compose.ui.window.Dialog
-import com.example.voyago.model.TypeTravel
-import android.net.Uri
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.border
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.core.net.toUri
+import androidx.navigation.NavController
 import coil3.compose.AsyncImage
+import com.example.voyago.model.TypeTravel
 import com.example.voyago.model.User
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
 
 @Composable
-fun EditProfileScreen(navController: NavController, context:Context, vm: TripViewModel, uvm: UserViewModel) {
+fun EditProfileScreen(
+    navController: NavController,
+    context: Context,
+    vm: TripViewModel,
+    uvm: UserViewModel
+) {
 
     val user by uvm.loggedUser.collectAsState()
 
     var profileImageUri = uvm.profileImageUri.value
-    //var profileImageUri by rememberSaveable { mutableStateOf<Uri?>(user.profilePicture) }
-
 
     // Use rememberSaveable for dialog visibility
     var showPopup by rememberSaveable { mutableStateOf(false) }
@@ -76,7 +98,8 @@ fun EditProfileScreen(navController: NavController, context:Context, vm: TripVie
         }
     }
 
-    val fieldValues = rememberSaveable(saver = listSaver(
+    val fieldValues = rememberSaveable(
+        saver = listSaver(
         save = { it.toList() },
         restore = { it.toMutableStateList() }
     )) {
@@ -90,15 +113,18 @@ fun EditProfileScreen(navController: NavController, context:Context, vm: TripVie
         )
     }
 
-    val fieldNames = listOf("First Name", "Surname",
+    val fieldNames = listOf(
+        "First Name", "Surname",
         "Username", "Email address", "Country",
         "User Description"
     )
 
-    var errors = remember { mutableStateListOf<Boolean>().apply { addAll(List(fieldValues.size) { false }) } }
+    var errors =
+        remember { mutableStateListOf<Boolean>().apply { addAll(List(fieldValues.size) { false }) } }
 
 
-    val selected = rememberSaveable(saver = listSaver(
+    val selected = rememberSaveable(
+        saver = listSaver(
         save = { it.toList() },
         restore = { it.toMutableStateList() }
     )) {
@@ -107,7 +133,8 @@ fun EditProfileScreen(navController: NavController, context:Context, vm: TripVie
 
 
     //TODO: temporary, to be changed once database is fully implemented
-    val availableDestinations = listOf("Argentina", "Armenia", "Australia", "Austria", "Azerbaijan",
+    val availableDestinations = listOf(
+        "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan",
         "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus",
         "Belgium", "Belize", "Benin", "Bhutan", "Bolivia",
         "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria",
@@ -154,10 +181,11 @@ fun EditProfileScreen(navController: NavController, context:Context, vm: TripVie
     ) {
         item {
             //Box with profile image and initials
-            Box(modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .height(180.dp)
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(180.dp)
             ) {
                 // Pass the profileImageUri state and the showPopup state/lambda
                 ProfilePhotoEditing(
@@ -172,16 +200,20 @@ fun EditProfileScreen(navController: NavController, context:Context, vm: TripVie
 
         item {
             //Text with Edit Profile
-            Box( modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight())
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+            )
             {
-                Text(text = "Edit Profile",
+                Text(
+                    text = "Edit Profile",
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
                         .align(Alignment.TopCenter)
                         .padding(bottom = 15.dp),
-                    fontSize = 20.sp)
+                    fontSize = 20.sp
+                )
             }
         }
 
@@ -195,10 +227,9 @@ fun EditProfileScreen(navController: NavController, context:Context, vm: TripVie
             ) {
 
                 //TextFields with various info
-                fieldValues.forEachIndexed {
-                        index, item ->
+                fieldValues.forEachIndexed { index, item ->
                     //This is TextField with email
-                    if(index == 3) {
+                    if (index == 3) {
                         val emailHasErrors by derivedStateOf {
                             if (item.isNotEmpty()) {
                                 !android.util.Patterns.EMAIL_ADDRESS.matcher(item).matches()
@@ -209,7 +240,7 @@ fun EditProfileScreen(navController: NavController, context:Context, vm: TripVie
 
                         errors[index] = emailHasErrors
 
-                        ValidatingInputEmailField(item, {fieldValues[index] = it}, emailHasErrors)
+                        ValidatingInputEmailField(item, { fieldValues[index] = it }, emailHasErrors)
                     }
                     //These are other text fields
                     else {
@@ -219,11 +250,17 @@ fun EditProfileScreen(navController: NavController, context:Context, vm: TripVie
 
                         errors[index] = validatorHasErrors
 
-                        ValidatingInputTextField(item, {fieldValues[index] = it}, validatorHasErrors, fieldNames[fieldValues.indexOf(item)])
+                        ValidatingInputTextField(
+                            item,
+                            { fieldValues[index] = it },
+                            validatorHasErrors,
+                            fieldNames[fieldValues.indexOf(item)]
+                        )
                     }
                 }
 
-                Text(text = "Preferences about the type of travel",
+                Text(
+                    text = "Preferences about the type of travel",
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
@@ -247,13 +284,14 @@ fun EditProfileScreen(navController: NavController, context:Context, vm: TripVie
                                     selected.add(type)
                                 }
                             },
-                            label = { Text(type.toString().lowercase())},
+                            label = { Text(type.toString().lowercase()) },
                         )
                         Spacer(modifier = Modifier.width(16.dp))
                     }
                 }
 
-                Text(text = "Most Desired destination",
+                Text(
+                    text = "Most Desired destination",
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
@@ -308,9 +346,9 @@ fun EditProfileScreen(navController: NavController, context:Context, vm: TripVie
                 //Update datas
                 Button(
                     onClick = {
-                        if(!errors.any{it}) {
+                        if (!errors.any { it }) {
 
-                            if(profileImageUri == null){
+                            if (profileImageUri == null) {
                                 profileImageUri = user.profilePictureUrl?.toUri()
                             }
 
@@ -351,36 +389,37 @@ fun EditProfileScreen(navController: NavController, context:Context, vm: TripVie
     }
 
 
-
 // Show the popup when showPopup is true
-if(showPopup) {
-    CameraPopup(
-        onDismissRequest = { showPopup = false },
-        onImageSelectedFromGallery = { uri ->
-            profileImageUri = uri
-            uvm.setProfileImageUri(uri)
-            //user.profilePicture = uri
-            showPopup = false
-        },
-        onTakePhotoClick = {
-            // Launch the camera activity
-            showPopup = false
-            navController.navigate("camera")
-            //profileImageUri = vm.profileImageUri.value
-            //val intent = Intent(context, MainActivity::class.java)
-            //takePhotoLauncher.launch(intent)
-        }
-    )
-}
+    if (showPopup) {
+        CameraPopup(
+            onDismissRequest = { showPopup = false },
+            onImageSelectedFromGallery = { uri ->
+                profileImageUri = uri
+                uvm.setProfileImageUri(uri)
+                //user.profilePicture = uri
+                showPopup = false
+            },
+            onTakePhotoClick = {
+                // Launch the camera activity
+                showPopup = false
+                navController.navigate("camera")
+                //profileImageUri = vm.profileImageUri.value
+                //val intent = Intent(context, MainActivity::class.java)
+                //takePhotoLauncher.launch(intent)
+            }
+        )
+    }
 
 
 }
 
 @Composable
-fun ProfilePhotoEditing(firstname: String, surname: String, profileImageUri: Uri?,
-                        onCameraIconClick: () -> Unit, modifier: Modifier = Modifier) {
+fun ProfilePhotoEditing(
+    firstname: String, surname: String, profileImageUri: Uri?,
+    onCameraIconClick: () -> Unit, modifier: Modifier = Modifier
+) {
 
-    val initials = "${firstname.first()}"+"${surname.first()}"
+    val initials = "${firstname.first()}" + "${surname.first()}"
 
     Box(
         contentAlignment = Alignment.Center,
@@ -388,13 +427,13 @@ fun ProfilePhotoEditing(firstname: String, surname: String, profileImageUri: Uri
             .size(130.dp)
             .background(Color.Blue, shape = CircleShape)
     ) {
-        if(profileImageUri != null) {
+        if (profileImageUri != null) {
             AsyncImage(
                 model = profileImageUri,
                 contentDescription = "Profile Picture",
                 modifier = Modifier
                     .fillMaxSize()
-                    .clip( shape = CircleShape)
+                    .clip(shape = CircleShape)
                     .border(0.dp, Color.White, CircleShape),
                 contentScale = ContentScale.Crop
             )
@@ -407,7 +446,8 @@ fun ProfilePhotoEditing(firstname: String, surname: String, profileImageUri: Uri
             )
         }
 
-        Icon(Icons.Default.CameraAlt,
+        Icon(
+            Icons.Default.CameraAlt,
             "camera",
             modifier = Modifier
                 .align(Alignment.BottomEnd)
@@ -417,8 +457,10 @@ fun ProfilePhotoEditing(firstname: String, surname: String, profileImageUri: Uri
 }
 
 @Composable
-fun CameraPopup(onDismissRequest: () -> Unit, onImageSelectedFromGallery: (Uri) -> Unit,
-                onTakePhotoClick: () -> Unit) {
+fun CameraPopup(
+    onDismissRequest: () -> Unit, onImageSelectedFromGallery: (Uri) -> Unit,
+    onTakePhotoClick: () -> Unit
+) {
 
     val pickMedia = rememberLauncherForActivityResult(
         contract = PickVisualMedia()
@@ -463,7 +505,11 @@ fun CameraPopup(onDismissRequest: () -> Unit, onImageSelectedFromGallery: (Uri) 
 }
 
 @Composable
-fun ValidatingInputEmailField(email: String, updateState: (String) -> Unit, validatorHasErrors: Boolean) {
+fun ValidatingInputEmailField(
+    email: String,
+    updateState: (String) -> Unit,
+    validatorHasErrors: Boolean
+) {
     OutlinedTextField(
         modifier = Modifier
             .fillMaxWidth()

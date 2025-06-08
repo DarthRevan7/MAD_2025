@@ -86,6 +86,7 @@ import com.example.voyago.R
 import com.example.voyago.model.NavItem
 import com.example.voyago.model.User
 import com.example.voyago.view.ActivitiesList
+import com.example.voyago.view.CompleteAccount
 import com.example.voyago.view.CreateAccount2Screen
 import com.example.voyago.view.CreateAccountScreen
 import com.example.voyago.view.CreateNewTrip
@@ -355,12 +356,6 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
     val startDest = Screen.Home.route
 
     NavHost(navController = navController, startDestination = startDest, modifier = modifier) {
-        composable("login") {
-            LoginScreen(navController = navController, auth = auth)
-        }
-        composable("register") {
-            //RegisterScreen(navController = navController, auth = auth)
-        }
 
         exploreNavGraph(navController)
         myTripsNavGraph(navController)
@@ -404,8 +399,15 @@ fun RequireAuth(navController: NavController, content: @Composable () -> Unit) {
 
 fun NavGraphBuilder.loginNavGraph(navController: NavHostController, auth: FirebaseAuth) {
     navigation(startDestination = "login", route = Screen.Login.route) {
-        composable("login") {
-            LoginScreen(navController = navController, auth = auth)
+        composable("login") { entry ->
+            val loginGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Login.route)
+            }
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = loginGraphEntry,
+                factory = Factory
+            )
+            LoginScreen(navController = navController, auth = auth, uvm = userViewModel)
         }
         composable("retrieve_password") {
             RetrievePassword(navController = navController)
@@ -432,6 +434,17 @@ fun NavGraphBuilder.loginNavGraph(navController: NavHostController, auth: Fireba
                 factory = Factory
             )
             RegistrationVerificationCodeScreen(navController, userViewModel)
+        }
+
+        composable("complete_profile") { entry ->
+            val loginGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Login.route)
+            }
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = loginGraphEntry,
+                factory = Factory
+            )
+            CompleteAccount(navController, uvm = userViewModel)
         }
     }
 }
@@ -802,6 +815,8 @@ fun NavGraphBuilder.homeNavGraph(
             )
 
         }
+
+
     }
 }
 

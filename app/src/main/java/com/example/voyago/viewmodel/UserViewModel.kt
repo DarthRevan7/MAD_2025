@@ -1,6 +1,7 @@
 package com.example.voyago.viewmodel
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -9,6 +10,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.voyago.model.User
 import com.example.voyago.model.UserModel
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -41,8 +44,6 @@ class UserViewModel(val model: UserModel) : ViewModel() {
     }
 
 
-
-
     var pendingUser: User? = null
 
     fun storeUser(user: User) {
@@ -68,6 +69,11 @@ class UserViewModel(val model: UserModel) : ViewModel() {
                     pendingUser = user
                 }
             }
+    }
+
+    var account: GoogleSignInAccount? = null
+    fun setAccountUserViewModel(googleAccount: GoogleSignInAccount) {
+        account = googleAccount
     }
 
     //Edit user profile

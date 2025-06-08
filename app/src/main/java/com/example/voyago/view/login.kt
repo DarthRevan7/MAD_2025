@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.voyago.R
+import com.example.voyago.viewmodel.UserViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
@@ -60,8 +61,8 @@ import com.google.firebase.auth.GoogleAuthProvider
 @Composable
 fun LoginScreen(
     navController: NavHostController, auth: FirebaseAuth,
-    onSignInClick: () -> Unit = {},
-    onForgotPasswordClick: () -> Unit = {}
+    onForgotPasswordClick: () -> Unit = {},
+    uvm: UserViewModel
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -92,7 +93,8 @@ fun LoginScreen(
             auth = auth,
             navController = navController,
             setError = { errorMessage = it },
-            setLoading = { isGoogleLoading = it }
+            setLoading = { isGoogleLoading = it },
+            uvm = uvm
         )
     }
 
@@ -379,7 +381,8 @@ fun handleGoogleSignInResult(
     auth: FirebaseAuth,
     navController: NavHostController,
     setError: (String?) -> Unit,
-    setLoading: (Boolean) -> Unit
+    setLoading: (Boolean) -> Unit,
+    uvm: UserViewModel
 ) {
     setLoading(false)
     if (result.resultCode == Activity.RESULT_OK) {
@@ -390,7 +393,10 @@ fun handleGoogleSignInResult(
             auth.signInWithCredential(credential)
                 .addOnCompleteListener { authResult ->
                     if (authResult.isSuccessful) {
-                        navController.navigate("home_main") {
+
+                        val account = task.getResult(ApiException::class.java)
+                        uvm.setAccountUserViewModel(account)
+                        navController.navigate("complete_profile") {
                             popUpTo("login") { inclusive = true }
                         }
                     } else {
