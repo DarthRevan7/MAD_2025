@@ -15,6 +15,7 @@ import com.example.voyago.model.ReviewModel
 import com.example.voyago.model.Trip
 import com.example.voyago.model.Trip.Activity
 import com.example.voyago.model.Trip.Participant
+import com.example.voyago.model.Trip.TripStatus
 import com.example.voyago.model.TripModel
 import com.example.voyago.model.TypeTravel
 import com.example.voyago.model.User
@@ -62,8 +63,31 @@ class TripViewModel(
 
     //EXPLORE
 
+
     //Filtered list of trips
     val filteredList = tripModel.filteredList
+
+    // 1. 添加状态优先级函数（考虑草稿状态）
+    private fun getStatusPriority(trip: Trip): Int {
+        // 如果是草稿，优先级最低
+        if (trip.isDraft) {
+            return 5 // 草稿排在最后
+        }
+
+        return when (trip.status) {
+            TripStatus.NOT_STARTED.toString() -> {
+                // 进一步区分 NOT_STARTED 状态
+                if (trip.canJoin()) {
+                    1 // 正在进行的（可加入的）
+                } else {
+                    2 // Fully Booked（已满员但未开始）
+                }
+            }
+            TripStatus.COMPLETED.toString() -> 3 // 已完成
+            else -> 4 // 其他状态排在最后
+        }
+    }
+
 
     //Destination filter
     var filterDestination: String by mutableStateOf("")
@@ -191,20 +215,36 @@ class TripViewModel(
     }
 
     //Apply selected filters
-    fun applyFilters() = tripModel.filterFunction(
-        allPublishedList,
-        filterDestination,
-        filterMinPrice,
-        filterMaxPrice,
-        filterDuration,
-        filterGroupSize,
-        filtersTripType,
-        filterUpcomingTrips,
-        filterCompletedTrips,
-        filterBySeats,
-        viewModelScope
-    )
+    fun applyFilters() {
+        tripModel.filterFunction(
+            allPublishedList,
+            filterDestination,
+            filterMinPrice,
+            filterMaxPrice,
+            filterDuration,
+            filterGroupSize,
+            filtersTripType,
+            filterUpcomingTrips,
+            filterCompletedTrips,
+            filterBySeats,
+            viewModelScope,
 
+            )
+        sortTripsByStatus()
+    }
+
+    private fun sortTripsByStatus() {
+        viewModelScope.launch {
+            val currentTrips = tripModel.filteredList.value
+            val sortedTrips = currentTrips.sortedWith(
+                compareBy<Trip> { getStatusPriority(it) }
+                    .thenBy { it.startDateAsCalendar().timeInMillis } // 同状态下按开始日期排序
+            )
+
+            // 更新 filteredList（需要在 TripModel 中添加 updateFilteredList 方法）
+            tripModel.updateFilteredList(sortedTrips)
+        }
+    }
     //Reset filters
     fun resetFilters() {
         filterDestination = ""

@@ -372,6 +372,32 @@ class TripModel {
         }
     }
 
+    fun updateFilteredList(trips: List<Trip>) {
+        _filteredList.value = trips
+    }
+
+
+
+    private fun getStatusPriority(trip: Trip): Int {
+        // 如果是草稿，优先级最低
+        if (trip.isDraft) {
+            return 5 // 草稿排在最后
+        }
+
+        return when (trip.status) {
+            TripStatus.NOT_STARTED.toString() -> {
+                // 进一步区分 NOT_STARTED 状态
+                if (trip.canJoin()) {
+                    1 // 正在进行的（可加入的）
+                } else {
+                    2 // Fully Booked（已满员但未开始）
+                }
+            }
+            TripStatus.IN_PROGRESS.toString() -> 1 // 正在进行的
+            TripStatus.COMPLETED.toString() -> 3 // 已完成
+            else -> 4 // 其他状态排在最后
+        }
+    }
 
     //Function that updates the status of a specific Trip
     fun updateTripStatus(tripId: Int, newStatus: String) {
