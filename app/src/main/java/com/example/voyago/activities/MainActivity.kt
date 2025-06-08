@@ -81,8 +81,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import coil3.compose.AsyncImage
-import com.example.voyago.R
 import com.example.voyago.model.NavItem
+import com.example.voyago.R
 import com.example.voyago.model.User
 import com.example.voyago.view.ActivitiesList
 import com.example.voyago.view.CreateAccount2Screen
@@ -115,6 +115,7 @@ import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserFactory
 import com.example.voyago.viewmodel.UserViewModel
+import androidx.compose.ui.zIndex
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -1018,6 +1019,12 @@ fun ProfilePhoto(user: User, isSmall: Boolean, modifier: Modifier, uvm: UserView
 @Composable
 fun TopBar(nvm: NotificationViewModel, navController: NavController) {
 
+    //TODO CHANGE FOR LOGIN USER
+    val userId = "1"
+    LaunchedEffect(userId) {
+        nvm.loadNotificationsForUser(userId)
+    }
+
     //Top Bar Images
     val painterLogo = painterResource(R.drawable.logo)
     val painterNews = painterResource(R.drawable.news)
@@ -1050,6 +1057,9 @@ fun TopBar(nvm: NotificationViewModel, navController: NavController) {
                 navController.navigate(Screen.Notifications.route)
             }) {
                 Box(
+                    modifier = Modifier
+                        .padding(top = 7.dp, end = 10.dp)
+                        .size(45.dp), // ensure space for bell + dot
                     contentAlignment = Alignment.TopEnd // Makes the red dot align top-end
                 ) {
                     Image(
@@ -1059,13 +1069,16 @@ fun TopBar(nvm: NotificationViewModel, navController: NavController) {
                     if (nvm.hasNewNotification.value) {
                         Box(
                             modifier = Modifier
-                                .size(12.dp)
-                                .offset(x = 6.dp, y = (-6).dp) // Optional fine-tuning
+                                .size(10.dp)
                                 .background(Color.Red, shape = CircleShape)
+                                .align(Alignment.TopEnd)
+                                .offset(x = (-2).dp, y = 2.dp)
+                                .zIndex(1f)
                         )
                     }
                 }
             }
+
 
         },
         modifier = Modifier.shadow(8.dp)
