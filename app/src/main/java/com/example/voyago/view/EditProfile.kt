@@ -375,7 +375,13 @@ fun EditProfileScreen(
 
                             uvm.editUserData(updatedUser)
 
-                            navController.navigate("profile_overview")
+                            navController.navigate("profile_overview") {
+                                popUpTo("edit_profile") {
+                                    inclusive = true
+                                } // Removes edit from back stack
+                                launchSingleTop = true
+                            }
+
                         }
                     },
                     modifier = Modifier
