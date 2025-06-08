@@ -291,6 +291,7 @@ class TripViewModel(
         published: Boolean, onResult: (Boolean, Trip?) -> Unit
     ) {
         tripModel.importTrip(
+            photo,
             title,
             destination,
             startDate,

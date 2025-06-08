@@ -604,6 +604,7 @@ class TripModel {
 
     //Function that imports a Trip in the "My Trip" section of the logged in user as private
     fun importTrip(
+        photo: String?,
         title: String, destination: String, startDate: Calendar,
         endDate: Calendar, estimatedPrice: Double, groupSize: Int,
         activities: Map<String, List<Activity>>, typeTravel: List<String>, creatorId: Int,
@@ -625,6 +626,7 @@ class TripModel {
             //Build Trip object with new ID
             val newTrip = Trip(
                 id = newTripId.toInt(),
+                photo = photo ?: "",  // 添加 photo 字段
                 title = title,
                 destination = destination,
                 startDate = Timestamp(startDate.time),
