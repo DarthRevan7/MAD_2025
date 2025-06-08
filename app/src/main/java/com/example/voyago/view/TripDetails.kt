@@ -1185,8 +1185,15 @@ fun ShowReview(
             .fillMaxWidth()
             .padding(8.dp)
     ) {
-        if (!myTrip && !review.isTripReview) {
-            if (reviewer != null && reviewer?.isValid() == true) {
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+        ) {
+            val reviewer = reviewer
+            if (reviewer != null && reviewer.isValid() == true) {
                 Box(
                     contentAlignment = Alignment.CenterStart,
                     modifier = Modifier
@@ -1195,6 +1202,7 @@ fun ShowReview(
                 ) {
                     ProfilePhoto(reviewer!!, true, Modifier, uvm)
                 }
+
                 Text(
                     "${reviewer!!.firstname} ${reviewer!!.surname}",
                     modifier = Modifier
@@ -1204,29 +1212,17 @@ fun ShowReview(
                         }
                 )
             }
-        } else if (myTrip && !review.isTripReview && review.reviewedUserId > 0) {
-            val userReviewed by uvm.getUserData(review.reviewedUserId)
-                .collectAsState(initial = User())
 
-            if (userReviewed != null) {
-                Box(
-                    contentAlignment = Alignment.CenterStart,
-                    modifier = Modifier
-                        .size(30.dp)
-                        .background(Color.Gray, shape = CircleShape)
-                ) {
-                    ProfilePhoto(userReviewed!!, true, Modifier, uvm)
-                }
-                Text(
-                    "${userReviewed!!.firstname} ${userReviewed!!.surname}",
-                    modifier = Modifier
-                        .padding(start = 16.dp)
-                        .clickable {
-                            navController.navigate("user_profile/${userReviewed!!.id}")
-                        }
-                )
+            Spacer(modifier = Modifier.weight(1f))
+
+            Row(
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                PrintStars(review.score)
             }
         }
+
 
         //Stars rating
         Row(
