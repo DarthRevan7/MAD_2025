@@ -455,9 +455,7 @@ fun CreateNewTrip(navController: NavController, vm: TripViewModel) {
     }
 }
 
-fun validateDateOrder(start: Calendar?, end: Calendar?): Boolean {
-    return start != null && end != null && end.after(start)
-}
+
 
 @Composable
 fun TripImage(imageUri: Uri?, onUriSelected: (Uri?) -> Unit, photoTouched: MutableState<Boolean>) {

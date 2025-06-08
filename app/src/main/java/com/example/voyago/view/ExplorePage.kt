@@ -175,7 +175,7 @@ fun TripCard(
                         text = "DRAFT", // 显示"草稿"标识
                         color = Color.White, // 白色文字
                         fontWeight = FontWeight.Bold, // 粗体字
-                        fontSize = 10.sp // 字体大小
+                        fontSize = 16.sp // 字体大小
                     )
                 }
             }

@@ -357,29 +357,43 @@ fun TripDetails(
                             Spacer(Modifier.weight(1f))
 
                             //"Create a Copy" Button (creates a copy of the trip in the logged in user private trips)
+                            // 在 TripDetails.kt 中修改 "Create a Copy" 按钮的逻辑
+
+//"Create a Copy" Button (creates a copy of the trip in the logged in user private trips)
                             Button(
                                 onClick = {
-                                    vm.addImportedTrip(
-                                        trip.photo,
-                                        trip.title,
-                                        trip.destination,
-                                        trip.startDateAsCalendar(),
-                                        trip.endDateAsCalendar(),
-                                        trip.estimatedPrice,
-                                        trip.groupSize,
-                                        trip.activities,
-                                        trip.typeTravel,
-                                        1,
-                                        false
-                                    ) { success, importedTrip ->
-                                        if (success) {
-                                            vm.updatePublishedTrip()
+                                    // 获取当前行程的图片URL
+                                    coroutineScope.launch {
+                                        try {
+                                            val currentPhotoUrl = trip.getPhoto() // 获取当前图片URL
 
-                                            showPopup = true
-                                            coroutineScope.launch {
-                                                delay(2000)
-                                                showPopup = false
+                                            vm.addImportedTrip(
+                                                currentPhotoUrl ?: "", // 使用获取到的图片URL，如果为null则使用空字符串
+                                                trip.title,
+                                                trip.destination,
+                                                trip.startDateAsCalendar(),
+                                                trip.endDateAsCalendar(),
+                                                trip.estimatedPrice,
+                                                trip.groupSize,
+                                                trip.activities,
+                                                trip.typeTravel,
+                                                loggedUser.id, // 使用实际的登录用户ID而不是硬编码的1
+                                                false
+                                            ) { success, importedTrip ->
+                                                if (success) {
+                                                    vm.updatePublishedTrip()
+
+                                                    showPopup = true
+                                                    coroutineScope.launch {
+                                                        delay(2000)
+                                                        showPopup = false
+                                                    }
+                                                } else {
+                                                    Log.e("TripDetails", "Failed to create trip copy")
+                                                }
                                             }
+                                        } catch (e: Exception) {
+                                            Log.e("TripDetails", "Error copying trip: ${e.message}", e)
                                         }
                                     }
                                 },
