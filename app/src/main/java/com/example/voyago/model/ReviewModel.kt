@@ -387,7 +387,12 @@ class ReviewModel {
     private val _tripReviews = MutableStateFlow<List<Review>>(emptyList())
     val tripReviews: StateFlow<List<Review>> = _tripReviews
 
+    // 在 ReviewModel 中替换 getTripReviews 方法：
+
     fun getTripReviews(tripId: Int, coroutineScope: CoroutineScope) {
+        Log.d("ReviewModel", "=== getTripReviews called ===")
+        Log.d("ReviewModel", "Requesting reviews for trip ID: $tripId")
+
         coroutineScope.launch {
             callbackFlow {
                 val listener = Collections.reviews
@@ -395,14 +400,33 @@ class ReviewModel {
                     .whereEqualTo("isTripReview", true)
                     .addSnapshotListener { snapshot, error ->
                         if (snapshot != null) {
-                            trySend(snapshot.toObjects(Review::class.java))
+                            val reviews = snapshot.toObjects(Review::class.java)
+                            Log.d("ReviewModel", " Firestore returned ${reviews.size} reviews for trip $tripId")
+
+                            // 详细日志每个 review
+                            reviews.forEachIndexed { index, review ->
+                                Log.d("ReviewModel", "Review $index:")
+                                Log.d("ReviewModel", "  - ID: ${review.reviewId}")
+                                Log.d("ReviewModel", "  - Title: '${review.title}'")
+                                Log.d("ReviewModel", "  - TripID: ${review.tripId}")
+                                Log.d("ReviewModel", "  - IsTripReview: ${review.isTripReview}")
+                                Log.d("ReviewModel", "  - ReviewerId: ${review.reviewerId}")
+                                Log.d("ReviewModel", "  - Score: ${review.score}")
+                                Log.d("ReviewModel", "  - Comment: '${review.comment}'")
+                            }
+
+                            trySend(reviews)
                         } else {
-                            Log.e("Error", error.toString())
+                            Log.e("ReviewModel", "❌ Error fetching reviews for trip $tripId", error)
                             trySend(emptyList())
                         }
                     }
-                awaitClose { listener.remove() }
+                awaitClose {
+                    Log.d("ReviewModel", "Closing listener for trip $tripId reviews")
+                    listener.remove()
+                }
             }.collect { reviews ->
+                Log.d("ReviewModel", "📝 Updating _tripReviews with ${reviews.size} reviews")
                 _tripReviews.value = reviews
             }
         }
