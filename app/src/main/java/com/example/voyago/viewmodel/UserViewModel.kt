@@ -22,29 +22,27 @@ class UserViewModel(val model:UserModel): ViewModel() {
     val loggedUser: StateFlow<User> = _loggedUser
 
     init {
-        viewModelScope.launch {
-            model.getUser(1).collect { user ->
-                _loggedUser.value = user
-            }
-        }
-    }
+        val firebaseUser = FirebaseAuth.getInstance().currentUser
+        val email = firebaseUser?.email
 
-    /*init {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid
-        if (uid != null) {
+        if (email != null) {
             viewModelScope.launch {
-                val user = model.getUser(uid)
-                if (user != null) {
-                    _loggedUser.value = user
-                } else {
-                    Log.e("UserViewModel", "User document not found for uid: $uid")
-                    // You could also emit a default/fallback value or show an error
+                model.getUserByEmail(email).collect { user ->
+                    if (user != null) {
+                        _loggedUser.value = user
+                        Log.d("UserViewModel", "Logged user loaded: ${user.firstname}")
+                    } else {
+                        Log.e("UserViewModel", "No user found with email: $email")
+                    }
                 }
             }
         } else {
-            Log.e("UserViewModel", "No user is currently logged in")
+            Log.e("UserViewModel", "No Firebase user logged in")
         }
-    }*/
+    }
+
+
+
 
     var pendingUser: User? = null
 
