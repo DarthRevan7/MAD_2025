@@ -1,9 +1,12 @@
 package com.example.voyago.view
 
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,11 +20,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,6 +39,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -144,12 +151,12 @@ fun RetrievePassword(
                         auth.sendPasswordResetEmail(email.toString()) // Replace with the actual email input
                             .addOnCompleteListener { task ->
                                 errorMessage = if (task.isSuccessful) {
-                                    "Password reset email sent"
+                                    "Password reset email send successfully. Please check your inbox."
                                 } else {
                                     "Failed to send password reset email"
                                 }
                             }
-                        navController.navigate("login") // Navigate to login after sending
+
                     } else {
                         emailTouched = true // Show error if email is empty
                     }
@@ -167,6 +174,61 @@ fun RetrievePassword(
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = Color.White
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (errorMessage.isNotEmpty()) {
+                errorMessage.let { message ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFFE8F5E9) // light green
+                        ),
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(
+                            1.dp,
+                            Color(0xFF81C784) // medium green
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = message,
+                                color = Color(0xFF388E3C), // dark green
+                                fontSize = 14.sp,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Go back to login
+            TextButton(onClick = {
+                navController.navigate("login") {
+                    popUpTo("retrieve_password") {
+                        inclusive = true
+                    }
+                    launchSingleTop = true
+                }
+            }) {
+                Text(
+                    text = "Go back to login",
+                    color = Color(0xFF6B46C1),
+                    fontSize = 16.sp,
+                    textDecoration = TextDecoration.Underline
                 )
             }
         }
