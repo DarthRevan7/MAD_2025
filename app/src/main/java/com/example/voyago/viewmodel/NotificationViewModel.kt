@@ -43,7 +43,7 @@ class NotificationViewModel : ViewModel() {
     }
 
 
-    fun sendNotificationToUser(recipientId: String, title: String, body: String) {
+    fun sendNotificationToUser(recipientId: String, title: String, body: String, notificationType: String, idLink: Int) {
         val db = FirebaseFirestore.getInstance()
         db.collection("users").document(recipientId).get()
             .addOnSuccessListener { document ->
@@ -57,7 +57,9 @@ class NotificationViewModel : ViewModel() {
                                 "title" to title,
                                 "body" to body,
                                 "timestamp" to FieldValue.serverTimestamp(),
-                                "read" to false
+                                "read" to false,
+                                "type" to notificationType,
+                                "idLink" to idLink
                             )
                         )
                         .addOnSuccessListener {

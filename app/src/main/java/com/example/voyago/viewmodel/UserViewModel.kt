@@ -146,22 +146,22 @@ class UserViewModel(val model: UserModel) : ViewModel() {
         typeTravelInput: List<String>,
         onResult: (List<Int>) -> Unit
     ) {
-        Collections.users.addSnapshotListener { snapshot, error ->
-            if (error != null || snapshot == null) {
-                Log.e("getMatchingUserIds", "Error fetching users: ${error?.message}")
+        Collections.users.get()
+            .addOnSuccessListener { snapshot ->
+                val allUsers = snapshot.toObjects(User::class.java)
+                val filteredUsers = allUsers.filter { user ->
+                    user.typeTravel.map { it.name }.any { it in typeTravelInput }
+                }
+
+                val matchingIds = filteredUsers.map { it.id }.toSet().toList() // Remove duplicates
+                onResult(matchingIds)
+            }
+            .addOnFailureListener { error ->
+                Log.e("getMatchingUserIds", "Error fetching users: ${error.message}")
                 onResult(emptyList())
-                return@addSnapshotListener
             }
-
-            val allUsers = snapshot.toObjects(User::class.java)
-            val filteredUsers = allUsers.filter { user ->
-                user.typeTravel.map { it.name }.any { it in typeTravelInput }
-            }
-
-            val matchingIds = filteredUsers.map { it.id }
-            onResult(matchingIds)
-        }
     }
+
 
 }
 
