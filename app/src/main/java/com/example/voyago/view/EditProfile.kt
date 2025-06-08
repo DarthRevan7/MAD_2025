@@ -315,7 +315,7 @@ fun EditProfileScreen(navController: NavController, context:Context, vm: TripVie
                             }
 
                             val updatedUser = User(
-                                id = 1,
+                                id = user.id,
                                 firstname = fieldValues[0],
                                 surname = fieldValues[1],
                                 username = fieldValues[2],
