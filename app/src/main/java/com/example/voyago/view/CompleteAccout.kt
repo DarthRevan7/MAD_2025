@@ -1,5 +1,6 @@
 package com.example.voyago.view
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -58,6 +59,7 @@ import com.example.voyago.model.User
 import com.example.voyago.model.stringToCalendar
 import com.example.voyago.viewmodel.UserViewModel
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -452,9 +454,10 @@ fun CompleteAccount(
                         return@Button
                     }
 
+                    val fireUserUid = FirebaseAuth.getInstance().currentUser?.uid
+
                     var user = User(
                         id = -1,
-                        uid = "",
                         firstname = uvm.account?.givenName.toString(),
                         surname = uvm.account?.familyName.toString(),
                         country = country,
@@ -469,6 +472,29 @@ fun CompleteAccount(
                         rating = 5f,
                         reliability = 100
                     )
+
+                    if (fireUserUid != null) {
+                        Log.d("R1", "Obtained fireUserUid: $fireUserUid")
+                        user = User(
+                            id = -1,
+                            uid = fireUserUid,
+                            firstname = uvm.account?.givenName.toString(),
+                            surname = uvm.account?.familyName.toString(),
+                            country = country,
+                            username = username,
+                            email = uvm.account?.email.toString(),
+                            userDescription = "",
+                            dateOfBirth = Timestamp(stringToCalendar(dateOfBirth).time),
+                            password = "",
+                            profilePictureUrl = uvm.account?.photoUrl?.toString(),
+                            typeTravel = selectedTravelTypes.map { TypeTravel.valueOf(it) },
+                            desiredDestination = selectedDestinations.toList(),
+                            rating = 5f,
+                            reliability = 100
+                        )
+                    }
+
+
                     uvm.createUser(user)
                     navController.navigate("home_main") {
                         popUpTo("complete_account") { inclusive = true }

@@ -85,6 +85,7 @@ import coil3.compose.AsyncImage
 import com.example.voyago.R
 import com.example.voyago.model.NavItem
 import com.example.voyago.model.User
+import com.example.voyago.model.UserModel
 import com.example.voyago.view.ActivitiesList
 import com.example.voyago.view.CompleteAccount
 import com.example.voyago.view.CreateAccount2Screen
@@ -117,8 +118,6 @@ import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserFactory
 import com.example.voyago.viewmodel.UserViewModel
-import androidx.compose.ui.zIndex
-import com.example.voyago.model.UserModel
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -449,6 +448,10 @@ fun NavGraphBuilder.loginNavGraph(navController: NavHostController, auth: Fireba
                 factory = Factory
             )
             CompleteAccount(navController, uvm = userViewModel)
+        }
+
+        composable("retrieve_password") { entry ->
+            RetrievePassword(navController)
         }
     }
 }

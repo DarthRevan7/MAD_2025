@@ -53,15 +53,16 @@ import com.example.voyago.viewmodel.UserViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.firestore.firestore
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     navController: NavHostController, auth: FirebaseAuth,
-    onForgotPasswordClick: () -> Unit = {},
     uvm: UserViewModel
 ) {
     var email by remember { mutableStateOf("") }
@@ -255,7 +256,9 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // Forgot Password
-                TextButton(onClick = onForgotPasswordClick) {
+                TextButton(onClick = {
+                    navController.navigate("retrieve_password")
+                }) {
                     Text(
                         text = "Forgot your password?",
                         color = Color(0xFF6B46C1),
@@ -386,18 +389,44 @@ fun handleGoogleSignInResult(
 ) {
     setLoading(false)
     if (result.resultCode == Activity.RESULT_OK) {
-        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        val data = result.data
+        if (data == null) {
+            setError("Google sign-in failed: No intent data.")
+            return
+        }
+
+        val task = GoogleSignIn.getSignedInAccountFromIntent(data)
         try {
             val account = task.getResult(ApiException::class.java)
-            val credential = GoogleAuthProvider.getCredential(account.idToken, null)
+            val idToken = account.idToken
+            if (idToken.isNullOrEmpty()) {
+                setError("Google sign-in failed: Missing ID token.")
+                return
+            }
+
+            val credential = GoogleAuthProvider.getCredential(idToken, null)
             auth.signInWithCredential(credential)
                 .addOnCompleteListener { authResult ->
                     if (authResult.isSuccessful) {
+                        val email = account.email
+                        if (email.isNullOrEmpty()) {
+                            setError("Google sign-in failed: Email not found.")
+                            return@addOnCompleteListener
+                        }
 
-                        val account = task.getResult(ApiException::class.java)
                         uvm.setAccountUserViewModel(account)
-                        navController.navigate("complete_profile") {
-                            popUpTo("login") { inclusive = true }
+
+                        // Check if the user already exists in Firestore
+                        checkUserExistsByEmail(email) { exists ->
+                            if (exists) {
+                                navController.navigate("home_main") {
+                                    popUpTo("login") { inclusive = true }
+                                }
+                            } else {
+                                navController.navigate("complete_profile") {
+                                    popUpTo("login") { inclusive = true }
+                                }
+                            }
                         }
                     } else {
                         setError("Google sign-in failed: ${authResult.exception?.localizedMessage ?: "Unknown error"}")
@@ -409,6 +438,20 @@ fun handleGoogleSignInResult(
     } else {
         setError("Google sign-in canceled.")
     }
+}
+
+
+fun checkUserExistsByEmail(email: String, callback: (Boolean) -> Unit) {
+    Firebase.firestore.collection("users")
+        .whereEqualTo("email", email)
+        .limit(1)
+        .get()
+        .addOnSuccessListener { documents ->
+            callback(!documents.isEmpty)
+        }
+        .addOnFailureListener {
+            callback(false) // Or handle error more explicitly
+        }
 }
 
 
