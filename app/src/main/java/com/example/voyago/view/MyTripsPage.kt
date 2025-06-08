@@ -118,7 +118,7 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel, uvm: UserViewMo
             if(privateTrips.isNotEmpty()) {
                 items(privateTrips, key = { it.id }) { trip ->
                     vm.userAction = TripViewModel.UserAction.EDIT_TRIP
-                    TripCard(trip, navController, vm, vm.userAction == TripViewModel.UserAction.EDIT_TRIP,isDraft = true)
+                    TripCard(trip, navController, vm, vm.userAction == TripViewModel.UserAction.EDIT_TRIP,isDraft = trip.isDraft)
                 }
             } else {
                 item {

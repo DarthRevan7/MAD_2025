@@ -203,7 +203,8 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
                                             participants = vm.editTrip.participants,
                                             rejectedUsers = vm.editTrip.rejectedUsers,
                                             status = vm.editTrip.status,
-                                            appliedUsers = vm.editTrip.appliedUsers
+                                            appliedUsers = vm.editTrip.appliedUsers,
+                                            isDraft = false
                                         )
 
                                         vm.editTrip = updatedTrip

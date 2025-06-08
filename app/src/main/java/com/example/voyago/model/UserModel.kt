@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.voyago.Collections
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -160,6 +161,38 @@ class UserModel {
         val userId = updatedUser.id.toString()
         val docRef = Collections.users.document(userId)
         docRef.set(updatedUser)
+    }
+
+    fun getUserByUid(uid: String): Flow<User?> = callbackFlow {
+        val ref = FirebaseFirestore.getInstance().collection("users").document(uid)
+        val listener = ref.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                close(error)
+                return@addSnapshotListener
+            }
+            val user = snapshot?.toObject(User::class.java)
+            trySend(user)
+        }
+        awaitClose { listener.remove() }
+    }
+
+    fun getUserByEmail(email: String): Flow<User?> = callbackFlow {
+        val query = FirebaseFirestore.getInstance()
+            .collection("users")
+            .whereEqualTo("email", email)
+            .limit(1)
+
+        val listener = query.addSnapshotListener { snapshots, error ->
+            if (error != null) {
+                close(error)
+                return@addSnapshotListener
+            }
+
+            val user = snapshots?.documents?.firstOrNull()?.toObject(User::class.java)
+            trySend(user)
+        }
+
+        awaitClose { listener.remove() }
     }
 
 

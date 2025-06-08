@@ -49,7 +49,8 @@ data class Trip(
     var creatorId: Int = 0,
     var appliedUsers: Map<String, JoinRequest> = emptyMap(),                   // userId, id JoinedRequest
     var rejectedUsers: Map<String, JoinRequest> = emptyMap(),                  // userId, number of spots
-    var published: Boolean = false
+    var published: Boolean = false,
+    var isDraft: Boolean = false  // 新增字段
 ) {
 
     private var cachedPhotoUrl: String? = null
@@ -138,7 +139,8 @@ data class Trip(
         creatorId = -1,
         appliedUsers = emptyMap(),
         rejectedUsers = emptyMap(),
-        published = false
+        published = false,
+        isDraft = false
     ) {
         updateStatusBasedOnDate()
     }
@@ -602,6 +604,7 @@ class TripModel {
 
     //Function that imports a Trip in the "My Trip" section of the logged in user as private
     fun importTrip(
+        photo: String?,
         title: String, destination: String, startDate: Calendar,
         endDate: Calendar, estimatedPrice: Double, groupSize: Int,
         activities: Map<String, List<Activity>>, typeTravel: List<String>, creatorId: Int,
@@ -623,6 +626,7 @@ class TripModel {
             //Build Trip object with new ID
             val newTrip = Trip(
                 id = newTripId.toInt(),
+                photo = photo ?: "",  // 添加 photo 字段
                 title = title,
                 destination = destination,
                 startDate = Timestamp(startDate.time),
@@ -643,7 +647,8 @@ class TripModel {
                 creatorId = creatorId,
                 appliedUsers = emptyMap(),
                 rejectedUsers = emptyMap(),
-                published = published
+                published = published,
+                isDraft = true  // 设置为草稿
             )
 
             //Save to Firestore
