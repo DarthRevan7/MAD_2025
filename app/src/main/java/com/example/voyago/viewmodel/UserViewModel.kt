@@ -11,6 +11,8 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.voyago.model.User
 import com.example.voyago.model.UserModel
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.example.voyago.Collections
+import com.example.voyago.model.*
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -138,6 +140,27 @@ class UserViewModel(val model: UserModel) : ViewModel() {
 
     fun resetUserVerified() {
         _userVerified.value = false
+    }
+
+    fun getMatchingUserIdsByTypeTravel(
+        typeTravelInput: List<String>,
+        onResult: (List<Int>) -> Unit
+    ) {
+        Collections.users.addSnapshotListener { snapshot, error ->
+            if (error != null || snapshot == null) {
+                Log.e("getMatchingUserIds", "Error fetching users: ${error?.message}")
+                onResult(emptyList())
+                return@addSnapshotListener
+            }
+
+            val allUsers = snapshot.toObjects(User::class.java)
+            val filteredUsers = allUsers.filter { user ->
+                user.typeTravel.map { it.name }.any { it in typeTravelInput }
+            }
+
+            val matchingIds = filteredUsers.map { it.id }
+            onResult(matchingIds)
+        }
     }
 
 }

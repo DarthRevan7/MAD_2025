@@ -42,25 +42,6 @@ class NotificationViewModel : ViewModel() {
         markAllNotificationsRead(userId)
     }
 
-    // Inside NotificationViewModel.kt
-    fun sendNotification(title: String, body: String, token: String) {
-        val data = mapOf(
-            "title" to title,
-            "body" to body,
-            "token" to token
-        )
-
-        Firebase.functions
-            .getHttpsCallable("sendAndStoreNotification")
-            .call(data)
-            .addOnSuccessListener {
-                Log.d("FCM", "Notification sent successfully.")
-            }
-            .addOnFailureListener {
-                Log.e("FCM", "Error sending notification", it)
-            }
-    }
-
 
     fun sendNotificationToUser(recipientId: String, title: String, body: String) {
         val db = FirebaseFirestore.getInstance()
@@ -119,46 +100,6 @@ class NotificationViewModel : ViewModel() {
                         _notifications.add("$title: $body")
                     }
                     _hasNewNotification.value = hasUnread
-                }
-            }
-    }
-
-    fun sendGlobalNotification(title: String, body: String) {
-        val db = FirebaseFirestore.getInstance()
-
-        db.collection("notifications")
-            .add(
-                mapOf(
-                    "title" to title,
-                    "body" to body
-                )
-            )
-            .addOnSuccessListener {
-                Log.d("Notification", "Notification stored successfully")
-            }
-            .addOnFailureListener {
-                Log.e("Notification", "Error storing notification", it)
-            }
-    }
-
-    fun loadAllNotifications() {
-        val db = FirebaseFirestore.getInstance()
-        db.collection("notifications")
-            .orderBy("timestamp", Query.Direction.DESCENDING)
-            .addSnapshotListener { snapshots, e ->
-                if (e != null) {
-                    Log.e("Notification", "Listen failed.", e)
-                    return@addSnapshotListener
-                }
-
-                if (snapshots != null) {
-                    _notifications.clear()
-                    for (doc in snapshots) {
-                        val title = doc.getString("title") ?: ""
-                        val body = doc.getString("body") ?: ""
-                        _notifications.add("$title: $body")
-                    }
-                    _hasNewNotification.value = _notifications.isNotEmpty()
                 }
             }
     }

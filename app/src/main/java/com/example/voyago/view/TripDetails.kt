@@ -103,6 +103,11 @@ fun TripDetails(
     rvm: ReviewViewModel,
     nvm: NotificationViewModel
 ) {
+    // The logged in user
+
+    val loggedUser by uvm.loggedUser.collectAsState()
+    // 添加登录状态检查
+    val isUserLoggedIn = loggedUser.id > 0 && loggedUser.isValid() == true
 
     //Trip that we are showing
     val trip = when (vm.userAction) {
@@ -115,7 +120,7 @@ fun TripDetails(
     //Trip participants map
     val participantsMap by vm.tripParticipants.collectAsState()
     // The logged in user
-    val loggedUser by uvm.loggedUser.collectAsState()
+
 
     DisposableEffect(Unit) {
         onDispose {
@@ -356,50 +361,55 @@ fun TripDetails(
 
                             Spacer(Modifier.weight(1f))
 
+                            // 只有登录用户才显示 "Create a Copy" 按钮
+                            if (isUserLoggedIn) {
+                                //"Create a Copy" Button (creates a copy of the trip in the logged in user private trips)
 
-                            //"Create a Copy" Button (creates a copy of the trip in the logged in user private trips)
-                            Button(
-                                onClick = {
-                                    // 添加调试日志
-                                    Log.d("TripCopy", "Original trip photo: ${trip.photo}")
 
-                                    vm.addImportedTrip(
-                                        trip.photo,  // 或者尝试使用 trip.getPhoto() ?: trip.photo
-                                        trip.title,
-                                        trip.destination,
-                                        trip.startDateAsCalendar(),
-                                        trip.endDateAsCalendar(),
-                                        trip.estimatedPrice,
-                                        trip.groupSize,
-                                        trip.activities,
-                                        trip.typeTravel,
-                                        loggedUser.id,
-                                        false
-                                    ) { success, importedTrip ->
-                                        if (success) {
-                                            // 添加调试日志
-                                            Log.d(
-                                                "TripCopy",
-                                                "Imported trip created with photo: ${importedTrip?.photo}"
-                                            )
+                                //"Create a Copy" Button (creates a copy of the trip in the logged in user private trips)
+                                Button(
+                                    onClick = {
+                                        // 添加调试日志
+                                        Log.d("TripCopy", "Original trip photo: ${trip.photo}")
 
-                                            vm.updatePublishedTrip()
+                                        vm.addImportedTrip(
+                                            trip.photo,  // 或者尝试使用 trip.getPhoto() ?: trip.photo
+                                            trip.title,
+                                            trip.destination,
+                                            trip.startDateAsCalendar(),
+                                            trip.endDateAsCalendar(),
+                                            trip.estimatedPrice,
+                                            trip.groupSize,
+                                            trip.activities,
+                                            trip.typeTravel,
+                                            loggedUser.id,
+                                            false
+                                        ) { success, importedTrip ->
+                                            if (success) {
+                                                // 添加调试日志
+                                                Log.d(
+                                                    "TripCopy",
+                                                    "Imported trip created with photo: ${importedTrip?.photo}"
+                                                )
 
-                                            showPopup = true
-                                            coroutineScope.launch {
-                                                delay(2000)
-                                                showPopup = false
+                                                vm.updatePublishedTrip()
+
+                                                showPopup = true
+                                                coroutineScope.launch {
+                                                    delay(2000)
+                                                    showPopup = false
+                                                }
+                                            } else {
+                                                Log.e("TripDetails", "Failed to create trip copy")
                                             }
-                                        } else {
-                                            Log.e("TripDetails", "Failed to create trip copy")
                                         }
-                                    }
-                                },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0x65, 0x55, 0x8f, 255)
-                                )
-                            ) {
-                                Text("Create a Copy")
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0x65, 0x55, 0x8f, 255)
+                                    )
+                                ) {
+                                    Text("Create a Copy")
+                                }
                             }
                         }
                     }
@@ -421,14 +431,22 @@ fun TripDetails(
                                     if (isAfterToday) {
                                         vm.changePublishedStatus(trip.id)
                                         vm.updatePublishedTrip()
+
+                                        //Send notifications
                                         val title = "Check this out!"
-                                        val body = "This trip looks interesting for you!"
-                                        val userId = "2"
-                                        //val userId = "$loggedUser.id"
-                                        nvm.sendNotificationToUser(userId, title, body)
-                                        nvm.receiveNewNotification("$title: $body") // Local badge trigger
-                                        nvm.showLocalNotification(context, title, body)
-                                        navController.popBackStack()
+                                        val body = "This trip to ${trip.destination} looks interesting for you!"
+
+                                        uvm.getMatchingUserIdsByTypeTravel(trip.typeTravel) { compatibleUsers ->
+                                            compatibleUsers.forEach { userIdInt ->
+                                                if (userIdInt != loggedUser.id){
+                                                    val userId = userIdInt.toString()
+                                                    nvm.sendNotificationToUser(userId, title, body)
+                                                }
+
+                                            }
+
+                                            navController.popBackStack()
+                                        }
                                     } else {
                                         publishError = true
                                     }
@@ -474,80 +492,98 @@ fun TripDetails(
                             .fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
                     ) {
-                        //"Create a Copy" Button (creates a copy of the trip in the logged in user private trips)
-                        Button(
-                            onClick = {
-                                vm.addImportedTrip(
-                                    trip.photo,
-                                    trip.title,
-                                    trip.destination,
-                                    trip.startDateAsCalendar(),
-                                    trip.endDateAsCalendar(),
-                                    trip.estimatedPrice,
-                                    trip.groupSize,
-                                    trip.activities,
-                                    trip.typeTravel,
-                                    loggedUser.id,  //  使用当前登录用户的ID
-                                    false
-                                ) { success, importedTrip ->
-                                    if (success) {
-                                        vm.updatePublishedTrip()
-
-                                        showPopup = true
-                                        coroutineScope.launch {
-                                            delay(2000)
-                                            showPopup = false
-                                        }
-                                    }
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0x65, 0x55, 0x8f, 255)
-                            )
-                        ) {
-                            Text("Create a Copy")
-                        }
-
-                        Spacer(Modifier.padding(5.dp))
-
-                        //If the user can join the trip
-                        if (trip.canJoin() && trip.creatorId != loggedUser.id) {
-                            //Ask to Join/Asked to Join Button
+                        // 只有登录用户才显示 "Create a Copy" 按钮
+                        if (isUserLoggedIn) {
+                            //"Create a Copy" Button (creates a copy of the trip in the logged in user private trips)
                             Button(
                                 onClick = {
-                                    if (hasAsked) {
-                                        vm.cancelAskToJoin(trip, loggedUser.id)
-                                    } else {
-                                        selectedSpots = 1
-                                        showDialog = true
+                                    vm.addImportedTrip(
+                                        trip.photo,
+                                        trip.title,
+                                        trip.destination,
+                                        trip.startDateAsCalendar(),
+                                        trip.endDateAsCalendar(),
+                                        trip.estimatedPrice,
+                                        trip.groupSize,
+                                        trip.activities,
+                                        trip.typeTravel,
+                                        loggedUser.id,  //  使用当前登录用户的ID
+                                        false
+                                    ) { success, importedTrip ->
+                                        if (success) {
+                                            vm.updatePublishedTrip()
+
+                                            showPopup = true
+                                            coroutineScope.launch {
+                                                delay(2000)
+                                                showPopup = false
+                                            }
+                                        }
                                     }
                                 },
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = if (hasAsked)
-                                        Color(0x65, 0xa9, 0x8b, 255)
-                                    else
-                                        Color(0x14, 0xa1, 0x55, 255)
+                                    containerColor = Color(0x65, 0x55, 0x8f, 255)
                                 )
                             ) {
-                                if (hasAsked) {
-                                    Icon(Icons.Default.Check, "check")
-                                    Text("Asked to Join ($requestedSpots spot${if (requestedSpots > 1) "s" else ""})")
-                                } else {
-                                    Text("Ask to Join")
-                                }
+                                Text("Create a Copy")
                             }
 
-                        } else if (trip.participants.containsKey(loggedUser.id.toString())
-                            && trip.status != Trip.TripStatus.COMPLETED.toString()
-                            && trip.creatorId != 1
-                        ) {
+                            Spacer(Modifier.padding(5.dp))
+                        }
+
+                        if (isUserLoggedIn) {
+                            //If the user can join the trip
+                            if (trip.canJoin() && trip.creatorId != loggedUser.id) {
+                                //Ask to Join/Asked to Join Button
+                                Button(
+                                    onClick = {
+                                        if (hasAsked) {
+                                            vm.cancelAskToJoin(trip, loggedUser.id)
+                                        } else {
+                                            selectedSpots = 1
+                                            showDialog = true
+                                        }
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = if (hasAsked)
+                                            Color(0x65, 0xa9, 0x8b, 255)
+                                        else
+                                            Color(0x14, 0xa1, 0x55, 255)
+                                    )
+                                ) {
+                                    if (hasAsked) {
+                                        Icon(Icons.Default.Check, "check")
+                                        Text("Asked to Join ($requestedSpots spot${if (requestedSpots > 1) "s" else ""})")
+                                    } else {
+                                        Text("Ask to Join")
+                                    }
+                                }
+
+                            } else if (trip.participants.containsKey(loggedUser.id.toString())
+                                && trip.status != Trip.TripStatus.COMPLETED.toString()
+                                && trip.creatorId != loggedUser.id
+                            ) {
+                                Button(
+                                    onClick = {},
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0x2E, 0x7D, 0x32, 255)
+                                    )
+                                ) {
+                                    Text("Already Joined")
+                                }
+                            }
+                        } else {
+                            // 如果用户未登录，显示提示按钮引导用户登录
                             Button(
-                                onClick = {},
+                                onClick = {
+                                    // 导航到登录页面 - 根据你的导航路由调整
+                                    navController.navigate("login")
+                                },
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0x2E, 0x7D, 0x32, 255)
+                                    containerColor = Color(0x14, 0xa1, 0x55, 255)
                                 )
                             ) {
-                                Text("Already Joined")
+                                Text("Login to Join")
                             }
                         }
                     }
