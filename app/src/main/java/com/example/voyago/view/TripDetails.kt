@@ -421,14 +421,22 @@ fun TripDetails(
                                     if (isAfterToday) {
                                         vm.changePublishedStatus(trip.id)
                                         vm.updatePublishedTrip()
+
+                                        //Send notifications
                                         val title = "Check this out!"
-                                        val body = "This trip looks interesting for you!"
-                                        val userId = "2"
-                                        //val userId = "$loggedUser.id"
-                                        nvm.sendNotificationToUser(userId, title, body)
-                                        nvm.receiveNewNotification("$title: $body") // Local badge trigger
-                                        nvm.showLocalNotification(context, title, body)
-                                        navController.popBackStack()
+                                        val body = "This trip to ${trip.destination} looks interesting for you!"
+
+                                        uvm.getMatchingUserIdsByTypeTravel(trip.typeTravel) { compatibleUsers ->
+                                            compatibleUsers.forEach { userIdInt ->
+                                                if (userIdInt != loggedUser.id){
+                                                    val userId = userIdInt.toString()
+                                                    nvm.sendNotificationToUser(userId, title, body)
+                                                }
+
+                                            }
+
+                                            navController.popBackStack()
+                                        }
                                     } else {
                                         publishError = true
                                     }
