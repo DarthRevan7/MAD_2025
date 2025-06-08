@@ -1,5 +1,6 @@
 package com.example.voyago.view
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,13 +34,12 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.voyago.model.User
 import com.example.voyago.viewmodel.UserViewModel
-import com.google.firebase.auth.ActionCodeSettings
 import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegistrationVerificationCodeScreen(navController: NavController, uvm: UserViewModel) {
-    val user =
+    var user =
         navController.previousBackStackEntry?.savedStateHandle?.get<User>("userValues")
 
     var message by remember { mutableStateOf("") }
@@ -109,7 +109,7 @@ fun RegistrationVerificationCodeScreen(navController: NavController, uvm: UserVi
                 onClick = {
                     val auth = FirebaseAuth.getInstance()
                     uvm.storeUser(user!!)
-                    auth.createUserWithEmailAndPassword(user.email, user.password)
+                    auth.createUserWithEmailAndPassword(user!!.email, user!!.password)
                         .addOnSuccessListener { result ->
                             result.user?.sendEmailVerification()
                                 ?.addOnSuccessListener {
@@ -142,6 +142,54 @@ fun RegistrationVerificationCodeScreen(navController: NavController, uvm: UserVi
             Spacer(modifier = Modifier.height(32.dp))
 
             Text(text = message)
+
+            // Or text
+            Text(
+                text = "or",
+                color = Color.Gray,
+                fontSize = 16.sp
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Button(
+                onClick = {
+                    val fireUser = FirebaseAuth.getInstance().currentUser
+                    Log.d("R1", "fireUser: $fireUser")
+                    user = uvm.pendingUser!!
+                    if (user != null && fireUser != null) {
+                        Log.d("R1", "fireUser.email: ${fireUser.email}, user.email: ${user.email}")
+                        if (fireUser.email == user.email) {
+                            user.uid = fireUser.uid
+                            uvm.editUserData(user)
+                            Log.d("R1", "User data updated: $user")
+                            Log.d("R1", "User data firebase: ${fireUser}")
+                            navController.navigate("profile_overview") {
+                                popUpTo("registration_verification_code") {
+                                    inclusive = true
+                                }
+                            }
+
+                        }
+
+
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF6B46C1)
+                )
+            ) {
+                Text(
+                    text = "Click here to confirm registration after clicking the link in your E-mail",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White
+                )
+            }
         }
     }
 }

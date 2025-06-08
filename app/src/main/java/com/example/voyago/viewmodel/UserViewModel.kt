@@ -1,21 +1,20 @@
 package com.example.voyago.viewmodel
 
 import android.net.Uri
-import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import com.example.voyago.model.*
-import com.google.firebase.auth.FirebaseAuth
+import com.example.voyago.model.User
+import com.example.voyago.model.UserModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class UserViewModel(val model:UserModel): ViewModel() {
+class UserViewModel(val model: UserModel) : ViewModel() {
 
     //For now user with id = 1 is the logged user.
     private val _loggedUser = MutableStateFlow<User>(User())
@@ -49,7 +48,11 @@ class UserViewModel(val model:UserModel): ViewModel() {
     var pendingUser: User? = null
 
     fun storeUser(user: User) {
-        pendingUser = user
+        if (user.id == -1) {
+            pendingUser = user
+        } else {
+            throw IllegalArgumentException("User ID must be -1 to store a pending user")
+        }
     }
 
     fun clearUser() {
@@ -58,6 +61,16 @@ class UserViewModel(val model:UserModel): ViewModel() {
 
     private val _userData = MutableStateFlow<User>(User())
     val userData: StateFlow<User> = _userData
+
+    //Create a new user
+    fun createUser(newUser: User) {
+        pendingUser =
+            model.createUser(newUser) { success, user ->
+                if (user != null) {
+                    pendingUser = user
+                }
+            }
+    }
 
     //Edit user profile
     fun editUserData(updatedUserData: User) {
@@ -79,7 +92,7 @@ class UserViewModel(val model:UserModel): ViewModel() {
             model.getUsersFromUsernames(usernames).collect { users -> userList = users }
         }
 
-        var idList : MutableList<Int> = mutableListOf()
+        var idList: MutableList<Int> = mutableListOf()
 
         userList.forEach { idList.add(it.id) }
 
@@ -125,14 +138,15 @@ class UserViewModel(val model:UserModel): ViewModel() {
 
 }
 
-object UserFactory : ViewModelProvider.Factory{
-    private val model:UserModel = UserModel()
+object UserFactory : ViewModelProvider.Factory {
+    private val model: UserModel = UserModel()
 
     override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
         @Suppress("UNCHECKED_CAST")
-        return when{
-            modelClass.isAssignableFrom(UserViewModel::class.java)->
+        return when {
+            modelClass.isAssignableFrom(UserViewModel::class.java) ->
                 UserViewModel(model) as T
+
             else -> throw IllegalArgumentException("Unknown ViewModel")
         }
     }

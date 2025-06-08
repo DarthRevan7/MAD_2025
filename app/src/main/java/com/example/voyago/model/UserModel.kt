@@ -3,6 +3,7 @@ package com.example.voyago.model
 import android.util.Log
 import com.example.voyago.Collections
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -11,6 +12,7 @@ import java.util.Date
 
 data class User(
     var id: Int = 0,
+    var uid: String = "",
     var firstname: String = "",
     var surname: String = "",
     var username: String = "",
@@ -50,6 +52,32 @@ class UserModel {
             null
         }
     }*/
+
+    fun createUser(newUser: User, onResult: (Boolean, User?) -> Unit): User {
+        val firestore = com.google.firebase.Firebase.firestore
+        val counterRef = firestore.collection("metadata").document("userCounter")
+
+        var userToReturn = User()
+
+        firestore.runTransaction { transaction ->
+            val snapshot = transaction.get(counterRef)
+            val lastUserId = snapshot.getLong("lastUserId") ?: 0
+            val newUserId = lastUserId + 1
+            transaction.update(counterRef, "lastUserId", newUserId)
+            val userWithId = newUser.copy(id = newUserId.toInt())
+            val userDocRef = firestore.collection("users").document(newUserId.toString())
+            transaction.set(userDocRef, userWithId)
+            userToReturn =
+                userWithId
+            userWithId
+        }.addOnSuccessListener { user ->
+            onResult(true, user)
+//            userToReturn = user
+        }.addOnFailureListener { e ->
+            onResult(false, null)
+        }
+        return userToReturn
+    }
 
     //SUBSET OF USER LIST
 

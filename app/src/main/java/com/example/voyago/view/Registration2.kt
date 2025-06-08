@@ -1,5 +1,6 @@
 package com.example.voyago.view
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -385,40 +386,50 @@ fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
                         return@Button
                     }
 
-                    var user = User(
-                        id = -1,
-                        firstname = fields?.name!!,
-                        surname = fields.surname,
-                        username = username,
-                        country = fields.country,
-                        email = fields.email,
-                        userDescription = "",
-                        dateOfBirth = Timestamp(stringToCalendar(fields.dateOfBirth).time),
-                        profilePictureUrl = null,
-                        typeTravel = selectedTravelTypes.map { TypeTravel.valueOf(it) },
-                        desiredDestination = selectedDestinations.toList(),
-                        rating = 5f,
-                        reliability = 100
+                    var user = User()
+                    if (fields != null) {
+                        user = User(
+                            id = -1,
+                            uid = "",
+                            firstname = fields.name,
+                            surname = fields.surname,
+                            username = username,
+                            country = fields.country,
+                            email = fields.email,
+                            password = fields.password,
+                            userDescription = "",
+                            dateOfBirth = Timestamp(stringToCalendar(fields.dateOfBirth).time),
+                            profilePictureUrl = null,
+                            typeTravel = selectedTravelTypes.map { TypeTravel.valueOf(it) },
+                            desiredDestination = selectedDestinations.toList(),
+                            rating = 5f,
+                            reliability = 100
+                        )
+                        val auth = FirebaseAuth.getInstance()
+                        uvm.storeUser(user)
+                        Log.d("L7", "User stored: $user")
+                        auth.createUserWithEmailAndPassword(user.email, fields.password)
+                            .addOnSuccessListener { result ->
+                                result.user?.sendEmailVerification()
+                                    ?.addOnSuccessListener {
+                                        message =
+                                            "Verification email sent. Please check your inbox."
+                                    }
+                                    ?.addOnFailureListener {
+                                        message = "Failed to send verification email."
+                                    }
+                            }
+                            .addOnFailureListener {
+                                message = "Registration failed: ${it.message}"
+                            }
+                    }
+
+                    uvm.createUser(user)
+
+                    navController.currentBackStackEntry?.savedStateHandle?.set(
+                        "userValues",
+                        uvm.pendingUser
                     )
-
-                    val auth = FirebaseAuth.getInstance()
-                    uvm.storeUser(user)
-                    auth.createUserWithEmailAndPassword(user.email, fields.password)
-                        .addOnSuccessListener { result ->
-                            result.user?.sendEmailVerification()
-                                ?.addOnSuccessListener {
-                                    message = "Verification email sent. Please check your inbox."
-                                }
-                                ?.addOnFailureListener {
-                                    message = "Failed to send verification email."
-                                }
-                        }
-                        .addOnFailureListener {
-                            message = "Registration failed: ${it.message}"
-                        }
-
-
-                    navController.currentBackStackEntry?.savedStateHandle?.set("userValues", user)
                     navController.navigate("register_verification_code")
 
                 },
