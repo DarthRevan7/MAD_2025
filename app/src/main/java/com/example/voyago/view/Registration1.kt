@@ -364,53 +364,6 @@ fun CreateAccountScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Or text
-            Text(
-                text = "or",
-                color = Color.Gray,
-                fontSize = 16.sp
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Google Sign Up Button
-            OutlinedButton(
-                onClick = onGoogleSignUpClick,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = Color.White,
-                    contentColor = Color.Black
-                ),
-                border = androidx.compose.foundation.BorderStroke(
-                    1.dp,
-                    Color.LightGray
-                )
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    // Google Icon placeholder - you would use actual Google icon here
-                    Text(
-                        text = "G",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF4285F4),
-                        modifier = Modifier.padding(end = 8.dp)
-                    )
-                    Text(
-                        text = "Continue with Google",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color.Black
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }

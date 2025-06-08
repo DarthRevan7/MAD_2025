@@ -496,8 +496,12 @@ fun CompleteAccount(
 
 
                     uvm.createUser(user)
-                    navController.navigate("home_main") {
-                        popUpTo("complete_account") { inclusive = true }
+                    
+                    navController.navigate("profile_overview") {
+                        popUpTo("home_main") {
+                            inclusive = false
+                        }
+                        launchSingleTop = true
                     }
                 },
                 modifier = Modifier

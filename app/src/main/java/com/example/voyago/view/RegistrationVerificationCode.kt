@@ -1,9 +1,12 @@
 package com.example.voyago.view
 
 import android.util.Log
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,6 +19,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -141,7 +146,42 @@ fun RegistrationVerificationCodeScreen(navController: NavController, uvm: UserVi
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            Text(text = message)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (message.isNotEmpty()) {
+                message.let { message ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFFE8F5E9) // light green
+                        ),
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(
+                            1.dp,
+                            Color(0xFF81C784) // medium green
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = message,
+                                color = Color(0xFF388E3C), // dark green
+                                fontSize = 14.sp,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+
+                }
+            }
+
 
             // Or text
             Text(
@@ -157,19 +197,19 @@ fun RegistrationVerificationCodeScreen(navController: NavController, uvm: UserVi
                     val fireUser = FirebaseAuth.getInstance().currentUser
                     Log.d("R1", "fireUser: $fireUser")
                     user = uvm.pendingUser!!
-                    if (user != null && fireUser != null) {
+                    if (fireUser != null) {
                         Log.d("R1", "fireUser.email: ${fireUser.email}, user.email: ${user.email}")
                         if (fireUser.email == user.email) {
                             user.uid = fireUser.uid
                             uvm.editUserData(user)
                             Log.d("R1", "User data updated: $user")
-                            Log.d("R1", "User data firebase: ${fireUser}")
+                            Log.d("R1", "User data firebase: $fireUser")
                             navController.navigate("profile_overview") {
-                                popUpTo("registration_verification_code") {
-                                    inclusive = true
+                                popUpTo("home_main") {
+                                    inclusive = false
                                 }
+                                launchSingleTop = true
                             }
-
                         }
 
 
@@ -184,7 +224,7 @@ fun RegistrationVerificationCodeScreen(navController: NavController, uvm: UserVi
                 )
             ) {
                 Text(
-                    text = "Click here to confirm registration after clicking the link in your E-mail",
+                    text = "Click here to confirm registration\n after clicking the link in your E-mail",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = Color.White

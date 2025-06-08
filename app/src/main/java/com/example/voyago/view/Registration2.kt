@@ -430,7 +430,12 @@ fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
                         "userValues",
                         uvm.pendingUser
                     )
-                    navController.navigate("register_verification_code")
+                    navController.navigate("register_verification_code") {
+                        popUpTo("register") {
+                            inclusive = true
+                        } // Removes edit from back stack
+                        launchSingleTop = true
+                    }
 
                 },
                 modifier = Modifier

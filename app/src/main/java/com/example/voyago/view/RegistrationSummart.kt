@@ -40,7 +40,7 @@ data class UserRegistrationData(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VoyagoRegistrationSummaryScreen(
+fun RegistrationSummaryScreen(
     userData: UserRegistrationData = UserRegistrationData(
         name = "Lucy",
         surname = "Williams",
@@ -293,8 +293,8 @@ private fun InfoItem(
 
 @Preview(showBackground = true, device = "spec:width=412dp,height=892dp")
 @Composable
-fun VoyagoRegistrationSummaryScreenPreview() {
+fun RegistrationSummaryScreenPreview() {
     MaterialTheme {
-        VoyagoRegistrationSummaryScreen()
+        RegistrationSummaryScreen()
     }
 }
