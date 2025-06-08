@@ -100,9 +100,9 @@ fun EditProfileScreen(
 
     val fieldValues = rememberSaveable(
         saver = listSaver(
-        save = { it.toList() },
-        restore = { it.toMutableStateList() }
-    )) {
+            save = { it.toList() },
+            restore = { it.toMutableStateList() }
+        )) {
         mutableStateListOf(
             user.firstname,
             user.surname,
@@ -125,9 +125,9 @@ fun EditProfileScreen(
 
     val selected = rememberSaveable(
         saver = listSaver(
-        save = { it.toList() },
-        restore = { it.toMutableStateList() }
-    )) {
+            save = { it.toList() },
+            restore = { it.toMutableStateList() }
+        )) {
         user.typeTravel.toMutableStateList()
     }
 
@@ -354,6 +354,7 @@ fun EditProfileScreen(
 
                             val updatedUser = User(
                                 id = user.id,
+                                uid = user.uid,
                                 firstname = fieldValues[0],
                                 surname = fieldValues[1],
                                 username = fieldValues[2],
