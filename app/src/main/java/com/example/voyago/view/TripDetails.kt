@@ -487,7 +487,7 @@ fun TripDetails(
                                     trip.groupSize,
                                     trip.activities,
                                     trip.typeTravel,
-                                    1,
+                                    loggedUser.id,  //  使用当前登录用户的ID
                                     false
                                 ) { success, importedTrip ->
                                     if (success) {
