@@ -116,6 +116,7 @@ import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserFactory
 import com.example.voyago.viewmodel.UserViewModel
 import androidx.compose.ui.zIndex
+import com.example.voyago.model.UserModel
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -380,8 +381,9 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
             )
         }
         val notificationViewModel = NotificationViewModel()
+        val userViewModel = UserViewModel(UserModel())
         composable(Screen.Notifications.route) {
-            NotificationView(notificationViewModel)
+            NotificationView(notificationViewModel, userViewModel)
         }
     }
 }

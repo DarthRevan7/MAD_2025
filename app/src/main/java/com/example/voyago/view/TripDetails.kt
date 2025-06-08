@@ -423,7 +423,7 @@ fun TripDetails(
                                         vm.updatePublishedTrip()
                                         val title = "Check this out!"
                                         val body = "This trip looks interesting for you!"
-                                        val userId = "1"
+                                        val userId = "2"
                                         //val userId = "$loggedUser.id"
                                         nvm.sendNotificationToUser(userId, title, body)
                                         nvm.receiveNewNotification("$title: $body") // Local badge trigger
