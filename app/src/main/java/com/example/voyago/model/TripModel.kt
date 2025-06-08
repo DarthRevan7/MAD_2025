@@ -2,7 +2,6 @@ package com.example.voyago.model
 
 import android.util.Log
 import com.example.voyago.Collections
-import com.example.voyago.StorageHelper.debugListAllTripsImages
 import com.example.voyago.model.Trip.Activity
 import com.example.voyago.model.Trip.Participant
 import com.example.voyago.model.Trip.TripStatus
@@ -56,7 +55,6 @@ data class Trip(
     private var cachedPhotoUrl: String? = null
 
     suspend fun getPhoto(): String {
-        debugListAllTripsImages()
         if (photo == null || photo == "") {
             return com.example.voyago.StorageHelper.getImageDownloadUrl("trips/placeholder_photo.png")
                 ?: ""

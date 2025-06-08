@@ -1,16 +1,14 @@
 package com.example.voyago
 
+import android.net.Uri
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.firestore.firestore
-import com.google.firebase.Timestamp
-import com.google.firebase.auth.auth
 import com.google.firebase.storage.FirebaseStorage
-import android.net.Uri
 import kotlinx.coroutines.tasks.await
 
-object Collections{
+object Collections {
     private const val C_USERS = "users"
     private const val C_TRIPS = "trips"
     private const val C_REVIEWS = "reviews"
@@ -18,7 +16,7 @@ object Collections{
 
     private val db: FirebaseFirestore
         get() = Firebase.firestore
-    
+
 
     init {
         db.firestoreSettings = FirebaseFirestoreSettings.Builder()
@@ -60,18 +58,5 @@ object StorageHelper {
         } catch (e: Exception) {
             null
         }
-    }
-
-    fun debugListAllTripsImages() {
-        val ref = storage.reference.child("trips")
-        ref.listAll()
-            .addOnSuccessListener { listResult ->
-                for (item in listResult.items) {
-                    android.util.Log.d("FirebaseStorage", "File: ${item.name}")
-                }
-            }
-            .addOnFailureListener { exception ->
-                android.util.Log.e("FirebaseStorage", "Error listing files", exception)
-            }
     }
 }
