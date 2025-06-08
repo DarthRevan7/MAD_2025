@@ -51,6 +51,7 @@ import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
+import com.example.voyago.model.Article
 import com.example.voyago.model.Trip
 import com.example.voyago.viewmodel.ArticleViewModel
 import com.example.voyago.viewmodel.TripViewModel
@@ -130,25 +131,25 @@ fun HomePageScreen(
                 navController.navigate("trip_details")
             }
         )
+        // 在 Column 中的 Article 部分，替换为：
         SectionTag(
             text = "Article", modifier = Modifier
                 .width(82.dp)
                 .height(32.dp)
-
         )
+
         val toDisplay = articles.take(displayCount)
 
+       // 🔄 修改这部分：传递整个 article 对象
         toDisplay.forEach { article ->
             ArticleShow(
-                imageUrl = article.photo,
-                title = article.title,
-                description = article.text,        // 或者拼成 "Discover • 3 days" 之类
+                article = article,  // 传递整个 article 对象
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
-
             )
         }
+
         if (displayCount < articles.size) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -302,45 +303,94 @@ private fun TripCard(
 }
 
 
-@SuppressLint("DiscouragedApi")
+// 修改 HomePage.kt 中的 ArticleShow 组件：
+
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun ArticleShow(
-    imageUrl: String?,
-    title: String?,
-    description: String?,
+    article: Article,  // 🔄 改为接收整个 Article 对象而不是单独的字段
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
-    val resId = remember(imageUrl) {
-        context.resources.getIdentifier(imageUrl, "drawable", context.packageName)
+    var imageUrl by remember { mutableStateOf<String?>(null) }
+
+    // 🔄 使用 LaunchedEffect 异步获取 Firebase Storage URL
+    LaunchedEffect(article.photo) {
+        imageUrl = article.getPhoto()
     }
+
     Row(
         modifier = modifier
             .fillMaxWidth()
             .padding(4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AsyncImage(
-            model = resId,
-            contentDescription = title,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(100.dp)
-                .clip(RoundedCornerShape(8.dp))
-        )
+        // 🔄 使用 GlideImage 和 Firebase Storage URL
+        when {
+            imageUrl != null -> {
+                GlideImage(
+                    model = imageUrl,
+                    contentDescription = article.title,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                )
+            }
+            // 备用方案：如果 imageUrl 为空，尝试本地资源
+            !article.photo.isNullOrEmpty() -> {
+                val context = LocalContext.current
+                val resId = remember(article.photo) {
+                    context.resources.getIdentifier(article.photo, "drawable", context.packageName)
+                }
+
+                if (resId != 0) {
+                    AsyncImage(
+                        model = resId,
+                        contentDescription = article.title,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(100.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                    )
+                } else {
+                    // 占位图
+                    Box(
+                        modifier = Modifier
+                            .size(100.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color.LightGray),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("No Image", color = Color.Gray)
+                    }
+                }
+            }
+            // 默认占位图
+            else -> {
+                Box(
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color.LightGray),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No Image", color = Color.Gray)
+                }
+            }
+        }
 
         Spacer(modifier = Modifier.width(16.dp))
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = title ?: "No Title", // 处理 null,
+                text = article.title ?: "No Title",
                 style = MaterialTheme.typography.titleMedium,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                text = description ?: "No Description", // 处理 null
+                text = article.text ?: "No Description",
                 style = MaterialTheme.typography.bodyMedium,
                 maxLines = 5,
                 overflow = TextOverflow.Ellipsis
