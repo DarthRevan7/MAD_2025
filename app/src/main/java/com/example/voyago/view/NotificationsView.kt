@@ -1,5 +1,7 @@
 package com.example.voyago.view
 
+import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -29,9 +31,11 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.runtime.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Alignment
+import androidx.navigation.NavController
+import com.example.voyago.viewmodel.TripViewModel
 
 @Composable
-fun NotificationView(nvm: NotificationViewModel, uvm: UserViewModel) {
+fun NotificationView(navController: NavController, nvm: NotificationViewModel, uvm: UserViewModel, vm: TripViewModel) {
 
     val user by uvm.loggedUser.collectAsState()
     val userId = user.id.toString()
@@ -40,17 +44,16 @@ fun NotificationView(nvm: NotificationViewModel, uvm: UserViewModel) {
         nvm.loadNotificationsForUser(userId)
     }
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(16.dp)) {
-
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
         Text(
             text = "Notifications",
             style = MaterialTheme.typography.titleLarge
         )
-
         Spacer(modifier = Modifier.height(16.dp))
-
 
         if (nvm.notifications.isEmpty()) {
             Text("No notifications yet.")
@@ -64,7 +67,24 @@ fun NotificationView(nvm: NotificationViewModel, uvm: UserViewModel) {
                 items(nvm.notifications) { notification ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                if (notification.type == "TRIP") {
+                                    val tripId = notification.idLink.toString()
+                                    vm.fetchTripById(tripId) { trip ->
+                                        if (trip != null) {
+                                            vm.setOtherTrip(trip)
+                                            vm.userAction = TripViewModel.UserAction.VIEW_OTHER_TRIP
+                                            navController.navigate("trip_details")
+                                            Log.e("Notification", "Found: ${vm.otherTrip.value.id}")
+                                        } else {
+                                            Log.e("Notification", "Trip not found for ID: $tripId")
+                                        }
+                                    }
+                                }
+                            }
+                            .padding(8.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Notifications,
@@ -72,11 +92,13 @@ fun NotificationView(nvm: NotificationViewModel, uvm: UserViewModel) {
                             tint = MaterialTheme.colorScheme.primary
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(notification)
+                        Column {
+                            Text(notification.title, style = MaterialTheme.typography.bodyLarge)
+                            Text(notification.body, style = MaterialTheme.typography.bodySmall)
+                        }
                     }
                 }
             }
-
         }
     }
 }

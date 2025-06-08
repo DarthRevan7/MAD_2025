@@ -1,5 +1,6 @@
 package com.example.voyago.viewmodel
 
+import android.os.Bundle
 import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
@@ -7,10 +8,14 @@ import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.AbstractSavedStateViewModelFactory
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import androidx.savedstate.SavedStateRegistryOwner
 import com.example.voyago.model.ReviewModel
 import com.example.voyago.model.Trip
 import com.example.voyago.model.Trip.Activity
@@ -29,7 +34,8 @@ import java.util.Calendar
 class TripViewModel(
     val tripModel: TripModel,
     val userModel: UserModel,
-    val reviewModel: ReviewModel
+    val reviewModel: ReviewModel,
+    private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     //Use in the new Trip interface
     var newTrip: Trip = Trip()
@@ -54,7 +60,14 @@ class TripViewModel(
     }
 
     //Identify what the user is doing
-    var userAction: UserAction = UserAction.NOTHING
+    var userAction by mutableStateOf(UserAction.NOTHING)
+//    var userAction by mutableStateOf(savedStateHandle["userAction"] ?: UserAction.NOTHING)
+//        private set
+
+//    fun setUserAction(action: UserAction) {
+//        userAction = action
+//        savedStateHandle["userAction"] = action
+//    }
 
     enum class UserAction {
         EDIT_TRIP, CREATE_TRIP, VIEW_TRIP, NOTHING, SEARCHING, FILTER_SELECTION, VIEW_OTHER_TRIP, EDIT_ACTIVITY
@@ -625,6 +638,15 @@ class TripViewModel(
         }
     }
 
+    fun fetchTripById(tripId: String, onResult: (Trip?) -> Unit) {
+        tripModel.getTripById(tripId) { trip ->
+            if (trip != null) {
+                _otherTrip.value = trip
+            }
+            onResult(trip)
+        }
+    }
+
 
     //INITIALIZE VIEWMODEL
     init {
@@ -648,16 +670,38 @@ class TripViewModel(
     }
 }
 
+//class Factory(
+//    private val tripModel: TripModel,
+//    private val userModel: UserModel,
+//    private val reviewModel: ReviewModel,
+//    owner: SavedStateRegistryOwner,
+//    defaultArgs: Bundle? = null
+//) : AbstractSavedStateViewModelFactory(owner, defaultArgs) {
+//    override fun <T : ViewModel> create(
+//        key: String,
+//        modelClass: Class<T>,
+//        handle: SavedStateHandle
+//    ): T {
+//        if (modelClass.isAssignableFrom(TripViewModel::class.java)) {
+//            @Suppress("UNCHECKED_CAST")
+//            return TripViewModel(tripModel, userModel, reviewModel, handle) as T
+//        }
+//        throw IllegalArgumentException("Unknown ViewModel class")
+//    }
+//}
+
 object Factory : ViewModelProvider.Factory {
     private val tripModel: TripModel = TripModel()
     private val userModel: UserModel = UserModel()
     private val reviewModel: ReviewModel = ReviewModel()
 
     override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
+        val savedStateHandle = extras.createSavedStateHandle()
+
         @Suppress("UNCHECKED_CAST")
         return when {
             modelClass.isAssignableFrom(TripViewModel::class.java) ->
-                TripViewModel(tripModel, userModel, reviewModel) as T
+                TripViewModel(tripModel, userModel, reviewModel, savedStateHandle) as T
 
             modelClass.isAssignableFrom(UserViewModel::class.java) ->
                 UserViewModel(userModel) as T

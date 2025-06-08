@@ -939,4 +939,22 @@ class TripModel {
             }
     }
 
+    private val firestore = FirebaseFirestore.getInstance()
+    fun getTripById(tripId: String, onResult: (Trip?) -> Unit) {
+        firestore.collection("trips").document(tripId)
+            .get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val trip = document.toObject(Trip::class.java)
+                    onResult(trip)
+                } else {
+                    onResult(null)
+                }
+            }
+            .addOnFailureListener {
+                Log.e("TripModel", "Failed to fetch trip by ID", it)
+                onResult(null)
+            }
+    }
 }
+
