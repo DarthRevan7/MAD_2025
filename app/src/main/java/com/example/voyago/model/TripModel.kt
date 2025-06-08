@@ -50,7 +50,8 @@ data class Trip(
     var creatorId: Int = 0,
     var appliedUsers: Map<String, JoinRequest> = emptyMap(),                   // userId, id JoinedRequest
     var rejectedUsers: Map<String, JoinRequest> = emptyMap(),                  // userId, number of spots
-    var published: Boolean = false
+    var published: Boolean = false,
+    var isDraft: Boolean = false  // 新增字段
 ) {
 
     private var cachedPhotoUrl: String? = null
@@ -140,7 +141,8 @@ data class Trip(
         creatorId = -1,
         appliedUsers = emptyMap(),
         rejectedUsers = emptyMap(),
-        published = false
+        published = false,
+        isDraft = false
     ) {
         updateStatusBasedOnDate()
     }
@@ -647,7 +649,8 @@ class TripModel {
                 creatorId = creatorId,
                 appliedUsers = emptyMap(),
                 rejectedUsers = emptyMap(),
-                published = published
+                published = published,
+                isDraft = true  // 设置为草稿
             )
 
             //Save to Firestore
