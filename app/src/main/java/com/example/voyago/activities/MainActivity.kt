@@ -117,6 +117,8 @@ import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserFactory
 import com.example.voyago.viewmodel.UserViewModel
+import androidx.compose.ui.zIndex
+import com.example.voyago.model.UserModel
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -292,7 +294,8 @@ fun MainScreen(viewModel: UserViewModel) {
         topBar = {
             TopBar(
                 nvm = notificationViewModel,
-                navController = navController
+                navController = navController,
+                uvm = UserViewModel(UserModel())
             )
         },
         bottomBar = { BottomBar(navController) }
@@ -375,8 +378,9 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
             )
         }
         val notificationViewModel = NotificationViewModel()
+        val userViewModel = UserViewModel(UserModel())
         composable(Screen.Notifications.route) {
-            NotificationView(notificationViewModel)
+            NotificationView(notificationViewModel, userViewModel)
         }
     }
 }
@@ -1032,10 +1036,12 @@ fun ProfilePhoto(user: User, isSmall: Boolean, modifier: Modifier, uvm: UserView
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar(nvm: NotificationViewModel, navController: NavController) {
+fun TopBar(nvm: NotificationViewModel, navController: NavController, uvm: UserViewModel) {
 
-    //TODO CHANGE FOR LOGIN USER
-    val userId = "1"
+
+    val user by uvm.loggedUser.collectAsState()
+    val userId = user.id.toString()
+
     LaunchedEffect(userId) {
         nvm.loadNotificationsForUser(userId)
     }
@@ -1067,8 +1073,7 @@ fun TopBar(nvm: NotificationViewModel, navController: NavController) {
                 )
             }
             IconButton(onClick = {
-                //TODO CHANGE FOR LOGIN USER
-                nvm.markNotificationsRead("1")
+                nvm.markNotificationsRead(userId)
                 navController.navigate(Screen.Notifications.route)
             }) {
                 Box(
