@@ -1206,6 +1206,7 @@ fun DeleteButtonWithConfirmation(trip: Trip, navController: NavController, vm: T
     }
 }
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @SuppressLint("DiscouragedApi")
 @Composable
 fun ShowReview(
@@ -1294,47 +1295,68 @@ fun ShowReview(
     }
 
     // Show photos if there are any
+    // Show photos if there are any
     if (review.photos.isNotEmpty()) {
         LazyRow(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 50.dp, top = 8.dp, end = 16.dp)
         ) {
-            items(review.photos) { photoUri ->
+            items(review.photos) { photoPath ->
+                var imageUrl by remember(photoPath) { mutableStateOf<String?>(null) }
 
-                //The photo is saved as a uri (the user selected it from the gallery)
-                if (photoUri.isUriString()) {
-                    Image(
-                        painter = rememberAsyncImagePainter(photoUri),
-                        contentDescription = "Review photo",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(100.dp)
-                            .padding(end = 8.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                    )
+                LaunchedEffect(photoPath) {
+                    // 获取 Firebase Storage URL
+                    imageUrl = review.getPhotoUrl(photoPath)
                 }
-                //The photo is saved as a drawable (the trip was already in the database and the user hadn't edit its photo)
-                else {
-                    val context = LocalContext.current
-                    val drawableId = remember(photoUri) {
-                        context.resources.getIdentifier(photoUri, "drawable", context.packageName)
+
+                when {
+                    // Firebase Storage 或 URI 图片
+                    imageUrl != null && (imageUrl!!.startsWith("http") || imageUrl!!.startsWith("content://")) -> {
+                        GlideImage(
+                            model = imageUrl,
+                            contentDescription = "Review photo",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(100.dp)
+                                .padding(end = 8.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                        )
                     }
-                    AsyncImage(
-                        model = ImageRequest.Builder(context)
-                            .data(drawableId)
-                            .crossfade(true)
-                            .build(),
-                        contentDescription = photoUri,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(100.dp)
-                            .padding(end = 8.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                    )
+                    // URI 图片的备用处理
+                    photoPath.isUriString() -> {
+                        Image(
+                            painter = rememberAsyncImagePainter(photoPath),
+                            contentDescription = "Review photo",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(100.dp)
+                                .padding(end = 8.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                        )
+                    }
+                    // Drawable 资源
+                    else -> {
+                        val context = LocalContext.current
+                        val drawableId = remember(photoPath) {
+                            context.resources.getIdentifier(photoPath, "drawable", context.packageName)
+                        }
+                        if (drawableId != 0) {
+                            AsyncImage(
+                                model = ImageRequest.Builder(context)
+                                    .data(drawableId)
+                                    .crossfade(true)
+                                    .build(),
+                                contentDescription = photoPath,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .size(100.dp)
+                                    .padding(end = 8.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                            )
+                        }
+                    }
                 }
-
-
             }
         }
     }
