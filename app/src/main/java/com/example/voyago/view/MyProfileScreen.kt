@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
@@ -455,25 +454,34 @@ fun TabAboutTripsReview(
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
+                            .fillMaxWidth()
                             .height(140.dp)
-                            .wrapContentWidth()
                             .background(
                                 Color(0xdf, 0xd1, 0xe0, 255),
                                 shape = RoundedCornerShape(10.dp)
                             )
                             .padding(10.dp)
                     ) {
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(5.dp),
-                            modifier = Modifier
-                                .height((3 * 43).dp)
-                                .verticalScroll(rememberScrollState())
-                        ) {
-                            val articles by vm2.articlesByUserId(user.id)
-                                .collectAsState(initial = emptyList())
 
-                            articles.forEach { item ->
-                                ShowUserArticle(item)
+                        val articles by vm2.articlesByUserId(user.id)
+                            .collectAsState(initial = emptyList())
+                        if (articles.isEmpty()) {
+                            Text(
+                                text = "Didn't write any article yet",
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        } else {
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(5.dp),
+                                modifier = Modifier
+                                    .height((3 * 43).dp)
+                                    .verticalScroll(rememberScrollState())
+                            ) {
+
+                                articles.forEach { item ->
+                                    ShowUserArticle(item)
+                                }
                             }
                         }
                     }
@@ -482,7 +490,6 @@ fun TabAboutTripsReview(
 
             2 -> {
                 Column {
-
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
@@ -502,8 +509,9 @@ fun TabAboutTripsReview(
                         ) {
                             if (reviews.isEmpty()) {
                                 Text(
-                                    text = "No reviews yet",
-                                    textAlign = TextAlign.Center
+                                    text = "Didn't receive any review yet",
+                                    textAlign = TextAlign.Center,
+                                    style = MaterialTheme.typography.bodyMedium
                                 )
                             } else {
                                 reviews.forEach { review ->
