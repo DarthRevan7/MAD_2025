@@ -2,7 +2,6 @@ package com.example.voyago.view
 
 import android.app.DatePickerDialog
 import android.net.Uri
-import android.util.Log
 import android.widget.DatePicker
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -61,31 +60,25 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import java.util.Calendar
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.example.voyago.model.Trip
 import com.example.voyago.model.TypeTravel
 import com.example.voyago.viewmodel.TripViewModel
-import com.example.voyago.viewmodel.UserFactory
 import com.example.voyago.viewmodel.UserViewModel
-import com.google.firebase.Timestamp
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateNewTrip(navController: NavController, vm: TripViewModel,
-                  userViewModel: UserViewModel = viewModel(factory = UserFactory)
-                  ) {
+fun CreateNewTrip(
+    navController: NavController, vm: TripViewModel,
+    uvm: UserViewModel
+) {
 
     vm.userAction = TripViewModel.UserAction.CREATE_TRIP
 
     // 获取当前用户ID
-    val currentUser by userViewModel.loggedUser.collectAsState()
+    val currentUser by uvm.loggedUser.collectAsState()
 
 
     vm.userAction = TripViewModel.UserAction.CREATE_TRIP
@@ -454,8 +447,11 @@ fun CreateNewTrip(navController: NavController, vm: TripViewModel,
                                 participants.put(creatorId.toString(), joinRequestCreator)
                                 Log.d("Participants", participants.toString())
                             */
-                            if (!tripImageError && !fieldErrors.any{it} && !typeTravelError &&
-                                validateDateOrder(startCalendar, endCalendar) && !isUploadingImage) {
+                            if (!tripImageError && !fieldErrors.any { it } && !typeTravelError &&
+                                validateDateOrder(
+                                    startCalendar,
+                                    endCalendar
+                                ) && !isUploadingImage) {
 
                                 isUploadingImage = true
                                 uploadError = null
@@ -469,7 +465,7 @@ fun CreateNewTrip(navController: NavController, vm: TripViewModel,
                                     endDate = endCalendar!!,
                                     estimatedPrice = fieldValues[2].toDouble(),
                                     groupSize = fieldValues[3].toInt(),
-                                    activities = activities,
+                                    //activities = activities,
                                     /*
                                     activities = activities,
                                     typeTravel = selected.map {
@@ -489,7 +485,9 @@ fun CreateNewTrip(navController: NavController, vm: TripViewModel,
                                 vm.userAction = TripViewModel.UserAction.CREATE_TRIP
                                 navController.navigate("activities_list")
                                 */
-                                    typeTravel = selected.map { TypeTravel.valueOf(it.uppercase()).toString() },
+                                    typeTravel = selected.map {
+                                        TypeTravel.valueOf(it.uppercase()).toString()
+                                    },
                                     creatorId = currentUser.id
                                 ) { success, trip, error ->
                                     isUploadingImage = false
