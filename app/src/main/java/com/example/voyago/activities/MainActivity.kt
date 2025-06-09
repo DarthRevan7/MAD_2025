@@ -619,9 +619,14 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = ReviewFactory
             )
+            val notificationViewModel: NotificationViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = NotificationFactory
+            )
             MyReviews(
                 navController = navController, vm = tripViewModel, uvm = userViewModel,
-                rvm = reviewViewModel
+                rvm = reviewViewModel,
+                nvm = notificationViewModel
             )
         }
 

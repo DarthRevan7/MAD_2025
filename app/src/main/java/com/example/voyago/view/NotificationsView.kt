@@ -82,6 +82,8 @@ fun NotificationView(navController: NavController, nvm: NotificationViewModel, u
                                             Log.e("Notification", "Trip not found for ID: $tripId")
                                         }
                                     }
+                                } else if (notification.type == "REVIEW") {
+                                    navController.navigate("profile_overview")
                                 }
                             }
                             .padding(8.dp)

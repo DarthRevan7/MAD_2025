@@ -52,6 +52,7 @@ import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.example.voyago.activities.ProfilePhoto
 import com.example.voyago.model.Review
+import com.example.voyago.viewmodel.NotificationViewModel
 import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
@@ -60,7 +61,7 @@ import kotlinx.coroutines.launch
 import java.util.Calendar
 
 @Composable
-fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewModel, rvm: ReviewViewModel) {
+fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewModel, rvm: ReviewViewModel, nvm: NotificationViewModel) {
 
     val trip by vm.selectedTrip
     val tripReview by rvm.tripReview.collectAsState()
@@ -467,6 +468,21 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
                                                         rvm.calculateRatingById(review.reviewedUserId)
                                                     }
                                                 }
+                                                // Notification for users
+                                                val title = "New review from ${uvm.loggedUser.value.username}!"
+                                                val body = "Check you profile for more information!"
+                                                val notificationType = "REVIEW"
+                                                val idLink = uvm.loggedUser.value.id
+
+                                                participantsMap.entries.toList().forEach() { entry ->
+                                                    val user = entry.key
+                                                    if (user.id != uvm.loggedUser.value.id) {
+                                                        val userId = user.id.toString()
+                                                        nvm.sendNotificationToUser(userId, title, body, notificationType, idLink)
+                                                    }
+                                                }
+
+
                                                 navController.popBackStack()
                                             }
                                         }
