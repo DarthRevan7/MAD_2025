@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckBox
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
@@ -37,6 +38,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -222,6 +224,7 @@ fun TripDetails(
     var surnameTouchedList by remember { mutableStateOf(listOf<Boolean>()) }
     var emailTouchedList by remember { mutableStateOf(listOf<Boolean>()) }
 
+    var usernameValidationStates by remember { mutableStateOf(mutableMapOf<Int, Boolean>()) }
 
     //Initialization of the list of other participants
     LaunchedEffect(dialogPhase, selectedSpots) {
@@ -770,6 +773,8 @@ fun TripDetails(
                 }
             }
         }
+        var usernameValidationStates by remember { mutableStateOf(mutableMapOf<Int, Boolean>()) }
+
 
         //PopUp that appears when the user ask to join a trip
         if (showDialog) {
@@ -781,6 +786,7 @@ fun TripDetails(
                     dialogPhase = 0
                     unregisteredParticipants = emptyList()
                     registeredUsernames = emptyList()
+                    usernameValidationStates = mutableMapOf()
                 },
                 title = {
                     if (dialogPhase == 0) {
@@ -850,6 +856,9 @@ fun TripDetails(
                                                             it[i] = ""
                                                         }
                                                 }
+                                                usernameValidationStates = usernameValidationStates.toMutableMap().also {
+                                                    it.remove(i)
+                                                }
                                             }
                                         )
                                         Text("Are they registered to Voyago?")
@@ -857,22 +866,23 @@ fun TripDetails(
 
                                     // Input fields
                                     if (isRegistered) {
-                                        ValidatingInputUsernameField(
-                                            registeredUsernames[i],
-                                            { newValue ->
-                                                registeredUsernames =
-                                                    registeredUsernames.toMutableList()
-                                                        .also { it[i] = newValue }
-                                                usernameTouchedList =
-                                                    usernameTouchedList.toMutableList()
-                                                        .also { it[i] = true }
+                                        AsyncValidatingUsernameField(
+                                            text = registeredUsernames[i],
+                                            updateState = { newValue ->
+                                                registeredUsernames = registeredUsernames.toMutableList()
+                                                    .also { it[i] = newValue }
+                                                usernameTouchedList = usernameTouchedList.toMutableList()
+                                                    .also { it[i] = true }
                                             },
-                                            usernameTouchedList[i] && (
-                                                    registeredUsernames[i].isBlank() || !registeredUsernames[i].any { it.isLetter() } || !uvm.doesUserExist(
-                                                        registeredUsernames[i]
-                                                    )
-                                                    ),
-                                            "Username"
+                                            label = "Username",
+                                            userViewModel = uvm,
+                                            index = i,
+                                            validationStates = usernameValidationStates,
+                                            onValidationChange = { index, isValid ->
+                                                usernameValidationStates = usernameValidationStates.toMutableMap().also {
+                                                    it[index] = isValid
+                                                }
+                                            }
                                         )
 
                                     } else {
@@ -966,44 +976,40 @@ fun TripDetails(
                                 showDialog = false
                             }
                         } else {
-                            val updatedUsernameTouched = usernameTouchedList.toMutableList()
-                            val updatedNameTouched = nameTouchedList.toMutableList()
-                            val updatedSurnameTouched = surnameTouchedList.toMutableList()
-                            val updatedEmailTouched = emailTouchedList.toMutableList()
-
                             var hasErrors = false
 
                             for (i in 0 until selectedSpots - 1) {
                                 if (isRegisteredList[i]) {
                                     val username = registeredUsernames[i]
-                                    if (username.isBlank() || !username.any { it.isLetter() } || !uvm.doesUserExist(
-                                            registeredUsernames[i]
-                                        )) {
+                                    val isUsernameValid = usernameValidationStates[i] == true
+
+                                    if (username.isBlank() || !username.any { it.isLetter() } || !isUsernameValid) {
                                         hasErrors = true
-                                        updatedUsernameTouched[i] = true
+                                        usernameTouchedList = usernameTouchedList.toMutableList()
+                                            .also { it[i] = true }
                                     }
                                 } else {
+                                    // ... 未注册用户验证逻辑保持不变 ...
                                     val participant = unregisteredParticipants[i]
 
                                     if (participant.name.isBlank() || !participant.name.any { it.isLetter() }) {
                                         hasErrors = true
-                                        updatedNameTouched[i] = true
+                                        nameTouchedList = nameTouchedList.toMutableList()
+                                            .also { it[i] = true }
                                     }
                                     if (participant.surname.isBlank() || !participant.surname.any { it.isLetter() }) {
                                         hasErrors = true
-                                        updatedSurnameTouched[i] = true
+                                        surnameTouchedList = surnameTouchedList.toMutableList()
+                                            .also { it[i] = true }
                                     }
                                     if (participant.email.isBlank()) {
                                         hasErrors = true
-                                        updatedEmailTouched[i] = true
+                                        emailTouchedList = emailTouchedList.toMutableList()
+                                            .also { it[i] = true }
                                     }
                                 }
                             }
 
-                            usernameTouchedList = updatedUsernameTouched
-                            nameTouchedList = updatedNameTouched
-                            surnameTouchedList = updatedSurnameTouched
-                            emailTouchedList = updatedEmailTouched
 
                             if (!hasErrors) {
                                 vm.askToJoin(
@@ -1018,6 +1024,8 @@ fun TripDetails(
                                 unregisteredParticipants = emptyList()
                                 registeredUsernames = emptyList()
                                 isRegisteredList = emptyList()
+                                usernameValidationStates = mutableMapOf() //  重置验证状态
+
                                 // Reset touched lists
                                 usernameTouchedList = emptyList()
                                 nameTouchedList = emptyList()
@@ -1038,6 +1046,8 @@ fun TripDetails(
                         dialogPhase = 0
                         unregisteredParticipants = emptyList()
                         registeredUsernames = emptyList()
+                        usernameValidationStates = mutableMapOf() //  重置验证状态
+
                     }) {
                         Text("Cancel")
                     }
@@ -1484,11 +1494,39 @@ fun PrintStars(rating: Int) {
 }
 
 @Composable
-fun ValidatingInputUsernameField(
-    text: String, updateState: (String) -> Unit,
-    validatorHasErrors: Boolean, label: String
+fun AsyncValidatingUsernameField(
+    text: String,
+    updateState: (String) -> Unit,
+    label: String,
+    userViewModel: UserViewModel,
+    index: Int,
+    validationStates: Map<Int, Boolean>,
+    onValidationChange: (Int, Boolean) -> Unit
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
+    var isValidating by remember { mutableStateOf(false) }
+    var lastValidatedText by remember { mutableStateOf("") }
+
+    // 🔴 实时验证用户名
+    LaunchedEffect(text) {
+        if (text.isNotBlank() && text != lastValidatedText && text.length >= 2) {
+            isValidating = true
+            delay(500) // 防抖动，避免过频繁的查询
+
+            userViewModel.checkUserExistsAsync(text) { exists ->
+                isValidating = false
+                lastValidatedText = text
+                onValidationChange(index, exists)
+
+                Log.d("UsernameValidation", "Username '$text' exists: $exists")
+            }
+        } else if (text.isBlank()) {
+            onValidationChange(index, false)
+        }
+    }
+
+    val hasErrors = text.isNotBlank() && validationStates[index] == false
+    val isValid = validationStates[index] == true
 
     Column(
         modifier = Modifier
@@ -1506,10 +1544,32 @@ fun ValidatingInputUsernameField(
             value = text,
             onValueChange = updateState,
             label = { Text(label) },
-            isError = validatorHasErrors,
+            isError = hasErrors,
             supportingText = {
-                if (validatorHasErrors) {
-                    Text("The username is not valid")
+                when {
+                    isValidating -> Text("Validating username...", color = Color.Black)
+                    hasErrors -> Text("Username not found or invalid")
+                    isValid -> Text("✓ Username found", color = Color.Black)
+                    text.isBlank() -> Text("Enter a username")
+                    else -> null
+                }
+            },
+            trailingIcon = {
+                when {
+                    isValidating -> CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp
+                    )
+                    isValid -> Icon(
+                        Icons.Default.Check,
+                        contentDescription = "Valid",
+                        tint = Color.Black
+                    )
+                    hasErrors -> Icon(
+                        Icons.Default.Close,
+                        contentDescription = "Invalid",
+                        tint = Color.Black
+                    )
                 }
             },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)

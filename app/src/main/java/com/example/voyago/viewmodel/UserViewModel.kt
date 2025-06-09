@@ -13,11 +13,16 @@ import com.example.voyago.model.UserModel
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.example.voyago.Collections
 import com.example.voyago.model.*
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.firestore
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
 class UserViewModel(val model: UserModel) : ViewModel() {
 
@@ -196,6 +201,31 @@ class UserViewModel(val model: UserModel) : ViewModel() {
                 Log.e("getMatchingUserIds", "Error fetching users: ${error.message}")
                 onResult(emptyList())
             }
+    }
+    fun checkUserExistsAsync(username: String, callback: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            try {
+                Log.d("UserViewModel", "Checking if user exists: $username")
+
+                val result = Firebase.firestore.collection("users")
+                    .whereEqualTo("username", username)
+                    .get()
+                    .await()
+
+                val exists = !result.isEmpty
+                Log.d("UserViewModel", "User '$username' exists: $exists")
+
+                // 确保在主线程回调
+                withContext(Dispatchers.Main) {
+                    callback(exists)
+                }
+            } catch (e: Exception) {
+                Log.e("UserViewModel", "Error checking user existence", e)
+                withContext(Dispatchers.Main) {
+                    callback(false)
+                }
+            }
+        }
     }
 
 

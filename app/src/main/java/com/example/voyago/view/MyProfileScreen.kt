@@ -93,6 +93,15 @@ fun MyProfileScreen(
 
     //Get the logged in user (id=1)
     val user by uvm.loggedUser.collectAsState()
+
+    LaunchedEffect(user) {
+        Log.d("MyProfileScreen", "=== User Profile Debug ===")
+        Log.d("MyProfileScreen", "User ID: ${user.id}")
+        Log.d("MyProfileScreen", "Username: ${user.username}")
+        Log.d("MyProfileScreen", "Profile Picture URL: ${user.profilePictureUrl}")
+        Log.d("MyProfileScreen", "First Name: ${user.firstname}")
+        Log.d("MyProfileScreen", "Email: ${user.email}")
+    }
     //List of trip created and published by the logged in user (id=1)
     val publishedTrips by vm.publishedTrips.collectAsState()
     //List of trip the logged in user (id=1) joined
