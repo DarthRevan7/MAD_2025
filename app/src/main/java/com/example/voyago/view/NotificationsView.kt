@@ -88,6 +88,8 @@ fun NotificationView(navController: NavController, nvm: NotificationViewModel, u
                                     navController.navigate("my_trips_main")
                                 } else if (notification.type == "REJECTED") {
                                     navController.navigate("my_trips_main")
+                                } else if (notification.type == "NEW_APPLICATION") {
+                                    navController.navigate("my_trips_main")
                                 }
                             }
                             .padding(8.dp)
