@@ -27,6 +27,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -89,6 +90,9 @@ fun CreateNewTrip(navController: NavController, vm: TripViewModel,
     var photoTouched = remember {mutableStateOf(false)}
     var tripImageError by rememberSaveable {mutableStateOf(false)}
 
+    // 添加上传状态
+    var isUploadingImage by remember { mutableStateOf(false) }
+    var uploadError by remember { mutableStateOf<String?>(null) }
 
     val fieldValues = rememberSaveable(saver = listSaver(
         save = { it.toList() },
@@ -403,11 +407,10 @@ fun CreateNewTrip(navController: NavController, vm: TripViewModel,
 
                     Spacer(modifier = Modifier.weight(1f))
 
-
                     //Next Button
                     Button(
                         onClick = {
-
+                            // 验证所有字段
                             tripImageError = !imageUri.toString().isUriString()
 
                             fieldTouched.forEachIndexed { index, _ ->
@@ -422,44 +425,60 @@ fun CreateNewTrip(navController: NavController, vm: TripViewModel,
                                 ""
                             }
 
-                            if (!tripImageError && !fieldErrors.any{it} && !typeTravelError && validateDateOrder(startCalendar, endCalendar)) {
-                                // 如果你使用 Firebase Auth
+                            if (!tripImageError && !fieldErrors.any{it} && !typeTravelError &&
+                                validateDateOrder(startCalendar, endCalendar) && !isUploadingImage) {
 
-                                val creatorId = currentUser.id
+                                isUploadingImage = true
+                                uploadError = null
 
-                                val activities = mutableMapOf<String, MutableList<Trip.Activity>>()
-
-                                val newTrip = Trip(
+                                // 使用协程来处理异步操作
+                                vm.createTripWithImageUpload(
+                                    imageUri = imageUri,
                                     title = fieldValues[0],
                                     destination = fieldValues[1],
-                                    startDate = Timestamp(startCalendar!!.time),
-                                    endDate = Timestamp(endCalendar!!.time),
+                                    startDate = startCalendar!!,
+                                    endDate = endCalendar!!,
                                     estimatedPrice = fieldValues[2].toDouble(),
                                     groupSize = fieldValues[3].toInt(),
-                                    activities = activities,
                                     typeTravel = selected.map { TypeTravel.valueOf(it.uppercase()).toString() },
-                                    creatorId = creatorId,
-                                    published = false,
-                                    id = -1,
-                                    participants = emptyMap(),
-                                    status = Trip.TripStatus.NOT_STARTED.toString(),
-                                    appliedUsers = emptyMap(),
-                                    rejectedUsers = emptyMap()
-                                )
-
-                                vm.newTrip = newTrip
-                                vm.setSelectedTrip(newTrip)
-                                vm.userAction = TripViewModel.UserAction.CREATE_TRIP
-                                navController.navigate("activities_list")
+                                    creatorId = currentUser.id
+                                ) { success, trip, error ->
+                                    isUploadingImage = false
+                                    if (success && trip != null) {
+                                        vm.newTrip = trip
+                                        vm.setSelectedTrip(trip)
+                                        vm.userAction = TripViewModel.UserAction.CREATE_TRIP
+                                        navController.navigate("activities_list")
+                                    } else {
+                                        uploadError = error ?: "Failed to create trip"
+                                    }
+                                }
                             }
                         },
+                        enabled = !isUploadingImage, // 上传时禁用按钮
                         modifier = Modifier
                             .width(160.dp)
                             .height(60.dp)
                             .padding(top = 16.dp)
                     ) {
-                        Text("Next")
+                        if (isUploadingImage) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = Color.White
+                            )
+                        } else {
+                            Text("Next")
+                        }
                     }
+                    uploadError?.let { error ->
+                        Text(
+                            text = error,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
+                    }
+
                 }
 
             }

@@ -1,5 +1,6 @@
 package com.example.voyago.viewmodel
 
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.compose.runtime.State
@@ -25,6 +26,7 @@ import com.example.voyago.model.TypeTravel
 import com.example.voyago.model.User
 import com.example.voyago.model.UserModel
 import com.example.voyago.view.SelectableItem
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -291,6 +293,9 @@ class TripViewModel(
     }
 
     //MY TRIPS
+    fun editTrip(trip: Trip, onResult: (Boolean) -> Unit) {
+        editExistingTrip(trip, onResult)
+    }
 
     //List of trips created and published by the logged in user
     val publishedTrips = tripModel.publishedTrips
@@ -633,6 +638,7 @@ class TripViewModel(
     }
 
 
+
     private fun updateAllTripStatuses() {
         val trips = tripModel.allPublishedTrips.value
 
@@ -655,6 +661,76 @@ class TripViewModel(
         }
     }
 
+    fun createTripWithImageUpload(
+        imageUri: Uri?,
+        title: String,
+        destination: String,
+        startDate: Calendar,
+        endDate: Calendar,
+        estimatedPrice: Double,
+        groupSize: Int,
+        typeTravel: List<String>,
+        creatorId: Int,
+        onResult: (Boolean, Trip?, String?) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                // 首先创建一个临时Trip来获取ID
+                val tempTrip = Trip(
+                    title = title,
+                    destination = destination,
+                    startDate = Timestamp(startDate.time),
+                    endDate = Timestamp(endDate.time),
+                    estimatedPrice = estimatedPrice,
+                    groupSize = groupSize,
+                    activities = mutableMapOf(),
+                    typeTravel = typeTravel,
+                    creatorId = creatorId,
+                    published = false,
+                    id = -1,
+                    participants = emptyMap(),
+                    status = Trip.TripStatus.NOT_STARTED.toString(),
+                    appliedUsers = emptyMap(),
+                    rejectedUsers = emptyMap(),
+                    photo = null // 暂时为null
+                )
+
+                // 创建Trip获取ID
+                tripModel.createNewTrip(tempTrip) { success, createdTrip ->
+                    if (success && createdTrip != null) {
+                        // Trip创建成功，现在上传图片
+                        if (imageUri != null) {
+                            viewModelScope.launch {
+                                val uploadSuccess = createdTrip.setPhoto(imageUri)
+                                if (uploadSuccess) {
+                                    // 图片上传成功，更新Trip
+                                    tripModel.editTrip(createdTrip) { updateSuccess ->
+                                        if (updateSuccess) {
+                                            onResult(true, createdTrip, null)
+                                        } else {
+                                            onResult(false, null, "Failed to save image path")
+                                        }
+                                    }
+                                } else {
+                                    // 图片上传失败，但Trip已创建，使用默认图片
+                                    Log.w("TripViewModel", "Image upload failed, using default image")
+                                    onResult(true, createdTrip, null)
+                                }
+                            }
+                        } else {
+                            // 没有图片，直接返回成功
+                            onResult(true, createdTrip, null)
+                        }
+                    } else {
+                        onResult(false, null, "Failed to create trip")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("TripViewModel", "Error creating trip with image", e)
+                onResult(false, null, "Error: ${e.message}")
+            }
+        }
+    }
 
     //INITIALIZE VIEWMODEL
     init {
