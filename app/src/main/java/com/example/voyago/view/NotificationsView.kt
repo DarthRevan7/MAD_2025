@@ -84,6 +84,10 @@ fun NotificationView(navController: NavController, nvm: NotificationViewModel, u
                                     }
                                 } else if (notification.type == "REVIEW") {
                                     navController.navigate("profile_overview")
+                                } else if (notification.type == "APPROVED") {
+                                    navController.navigate("my_trips_main")
+                                } else if (notification.type == "REJECTED") {
+                                    navController.navigate("my_trips_main")
                                 }
                             }
                             .padding(8.dp)
