@@ -132,14 +132,15 @@ fun TripDetails(
 
     val loggedUser by uvm.loggedUser.collectAsState()
     // 添加登录状态检查
-    val isUserLoggedIn = loggedUser.id > 0 && loggedUser.isValid() == true
 
-    //Trip that we are showing
-//    var trip = Trip()
-//    if (vm.userAction == TripViewModel.UserAction.VIEW_TRIP){
-//        trip = vm.otherTrip.value
-//    } else { trip = vm.selectedTrip.value }
 
+
+    //  修复：更准确的登录状态检查
+    val isUserLoggedIn = remember(loggedUser) {
+        loggedUser.id != 0 &&
+                loggedUser.username.isNotEmpty() &&
+                loggedUser.email.isNotEmpty()
+    }
 
 
     var trip = when (vm.userAction) {
@@ -644,9 +645,10 @@ fun TripDetails(
                             }
                         } else {
                             // 如果用户未登录，显示提示按钮引导用户登录
+                            // 修复：更详细的未登录状态处理
                             Button(
                                 onClick = {
-                                    // 导航到登录页面 - 根据你的导航路由调整
+                                    Log.d("TripDetails", "User not logged in, navigating to login")
                                     navController.navigate("login")
                                 },
                                 colors = ButtonDefaults.buttonColors(
