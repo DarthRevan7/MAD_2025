@@ -39,9 +39,10 @@ fun NotificationView(navController: NavController, nvm: NotificationViewModel, u
 
     val user by uvm.loggedUser.collectAsState()
     val userId = user.id.toString()
+    val context = LocalContext.current
 
     LaunchedEffect(userId) {
-        nvm.loadNotificationsForUser(userId)
+        nvm.loadNotificationsForUser(context, userId)
     }
 
     Column(
@@ -76,12 +77,46 @@ fun NotificationView(navController: NavController, nvm: NotificationViewModel, u
                                         if (trip != null) {
                                             vm.setOtherTrip(trip)
                                             vm.userAction = TripViewModel.UserAction.VIEW_OTHER_TRIP
+
+                                            val notificationTrip = TripNotification(
+                                                trip.id,
+                                                trip.photo,
+                                                trip.title,
+                                                trip.destination,
+                                                trip.startDate,
+                                                trip.endDate,
+                                                trip.estimatedPrice,
+                                                trip.groupSize,
+                                                trip.participants,
+                                                trip.activities,
+                                                trip.status,
+                                                trip.typeTravel,
+                                                trip.creatorId,
+                                                trip.appliedUsers,
+                                                trip.rejectedUsers,
+                                                trip.published,
+                                                trip.isDraft
+                                            )
+                                            navController.currentBackStackEntry?.savedStateHandle?.set(
+                                                "notificationValues",
+                                                notificationTrip
+                                            )
+
+
                                             navController.navigate("trip_details")
                                             Log.e("Notification", "Found: ${vm.otherTrip.value.id}")
                                         } else {
                                             Log.e("Notification", "Trip not found for ID: $tripId")
                                         }
                                     }
+                                } else if (notification.type == "REVIEW") {
+                                    navController.navigate("profile_overview")
+                                } else if (notification.type == "APPROVED") {
+                                    navController.navigate("my_trips_main")
+                                } else if (notification.type == "REJECTED") {
+                                    navController.navigate("explore_main")
+                                } else if (notification.type == "NEW_APPLICATION") {
+                                    navController.navigate("my_trips_main")
                                 }
                             }
                             .padding(8.dp)

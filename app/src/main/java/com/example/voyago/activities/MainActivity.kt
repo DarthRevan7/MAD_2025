@@ -279,6 +279,7 @@ fun MainScreen(viewModel: UserViewModel) {
     val userVerified by viewModel.userVerified.collectAsState()
 
     LaunchedEffect(userVerified) {
+        //notificationViewModel.loadNotificationsForUser(viewModel.loggedUser.value.id.toString())
         if (userVerified) {
             navController.navigate("profile_overview") {
                 popUpTo(navController.graph.findStartDestination().id) {
@@ -634,9 +635,14 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = ReviewFactory
             )
+            val notificationViewModel: NotificationViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = NotificationFactory
+            )
             MyReviews(
                 navController = navController, vm = tripViewModel, uvm = userViewModel,
-                rvm = reviewViewModel
+                rvm = reviewViewModel,
+                nvm = notificationViewModel
             )
         }
 
@@ -1084,9 +1090,11 @@ fun TopBar(nvm: NotificationViewModel, navController: NavController, uvm: UserVi
 
     val user by uvm.loggedUser.collectAsState()
     val userId = user.id.toString()
+    val hasNewNotification by nvm.hasNewNotification
+    val context = LocalContext.current
 
     LaunchedEffect(userId) {
-        nvm.loadNotificationsForUser(userId)
+        nvm.loadNotificationsForUser(context, userId)
     }
 
     //Top Bar Images
@@ -1129,7 +1137,7 @@ fun TopBar(nvm: NotificationViewModel, navController: NavController, uvm: UserVi
                         painter = painterNotification,
                         contentDescription = "notification"
                     )
-                    if (nvm.hasNewNotification.value) {
+                    if (hasNewNotification) {
                         Box(
                             modifier = Modifier
                                 .size(10.dp)

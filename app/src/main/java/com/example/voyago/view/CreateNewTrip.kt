@@ -28,6 +28,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -60,12 +61,17 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import java.util.Calendar
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.example.voyago.model.Trip
 import com.example.voyago.model.TypeTravel
 import com.example.voyago.viewmodel.TripViewModel
+import com.example.voyago.viewmodel.UserFactory
 import com.example.voyago.viewmodel.UserViewModel
 import com.google.firebase.Timestamp
 import java.util.Calendar
@@ -73,6 +79,14 @@ import java.util.Calendar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateNewTrip(navController: NavController, vm: TripViewModel, uvm: UserViewModel) {
+fun CreateNewTrip(navController: NavController, vm: TripViewModel,
+                  userViewModel: UserViewModel = viewModel(factory = UserFactory)
+                  ) {
+
+    vm.userAction = TripViewModel.UserAction.CREATE_TRIP
+
+    // 获取当前用户ID
+    val currentUser by userViewModel.loggedUser.collectAsState()
 
 
     vm.userAction = TripViewModel.UserAction.CREATE_TRIP
@@ -83,6 +97,9 @@ fun CreateNewTrip(navController: NavController, vm: TripViewModel, uvm: UserView
     var photoTouched = remember { mutableStateOf(false) }
     var tripImageError by rememberSaveable { mutableStateOf(false) }
 
+    // 添加上传状态
+    var isUploadingImage by remember { mutableStateOf(false) }
+    var uploadError by remember { mutableStateOf<String?>(null) }
 
     val fieldValues = rememberSaveable(
         saver = listSaver(
@@ -402,11 +419,10 @@ fun CreateNewTrip(navController: NavController, vm: TripViewModel, uvm: UserView
 
                     Spacer(modifier = Modifier.weight(1f))
 
-
                     //Next Button
                     Button(
                         onClick = {
-
+                            // 验证所有字段
                             tripImageError = !imageUri.toString().isUriString()
 
                             fieldTouched.forEachIndexed { index, _ ->
@@ -438,16 +454,23 @@ fun CreateNewTrip(navController: NavController, vm: TripViewModel, uvm: UserView
                                 participants.put(creatorId.toString(), joinRequestCreator)
                                 Log.d("Participants", participants.toString())
 
+                            if (!tripImageError && !fieldErrors.any{it} && !typeTravelError &&
+                                validateDateOrder(startCalendar, endCalendar) && !isUploadingImage) {
 
-                                val activities = mutableMapOf<String, MutableList<Trip.Activity>>()
+                                isUploadingImage = true
+                                uploadError = null
 
-                                val newTrip = Trip(
+                                // 使用协程来处理异步操作
+                                vm.createTripWithImageUpload(
+                                    imageUri = imageUri,
                                     title = fieldValues[0],
                                     destination = fieldValues[1],
-                                    startDate = Timestamp(startCalendar!!.time),
-                                    endDate = Timestamp(endCalendar!!.time),
+                                    startDate = startCalendar!!,
+                                    endDate = endCalendar!!,
                                     estimatedPrice = fieldValues[2].toDouble(),
                                     groupSize = fieldValues[3].toInt(),
+                                    //If problems check here!!!!
+                                    /*
                                     activities = activities,
                                     typeTravel = selected.map {
                                         TypeTravel.valueOf(it.uppercase()).toString()
@@ -465,15 +488,46 @@ fun CreateNewTrip(navController: NavController, vm: TripViewModel, uvm: UserView
                                 vm.setSelectedTrip(newTrip)
                                 vm.userAction = TripViewModel.UserAction.CREATE_TRIP
                                 navController.navigate("activities_list")
+                                */
+                                    typeTravel = selected.map { TypeTravel.valueOf(it.uppercase()).toString() },
+                                    creatorId = currentUser.id
+                                ) { success, trip, error ->
+                                    isUploadingImage = false
+                                    if (success && trip != null) {
+                                        vm.newTrip = trip
+                                        vm.setSelectedTrip(trip)
+                                        vm.userAction = TripViewModel.UserAction.CREATE_TRIP
+                                        navController.navigate("activities_list")
+                                    } else {
+                                        uploadError = error ?: "Failed to create trip"
+                                    }
+                                }
                             }
                         },
+                        enabled = !isUploadingImage, // 上传时禁用按钮
                         modifier = Modifier
                             .width(160.dp)
                             .height(60.dp)
                             .padding(top = 16.dp)
                     ) {
-                        Text("Next")
+                        if (isUploadingImage) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = Color.White
+                            )
+                        } else {
+                            Text("Next")
+                        }
                     }
+                    uploadError?.let { error ->
+                        Text(
+                            text = error,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
+                    }
+
                 }
 
             }

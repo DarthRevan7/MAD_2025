@@ -23,6 +23,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import kotlin.text.set
 
 
 //Function that converts a Long in a Calendar
@@ -713,26 +714,7 @@ class TripModel {
     //ACTIVITY MANAGEMENT
 
     //Function that add an Activity to a specific Trip
-    fun addActivityToTrip(activity: Activity, trip: Trip?): Trip {
-        val currentTrip = trip ?: Trip()
 
-        val updatedActivities = currentTrip.activities.toMutableMap().apply {
-            val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-            val dateKey: String = dateFormat.format(activity.dateAsCalendar().time)
-            Log.d("L2", "dateKey: $dateKey")
-            val updatedList: List<Activity> = getOrDefault(dateKey, emptyList()) + activity
-            put(dateKey, updatedList)
-        }
-
-        val updatedTrip = currentTrip.copy(activities = updatedActivities)
-
-        if (trip?.id != -1) {
-            Collections.trips.document(updatedTrip.id.toString())
-                .set(updatedTrip)
-        }
-
-        return updatedTrip
-    }
 
     //Function that edits an Activity
     fun editActivityInSelectedTrip(
@@ -953,6 +935,47 @@ class TripModel {
                 Log.e("TripModel", "Failed to fetch trip by ID", it)
                 onResult(null)
             }
+    }
+    fun addActivityToTrip(activity: Trip.Activity, trip: Trip?): Trip {
+        val currentTrip = trip ?: Trip()
+
+        // 🔴 添加详细的调试日志
+        Log.d("TripModel", "=== Adding Activity ===")
+        Log.d("TripModel", "Activity: $activity")
+        Log.d("TripModel", "Activity date: ${activity.date.toDate()}")
+        Log.d("TripModel", "Current trip: ${currentTrip.id}")
+
+        val updatedActivities = currentTrip.activities.toMutableMap().apply {
+            val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+            val dateKey: String = dateFormat.format(activity.date.toDate())
+            Log.d("TripModel", "Date key: $dateKey")
+
+            val existingActivities = getOrDefault(dateKey, emptyList())
+            val updatedList: List<Trip.Activity> = existingActivities + activity
+            put(dateKey, updatedList)
+
+            Log.d("TripModel", "Updated activities for $dateKey: ${updatedList.size} activities")
+        }
+
+        val updatedTrip = currentTrip.copy(activities = updatedActivities)
+
+        Log.d("TripModel", "Final trip activities: ${updatedTrip.activities}")
+
+        // 🔴 修复点20: 使用正确的Firestore引用
+        if (currentTrip.id > 0) {
+            FirebaseFirestore.getInstance()
+                .collection("trips")
+                .document(updatedTrip.id.toString())
+                .set(updatedTrip)
+                .addOnSuccessListener {
+                    Log.d("TripModel", "Activity saved to Firestore successfully")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("TripModel", "Failed to save activity to Firestore", e)
+                }
+        }
+
+        return updatedTrip
     }
 }
 
