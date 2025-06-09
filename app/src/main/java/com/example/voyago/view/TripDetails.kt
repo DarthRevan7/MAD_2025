@@ -110,6 +110,12 @@ fun TripDetails(
     val isUserLoggedIn = loggedUser.id > 0 && loggedUser.isValid() == true
 
     //Trip that we are showing
+//    var trip = Trip()
+//    if (vm.userAction == TripViewModel.UserAction.VIEW_TRIP){
+//        trip = vm.otherTrip.value
+//    } else { trip = vm.selectedTrip.value }
+
+
     val trip = when (vm.userAction) {
         TripViewModel.UserAction.VIEW_TRIP -> vm.selectedTrip.value
         TripViewModel.UserAction.VIEW_OTHER_TRIP -> vm.otherTrip.value
@@ -129,7 +135,7 @@ fun TripDetails(
     }
 
     if (!trip.isValid()) {
-        Text("Loading trip details...")
+        Text("Trip ${vm.otherTrip.value.id} ${vm.userAction} Loading trip details...")
         return
     }
 

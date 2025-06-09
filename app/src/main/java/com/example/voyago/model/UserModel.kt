@@ -2,12 +2,16 @@ package com.example.voyago.model
 
 import android.util.Log
 import com.example.voyago.Collections
+import com.google.common.io.Files.getFileExtension
+import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.storage
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.tasks.await
 import java.io.Serializable
 import java.util.Date
 
@@ -38,6 +42,69 @@ data class User(
                 dateOfBirth.toDate().time > 0 &&
                 password.isNotBlank()
     }
+
+
+    // 添加获取头像 URL 的方法
+    suspend fun getProfilePhoto(): String? {
+        return try {
+            if (profilePictureUrl.isNullOrEmpty()) {
+                // 如果没有头像，返回默认头像
+                return com.example.voyago.StorageHelper.getImageDownloadUrl("users/default_avatar.jpg")
+            }
+
+            when {
+                // 如果已经是完整的 HTTP URL，直接返回
+                profilePictureUrl!!.startsWith("http") -> profilePictureUrl
+
+                // 如果是 content:// URI，说明是本地文件，需要上传
+                profilePictureUrl!!.startsWith("content://") -> {
+                    Log.w("User", "Profile picture is still a local URI: $profilePictureUrl")
+                    // 这种情况应该在编辑时上传到 Firebase Storage
+                    null
+                }
+
+                // 如果包含路径分隔符，说明是 Firebase Storage 路径
+                profilePictureUrl!!.contains("/") -> {
+                    val storageRef = Firebase.storage.reference.child(profilePictureUrl!!)
+                    storageRef.downloadUrl.await().toString()
+                }
+
+                // 否则假设在 users/ 目录下
+                else -> {
+                    val storageRef = Firebase.storage.reference.child("users/$profilePictureUrl")
+                    storageRef.downloadUrl.await().toString()
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("User", "Failed to get profile photo URL for $profilePictureUrl", e)
+            // 返回默认头像
+            com.example.voyago.StorageHelper.getImageDownloadUrl("users/default_avatar.jpg")
+        }
+    }
+
+    // 设置头像并上传到 Firebase Storage
+    suspend fun setProfilePhoto(imageUri: android.net.Uri): Boolean {
+        return try {
+            val extension = getFileExtension(imageUri.toString())
+            val newPath = "users/${id}_avatar.$extension"
+
+            val (success, url) = com.example.voyago.StorageHelper.uploadImageToStorage(
+                imageUri,
+                newPath
+            )
+
+            if (success && url != null) {
+                profilePictureUrl = newPath
+                true
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            Log.e("User", "Failed to upload profile photo", e)
+            false
+        }
+    }
+
 }
 
 class UserModel {

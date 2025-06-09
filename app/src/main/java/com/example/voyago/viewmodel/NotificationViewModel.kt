@@ -16,6 +16,7 @@ import androidx.core.app.NotificationCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.voyago.R
+import com.example.voyago.model.NotificationItem
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -29,26 +30,26 @@ class NotificationViewModel : ViewModel() {
     private val _hasNewNotification = mutableStateOf(false)
     val hasNewNotification: State<Boolean> = _hasNewNotification
 
-    private val _notifications = mutableStateListOf<String>()
-    val notifications: List<String> = _notifications
+    private val _notifications = mutableStateListOf<NotificationItem>()
+    val notifications: List<NotificationItem> = _notifications
 
-    fun receiveNewNotification(message: String) {
-        _hasNewNotification.value = true
-        _notifications.add(message)
-    }
 
     fun markNotificationsRead(userId: String) {
         _hasNewNotification.value = false
         markAllNotificationsRead(userId)
     }
 
-
-    fun sendNotificationToUser(recipientId: String, title: String, body: String, notificationType: String, idLink: Int) {
+    fun sendNotificationToUser(
+        recipientId: String,
+        title: String,
+        body: String,
+        notificationType: String,
+        idLink: Int
+    ) {
         val db = FirebaseFirestore.getInstance()
         db.collection("users").document(recipientId).get()
             .addOnSuccessListener { document ->
                 if (document.exists()) {
-                    // Store in user's subcollection
                     db.collection("users")
                         .document(recipientId)
                         .collection("notifications")
@@ -62,22 +63,9 @@ class NotificationViewModel : ViewModel() {
                                 "idLink" to idLink
                             )
                         )
-                        .addOnSuccessListener {
-                            Log.d("FCM", "Notification stored in user's subcollection")
-                        }
-                        .addOnFailureListener {
-                            Log.e("FCM", "Error storing notification", it)
-                        }
-                } else {
-                    Log.e("FCM", "User not found in Firestore")
                 }
             }
-            .addOnFailureListener {
-                Log.e("FCM", "Failed to fetch recipient document", it)
-            }
     }
-
-
 
     fun loadNotificationsForUser(userId: String) {
         val db = FirebaseFirestore.getInstance()
@@ -95,11 +83,15 @@ class NotificationViewModel : ViewModel() {
                     _notifications.clear()
                     var hasUnread = false
                     for (doc in snapshots) {
-                        val title = doc.getString("title") ?: ""
-                        val body = doc.getString("body") ?: ""
-                        val read = doc.getBoolean("read") ?: true
-                        if (!read) hasUnread = true
-                        _notifications.add("$title: $body")
+                        val notification = NotificationItem(
+                            title = doc.getString("title") ?: "",
+                            body = doc.getString("body") ?: "",
+                            type = doc.getString("type") ?: "",
+                            idLink = doc.getLong("idLink")?.toInt() ?: -1,
+                            read = doc.getBoolean("read") ?: false
+                        )
+                        if (!notification.read) hasUnread = true
+                        _notifications.add(notification)
                     }
                     _hasNewNotification.value = hasUnread
                 }
@@ -121,7 +113,7 @@ class NotificationViewModel : ViewModel() {
         }
 
         val notification = NotificationCompat.Builder(context, channelId)
-            .setSmallIcon(android.R.drawable.ic_dialog_info) // Replace with your icon if needed
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentTitle(title)
             .setContentText(body)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -146,8 +138,6 @@ class NotificationViewModel : ViewModel() {
                 }
             }
     }
-
-
 }
 
 object NotificationFactory : ViewModelProvider.Factory {
