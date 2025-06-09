@@ -82,7 +82,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
-import coil3.compose.AsyncImage
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import com.example.voyago.R
 import com.example.voyago.model.NavItem
 import com.example.voyago.model.User
@@ -119,12 +120,6 @@ import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserFactory
 import com.example.voyago.viewmodel.UserViewModel
-import androidx.compose.ui.zIndex
-import com.example.voyago.model.ReviewModel
-import com.example.voyago.model.TripModel
-import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.bumptech.glide.integration.compose.GlideImage
-import com.example.voyago.model.UserModel
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -389,7 +384,8 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
                 navController.getBackStackEntry(startDest)
             }
 
-            val nvm: NotificationViewModel = viewModel(viewModelStoreOwner = parentEntry, factory = NotificationFactory)
+            val nvm: NotificationViewModel =
+                viewModel(viewModelStoreOwner = parentEntry, factory = NotificationFactory)
             val uvm: UserViewModel = viewModel(viewModelStoreOwner = parentEntry, factory = Factory)
             val vm: TripViewModel = viewModel(viewModelStoreOwner = parentEntry, factory = Factory)
 

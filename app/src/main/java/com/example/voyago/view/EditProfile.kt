@@ -3,6 +3,7 @@ package com.example.voyago.view
 import android.app.Activity.RESULT_OK
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -40,6 +41,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -52,14 +54,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.navigation.NavController
-import androidx.compose.ui.window.Dialog
-import com.example.voyago.model.TypeTravel
-import android.net.Uri
-import android.util.Log
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.border
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -72,9 +66,9 @@ import androidx.compose.ui.window.Dialog
 import androidx.core.net.toUri
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
-import com.example.voyago.model.TypeTravel
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
+import com.example.voyago.model.TypeTravel
 import com.example.voyago.model.User
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
@@ -356,7 +350,7 @@ fun EditProfileScreen(
 
                 // 在 EditProfileScreen 中修改更新按钮的逻辑：
 
-                 //Update datas
+                //Update datas
                 Button(
                     onClick = {
                         if (!errors.any { it }) {
@@ -384,32 +378,48 @@ fun EditProfileScreen(
                             )
 
 
+                            /*
+                                                        uvm.editUserData(updatedUser)
 
-/*
+                                                        navController.navigate("profile_overview") {
+                                                            popUpTo("edit_profile") {
+                                                                inclusive = true
+                                                            } // Removes edit from back stack
+                                                            launchSingleTop = true
+                                                        }
+                            */
                             uvm.editUserData(updatedUser)
-
-                            navController.navigate("profile_overview") {
-                                popUpTo("edit_profile") {
-                                    inclusive = true
-                                } // Removes edit from back stack
-                                launchSingleTop = true
-                            }
-*/
-/*
-
-                            // 🔄 使用 UserViewModel 的新方法
                             uvm.updateUserWithProfileImage(
                                 updatedUser = updatedUser,
                                 newImageUri = profileImageUri
                             ) { success ->
                                 if (success) {
-                                    navController.navigate("profile_overview")
+                                    navController.navigate("profile_overview") {
+                                        popUpTo("edit_profile") {
+                                            inclusive = true
+                                        } // Removes edit from back stack
+                                        launchSingleTop = true
+                                    }
                                 } else {
                                     // 处理错误，可以显示 Toast 或错误消息
                                     Log.e("EditProfile", "Failed to update profile")
                                 }
                             }
-*/
+                            /*
+
+                                                        // 🔄 使用 UserViewModel 的新方法
+                                                        uvm.updateUserWithProfileImage(
+                                                            updatedUser = updatedUser,
+                                                            newImageUri = profileImageUri
+                                                        ) { success ->
+                                                            if (success) {
+                                                                navController.navigate("profile_overview")
+                                                            } else {
+                                                                // 处理错误，可以显示 Toast 或错误消息
+                                                                Log.e("EditProfile", "Failed to update profile")
+                                                            }
+                                                        }
+                            */
 //End of XI Part
                         }
                     },
