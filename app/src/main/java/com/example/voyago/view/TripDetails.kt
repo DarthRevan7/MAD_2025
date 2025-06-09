@@ -446,12 +446,13 @@ fun TripDetails(
 
                                         uvm.getMatchingUserIdsByTypeTravel(trip.typeTravel) { compatibleUsers ->
                                             compatibleUsers.forEach { userIdInt ->
-//                                                if (userIdInt != loggedUser.id){
-//                                                    val userId = userIdInt.toString()
-//                                                    nvm.sendNotificationToUser(userId, title, body, notificationType, idLink)
-//                                                }
-                                                val userId = userIdInt.toString()
-                                                nvm.sendNotificationToUser(userId, title, body, notificationType, idLink)
+                                                if (userIdInt != loggedUser.id){
+                                                    val userId = userIdInt.toString()
+                                                    nvm.sendNotificationToUser(userId, title, body, notificationType, idLink)
+                                                }
+                                                //For debugging
+//                                                val userId = userIdInt.toString()
+//                                                nvm.sendNotificationToUser(userId, title, body, notificationType, idLink)
 
                                             }
 
@@ -884,6 +885,16 @@ fun TripDetails(
                                     emptyList(),
                                     emptyList()
                                 )
+
+                                // Notification
+                                val title = "New Application!"
+                                val body = "You have a new application for the trip to ${vm.selectedTrip.value.destination}"
+                                val notificationType = "NEW_APPLICATION"
+                                val idLink = vm.selectedTrip.value.id
+
+                                val userId = vm.selectedTrip.value.creatorId.toString()
+                                nvm.sendNotificationToUser(userId, title, body, notificationType, idLink)
+
                                 showDialog = false
                             }
                         } else {
