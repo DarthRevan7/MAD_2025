@@ -277,7 +277,7 @@ fun TripDetails(
             //The logged in user see a trip created by them in the "My Trip" section
             if (owner) {
                 //The trip created by the logged in user is published
-                if (trip.published && trip.status == Trip.TripStatus.NOT_STARTED.toString() && trip.creatorId == 1) {
+                if (trip.published && trip.status == Trip.TripStatus.NOT_STARTED.toString() && trip.creatorId == loggedUser.id) {
                     item {
                         Row(
                             modifier = Modifier
@@ -440,15 +440,22 @@ fun TripDetails(
 
                                         //Send notifications
                                         val title = "Check this out!"
-                                        val body = "This trip to ${trip.destination} looks interesting for you!"
+                                        val body =
+                                            "This trip to ${trip.destination} looks interesting for you!"
                                         val notificationType = "TRIP"
                                         val idLink = trip.id
 
                                         uvm.getMatchingUserIdsByTypeTravel(trip.typeTravel) { compatibleUsers ->
                                             compatibleUsers.forEach { userIdInt ->
-                                                if (userIdInt != loggedUser.id){
+                                                if (userIdInt != loggedUser.id) {
                                                     val userId = userIdInt.toString()
-                                                    nvm.sendNotificationToUser(userId, title, body, notificationType, idLink)
+                                                    nvm.sendNotificationToUser(
+                                                        userId,
+                                                        title,
+                                                        body,
+                                                        notificationType,
+                                                        idLink
+                                                    )
                                                 }
                                                 //For debugging
 //                                                val userId = userIdInt.toString()
@@ -888,12 +895,19 @@ fun TripDetails(
 
                                 // Notification
                                 val title = "New Application!"
-                                val body = "You have a new application for the trip to ${vm.selectedTrip.value.destination}"
+                                val body =
+                                    "You have a new application for the trip to ${vm.selectedTrip.value.destination}"
                                 val notificationType = "NEW_APPLICATION"
                                 val idLink = vm.selectedTrip.value.id
 
                                 val userId = vm.selectedTrip.value.creatorId.toString()
-                                nvm.sendNotificationToUser(userId, title, body, notificationType, idLink)
+                                nvm.sendNotificationToUser(
+                                    userId,
+                                    title,
+                                    body,
+                                    notificationType,
+                                    idLink
+                                )
 
                                 showDialog = false
                             }
@@ -1356,7 +1370,11 @@ fun ShowReview(
                     else -> {
                         val context = LocalContext.current
                         val drawableId = remember(photoPath) {
-                            context.resources.getIdentifier(photoPath, "drawable", context.packageName)
+                            context.resources.getIdentifier(
+                                photoPath,
+                                "drawable",
+                                context.packageName
+                            )
                         }
                         if (drawableId != 0) {
                             AsyncImage(

@@ -15,14 +15,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -32,14 +26,20 @@ import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.voyago.activities.ProfilePhoto
@@ -50,8 +50,14 @@ import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
 
 @Composable
-fun TripApplications(vm: TripViewModel, uvm: UserViewModel, navController: NavController, nvm: NotificationViewModel) {
+fun TripApplications(
+    vm: TripViewModel,
+    uvm: UserViewModel,
+    navController: NavController,
+    nvm: NotificationViewModel
+) {
     val trip = vm.selectedTrip.value
+    val loggedUser by uvm.loggedUser.collectAsState()
 
     // Trigger data loading once when trip changes
     LaunchedEffect(trip.id) {
@@ -110,7 +116,12 @@ fun TripApplications(vm: TripViewModel, uvm: UserViewModel, navController: NavCo
         item {
             Text(
                 text = "Approved Applications:",
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
+                modifier = Modifier.padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 16.dp,
+                    bottom = 10.dp
+                ),
                 fontWeight = FontWeight.Bold
             )
         }
@@ -119,7 +130,7 @@ fun TripApplications(vm: TripViewModel, uvm: UserViewModel, navController: NavCo
             items(participantsMap.entries.toList()) { entry ->
                 val user = entry.key
                 val joinRequest = entry.value
-                if (user.id != 1) {  // Assuming you want to skip user with id == 1
+                if (user.id != loggedUser.id) {  // Assuming you want to skip logged-in user
                     ShowParticipants(user, joinRequest, uvm, navController)
                 }
             }
@@ -140,7 +151,12 @@ fun TripApplications(vm: TripViewModel, uvm: UserViewModel, navController: NavCo
         item {
             Text(
                 text = "Pending Applications:",
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
+                modifier = Modifier.padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 16.dp,
+                    bottom = 10.dp
+                ),
                 fontWeight = FontWeight.Bold
             )
         }
@@ -172,7 +188,12 @@ fun TripApplications(vm: TripViewModel, uvm: UserViewModel, navController: NavCo
         item {
             Text(
                 text = "Rejected Applications:",
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
+                modifier = Modifier.padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 16.dp,
+                    bottom = 10.dp
+                ),
                 fontWeight = FontWeight.Bold
             )
         }
@@ -202,7 +223,12 @@ fun TripApplications(vm: TripViewModel, uvm: UserViewModel, navController: NavCo
 
 
 @Composable
-fun ShowParticipants(user: User, joinRequest: Trip.JoinRequest, uvm: UserViewModel, navController: NavController) {
+fun ShowParticipants(
+    user: User,
+    joinRequest: Trip.JoinRequest,
+    uvm: UserViewModel,
+    navController: NavController
+) {
     var showPart by remember { mutableStateOf(false) }
 
     Row(
@@ -229,14 +255,16 @@ fun ShowParticipants(user: User, joinRequest: Trip.JoinRequest, uvm: UserViewMod
             modifier = Modifier
                 .padding(start = 16.dp),
 
-        ) {
+            ) {
             // User information
-            Text(modifier = Modifier
-                .clickable {
+            Text(
+                modifier = Modifier
+                    .clickable {
 
-                    navController.navigate("user_profile/${user.id}")
-                },
-                text ="${user.firstname} ${user.surname}")
+                        navController.navigate("user_profile/${user.id}")
+                    },
+                text = "${user.firstname} ${user.surname}"
+            )
 
             if (joinRequest.requestedSpots > 1) {
                 Spacer(modifier = Modifier.width(8.dp))
@@ -249,7 +277,9 @@ fun ShowParticipants(user: User, joinRequest: Trip.JoinRequest, uvm: UserViewMod
                     Icon(
                         imageVector = Icons.Default.People,
                         contentDescription = "Multiple spots",
-                        modifier = Modifier.size(14.dp).clickable{showPart = true},
+                        modifier = Modifier
+                            .size(14.dp)
+                            .clickable { showPart = true },
                         tint = Color.White
                     )
                     Spacer(modifier = Modifier.width(4.dp))
@@ -305,7 +335,8 @@ fun ParticipantUsername(
     uvm: UserViewModel,
     navController: NavController
 ) {
-    val user by uvm.getUserData(userId).collectAsState(initial = User()) // or initial = null if you prefer
+    val user by uvm.getUserData(userId)
+        .collectAsState(initial = User()) // or initial = null if you prefer
 
     if (user!!.id != 0) { // Assuming 0 means default empty user
         Text(
@@ -319,7 +350,14 @@ fun ParticipantUsername(
 
 
 @Composable
-fun ShowApplications(user: User, joinRequest: Trip.JoinRequest, vm: TripViewModel, uvm: UserViewModel, navController: NavController, nvm: NotificationViewModel) {
+fun ShowApplications(
+    user: User,
+    joinRequest: Trip.JoinRequest,
+    vm: TripViewModel,
+    uvm: UserViewModel,
+    navController: NavController,
+    nvm: NotificationViewModel
+) {
     var showDialog by remember { mutableStateOf(false) }
     var isAcceptAction by remember { mutableStateOf(true) }
     var showPart by remember { mutableStateOf(false) }
@@ -346,12 +384,14 @@ fun ShowApplications(user: User, joinRequest: Trip.JoinRequest, vm: TripViewMode
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(start = 16.dp)
         ) {
-            Text(modifier = Modifier
-                .clickable {
+            Text(
+                modifier = Modifier
+                    .clickable {
 
-                    navController.navigate("user_profile/${user.id}")
-                },
-                text = "${user.firstname} ${user.surname}")
+                        navController.navigate("user_profile/${user.id}")
+                    },
+                text = "${user.firstname} ${user.surname}"
+            )
 
             if (joinRequest.requestedSpots > 1) {
                 Spacer(modifier = Modifier.width(8.dp))
@@ -364,7 +404,9 @@ fun ShowApplications(user: User, joinRequest: Trip.JoinRequest, vm: TripViewMode
                     Icon(
                         imageVector = Icons.Default.People,
                         contentDescription = "Multiple spots",
-                        modifier = Modifier.size(14.dp).clickable{showPart = true},
+                        modifier = Modifier
+                            .size(14.dp)
+                            .clickable { showPart = true },
                         tint = Color.White
                     )
                     Spacer(modifier = Modifier.width(4.dp))
@@ -442,13 +484,13 @@ fun ShowApplications(user: User, joinRequest: Trip.JoinRequest, vm: TripViewMode
                         nvm.sendNotificationToUser(userId, title, body, notificationType, idLink)
 
 
-
                     } else {
                         vm.rejectApplication(vm.selectedTrip.value, user.id)
 
                         // Notification
                         val title = "Application rejected"
-                        val body = "Your application for the trip to ${vm.selectedTrip.value.destination} was rejected"
+                        val body =
+                            "Your application for the trip to ${vm.selectedTrip.value.destination} was rejected"
                         val notificationType = "REJECTED"
                         val idLink = vm.selectedTrip.value.id
 
