@@ -45,11 +45,12 @@ import androidx.navigation.NavController
 import com.example.voyago.activities.ProfilePhoto
 import com.example.voyago.model.Trip
 import com.example.voyago.model.User
+import com.example.voyago.viewmodel.NotificationViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
 
 @Composable
-fun TripApplications(vm: TripViewModel, uvm: UserViewModel, navController: NavController) {
+fun TripApplications(vm: TripViewModel, uvm: UserViewModel, navController: NavController, nvm: NotificationViewModel) {
     val trip = vm.selectedTrip.value
 
     // Trigger data loading once when trip changes
@@ -148,7 +149,7 @@ fun TripApplications(vm: TripViewModel, uvm: UserViewModel, navController: NavCo
             items(applicantsMap.entries.toList()) { entry ->
                 val user = entry.key
                 val joinRequest = entry.value
-                ShowApplications(user, joinRequest, vm, uvm, navController)
+                ShowApplications(user, joinRequest, vm, uvm, navController, nvm)
             }
         } else {
             item {
@@ -318,7 +319,7 @@ fun ParticipantUsername(
 
 
 @Composable
-fun ShowApplications(user: User, joinRequest: Trip.JoinRequest, vm: TripViewModel, uvm: UserViewModel, navController: NavController) {
+fun ShowApplications(user: User, joinRequest: Trip.JoinRequest, vm: TripViewModel, uvm: UserViewModel, navController: NavController, nvm: NotificationViewModel) {
     var showDialog by remember { mutableStateOf(false) }
     var isAcceptAction by remember { mutableStateOf(true) }
     var showPart by remember { mutableStateOf(false) }
@@ -430,8 +431,29 @@ fun ShowApplications(user: User, joinRequest: Trip.JoinRequest, vm: TripViewMode
                 TextButton(onClick = {
                     if (isAcceptAction) {
                         vm.acceptApplication(vm.selectedTrip.value, user.id)
+
+                        // Notification
+                        val title = "Application approved!"
+                        val body = "Time to pack your bags to ${vm.selectedTrip.value.destination}!"
+                        val notificationType = "APPROVED"
+                        val idLink = vm.selectedTrip.value.id
+
+                        val userId = user.id.toString()
+                        nvm.sendNotificationToUser(userId, title, body, notificationType, idLink)
+
+
+
                     } else {
                         vm.rejectApplication(vm.selectedTrip.value, user.id)
+
+                        // Notification
+                        val title = "Application rejected"
+                        val body = "Your application for the trip to ${vm.selectedTrip.value.destination} was rejected"
+                        val notificationType = "REJECTED"
+                        val idLink = vm.selectedTrip.value.id
+
+                        val userId = user.id.toString()
+                        nvm.sendNotificationToUser(userId, title, body, notificationType, idLink)
                     }
                     val trip = vm.selectedTrip.value
                     vm.getTripParticipants(trip)
