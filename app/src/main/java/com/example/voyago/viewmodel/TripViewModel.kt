@@ -537,23 +537,7 @@ class TripViewModel(
     }
 
 
-    fun addActivityToTrip(activity: Activity) {
-        //Creating a new trip
-        if (userAction == UserAction.CREATE_TRIP) {
-            Log.d("L2", "Edit activity to trip: $activity")
-            tripModel.addActivityToTrip(activity, newTrip).let { updatedTrip ->
-                newTrip = updatedTrip
-                _selectedTrip.value = newTrip
-            }
-        } else if (userAction == UserAction.EDIT_TRIP) {
-            //I am editing an existing trip
-            Log.d("L2", "Edit activity to trip: $activity")
-            tripModel.addActivityToTrip(activity, editTrip).let { updatedTrip ->
-                editTrip = updatedTrip
-                _selectedTrip.value = editTrip
-            }
-        }
-    }
+
 
     //Delete activity from a specific trip
     //Delete activity from a specific trip
@@ -728,6 +712,51 @@ class TripViewModel(
             } catch (e: Exception) {
                 Log.e("TripViewModel", "Error creating trip with image", e)
                 onResult(false, null, "Error: ${e.message}")
+            }
+        }
+    }
+    fun refreshSelectedTrip() {
+        when (userAction) {
+            UserAction.CREATE_TRIP -> {
+                _selectedTrip.value = newTrip
+                Log.d("TripViewModel", "Refreshed selected trip to newTrip: ${newTrip.id}")
+            }
+            UserAction.EDIT_TRIP -> {
+                _selectedTrip.value = editTrip
+                Log.d("TripViewModel", "Refreshed selected trip to editTrip: ${editTrip.id}")
+            }
+            else -> {
+                Log.d("TripViewModel", "Keeping current selected trip: ${_selectedTrip.value.id}")
+            }
+        }
+    }
+
+    // 🔴 修复点18: 改进addActivityToTrip方法，确保状态同步
+    fun addActivityToTrip(activity: Trip.Activity) {
+        Log.d("TripViewModel", "Adding activity: $activity")
+        Log.d("TripViewModel", "Current user action: $userAction")
+
+        when (userAction) {
+            UserAction.CREATE_TRIP -> {
+                Log.d("TripViewModel", "Adding activity to new trip")
+                val updatedTrip = tripModel.addActivityToTrip(activity, newTrip)
+                newTrip = updatedTrip
+                _selectedTrip.value = newTrip
+                Log.d("TripViewModel", "Updated newTrip activities: ${newTrip.activities}")
+            }
+            UserAction.EDIT_TRIP -> {
+                Log.d("TripViewModel", "Adding activity to edit trip")
+                val updatedTrip = tripModel.addActivityToTrip(activity, editTrip)
+                editTrip = updatedTrip
+                _selectedTrip.value = editTrip
+                Log.d("TripViewModel", "Updated editTrip activities: ${editTrip.activities}")
+            }
+            else -> {
+                Log.d("TripViewModel", "Adding activity to selected trip")
+                val currentTrip = _selectedTrip.value
+                val updatedTrip = tripModel.addActivityToTrip(activity, currentTrip)
+                _selectedTrip.value = updatedTrip
+                Log.d("TripViewModel", "Updated selectedTrip activities: ${updatedTrip.activities}")
             }
         }
     }
