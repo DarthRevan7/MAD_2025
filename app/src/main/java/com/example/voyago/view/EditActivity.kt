@@ -3,6 +3,7 @@ package com.example.voyago.view
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.util.Log
 import android.widget.DatePicker
 import android.widget.TimePicker
 import androidx.compose.foundation.background
@@ -52,12 +53,26 @@ import java.util.Locale
 @Composable
 fun EditActivity(navController: NavController, vm: TripViewModel, activityId: Int) {
 
-    var currentTrip = Trip()
-    if(vm.userAction == TripViewModel.UserAction.EDIT_ACTIVITY) {
-        currentTrip = vm.editTrip
-    } else if(vm.userAction == TripViewModel.UserAction.CREATE_TRIP) {
-        currentTrip = vm.newTrip
+    //  修复：使用更可靠的方式获取当前行程
+    val currentTrip = when (vm.userAction) {
+        TripViewModel.UserAction.EDIT_ACTIVITY -> {
+
+            if (vm.editTrip.isValid()) vm.editTrip else vm.selectedTrip.value
+        }
+        TripViewModel.UserAction.CREATE_TRIP -> {
+
+            if (vm.newTrip.isValid()) vm.newTrip else vm.selectedTrip.value
+        }
+        else -> vm.selectedTrip.value
     }
+
+    //  添加调试日志
+    Log.d("EditActivity", "=== Debug Info ===")
+    Log.d("EditActivity", "User Action: ${vm.userAction}")
+    Log.d("EditActivity", "Activity ID to find: $activityId")
+    Log.d("EditActivity", "Current trip ID: ${currentTrip.id}")
+    Log.d("EditActivity", "Current trip title: ${currentTrip.title}")
+    Log.d("EditActivity", "Activities count: ${currentTrip.activities.values.flatten().size}")
     val activityToEdit = currentTrip.activities.values.flatten().find { it.id == activityId }
 
     if (activityToEdit == null) {
