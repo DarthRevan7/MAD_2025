@@ -39,9 +39,10 @@ fun NotificationView(navController: NavController, nvm: NotificationViewModel, u
 
     val user by uvm.loggedUser.collectAsState()
     val userId = user.id.toString()
+    val context = LocalContext.current
 
     LaunchedEffect(userId) {
-        nvm.loadNotificationsForUser(userId)
+        nvm.loadNotificationsForUser(context, userId)
     }
 
     Column(

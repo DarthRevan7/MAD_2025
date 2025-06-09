@@ -67,7 +67,7 @@ class NotificationViewModel : ViewModel() {
             }
     }
 
-    fun loadNotificationsForUser(userId: String) {
+    fun loadNotificationsForUser(context: Context, userId: String) {
         val db = FirebaseFirestore.getInstance()
         db.collection("users")
             .document(userId)
@@ -93,7 +93,13 @@ class NotificationViewModel : ViewModel() {
                         if (!notification.read) hasUnread = true
                         _notifications.add(notification)
                     }
+
+                    // Detect if new unread notifications appeared
+                    val previousValue = _hasNewNotification.value
                     _hasNewNotification.value = hasUnread
+                    if (hasUnread && !previousValue) {
+                        showLocalNotification(context, "New Voyago notification!", "Check out what's new.")
+                    }
                 }
             }
     }
