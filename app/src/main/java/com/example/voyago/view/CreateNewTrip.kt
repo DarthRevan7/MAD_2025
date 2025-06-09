@@ -37,6 +37,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -59,17 +60,27 @@ import androidx.navigation.NavController
 import java.util.Calendar
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.example.voyago.model.Trip
 import com.example.voyago.model.TypeTravel
 import com.example.voyago.viewmodel.TripViewModel
+import com.example.voyago.viewmodel.UserFactory
+import com.example.voyago.viewmodel.UserViewModel
 import com.google.firebase.Timestamp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateNewTrip(navController: NavController, vm: TripViewModel) {
+fun CreateNewTrip(navController: NavController, vm: TripViewModel,
+                  userViewModel: UserViewModel = viewModel(factory = UserFactory)
+                  ) {
+
+    vm.userAction = TripViewModel.UserAction.CREATE_TRIP
+
+    // 获取当前用户ID
+    val currentUser by userViewModel.loggedUser.collectAsState()
 
 
     vm.userAction = TripViewModel.UserAction.CREATE_TRIP
@@ -413,7 +424,8 @@ fun CreateNewTrip(navController: NavController, vm: TripViewModel) {
 
                             if (!tripImageError && !fieldErrors.any{it} && !typeTravelError && validateDateOrder(startCalendar, endCalendar)) {
                                 // 如果你使用 Firebase Auth
-                                val creatorId = vm.getCurrentUserId()
+
+                                val creatorId = currentUser.id
 
                                 val activities = mutableMapOf<String, MutableList<Trip.Activity>>()
 
