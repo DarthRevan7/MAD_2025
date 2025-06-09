@@ -113,7 +113,7 @@ fun NotificationView(navController: NavController, nvm: NotificationViewModel, u
                                 } else if (notification.type == "APPROVED") {
                                     navController.navigate("my_trips_main")
                                 } else if (notification.type == "REJECTED") {
-                                    navController.navigate("my_trips_main")
+                                    navController.navigate("explore_main")
                                 } else if (notification.type == "NEW_APPLICATION") {
                                     navController.navigate("my_trips_main")
                                 }
