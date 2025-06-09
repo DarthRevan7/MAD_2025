@@ -1,6 +1,7 @@
 package com.example.voyago.view
 
 import android.app.Activity
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
@@ -52,8 +53,11 @@ import com.example.voyago.R
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.firestore.firestore
+import com.google.firebase.messaging.FirebaseMessaging
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -225,6 +229,9 @@ fun LoginScreen(
                             auth.signInWithEmailAndPassword(email, password)
                                 .addOnCompleteListener { task ->
                                     if (task.isSuccessful) {
+                                        val userId = auth.currentUser?.uid
+                                        userId?.let { saveFcmTokenToFirestore(it) }
+
                                         navController.navigate("home_main") {
                                             popUpTo("login") { inclusive = true }
                                         }
@@ -390,6 +397,9 @@ fun handleGoogleSignInResult(
             auth.signInWithCredential(credential)
                 .addOnCompleteListener { authResult ->
                     if (authResult.isSuccessful) {
+                        val userId = auth.currentUser?.uid
+                        userId?.let { saveFcmTokenToFirestore(it) }
+
                         navController.navigate("home_main") {
                             popUpTo("login") { inclusive = true }
                         }
@@ -402,6 +412,24 @@ fun handleGoogleSignInResult(
         }
     } else {
         setError("Google sign-in canceled.")
+    }
+}
+
+fun saveFcmTokenToFirestore(userId: String) {
+    FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+        if (task.isSuccessful) {
+            val token = task.result
+            val userRef = Firebase.firestore.collection("users").document(userId)
+            userRef.update("fcmToken", token)
+                .addOnSuccessListener {
+                    Log.d("FCM", "Token saved successfully.")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("FCM", "Failed to save token: ${e.localizedMessage}")
+                }
+        } else {
+            Log.e("FCM", "Fetching FCM token failed: ${task.exception?.localizedMessage}")
+        }
     }
 }
 

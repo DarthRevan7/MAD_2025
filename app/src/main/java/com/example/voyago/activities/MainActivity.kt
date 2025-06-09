@@ -281,6 +281,7 @@ fun MainScreen(viewModel: UserViewModel) {
     val userVerified by viewModel.userVerified.collectAsState()
 
     LaunchedEffect(userVerified) {
+        notificationViewModel.loadNotificationsForUser(viewModel.loggedUser.value.id.toString())
         if (userVerified) {
             navController.navigate("profile_overview") {
                 popUpTo(navController.graph.findStartDestination().id) {
@@ -1063,6 +1064,7 @@ fun TopBar(nvm: NotificationViewModel, navController: NavController, uvm: UserVi
 
     val user by uvm.loggedUser.collectAsState()
     val userId = user.id.toString()
+    val hasNewNotification by nvm.hasNewNotification
 
     LaunchedEffect(userId) {
         nvm.loadNotificationsForUser(userId)
@@ -1108,7 +1110,7 @@ fun TopBar(nvm: NotificationViewModel, navController: NavController, uvm: UserVi
                         painter = painterNotification,
                         contentDescription = "notification"
                     )
-                    if (nvm.hasNewNotification.value) {
+                    if (hasNewNotification) {
                         Box(
                             modifier = Modifier
                                 .size(10.dp)
