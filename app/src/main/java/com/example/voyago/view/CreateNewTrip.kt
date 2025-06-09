@@ -412,7 +412,8 @@ fun CreateNewTrip(navController: NavController, vm: TripViewModel) {
                             }
 
                             if (!tripImageError && !fieldErrors.any{it} && !typeTravelError && validateDateOrder(startCalendar, endCalendar)) {
-                                val creatorId = 1
+                                // 如果你使用 Firebase Auth
+                                val creatorId = vm.getCurrentUserId()
 
                                 val activities = mutableMapOf<String, MutableList<Trip.Activity>>()
 

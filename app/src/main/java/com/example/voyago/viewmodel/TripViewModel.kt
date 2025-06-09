@@ -25,6 +25,7 @@ import com.example.voyago.model.TypeTravel
 import com.example.voyago.model.User
 import com.example.voyago.model.UserModel
 import com.example.voyago.view.SelectableItem
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -37,6 +38,13 @@ class TripViewModel(
     val reviewModel: ReviewModel,
     private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
+    private val auth = FirebaseAuth.getInstance()
+
+    fun getCurrentUserId(): Int {
+        return auth.currentUser?.uid?.hashCode()?.let {
+            if (it < 0) -it else it
+        } ?: -1
+    }
     //Use in the new Trip interface
     var newTrip: Trip = Trip()
 
