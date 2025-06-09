@@ -2,6 +2,7 @@ package com.example.voyago.view
 
 import android.app.DatePickerDialog
 import android.net.Uri
+import android.util.Log
 import android.widget.DatePicker
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -85,9 +86,9 @@ fun CreateNewTrip(navController: NavController, vm: TripViewModel, uvm: UserView
 
     val fieldValues = rememberSaveable(
         saver = listSaver(
-        save = { it.toList() },
-        restore = { it.toMutableStateList() }
-    )) {
+            save = { it.toList() },
+            restore = { it.toMutableStateList() }
+        )) {
         mutableStateListOf(
             "",
             "",
@@ -425,6 +426,18 @@ fun CreateNewTrip(navController: NavController, vm: TripViewModel, uvm: UserView
                                     endCalendar
                                 )) {
                                 val creatorId = loggedUser.id
+                                val creatorUser = loggedUser
+
+                                var participants = mutableMapOf<String, Trip.JoinRequest>()
+                                val joinRequestCreator = Trip.JoinRequest(
+                                    creatorId,
+                                    1,
+                                    emptyList(),
+                                    emptyList()
+                                )
+                                participants.put(creatorId.toString(), joinRequestCreator)
+                                Log.d("Participants", participants.toString())
+
 
                                 val activities = mutableMapOf<String, MutableList<Trip.Activity>>()
 
@@ -442,7 +455,7 @@ fun CreateNewTrip(navController: NavController, vm: TripViewModel, uvm: UserView
                                     creatorId = creatorId,
                                     published = false,
                                     id = -1,
-                                    participants = emptyMap(),
+                                    participants = participants,
                                     status = Trip.TripStatus.NOT_STARTED.toString(),
                                     appliedUsers = emptyMap(),
                                     rejectedUsers = emptyMap()
