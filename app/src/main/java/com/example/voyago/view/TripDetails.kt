@@ -77,6 +77,8 @@ import com.bumptech.glide.integration.compose.GlideImage
 import com.example.voyago.activities.ProfilePhoto
 import com.example.voyago.model.Review
 import com.example.voyago.model.Trip
+import com.example.voyago.model.Trip.Activity
+import com.example.voyago.model.Trip.JoinRequest
 import com.example.voyago.model.Trip.Participant
 import com.example.voyago.model.User
 import com.example.voyago.model.isTimestampLong
@@ -86,13 +88,36 @@ import com.example.voyago.viewmodel.NotificationViewModel
 import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
+import com.google.firebase.Timestamp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.io.Serializable
 import java.text.SimpleDateFormat
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
+import java.util.Date
 import java.util.Locale
+
+data class TripNotification(
+    val id: Int,
+    var photo: String? = null,
+    var title: String,
+    var destination: String,
+    var startDate: Timestamp,
+    var endDate: Timestamp,
+    var estimatedPrice: Double,
+    var groupSize: Int,
+    var participants: Map<String, JoinRequest>,                   // userId, id JoinedRequest
+    var activities: Map<String, List<Activity>>,                  // Map<Date, Activity>
+    var status: String,
+    var typeTravel: List<String>,
+    var creatorId: Int,
+    var appliedUsers: Map<String, JoinRequest>,                   // userId, id JoinedRequest
+    var rejectedUsers: Map<String, JoinRequest>,                  // userId, number of spots
+    var published: Boolean,
+    var isDraft: Boolean
+) : Serializable
 
 @Composable
 fun TripDetails(
@@ -107,21 +132,49 @@ fun TripDetails(
 
     val loggedUser by uvm.loggedUser.collectAsState()
     // 添加登录状态检查
-    val isUserLoggedIn = loggedUser.id > 0 && loggedUser.isValid() == true
-
-    //Trip that we are showing
-//    var trip = Trip()
-//    if (vm.userAction == TripViewModel.UserAction.VIEW_TRIP){
-//        trip = vm.otherTrip.value
-//    } else { trip = vm.selectedTrip.value }
 
 
-    val trip = when (vm.userAction) {
+
+    //  修复：更准确的登录状态检查
+    val isUserLoggedIn = remember(loggedUser) {
+        loggedUser.id != 0 &&
+                loggedUser.username.isNotEmpty() &&
+                loggedUser.email.isNotEmpty()
+    }
+
+
+    var trip = when (vm.userAction) {
         TripViewModel.UserAction.VIEW_TRIP -> vm.selectedTrip.value
         TripViewModel.UserAction.VIEW_OTHER_TRIP -> vm.otherTrip.value
         else -> vm.selectedTrip.value
 
     }
+
+    val fields =
+        navController.previousBackStackEntry?.savedStateHandle?.get<TripNotification>("notificationValues")
+
+    if (fields != null){
+        trip = Trip(
+            fields.id,
+            fields.photo,
+            fields.title,
+            fields.destination,
+            fields.startDate,
+            fields.endDate,
+            fields.estimatedPrice,
+            fields.groupSize,
+            fields.participants,
+            fields.activities,
+            fields.status,
+            fields.typeTravel,
+            fields.creatorId,
+            fields.appliedUsers,
+            fields.rejectedUsers,
+            fields.published,
+            fields.isDraft
+        )
+    }
+
 
     //Trip participants map
     val participantsMap by vm.tripParticipants.collectAsState()
@@ -592,9 +645,10 @@ fun TripDetails(
                             }
                         } else {
                             // 如果用户未登录，显示提示按钮引导用户登录
+                            // 修复：更详细的未登录状态处理
                             Button(
                                 onClick = {
-                                    // 导航到登录页面 - 根据你的导航路由调整
+                                    Log.d("TripDetails", "User not logged in, navigating to login")
                                     navController.navigate("login")
                                 },
                                 colors = ButtonDefaults.buttonColors(

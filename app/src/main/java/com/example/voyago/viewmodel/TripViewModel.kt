@@ -1,5 +1,6 @@
 package com.example.voyago.viewmodel
 
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.compose.runtime.State
@@ -25,6 +26,8 @@ import com.example.voyago.model.TypeTravel
 import com.example.voyago.model.User
 import com.example.voyago.model.UserModel
 import com.example.voyago.view.SelectableItem
+import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -37,6 +40,13 @@ class TripViewModel(
     val reviewModel: ReviewModel,
     private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
+    private val auth = FirebaseAuth.getInstance()
+
+    fun getCurrentUserId(): Int {
+        return auth.currentUser?.uid?.hashCode()?.let {
+            if (it < 0) -it else it
+        } ?: -1
+    }
     //Use in the new Trip interface
     var newTrip: Trip = Trip()
 
@@ -283,6 +293,9 @@ class TripViewModel(
     }
 
     //MY TRIPS
+    fun editTrip(trip: Trip, onResult: (Boolean) -> Unit) {
+        editExistingTrip(trip, onResult)
+    }
 
     //List of trips created and published by the logged in user
     val publishedTrips = tripModel.publishedTrips
@@ -524,23 +537,7 @@ class TripViewModel(
     }
 
 
-    fun addActivityToTrip(activity: Activity) {
-        //Creating a new trip
-        if (userAction == UserAction.CREATE_TRIP) {
-            Log.d("L2", "Edit activity to trip: $activity")
-            tripModel.addActivityToTrip(activity, newTrip).let { updatedTrip ->
-                newTrip = updatedTrip
-                _selectedTrip.value = newTrip
-            }
-        } else if (userAction == UserAction.EDIT_TRIP) {
-            //I am editing an existing trip
-            Log.d("L2", "Edit activity to trip: $activity")
-            tripModel.addActivityToTrip(activity, editTrip).let { updatedTrip ->
-                editTrip = updatedTrip
-                _selectedTrip.value = editTrip
-            }
-        }
-    }
+
 
     //Delete activity from a specific trip
     //Delete activity from a specific trip
@@ -625,6 +622,7 @@ class TripViewModel(
     }
 
 
+
     private fun updateAllTripStatuses() {
         val trips = tripModel.allPublishedTrips.value
 
@@ -647,6 +645,121 @@ class TripViewModel(
         }
     }
 
+    fun createTripWithImageUpload(
+        imageUri: Uri?,
+        title: String,
+        destination: String,
+        startDate: Calendar,
+        endDate: Calendar,
+        estimatedPrice: Double,
+        groupSize: Int,
+        typeTravel: List<String>,
+        creatorId: Int,
+        onResult: (Boolean, Trip?, String?) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                // 首先创建一个临时Trip来获取ID
+                val tempTrip = Trip(
+                    title = title,
+                    destination = destination,
+                    startDate = Timestamp(startDate.time),
+                    endDate = Timestamp(endDate.time),
+                    estimatedPrice = estimatedPrice,
+                    groupSize = groupSize,
+                    activities = mutableMapOf(),
+                    typeTravel = typeTravel,
+                    creatorId = creatorId,
+                    published = false,
+                    id = -1,
+                    participants = emptyMap(),
+                    status = Trip.TripStatus.NOT_STARTED.toString(),
+                    appliedUsers = emptyMap(),
+                    rejectedUsers = emptyMap(),
+                    photo = null // 暂时为null
+                )
+
+                // 创建Trip获取ID
+                tripModel.createNewTrip(tempTrip) { success, createdTrip ->
+                    if (success && createdTrip != null) {
+                        // Trip创建成功，现在上传图片
+                        if (imageUri != null) {
+                            viewModelScope.launch {
+                                val uploadSuccess = createdTrip.setPhoto(imageUri)
+                                if (uploadSuccess) {
+                                    // 图片上传成功，更新Trip
+                                    tripModel.editTrip(createdTrip) { updateSuccess ->
+                                        if (updateSuccess) {
+                                            onResult(true, createdTrip, null)
+                                        } else {
+                                            onResult(false, null, "Failed to save image path")
+                                        }
+                                    }
+                                } else {
+                                    // 图片上传失败，但Trip已创建，使用默认图片
+                                    Log.w("TripViewModel", "Image upload failed, using default image")
+                                    onResult(true, createdTrip, null)
+                                }
+                            }
+                        } else {
+                            // 没有图片，直接返回成功
+                            onResult(true, createdTrip, null)
+                        }
+                    } else {
+                        onResult(false, null, "Failed to create trip")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("TripViewModel", "Error creating trip with image", e)
+                onResult(false, null, "Error: ${e.message}")
+            }
+        }
+    }
+    fun refreshSelectedTrip() {
+        when (userAction) {
+            UserAction.CREATE_TRIP -> {
+                _selectedTrip.value = newTrip
+                Log.d("TripViewModel", "Refreshed selected trip to newTrip: ${newTrip.id}")
+            }
+            UserAction.EDIT_TRIP -> {
+                _selectedTrip.value = editTrip
+                Log.d("TripViewModel", "Refreshed selected trip to editTrip: ${editTrip.id}")
+            }
+            else -> {
+                Log.d("TripViewModel", "Keeping current selected trip: ${_selectedTrip.value.id}")
+            }
+        }
+    }
+
+    // 🔴 修复点18: 改进addActivityToTrip方法，确保状态同步
+    fun addActivityToTrip(activity: Trip.Activity) {
+        Log.d("TripViewModel", "Adding activity: $activity")
+        Log.d("TripViewModel", "Current user action: $userAction")
+
+        when (userAction) {
+            UserAction.CREATE_TRIP -> {
+                Log.d("TripViewModel", "Adding activity to new trip")
+                val updatedTrip = tripModel.addActivityToTrip(activity, newTrip)
+                newTrip = updatedTrip
+                _selectedTrip.value = newTrip
+                Log.d("TripViewModel", "Updated newTrip activities: ${newTrip.activities}")
+            }
+            UserAction.EDIT_TRIP -> {
+                Log.d("TripViewModel", "Adding activity to edit trip")
+                val updatedTrip = tripModel.addActivityToTrip(activity, editTrip)
+                editTrip = updatedTrip
+                _selectedTrip.value = editTrip
+                Log.d("TripViewModel", "Updated editTrip activities: ${editTrip.activities}")
+            }
+            else -> {
+                Log.d("TripViewModel", "Adding activity to selected trip")
+                val currentTrip = _selectedTrip.value
+                val updatedTrip = tripModel.addActivityToTrip(activity, currentTrip)
+                _selectedTrip.value = updatedTrip
+                Log.d("TripViewModel", "Updated selectedTrip activities: ${updatedTrip.activities}")
+            }
+        }
+    }
 
     //INITIALIZE VIEWMODEL
     init {

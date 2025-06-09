@@ -149,32 +149,21 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
                         Spacer(modifier = Modifier.weight(1f))
 
                         //Finish Button
+                        //Finish Button
                         Button(
                             onClick = {
                                 if (selectedTrip.hasActivityForEachDay() == true) {
 
                                     if(vm.userAction == TripViewModel.UserAction.CREATE_TRIP) {
-                                        val updatedTrip = Trip(
-                                            title = vm.newTrip.title,
-                                            destination = vm.newTrip.destination,
-                                            startDate = vm.newTrip.startDate,
-                                            endDate = vm.newTrip.endDate,
-                                            estimatedPrice = vm.newTrip.estimatedPrice,
-                                            groupSize = vm.newTrip.groupSize,
+                                        // 对于CREATE_TRIP，Trip已经包含了正确的photo路径
+                                        val updatedTrip = vm.newTrip.copy(
                                             activities = vm.newTrip.activities,
-                                            typeTravel = vm.newTrip.typeTravel,
-                                            creatorId = vm.newTrip.creatorId,
                                             published = false,
-                                            id = vm.newTrip.id,
-                                            participants = emptyMap(),
-                                            rejectedUsers = emptyMap(),
-                                            status = Trip.TripStatus.NOT_STARTED.toString(),
-                                            appliedUsers = emptyMap()
-
+                                            isDraft = false
                                         )
 
-                                        vm.addNewTrip(updatedTrip) { success, trip ->
-                                            if (success && trip != null) {
+                                        vm.editTrip(updatedTrip) { success ->
+                                            if (success) {
                                                 navController.navigate("my_trips_main") {
                                                     popUpTo("my_trips_main") {
                                                         inclusive = false
@@ -187,34 +176,21 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
                                     } else if(vm.userAction == TripViewModel.UserAction.EDIT_TRIP
                                         ||
                                         vm.userAction == TripViewModel.UserAction.EDIT_ACTIVITY
-                                        ){
-                                        val updatedTrip = Trip(
-                                            title = vm.editTrip.title,
-                                            destination = vm.editTrip.destination,
-                                            startDate = vm.editTrip.startDate,
-                                            endDate = vm.editTrip.endDate,
-                                            estimatedPrice = vm.editTrip.estimatedPrice,
-                                            groupSize = vm.editTrip.groupSize,
+                                    ){
+                                        val updatedTrip = vm.editTrip.copy(
                                             activities = vm.editTrip.activities,
-                                            typeTravel = vm.editTrip.typeTravel,
-                                            creatorId = vm.editTrip.creatorId,
-                                            published = vm.editTrip.published,
-                                            id = vm.editTrip.id,
-                                            participants = vm.editTrip.participants,
-                                            rejectedUsers = vm.editTrip.rejectedUsers,
-                                            status = vm.editTrip.status,
-                                            appliedUsers = vm.editTrip.appliedUsers,
                                             isDraft = false
                                         )
 
-                                        vm.editTrip = updatedTrip
-
-                                        //Go to the owned travel proposal
-                                        navController.navigate("my_trips_main") {
-                                            popUpTo("my_trips_main") {
-                                                inclusive = false
+                                        vm.editTrip(updatedTrip) { success ->
+                                            if (success) {
+                                                navController.navigate("my_trips_main") {
+                                                    popUpTo("my_trips_main") {
+                                                        inclusive = false
+                                                    }
+                                                    launchSingleTop = true
+                                                }
                                             }
-                                            launchSingleTop = true
                                         }
                                     }
 

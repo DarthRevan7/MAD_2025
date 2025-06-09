@@ -3,6 +3,7 @@ package com.example.voyago.view
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.util.Log
 import android.widget.DatePicker
 import android.widget.TimePicker
 import androidx.compose.foundation.background
@@ -52,12 +53,26 @@ import java.util.Locale
 @Composable
 fun EditActivity(navController: NavController, vm: TripViewModel, activityId: Int) {
 
-    var currentTrip = Trip()
-    if(vm.userAction == TripViewModel.UserAction.EDIT_ACTIVITY) {
-        currentTrip = vm.editTrip
-    } else if(vm.userAction == TripViewModel.UserAction.CREATE_TRIP) {
-        currentTrip = vm.newTrip
+    //  修复：使用更可靠的方式获取当前行程
+    val currentTrip = when (vm.userAction) {
+        TripViewModel.UserAction.EDIT_ACTIVITY -> {
+
+            if (vm.editTrip.isValid()) vm.editTrip else vm.selectedTrip.value
+        }
+        TripViewModel.UserAction.CREATE_TRIP -> {
+
+            if (vm.newTrip.isValid()) vm.newTrip else vm.selectedTrip.value
+        }
+        else -> vm.selectedTrip.value
     }
+
+    //  添加调试日志
+    Log.d("EditActivity", "=== Debug Info ===")
+    Log.d("EditActivity", "User Action: ${vm.userAction}")
+    Log.d("EditActivity", "Activity ID to find: $activityId")
+    Log.d("EditActivity", "Current trip ID: ${currentTrip.id}")
+    Log.d("EditActivity", "Current trip title: ${currentTrip.title}")
+    Log.d("EditActivity", "Activities count: ${currentTrip.activities.values.flatten().size}")
     val activityToEdit = currentTrip.activities.values.flatten().find { it.id == activityId }
 
     if (activityToEdit == null) {
@@ -143,53 +158,55 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                                 set(Calendar.HOUR_OF_DAY, 0)
                                 set(Calendar.MINUTE, 0)
                                 set(Calendar.SECOND, 0)
+                                set(Calendar.MILLISECOND, 0)
                             }
 
                             // 检查选择的日期是否在行程日期范围内
-                            val tripStartCal = toCalendar(currentTrip.startDate) // 行程开始日期
-                            val tripEndCal = toCalendar(currentTrip.endDate) // 行程结束日期
+                            val tripStartCal = toCalendar(currentTrip.startDate).apply {
+                                set(Calendar.HOUR_OF_DAY, 0)
+                                set(Calendar.MINUTE, 0)
+                                set(Calendar.SECOND, 0)
+                                set(Calendar.MILLISECOND, 0)
+                            }
 
-                            // 将行程开始和结束日期的时间部分设置为0，以便正确比较日期
-                            tripStartCal.set(Calendar.HOUR_OF_DAY, 0)
-                            tripStartCal.set(Calendar.MINUTE, 0)
-                            tripStartCal.set(Calendar.SECOND, 0)
-                            tripStartCal.set(Calendar.MILLISECOND, 0)
+                            val tripEndCal = toCalendar(currentTrip.endDate).apply {
+                                set(Calendar.HOUR_OF_DAY, 23)
+                                set(Calendar.MINUTE, 59)
+                                set(Calendar.SECOND, 59)
+                                set(Calendar.MILLISECOND, 999)
+                            }
 
-                            tripEndCal.set(Calendar.HOUR_OF_DAY, 23)
-                            tripEndCal.set(Calendar.MINUTE, 59)
-                            tripEndCal.set(Calendar.SECOND, 59)
-                            tripEndCal.set(Calendar.MILLISECOND, 999)
-
-                            val isValid = !(pickedCalendar.before(currentTrip.startDate) || pickedCalendar.after(currentTrip.endDate))
-
-                            activityDate = "$d/${m + 1}/$y"
+                            val isValid = !pickedCalendar.before(tripStartCal) && !pickedCalendar.after(tripEndCal)
 
                             if (isValid) {
+                                // 只有在日期有效时才更新 activityDate
+                                activityDate = "$d/${m + 1}/$y"
                                 showDateError = false
                                 dateErrorMessage = ""
                             } else {
+                                // 日期无效时不更新 activityDate，保持原值
                                 showDateError = true
-                                dateErrorMessage = "Activity date must be within the trip period \n(${dateFormat.format(toCalendar(currentTrip.startDate).time)} - ${dateFormat.format(toCalendar(currentTrip.endDate).time)})"
+                                dateErrorMessage = "Activity date must be within the trip period \n(${dateFormat.format(tripStartCal.time)} - ${dateFormat.format(tripEndCal.time)})"
                             }
                         }, year, month, day
                     ).apply {
                         // 设置日期选择器的最小和最大日期限制
-                        val tripStartCal = toCalendar(currentTrip.startDate) // 获取行程开始日期
-                        val tripEndCal = toCalendar(currentTrip.endDate) // 获取行程结束日期
+                        val tripStartCal = toCalendar(currentTrip.startDate).apply {
+                            set(Calendar.HOUR_OF_DAY, 0)
+                            set(Calendar.MINUTE, 0)
+                            set(Calendar.SECOND, 0)
+                            set(Calendar.MILLISECOND, 0)
+                        }
 
-                        // 设置时间为一天的开始和结束，确保整天都可以选择
-                        tripStartCal.set(Calendar.HOUR_OF_DAY, 0)
-                        tripStartCal.set(Calendar.MINUTE, 0)
-                        tripStartCal.set(Calendar.SECOND, 0)
-                        tripStartCal.set(Calendar.MILLISECOND, 0)
+                        val tripEndCal = toCalendar(currentTrip.endDate).apply {
+                            set(Calendar.HOUR_OF_DAY, 23)
+                            set(Calendar.MINUTE, 59)
+                            set(Calendar.SECOND, 59)
+                            set(Calendar.MILLISECOND, 999)
+                        }
 
-                        tripEndCal.set(Calendar.HOUR_OF_DAY, 23)
-                        tripEndCal.set(Calendar.MINUTE, 59)
-                        tripEndCal.set(Calendar.SECOND, 59)
-                        tripEndCal.set(Calendar.MILLISECOND, 999)
-
-                        datePicker.minDate = tripStartCal.timeInMillis // 设置最小可选日期
-                        datePicker.maxDate = tripEndCal.timeInMillis // 设置最大可选日期
+                        datePicker.minDate = tripStartCal.timeInMillis
+                        datePicker.maxDate = tripEndCal.timeInMillis
                     }
                 }
 
@@ -316,20 +333,45 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                             if (parsedDate == null) {
                                 showDateError = true
                                 dateErrorMessage = "Invalid date format. Please select a date."
+                                return@Button // 提前返回，不继续执行
                             }
 
                             val activityCalendar = Calendar.getInstance().apply {
-                                if (parsedDate != null) {
-                                    time = parsedDate
-                                }
+                                time = parsedDate
+                                set(Calendar.HOUR_OF_DAY, 0)
+                                set(Calendar.MINUTE, 0)
+                                set(Calendar.SECOND, 0)
+                                set(Calendar.MILLISECOND, 0)
+                            }
+
+                            // 再次验证日期范围（双重保险）
+                            val tripStartCal = toCalendar(currentTrip.startDate).apply {
+                                set(Calendar.HOUR_OF_DAY, 0)
+                                set(Calendar.MINUTE, 0)
+                                set(Calendar.SECOND, 0)
+                                set(Calendar.MILLISECOND, 0)
+                            }
+
+                            val tripEndCal = toCalendar(currentTrip.endDate).apply {
+                                set(Calendar.HOUR_OF_DAY, 23)
+                                set(Calendar.MINUTE, 59)
+                                set(Calendar.SECOND, 59)
+                                set(Calendar.MILLISECOND, 999)
+                            }
+
+                            val isDateValid = !activityCalendar.before(tripStartCal) && !activityCalendar.after(tripEndCal)
+
+                            if (!isDateValid) {
+                                showDateError = true
+                                dateErrorMessage = "Activity date must be within the trip period"
+                                return@Button
                             }
 
                             descriptionTouched.value = true
 
                             if (!showDateError && !descriptionHasErrors) {
-
                                 val updatedActivity = Trip.Activity(
-                                    id = activityId, // preserve the original ID
+                                    id = activityId,
                                     date = Timestamp(activityCalendar.time),
                                     time = selectedTime,
                                     isGroupActivity = isGroupActivityChecked,
@@ -346,10 +388,10 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                     ) {
                         Text("Update")
                     }
-                }
             }
         }
     }
+}
 }
 
 
