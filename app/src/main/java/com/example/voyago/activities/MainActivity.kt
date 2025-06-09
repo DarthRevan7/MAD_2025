@@ -652,7 +652,16 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = Factory
             )
-            TripApplications(vm = tripViewModel, userViewModel, navController)
+            val notificationViewModel: NotificationViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = Factory
+            )
+            TripApplications(
+                vm = tripViewModel,
+                userViewModel,
+                navController,
+                notificationViewModel
+            )
         }
 
         composable("edit_trip") { entry ->
