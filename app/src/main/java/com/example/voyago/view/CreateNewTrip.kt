@@ -37,6 +37,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -53,33 +54,37 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import java.util.Calendar
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.input.KeyboardType
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.example.voyago.model.Trip
 import com.example.voyago.model.TypeTravel
 import com.example.voyago.viewmodel.TripViewModel
+import com.example.voyago.viewmodel.UserViewModel
 import com.google.firebase.Timestamp
+import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateNewTrip(navController: NavController, vm: TripViewModel) {
+fun CreateNewTrip(navController: NavController, vm: TripViewModel, uvm: UserViewModel) {
 
 
     vm.userAction = TripViewModel.UserAction.CREATE_TRIP
 
-    var imageUri by rememberSaveable {mutableStateOf<Uri?>(null)}
-    var photoTouched = remember {mutableStateOf(false)}
-    var tripImageError by rememberSaveable {mutableStateOf(false)}
+    val loggedUser by uvm.loggedUser.collectAsState()
+
+    var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
+    var photoTouched = remember { mutableStateOf(false) }
+    var tripImageError by rememberSaveable { mutableStateOf(false) }
 
 
-    val fieldValues = rememberSaveable(saver = listSaver(
+    val fieldValues = rememberSaveable(
+        saver = listSaver(
         save = { it.toList() },
         restore = { it.toMutableStateList() }
     )) {
@@ -91,7 +96,7 @@ fun CreateNewTrip(navController: NavController, vm: TripViewModel) {
         )
     }
     val fieldNames = listOf("Title", "Destination", "Price Estimated", "Group Size")
-    val fieldTouched = remember {mutableStateListOf(false, false, false, false)}
+    val fieldTouched = remember { mutableStateListOf(false, false, false, false) }
     var fieldErrors = arrayOf(false, false, false, false)
 
 
@@ -131,7 +136,11 @@ fun CreateNewTrip(navController: NavController, vm: TripViewModel) {
 
             //Image Trip with Error check
             item {
-                TripImage(imageUri = imageUri, onUriSelected = { uri -> imageUri = uri }, photoTouched)
+                TripImage(
+                    imageUri = imageUri,
+                    onUriSelected = { uri -> imageUri = uri },
+                    photoTouched
+                )
             }
 
             if (tripImageError && !photoTouched.value) {
@@ -168,7 +177,7 @@ fun CreateNewTrip(navController: NavController, vm: TripViewModel) {
                                 item,
                                 {
                                     fieldValues[index] = it
-                                    if(!fieldIsBeenTouched) {
+                                    if (!fieldIsBeenTouched) {
                                         fieldTouched[index] = true
                                     }
                                 },
@@ -186,7 +195,7 @@ fun CreateNewTrip(navController: NavController, vm: TripViewModel) {
                                 item,
                                 {
                                     fieldValues[index] = it
-                                    if(!fieldIsBeenTouched) {
+                                    if (!fieldIsBeenTouched) {
                                         fieldTouched[index] = true
                                     }
                                 },
@@ -203,7 +212,7 @@ fun CreateNewTrip(navController: NavController, vm: TripViewModel) {
                                 item,
                                 {
                                     fieldValues[index] = it
-                                    if(!fieldIsBeenTouched) {
+                                    if (!fieldIsBeenTouched) {
                                         fieldTouched[index] = true
                                     }
                                 },
@@ -411,8 +420,11 @@ fun CreateNewTrip(navController: NavController, vm: TripViewModel) {
                                 ""
                             }
 
-                            if (!tripImageError && !fieldErrors.any{it} && !typeTravelError && validateDateOrder(startCalendar, endCalendar)) {
-                                val creatorId = 1
+                            if (!tripImageError && !fieldErrors.any { it } && !typeTravelError && validateDateOrder(
+                                    startCalendar,
+                                    endCalendar
+                                )) {
+                                val creatorId = loggedUser.id
 
                                 val activities = mutableMapOf<String, MutableList<Trip.Activity>>()
 
@@ -424,7 +436,9 @@ fun CreateNewTrip(navController: NavController, vm: TripViewModel) {
                                     estimatedPrice = fieldValues[2].toDouble(),
                                     groupSize = fieldValues[3].toInt(),
                                     activities = activities,
-                                    typeTravel = selected.map { TypeTravel.valueOf(it.uppercase()).toString() },
+                                    typeTravel = selected.map {
+                                        TypeTravel.valueOf(it.uppercase()).toString()
+                                    },
                                     creatorId = creatorId,
                                     published = false,
                                     id = -1,
@@ -454,7 +468,6 @@ fun CreateNewTrip(navController: NavController, vm: TripViewModel) {
         }
     }
 }
-
 
 
 @Composable
@@ -531,8 +544,10 @@ fun TripImage(imageUri: Uri?, onUriSelected: (Uri?) -> Unit, photoTouched: Mutab
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun ValidatingInputTextField(text: String, updateState: (String) -> Unit,
-                             validatorHasErrors: Boolean, label: String) {
+fun ValidatingInputTextField(
+    text: String, updateState: (String) -> Unit,
+    validatorHasErrors: Boolean, label: String
+) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
     Column(
@@ -563,7 +578,12 @@ fun ValidatingInputTextField(text: String, updateState: (String) -> Unit,
 }
 
 @Composable
-fun ValidatingInputFloatField(text:String, updateState: (String) -> Unit, validatorHasErrors: Boolean, label: String) {
+fun ValidatingInputFloatField(
+    text: String,
+    updateState: (String) -> Unit,
+    validatorHasErrors: Boolean,
+    label: String
+) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
     Column(
@@ -594,7 +614,12 @@ fun ValidatingInputFloatField(text:String, updateState: (String) -> Unit, valida
 }
 
 @Composable
-fun ValidatingInputIntField(text:String, updateState: (String) -> Unit, validatorHasErrors: Boolean, label: String) {
+fun ValidatingInputIntField(
+    text: String,
+    updateState: (String) -> Unit,
+    validatorHasErrors: Boolean,
+    label: String
+) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
     Column(
