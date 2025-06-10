@@ -30,7 +30,8 @@ data class User(
     var typeTravel: List<TypeTravel> = emptyList(),
     var desiredDestination: List<String> = emptyList(),
     var rating: Float = 0f,
-    var reliability: Int = 0
+    var reliability: Int = 0,
+    var isOnline: Boolean = false,                         // 是否在线
 ) : Serializable {
     fun isValid(): Boolean {
         return firstname.isNotBlank() &&

@@ -67,6 +67,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.zIndex
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -89,7 +90,6 @@ import com.example.voyago.model.NavItem
 import com.example.voyago.model.User
 import com.example.voyago.model.UserModel
 import com.example.voyago.view.ActivitiesList
-import com.example.voyago.view.ChatScreen
 import com.example.voyago.view.CompleteAccount
 import com.example.voyago.view.CreateAccount2Screen
 import com.example.voyago.view.CreateAccountScreen
@@ -113,8 +113,6 @@ import com.example.voyago.view.TripDetails
 import com.example.voyago.view.UserProfileScreen
 import com.example.voyago.viewmodel.ArticleFactory
 import com.example.voyago.viewmodel.ArticleViewModel
-import com.example.voyago.viewmodel.ChatFactory
-import com.example.voyago.viewmodel.ChatViewModel
 import com.example.voyago.viewmodel.Factory
 import com.example.voyago.viewmodel.NotificationFactory
 import com.example.voyago.viewmodel.NotificationViewModel
@@ -132,7 +130,10 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import com.example.voyago.view.FirebaseChatRoomScreen
+import com.example.voyago.viewmodel.ChatRoomViewModel
+import com.example.voyago.viewmodel.ChatRoomFactory
+import com.example.voyago.view.ChatRoomScreen
+
 
 
 sealed class Screen(val route: String) {
@@ -185,6 +186,8 @@ class MainActivity : ComponentActivity() {
         val mode = data?.getQueryParameter("mode")
         val oobCode = data?.getQueryParameter("oobCode")
 
+
+
         if (mode == "verifyEmail" && oobCode != null) {
             FirebaseAuth.getInstance().applyActionCode(oobCode)
                 .addOnSuccessListener {
@@ -234,10 +237,40 @@ class MainActivity : ComponentActivity() {
             requestPermissions()
         }
 
+        lifecycle.addObserver(object : DefaultLifecycleObserver {
+            override fun onStart(owner: LifecycleOwner) {
+                // 应用进入前台时设置用户为在线
+                updateUserOnlineStatus(true)
+            }
+
+            override fun onStop(owner: LifecycleOwner) {
+                // 应用进入后台时设置用户为离线
+                updateUserOnlineStatus(false)
+            }
+        })
+
         setContent {
             MainScreen(viewModel)
         }
 
+
+    }
+    private fun updateUserOnlineStatus(isOnline: Boolean) {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser != null) {
+            // 更新用户在线状态
+            val firestore = com.google.firebase.Firebase.firestore
+            firestore.collection("users")
+                .whereEqualTo("uid", currentUser.uid)
+                .get()
+                .addOnSuccessListener { documents ->
+                    for (document in documents) {
+                        val userId = document.id
+                        firestore.collection("users").document(userId)
+                            .update("isOnline", isOnline)
+                    }
+                }
+        }
     }
 
     private fun requestPermissions() {
@@ -870,19 +903,7 @@ fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
     navigation(startDestination = "chats_list", route = Screen.Chats.route) {
         composable("chats_list") { entry ->
             RequireAuth(navController) {
-
-                val chatNavGraphEntry = remember(entry) {
-                    navController.getBackStackEntry(Screen.Chats.route)
-                }
-//                Text("Chats List Screen")
-                val chatViewModel: ChatViewModel = viewModel(
-                    viewModelStoreOwner = chatNavGraphEntry,
-                    factory = ChatFactory
-                )
-
-                ChatScreen(chatViewModel)
-
-                // 获取用户信息
+                // 获取聊天室相关的 ViewModel
                 val chatsGraphEntry = remember(entry) {
                     navController.getBackStackEntry(Screen.Chats.route)
                 }
@@ -890,32 +911,31 @@ fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
                     viewModelStoreOwner = chatsGraphEntry,
                     factory = Factory
                 )
-                val currentUser by userViewModel.loggedUser.collectAsState()
-
-                // 使用 Firebase 实时聊天室
-                FirebaseChatRoomScreen(
-                    currentUser = currentUser,
-                    onBackClick = null // 主聊天界面不需要返回按钮
+                val chatRoomViewModel: ChatRoomViewModel = viewModel(
+                    viewModelStoreOwner = chatsGraphEntry,
+                    factory = ChatRoomFactory
                 )
+
+                // 显示聊天室界面
+                ChatRoomScreen(viewModel = chatRoomViewModel)
             }
         }
 
+        // 如果需要私聊功能，可以保留这个路由
         composable("chat_detail/{chatId}") { backStackEntry ->
             RequireAuth(navController) {
-                // 获取用户信息
                 val chatsGraphEntry = remember(backStackEntry) {
                     navController.getBackStackEntry(Screen.Chats.route)
                 }
-                val userViewModel: UserViewModel = viewModel(
+                val chatRoomViewModel: ChatRoomViewModel = viewModel(
                     viewModelStoreOwner = chatsGraphEntry,
-                    factory = Factory
+                    factory = ChatRoomFactory
                 )
-                val currentUser by userViewModel.loggedUser.collectAsState()
 
-                // 具体聊天室 - 可以根据 chatId 加载不同的聊天室
-                FirebaseChatRoomScreen(
-                    currentUser = currentUser,
-                    onBackClick = { navController.popBackStack() }
+                // 私聊界面 - 可以根据 chatId 实现不同的聊天室
+                ChatRoomScreen(
+                    viewModel = chatRoomViewModel
+                    // 可以添加返回按钮等额外参数
                 )
             }
         }
