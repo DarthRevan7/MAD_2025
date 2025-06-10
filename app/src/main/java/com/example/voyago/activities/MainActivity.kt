@@ -89,6 +89,7 @@ import com.example.voyago.model.NavItem
 import com.example.voyago.model.User
 import com.example.voyago.model.UserModel
 import com.example.voyago.view.ActivitiesList
+import com.example.voyago.view.ChatScreen
 import com.example.voyago.view.CompleteAccount
 import com.example.voyago.view.CreateAccount2Screen
 import com.example.voyago.view.CreateAccountScreen
@@ -112,6 +113,8 @@ import com.example.voyago.view.TripDetails
 import com.example.voyago.view.UserProfileScreen
 import com.example.voyago.viewmodel.ArticleFactory
 import com.example.voyago.viewmodel.ArticleViewModel
+import com.example.voyago.viewmodel.ChatFactory
+import com.example.voyago.viewmodel.ChatViewModel
 import com.example.voyago.viewmodel.Factory
 import com.example.voyago.viewmodel.NotificationFactory
 import com.example.voyago.viewmodel.NotificationViewModel
@@ -389,6 +392,7 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
                 viewModel(viewModelStoreOwner = parentEntry, factory = NotificationFactory)
             val uvm: UserViewModel = viewModel(viewModelStoreOwner = parentEntry, factory = Factory)
             val vm: TripViewModel = viewModel(viewModelStoreOwner = parentEntry, factory = Factory)
+
 
             NotificationView(navController, nvm, uvm, vm)
         }
@@ -863,9 +867,18 @@ fun NavGraphBuilder.homeNavGraph(
 
 fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
     navigation(startDestination = "chats_list", route = Screen.Chats.route) {
-        composable("chats_list") {
+        composable("chats_list") { entry ->
             RequireAuth(navController) {
-                Text("Chats List Screen")
+                val chatNavGraphEntry = remember(entry) {
+                    navController.getBackStackEntry(Screen.Chats.route)
+                }
+//                Text("Chats List Screen")
+                val chatViewModel: ChatViewModel = viewModel(
+                    viewModelStoreOwner = chatNavGraphEntry,
+                    factory = ChatFactory
+                )
+
+                ChatScreen(chatViewModel)
             }
         }
         composable("chat_detail/{chatId}") { backStackEntry ->
