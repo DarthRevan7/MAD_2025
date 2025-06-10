@@ -132,6 +132,7 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import com.example.voyago.view.FirebaseChatRoomScreen
 
 
 sealed class Screen(val route: String) {
@@ -869,6 +870,7 @@ fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
     navigation(startDestination = "chats_list", route = Screen.Chats.route) {
         composable("chats_list") { entry ->
             RequireAuth(navController) {
+<<<<<<< Updated upstream
                 val chatNavGraphEntry = remember(entry) {
                     navController.getBackStackEntry(Screen.Chats.route)
                 }
@@ -879,10 +881,44 @@ fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
                 )
 
                 ChatScreen(chatViewModel)
+=======
+                // 获取用户信息
+                val chatsGraphEntry = remember(entry) {
+                    navController.getBackStackEntry(Screen.Chats.route)
+                }
+                val userViewModel: UserViewModel = viewModel(
+                    viewModelStoreOwner = chatsGraphEntry,
+                    factory = Factory
+                )
+                val currentUser by userViewModel.loggedUser.collectAsState()
+
+                // 使用 Firebase 实时聊天室
+                FirebaseChatRoomScreen(
+                    currentUser = currentUser,
+                    onBackClick = null // 主聊天界面不需要返回按钮
+                )
+>>>>>>> Stashed changes
             }
         }
+
         composable("chat_detail/{chatId}") { backStackEntry ->
-            Text("Chat Detail Screen with ID: ${backStackEntry.arguments?.getString("chatId")}")
+            RequireAuth(navController) {
+                // 获取用户信息
+                val chatsGraphEntry = remember(backStackEntry) {
+                    navController.getBackStackEntry(Screen.Chats.route)
+                }
+                val userViewModel: UserViewModel = viewModel(
+                    viewModelStoreOwner = chatsGraphEntry,
+                    factory = Factory
+                )
+                val currentUser by userViewModel.loggedUser.collectAsState()
+
+                // 具体聊天室 - 可以根据 chatId 加载不同的聊天室
+                FirebaseChatRoomScreen(
+                    currentUser = currentUser,
+                    onBackClick = { navController.popBackStack() }
+                )
+            }
         }
     }
 }
