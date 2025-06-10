@@ -870,7 +870,7 @@ fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
     navigation(startDestination = "chats_list", route = Screen.Chats.route) {
         composable("chats_list") { entry ->
             RequireAuth(navController) {
-<<<<<<< Updated upstream
+
                 val chatNavGraphEntry = remember(entry) {
                     navController.getBackStackEntry(Screen.Chats.route)
                 }
@@ -881,7 +881,7 @@ fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
                 )
 
                 ChatScreen(chatViewModel)
-=======
+
                 // 获取用户信息
                 val chatsGraphEntry = remember(entry) {
                     navController.getBackStackEntry(Screen.Chats.route)
@@ -897,7 +897,6 @@ fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
                     currentUser = currentUser,
                     onBackClick = null // 主聊天界面不需要返回按钮
                 )
->>>>>>> Stashed changes
             }
         }
 
