@@ -692,7 +692,7 @@ fun TripDetails(
             }
 
             item {
-                val user = uvm.getUserData(trip.creatorId).collectAsState(initial = null).value
+                val user = uvm.getUserData(trip.creatorId).collectAsState(initial = User()).value
 
                 if (user != null) {
                     ShowParticipants(
