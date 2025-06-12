@@ -140,13 +140,17 @@ fun HomePageScreen(
 
         val toDisplay = articles.take(displayCount)
 
-       // 🔄 修改这部分：传递整个 article 对象
+       //  修改这部分：传递整个 article 对象
         toDisplay.forEach { article ->
             ArticleShow(
                 article = article,  // 传递整个 article 对象
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
+                    .clickable {
+                        // 导航到 Article Search 页面
+                        navController.navigate("article_detail/${article.id}")
+                    }
             )
         }
 
@@ -309,7 +313,8 @@ private fun TripCard(
 @Composable
 fun ArticleShow(
     article: Article,  // 🔄 改为接收整个 Article 对象而不是单独的字段
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null
 ) {
     var imageUrl by remember { mutableStateOf<String?>(null) }
 
@@ -321,7 +326,14 @@ fun ArticleShow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(4.dp),
+            .padding(4.dp)
+        .then(
+            if (onClick != null) {
+                Modifier.clickable { onClick() }
+            } else {
+                Modifier
+            }
+            ),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // 🔄 使用 GlideImage 和 Firebase Storage URL
