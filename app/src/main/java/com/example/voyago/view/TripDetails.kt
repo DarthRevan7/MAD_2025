@@ -607,7 +607,7 @@ fun TripDetails(
 
                         if (isUserLoggedIn) {
                             //If the user can join the trip
-                            if (trip.canJoin() && trip.creatorId != loggedUser.id) {
+                            if (trip.canJoin() && trip.creatorId != loggedUser.id && !joined) {
                                 //Ask to Join/Asked to Join Button
                                 Button(
                                     onClick = {
@@ -633,9 +633,9 @@ fun TripDetails(
                                     }
                                 }
 
-                            } else if (trip.participants.containsKey(loggedUser.id.toString())
+                            } else if (joined
                                 && trip.status != Trip.TripStatus.COMPLETED.toString()
-                                && trip.creatorId != loggedUser.id
+
                             ) {
                                 Button(
                                     onClick = {},
