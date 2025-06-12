@@ -99,6 +99,7 @@ import com.example.voyago.view.EditProfileScreen
 import com.example.voyago.view.EditTrip
 import com.example.voyago.view.ExplorePage
 import com.example.voyago.view.FiltersSelection
+import com.example.voyago.view.FirebaseChatRoomScreen
 import com.example.voyago.view.HomePageScreen
 import com.example.voyago.view.LoginScreen
 import com.example.voyago.view.MyProfileScreen
@@ -132,7 +133,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import com.example.voyago.view.FirebaseChatRoomScreen
 
 
 sealed class Screen(val route: String) {
@@ -667,7 +667,12 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = NotificationFactory
             )
-            TripApplications(vm = tripViewModel, userViewModel, navController, notificationViewModel)
+            TripApplications(
+                vm = tripViewModel,
+                userViewModel,
+                navController,
+                notificationViewModel
+            )
         }
 
         composable("edit_trip") { entry ->
@@ -930,7 +935,15 @@ fun NavGraphBuilder.profileNavGraph(
 ) {
 
     navigation(startDestination = "profile_overview", route = Screen.Profile.route) {
-        composable("profile_overview") { entry ->
+        composable(
+            route = "profile_overview?tabIndex={tabIndex}",
+            arguments = listOf(
+                navArgument("tabIndex") {
+                    type = NavType.IntType
+                    defaultValue = 0 // fallback to "About" tab
+                }
+            )
+        ) { entry ->
             RequireAuth(navController) {
                 val profileNavGraphEntry = remember(entry) {
                     navController.getBackStackEntry(Screen.Profile.route)
@@ -948,12 +961,15 @@ fun NavGraphBuilder.profileNavGraph(
                     factory = Factory
                 )
                 val vm2: ArticleViewModel = viewModel(factory = ArticleFactory)
+                val tabIndex = entry.arguments?.getInt("tabIndex") ?: 0
+
                 MyProfileScreen(
                     navController = navController,
                     vm = profileNavGraphEntryVm,
                     vm2 = vm2,
                     uvm = userViewModel,
-                    rvm = reviewViewModel
+                    rvm = reviewViewModel,
+                    defaultTabIndex = tabIndex
                 )
             }
         }
