@@ -155,7 +155,7 @@ class UserModel {
             val query = Collections.users
                 .whereIn("username", usernameList)
 
-            val listener = query.orderBy("born")
+            val listener = query.orderBy("id")
                 .addSnapshotListener { s, er ->
                     if (s != null)
                         trySend(s.toObjects(User::class.java))

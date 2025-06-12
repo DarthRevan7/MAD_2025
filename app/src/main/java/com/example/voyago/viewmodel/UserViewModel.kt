@@ -202,27 +202,36 @@ class UserViewModel(val model: UserModel) : ViewModel() {
                 onResult(emptyList())
             }
     }
-    fun checkUserExistsAsync(username: String, callback: (Boolean) -> Unit) {
+    fun checkUserExistsAsync(username: String, callback: (Boolean, User) -> Unit) {
         viewModelScope.launch {
+            var user = User()
             try {
                 Log.d("UserViewModel", "Checking if user exists: $username")
 
-                val result = Firebase.firestore.collection("users")
+                val result = Collections.users
                     .whereEqualTo("username", username)
                     .get()
+                    .addOnSuccessListener { snapshot ->
+                        if(!snapshot.isEmpty) {
+                            val userGot = snapshot.documents[0].toObject(User::class.java)
+                            if(userGot != null) {
+                                user = userGot
+                            }
+                        }
+                    }
                     .await()
 
                 val exists = !result.isEmpty
-                Log.d("UserViewModel", "User '$username' exists: $exists")
+                Log.d("UserViewModel", "User '$username' exists: $exists, user ${user.toString()}")
 
                 // 确保在主线程回调
                 withContext(Dispatchers.Main) {
-                    callback(exists)
+                    callback(exists, user)
                 }
             } catch (e: Exception) {
                 Log.e("UserViewModel", "Error checking user existence", e)
                 withContext(Dispatchers.Main) {
-                    callback(false)
+                    callback(false, user)
                 }
             }
         }
