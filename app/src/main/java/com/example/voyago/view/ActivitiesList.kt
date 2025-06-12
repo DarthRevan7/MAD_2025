@@ -152,7 +152,7 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
                         //Finish Button
                         Button(
                             onClick = {
-                                if (selectedTrip.hasActivityForEachDay() == true) {
+                                if (selectedTrip.hasActivityForEachDay()) {
 
                                     if(vm.userAction == TripViewModel.UserAction.CREATE_TRIP) {
                                         // 对于CREATE_TRIP，Trip已经包含了正确的photo路径
@@ -161,6 +161,15 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
                                             published = false,
                                             isDraft = false
                                         )
+
+                                        val creatorJoinRequest = Trip.JoinRequest(
+                                            userId = updatedTrip.creatorId,
+                                            requestedSpots = 1,
+                                            unregisteredParticipants = emptyList(),
+                                            registeredParticipants = listOf(updatedTrip.creatorId)
+                                        )
+
+                                        updatedTrip.participants = mapOf(updatedTrip.creatorId.toString() to creatorJoinRequest)
 
                                         vm.editTrip(updatedTrip) { success ->
                                             if (success) {
