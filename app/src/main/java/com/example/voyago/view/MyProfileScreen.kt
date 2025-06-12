@@ -87,7 +87,8 @@ fun MyProfileScreen(
     navController: NavController,
     vm2: ArticleViewModel,
     uvm: UserViewModel,
-    rvm: ReviewViewModel
+    rvm: ReviewViewModel,
+    defaultTabIndex: Int = 0
 ) {
     val context = LocalContext.current
 
@@ -231,7 +232,17 @@ fun MyProfileScreen(
 
         item {
             //Tab About, My Trips, Review
-            TabAboutTripsReview(user, joinedTrips, publishedTrips, vm, vm2, navController, uvm, rvm)
+            TabAboutTripsReview(
+                user,
+                joinedTrips,
+                publishedTrips,
+                vm,
+                vm2,
+                navController,
+                uvm,
+                rvm,
+                defaultTabIndex
+            )
         }
     }
 }
@@ -310,14 +321,14 @@ fun TabAboutTripsReview(
     vm2: ArticleViewModel,
     navController: NavController,
     uvm: UserViewModel,
-    rvm: ReviewViewModel
+    rvm: ReviewViewModel,
+    defaultTabIndex: Int
 ) {
 
     // TAB with About, Trips & Articles, Reviews
     val tabs = listOf("About", "Trips & Articles", "Reviews")
 
-    var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
-
+    var selectedTabIndex by rememberSaveable { mutableIntStateOf(defaultTabIndex) }
 
     LaunchedEffect(Unit) {
         vm.creatorPublicFilter(user.id)

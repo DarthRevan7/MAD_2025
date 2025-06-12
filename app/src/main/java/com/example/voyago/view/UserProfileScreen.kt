@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,14 +27,23 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.voyago.activities.*
-import com.example.voyago.viewmodel.*
-import androidx.compose.runtime.getValue
+import com.example.voyago.activities.ProfilePhoto
+import com.example.voyago.viewmodel.ArticleViewModel
+import com.example.voyago.viewmodel.ReviewViewModel
+import com.example.voyago.viewmodel.TripViewModel
+import com.example.voyago.viewmodel.UserViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserProfileScreen(vm: TripViewModel, navController: NavController, vm2: ArticleViewModel, userId: Int, uvm: UserViewModel, rvm: ReviewViewModel) {
+fun UserProfileScreen(
+    vm: TripViewModel,
+    navController: NavController,
+    vm2: ArticleViewModel,
+    userId: Int,
+    uvm: UserViewModel,
+    rvm: ReviewViewModel
+) {
     // Collect user data as state
     val user by uvm.getUserData(userId).collectAsState(initial = null)
     //List of trip created and published by the logged in user (id=1)
@@ -118,7 +128,17 @@ fun UserProfileScreen(vm: TripViewModel, navController: NavController, vm2: Arti
         }
 
         item {
-            TabAboutTripsReview(user!!, joinedTrips, publishedTrips, vm, vm2, navController, uvm, rvm)
+            TabAboutTripsReview(
+                user!!,
+                joinedTrips,
+                publishedTrips,
+                vm,
+                vm2,
+                navController,
+                uvm,
+                rvm,
+                defaultTabIndex = 0
+            )
         }
     }
 }
