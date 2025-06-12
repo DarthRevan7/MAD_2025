@@ -397,15 +397,6 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
 
             NotificationView(navController, nvm, uvm, vm)
         }
-//        val notificationViewModel = NotificationViewModel()
-//        val userViewModel = UserViewModel(UserModel())
-//        val tripViewModel = TripViewModel(TripModel(),
-//            UserModel(), ReviewModel
-//        ()
-//        )
-//        composable(Screen.Notifications.route) {
-//            NotificationView(navController, notificationViewModel, userViewModel, tripViewModel)
-//        }
     }
 }
 
@@ -1192,7 +1183,9 @@ fun TopBar(nvm: NotificationViewModel, navController: NavController, uvm: UserVi
             }
             IconButton(onClick = {
                 nvm.markNotificationsRead(userId)
-                navController.navigate(Screen.Notifications.route)
+                navController.navigate(Screen.Notifications.route) {
+                    launchSingleTop = true // Prevents multiple instances of the same screen
+                }
             }) {
                 Box(
                     modifier = Modifier
