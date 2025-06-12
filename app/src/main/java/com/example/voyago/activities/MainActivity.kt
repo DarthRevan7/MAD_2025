@@ -594,7 +594,15 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
 
         }
 
-        composable("trip_details") { entry ->
+        composable(
+            "trip_details?owner={owner}",
+            arguments = listOf(
+                navArgument("owner") {
+                    type = NavType.BoolType
+                    defaultValue = false
+                }
+            )
+        ) { entry ->
             val exploreGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.MyTrips.route)
             }
