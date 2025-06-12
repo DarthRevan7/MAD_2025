@@ -225,7 +225,7 @@ fun NotificationView(
                                             )
 
 
-                                            navController.navigate("trip_details")
+                                            navController.navigate("trip_details?owner=true")
                                             Log.e("Notification", "Found: ${vm.otherTrip.value.id}")
                                         } else {
                                             Log.e("Notification", "Trip not found for ID: $tripId")
