@@ -89,11 +89,12 @@ class ArticleViewModel(model: TheArticlesModel) : ViewModel() {
     // 获取热门文章（可以根据实际需求定义"热门"的逻辑）
     fun getPopularArticles(limit: Int = 5): Flow<List<Article>> {
         return articleList.map { articles ->
-            // 这里可以根据实际的热度指标排序
-            // 比如：阅读量、点赞数等
-            // 暂时用日期模拟，最新的作为"热门"
+            // 按浏览次数降序排序，如果浏览次数相同则按日期排序
             articles
-                .sortedByDescending { it.date }
+                .sortedWith(
+                    compareByDescending<Article> { it.viewCount }  // ← 🔴 按浏览次数排序
+                        .thenByDescending { it.date }
+                )
                 .take(limit)
         }
     }

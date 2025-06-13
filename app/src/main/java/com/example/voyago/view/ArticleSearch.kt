@@ -18,20 +18,30 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.example.voyago.model.Article
+import com.example.voyago.model.User
 import com.example.voyago.viewmodel.ArticleViewModel
+import com.example.voyago.viewmodel.UserViewModel
+import com.example.voyago.activities.ProfilePhoto
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 
 @Composable
 fun ArticleSearchScreen(
     navController: NavController,
-    articleViewModel: ArticleViewModel
+    articleViewModel: ArticleViewModel,
+    userViewModel: UserViewModel  // 添加 UserViewModel 参数
 ) {
     // 获取搜索相关的状态
     val searchQuery by articleViewModel.searchQuery.collectAsState()
@@ -98,7 +108,9 @@ fun ArticleSearchScreen(
                 if (popularArticles.isNotEmpty() && searchQuery.isEmpty()) {
                     MostPopularSection(
                         article = popularArticles.first(),
-                        onArticleClick = { /* 处理文章点击 */ }
+                        onArticleClick = { /* 处理文章点击 */ },
+                        userViewModel = userViewModel,  // 传递参数
+                                searchQuery = searchQuery
                     )
                 }
 
@@ -113,12 +125,69 @@ fun ArticleSearchScreen(
                     RecommendedSection(
                         title = sectionTitle,
                         articles = if (searchQuery.isNotEmpty()) searchResults else articlesToShow,
-                        onArticleClick = { /* 处理文章点击 */ }
+                        onArticleClick = { /* 处理文章点击 */ },
+                        userViewModel = userViewModel,  // 传递参数
+                        searchQuery = searchQuery
                     )
                 }
             }
         }
     }
+}
+
+
+
+// 高亮文本组件
+@Composable
+fun HighlightedText(
+    text: String,
+    searchQuery: String,
+    fontSize: TextUnit,
+    fontWeight: FontWeight? = null,
+    color: Color = Color.Black,
+    maxLines: Int = Int.MAX_VALUE
+) {
+    val annotatedString = buildAnnotatedString {
+        var currentIndex = 0
+        val lowerText = text.lowercase()
+        val lowerQuery = searchQuery.lowercase()
+
+        while (currentIndex < text.length) {
+            val index = lowerText.indexOf(lowerQuery, currentIndex)
+            if (index >= currentIndex) {
+                // 添加匹配前的文本
+                if (index > currentIndex) {
+                    withStyle(SpanStyle(color = color, fontWeight = fontWeight)) {
+                        append(text.substring(currentIndex, index))
+                    }
+                }
+                // 添加高亮的匹配文本
+                withStyle(
+                    SpanStyle(
+                        color = Color(0xFF2196F3), // 蓝色
+                        fontWeight = FontWeight.Bold,
+                        background = Color(0x332196F3) // 淡蓝色背景
+                    )
+                ) {
+                    append(text.substring(index, index + searchQuery.length))
+                }
+                currentIndex = index + searchQuery.length
+            } else {
+                // 添加剩余的文本
+                withStyle(SpanStyle(color = color, fontWeight = fontWeight)) {
+                    append(text.substring(currentIndex))
+                }
+                break
+            }
+        }
+    }
+
+    Text(
+        text = annotatedString,
+        fontSize = fontSize,
+        maxLines = maxLines,
+        overflow = TextOverflow.Ellipsis
+    )
 }
 
 @Composable
@@ -226,7 +295,9 @@ fun SearchSection(
 @Composable
 fun MostPopularSection(
     article: Article,
-    onArticleClick: (Article) -> Unit
+    onArticleClick: (Article) -> Unit,
+    userViewModel: UserViewModel,  // 添加参数
+    searchQuery: String = ""  // 添加搜索关键词参数
 ) {
     Card(
         modifier = Modifier
@@ -261,7 +332,9 @@ fun MostPopularSection(
 
             ArticleSearchItem(
                 article = article,
-                onClick = { onArticleClick(article) }
+                onClick = { onArticleClick(article) },
+                userViewModel = userViewModel,  // 传递参数
+                searchQuery = searchQuery  // 传递搜索关键词
             )
         }
     }
@@ -271,7 +344,9 @@ fun MostPopularSection(
 fun RecommendedSection(
     title: String = "Recommended For You",
     articles: List<Article>,
-    onArticleClick: (Article) -> Unit
+    onArticleClick: (Article) -> Unit,
+    userViewModel: UserViewModel,  // 添加参数
+    searchQuery: String = ""  // 添加搜索关键词参数
 ) {
     Card(
         modifier = Modifier
@@ -308,7 +383,9 @@ fun RecommendedSection(
                 }
                 ArticleSearchItem(
                     article = article,
-                    onClick = { onArticleClick(article) }
+                    onClick = { onArticleClick(article) },
+                    userViewModel = userViewModel,  // 传递参数
+                    searchQuery = searchQuery  // 传递搜索关键词
                 )
             }
         }
@@ -319,13 +396,21 @@ fun RecommendedSection(
 @Composable
 fun ArticleSearchItem(
     article: Article,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    userViewModel: UserViewModel,  // 添加 UserViewModel 参数
+    searchQuery: String = ""  // 添加搜索关键词参数
 ) {
     var imageUrl by remember { mutableStateOf<String?>(null) }
+    var author by remember { mutableStateOf<User?>(null) }
 
-    // 异步获取图片 URL
-    LaunchedEffect(article.photo) {
+    // 异步获取图片 URL 和作者信息
+    LaunchedEffect(article.photo, article.authorId) {
         imageUrl = article.getPhoto()
+
+        // 获取作者信息
+        article.authorId?.let { authorId ->
+            author = getUserFromFirestore(authorId)
+        }
     }
 
     Row(
@@ -368,22 +453,39 @@ fun ArticleSearchItem(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Author avatar placeholder
-                Box(
+                // Author avatar with ProfilePhoto
+                author?.let { user ->
+                    ProfilePhoto(
+                        user = user,
+                        small = true,
+                        modifier = Modifier.size(24.dp),
+                        uvm = userViewModel
+                    )
+                } ?: Box(
                     modifier = Modifier
                         .size(24.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFFE0E0E0))
-                )
+                        .background(Color(0xFFE0E0E0)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "?",
+                        color = Color(0xFF6B5B95),
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
                 Spacer(modifier = Modifier.width(8.dp))
+
                 Column {
                     Text(
-                        text = "Author ${article.authorId}",
+                        text = author?.let { "${it.firstname} ${it.surname}" } ?: "Loading...",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium
                     )
                     Text(
-                        text = "Travel Writer",
+                        text = "Travel Writer", // 简化为固定文本
                         fontSize = 12.sp,
                         color = Color.Gray
                     )
@@ -392,26 +494,46 @@ fun ArticleSearchItem(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Title
-            Text(
-                text = article.title ?: "Untitled",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
+            // Title with highlighted search text
+            if (searchQuery.isNotEmpty() && (article.title?.contains(searchQuery, ignoreCase = true) == true)) {
+                HighlightedText(
+                    text = article.title ?: "Untitled",
+                    searchQuery = searchQuery,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 2
+                )
+            } else {
+                Text(
+                    text = article.title ?: "Untitled",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Description
-            Text(
-                text = article.text ?: "No description available",
-                fontSize = 14.sp,
-                color = Color.Gray,
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis,
-                lineHeight = 20.sp
-            )
+            // Description with highlighted search text
+            if (searchQuery.isNotEmpty() && (article.text?.contains(searchQuery, ignoreCase = true) == true)) {
+                HighlightedText(
+                    text = article.text ?: "No description available",
+                    searchQuery = searchQuery,
+                    fontSize = 14.sp,
+                    color = Color.Gray,
+                    maxLines = 3
+                )
+            } else {
+                Text(
+                    text = article.text ?: "No description available",
+                    fontSize = 14.sp,
+                    color = Color.Gray,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
+                    lineHeight = 20.sp
+                )
+            }
 
             // Tags
             if (article.tags.isNotEmpty()) {

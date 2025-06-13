@@ -21,7 +21,8 @@ data class Article(
     var date: Long? = null,    // Calendar 改成 Long 时间戳
     var photo: String? = null,
     val contentUrl: String? = null,
-    val tags: List<String> = emptyList()
+    val tags: List<String> = emptyList(),
+    var viewCount: Int = 0     // ←  新增字段
 
 ) {
     // 添加获取 Firebase Storage 图片 URL 的方法
@@ -73,6 +74,7 @@ fun parseArticles(snapshot: QuerySnapshot): List<Article> {
             val photo     = doc.getString("photo")
             val contentUrl= doc.getString("contentUrl")
             val tags      = doc.get("tags") as? List<String> ?: emptyList()
+            val viewCount = doc.getLong("viewCount")?.toInt() ?: 0  // ←  新增行
 
             Article(
                 id        = id,
@@ -82,7 +84,8 @@ fun parseArticles(snapshot: QuerySnapshot): List<Article> {
                 date      = dateMs,     // Long 毫秒
                 photo     = photo,
                 contentUrl= contentUrl,
-                tags      = tags
+                tags      = tags,
+                viewCount = viewCount   // ←  新增参数
             )
         } catch (e: Exception) {
             // 解析某条文档失败就跳过

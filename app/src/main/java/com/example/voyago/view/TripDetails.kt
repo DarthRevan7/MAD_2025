@@ -226,6 +226,8 @@ fun TripDetails(
 
     var usernameValidationStates by remember { mutableStateOf(mutableMapOf<Int, Boolean>()) }
 
+    var registeredUserList : MutableList<User> = mutableListOf()
+
     //Initialization of the list of other participants
     LaunchedEffect(dialogPhase, selectedSpots) {
         if (dialogPhase == 1) {
@@ -607,7 +609,7 @@ fun TripDetails(
 
                         if (isUserLoggedIn) {
                             //If the user can join the trip
-                            if (trip.canJoin() && trip.creatorId != loggedUser.id) {
+                            if (trip.canJoin() && trip.creatorId != loggedUser.id && !joined) {
                                 //Ask to Join/Asked to Join Button
                                 Button(
                                     onClick = {
@@ -633,9 +635,9 @@ fun TripDetails(
                                     }
                                 }
 
-                            } else if (trip.participants.containsKey(loggedUser.id.toString())
+                            } else if (joined
                                 && trip.status != Trip.TripStatus.COMPLETED.toString()
-                                && trip.creatorId != loggedUser.id
+
                             ) {
                                 Button(
                                     onClick = {},
@@ -692,7 +694,7 @@ fun TripDetails(
             }
 
             item {
-                val user = uvm.getUserData(trip.creatorId).collectAsState(initial = null).value
+                val user = uvm.getUserData(trip.creatorId).collectAsState(initial = User()).value
 
                 if (user != null) {
                     ShowParticipants(
@@ -878,63 +880,69 @@ fun TripDetails(
                                             userViewModel = uvm,
                                             index = i,
                                             validationStates = usernameValidationStates,
-                                            onValidationChange = { index, isValid ->
+                                            onValidationChange = { index, isValid, user ->
                                                 usernameValidationStates = usernameValidationStates.toMutableMap().also {
                                                     it[index] = isValid
+                                                }
+                                                if(user.id > 0)
+                                                {
+                                                    registeredUserList += user
                                                 }
                                             }
                                         )
 
                                     } else {
-                                        ValidatingInputTextField(
-                                            participant.name,
-                                            { newValue ->
-                                                unregisteredParticipants =
-                                                    unregisteredParticipants.toMutableList().also {
-                                                        it[i] = it[i].copy(name = newValue)
-                                                    }
-                                                nameTouchedList = nameTouchedList.toMutableList()
-                                                    .also { it[i] = true }
-                                            },
-                                            nameTouchedList[i] && (
-                                                    participant.name.isBlank() ||                             // Empty or only whitespace
-                                                            participant.name.any { !it.isLetter() && it != ' ' } ||   // Contains non-letter and non-space
-                                                            participant.name.all { it == ' ' }                         // Only spaces
-                                                    ),
-                                            "Name"
-                                        )
-
-                                        ValidatingInputTextField(
-                                            participant.surname,
-                                            { newValue ->
-                                                unregisteredParticipants =
-                                                    unregisteredParticipants.toMutableList().also {
-                                                        it[i] = it[i].copy(surname = newValue)
-                                                    }
-                                                surnameTouchedList =
-                                                    surnameTouchedList.toMutableList()
+                                        if(participant != null) {
+                                            ValidatingInputTextField(
+                                                participant.name,
+                                                { newValue ->
+                                                    unregisteredParticipants =
+                                                        unregisteredParticipants.toMutableList().also {
+                                                            it[i] = it[i].copy(name = newValue)
+                                                        }
+                                                    nameTouchedList = nameTouchedList.toMutableList()
                                                         .also { it[i] = true }
-                                            },
-                                            surnameTouchedList[i] && (
-                                                    participant.surname.isBlank() ||                             // Empty or only whitespace
-                                                            participant.surname.any { !it.isLetter() && it != ' ' } ||   // Contains non-letter and non-space
-                                                            participant.surname.all { it == ' ' }                         // Only spaces
-                                                    ),
-                                            "Surname"
-                                        )
+                                                },
+                                                nameTouchedList[i] && (
+                                                        participant.name.isBlank() ||                             // Empty or only whitespace
+                                                                participant.name.any { !it.isLetter() && it != ' ' } ||   // Contains non-letter and non-space
+                                                                participant.name.all { it == ' ' }                         // Only spaces
+                                                        ),
+                                                "Name"
+                                            )
 
-                                        ValidatingInputEmailField(
-                                            participant.email,
-                                            { newValue ->
-                                                unregisteredParticipants =
-                                                    unregisteredParticipants.toMutableList().also {
-                                                        it[i] = it[i].copy(email = newValue)
-                                                    }
-                                                emailTouchedList = emailTouchedList.toMutableList()
-                                                    .also { it[i] = true }
-                                            },
-                                            emailTouchedList[i] && participant.email.isBlank()
-                                        )
+                                            ValidatingInputTextField(
+                                                participant.surname,
+                                                { newValue ->
+                                                    unregisteredParticipants =
+                                                        unregisteredParticipants.toMutableList().also {
+                                                            it[i] = it[i].copy(surname = newValue)
+                                                        }
+                                                    surnameTouchedList =
+                                                        surnameTouchedList.toMutableList()
+                                                            .also { it[i] = true }
+                                                },
+                                                surnameTouchedList[i] && (
+                                                        participant.surname.isBlank() ||                             // Empty or only whitespace
+                                                                participant.surname.any { !it.isLetter() && it != ' ' } ||   // Contains non-letter and non-space
+                                                                participant.surname.all { it == ' ' }                         // Only spaces
+                                                        ),
+                                                "Surname"
+                                            )
+
+                                            ValidatingInputEmailField(
+                                                participant.email,
+                                                { newValue ->
+                                                    unregisteredParticipants =
+                                                        unregisteredParticipants.toMutableList().also {
+                                                            it[i] = it[i].copy(email = newValue)
+                                                        }
+                                                    emailTouchedList = emailTouchedList.toMutableList()
+                                                        .also { it[i] = true }
+                                                },
+                                                emailTouchedList[i] && participant.email.isBlank()
+                                            )
+                                        }
 
                                     }
                                 }
@@ -946,6 +954,7 @@ fun TripDetails(
                 confirmButton = {
                     TextButton(onClick = {
                         if (dialogPhase == 0) {
+                            //Next phase for registering the participants
                             if (selectedSpots > 1) {
                                 dialogPhase = 1
                             } else {
@@ -978,7 +987,7 @@ fun TripDetails(
                         } else {
                             var hasErrors = false
 
-                            for (i in 0 until selectedSpots - 1) {
+                            for (i in 0 until isRegisteredList.count() - 1) {
                                 if (isRegisteredList[i]) {
                                     val username = registeredUsernames[i]
                                     val isUsernameValid = usernameValidationStates[i] == true
@@ -989,7 +998,7 @@ fun TripDetails(
                                             .also { it[i] = true }
                                     }
                                 } else {
-                                    // ... 未注册用户验证逻辑保持不变 ...
+                                    // ... 未注册用户验证逻辑保持不变 ... Why Chinese comments?? D:
                                     val participant = unregisteredParticipants[i]
 
                                     if (participant.name.isBlank() || !participant.name.any { it.isLetter() }) {
@@ -1012,12 +1021,20 @@ fun TripDetails(
 
 
                             if (!hasErrors) {
+                                val idList = registeredUserList.map { it.id }.toList()
+
+                                unregisteredParticipants.forEach {
+                                    if(it.name.isEmpty() && it.surname.isEmpty() && it.email.isEmpty()) {
+                                        unregisteredParticipants -= it
+                                    }
+                                }
+
                                 vm.askToJoin(
                                     trip,
                                     loggedUser.id,
                                     selectedSpots,
                                     unregisteredParticipants,
-                                    uvm.getIdListFromUsernames(registeredUsernames)
+                                    idList
                                 )
                                 showDialog = false
                                 dialogPhase = 0
@@ -1501,7 +1518,7 @@ fun AsyncValidatingUsernameField(
     userViewModel: UserViewModel,
     index: Int,
     validationStates: Map<Int, Boolean>,
-    onValidationChange: (Int, Boolean) -> Unit
+    onValidationChange: (Int, Boolean, User) -> Unit
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     var isValidating by remember { mutableStateOf(false) }
@@ -1513,15 +1530,15 @@ fun AsyncValidatingUsernameField(
             isValidating = true
             delay(500) // 防抖动，避免过频繁的查询
 
-            userViewModel.checkUserExistsAsync(text) { exists ->
+            userViewModel.checkUserExistsAsync(text) { exists, user ->
                 isValidating = false
                 lastValidatedText = text
-                onValidationChange(index, exists)
+                onValidationChange(index, exists, user)
 
                 Log.d("UsernameValidation", "Username '$text' exists: $exists")
             }
         } else if (text.isBlank()) {
-            onValidationChange(index, false)
+            onValidationChange(index, false, User())
         }
     }
 

@@ -102,6 +102,7 @@ import com.example.voyago.view.EditProfileScreen
 import com.example.voyago.view.EditTrip
 import com.example.voyago.view.ExplorePage
 import com.example.voyago.view.FiltersSelection
+import com.example.voyago.view.FirebaseChatRoomScreen
 import com.example.voyago.view.HomePageScreen
 import com.example.voyago.view.LoginScreen
 import com.example.voyago.view.MyProfileScreen
@@ -135,7 +136,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import com.example.voyago.view.FirebaseChatRoomScreen
 
 
 sealed class Screen(val route: String) {
@@ -378,10 +378,12 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
         // 添加全局的 article_search 路由，这样从任何地方都可以访问
         composable("article_search") {
             val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
+            val userViewModel: UserViewModel = viewModel(factory = UserFactory)
 
             ArticleSearchScreen(
                 navController = navController,
-                articleViewModel = articleViewModel
+                articleViewModel = articleViewModel,
+                userViewModel =  userViewModel
             )
         }
         // 添加 create_article 路由
@@ -439,15 +441,6 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
 
             NotificationView(navController, nvm, uvm, vm)
         }
-//        val notificationViewModel = NotificationViewModel()
-//        val userViewModel = UserViewModel(UserModel())
-//        val tripViewModel = TripViewModel(TripModel(),
-//            UserModel(), ReviewModel
-//        ()
-//        )
-//        composable(Screen.Notifications.route) {
-//            NotificationView(navController, notificationViewModel, userViewModel, tripViewModel)
-//        }
     }
 }
 
@@ -565,18 +558,14 @@ fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
                 nvm = notificationViewModel
             )
         }
-        composable("article_search") { entry ->
-            val homeEntry = remember(entry) {
-                navController.getBackStackEntry(Screen.Home.route)
-            }
-            val articleViewModel: ArticleViewModel = viewModel(
-                viewModelStoreOwner = homeEntry,
-                factory = ArticleFactory
-            )
+        composable("article_search") {
+            val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
+            val userViewModel: UserViewModel = viewModel(factory = UserFactory)  // 添加这行
 
             ArticleSearchScreen(
                 navController = navController,
-                articleViewModel = articleViewModel
+                articleViewModel = articleViewModel,
+                userViewModel = userViewModel  // 传递 userViewModel
             )
         }
 
@@ -650,7 +639,15 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
 
         }
 
-        composable("trip_details") { entry ->
+        composable(
+            "trip_details?owner={owner}",
+            arguments = listOf(
+                navArgument("owner") {
+                    type = NavType.BoolType
+                    defaultValue = false
+                }
+            )
+        ) { entry ->
             val exploreGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.MyTrips.route)
             }
@@ -725,7 +722,12 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = NotificationFactory
             )
-            TripApplications(vm = tripViewModel, userViewModel, navController, notificationViewModel)
+            TripApplications(
+                vm = tripViewModel,
+                userViewModel,
+                navController,
+                notificationViewModel
+            )
         }
 
         composable("edit_trip") { entry ->
@@ -988,7 +990,15 @@ fun NavGraphBuilder.profileNavGraph(
 ) {
 
     navigation(startDestination = "profile_overview", route = Screen.Profile.route) {
-        composable("profile_overview") { entry ->
+        composable(
+            route = "profile_overview?tabIndex={tabIndex}",
+            arguments = listOf(
+                navArgument("tabIndex") {
+                    type = NavType.IntType
+                    defaultValue = 0 // fallback to "About" tab
+                }
+            )
+        ) { entry ->
             RequireAuth(navController) {
                 val profileNavGraphEntry = remember(entry) {
                     navController.getBackStackEntry(Screen.Profile.route)
@@ -1006,12 +1016,15 @@ fun NavGraphBuilder.profileNavGraph(
                     factory = Factory
                 )
                 val vm2: ArticleViewModel = viewModel(factory = ArticleFactory)
+                val tabIndex = entry.arguments?.getInt("tabIndex") ?: 0
+
                 MyProfileScreen(
                     navController = navController,
                     vm = profileNavGraphEntryVm,
                     vm2 = vm2,
                     uvm = userViewModel,
-                    rvm = reviewViewModel
+                    rvm = reviewViewModel,
+                    defaultTabIndex = tabIndex
                 )
             }
         }
@@ -1231,7 +1244,9 @@ fun TopBar(nvm: NotificationViewModel, navController: NavController, uvm: UserVi
             // Notification Icon
             IconButton(onClick = {
                 nvm.markNotificationsRead(userId)
-                navController.navigate(Screen.Notifications.route)
+                navController.navigate(Screen.Notifications.route) {
+                    launchSingleTop = true // Prevents multiple instances of the same screen
+                }
             }) {
                 Box(
                     modifier = Modifier

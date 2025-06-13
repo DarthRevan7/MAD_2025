@@ -30,7 +30,8 @@ data class User(
     var typeTravel: List<TypeTravel> = emptyList(),
     var desiredDestination: List<String> = emptyList(),
     var rating: Float = 0f,
-    var reliability: Int = 0
+    var reliability: Int = 0,
+    var role: String? = null,
 ) : Serializable {
     fun isValid(): Boolean {
         return firstname.isNotBlank() &&
@@ -155,7 +156,7 @@ class UserModel {
             val query = Collections.users
                 .whereIn("username", usernameList)
 
-            val listener = query.orderBy("born")
+            val listener = query.orderBy("id")
                 .addSnapshotListener { s, er ->
                     if (s != null)
                         trySend(s.toObjects(User::class.java))
