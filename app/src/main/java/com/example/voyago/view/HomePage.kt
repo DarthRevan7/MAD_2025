@@ -361,7 +361,7 @@ fun ArticleShow(
             !article.photo.isNullOrEmpty() -> {
                 val context = LocalContext.current
                 val resId = remember(article.photo) {
-                    context.resources.getIdentifier(article.photo, "drawable", context.packageName)
+                    context.resources.getIdentifier(article.photo.toString(), "drawable", context.packageName)
                 }
 
                 if (resId != 0) {

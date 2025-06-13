@@ -2,9 +2,11 @@ package com.example.voyago.view
 
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -32,9 +34,7 @@ import com.example.voyago.model.Article
 import com.example.voyago.model.User
 import com.example.voyago.viewmodel.ArticleViewModel
 import com.example.voyago.viewmodel.UserViewModel
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
@@ -69,21 +69,17 @@ fun ArticleDetailScreen(
                 author = getUserFromFirestore(authorId)
             }
 
-            val urls = mutableListOf<String>()
-            art.photo?.let { photo ->
-                try {
-                    val url = art.getPhoto()
-                    Log.d("ArticleDetail", "getPhoto resolved: $url")
-                    if (!url.isNullOrEmpty()) {
-                        urls.add(url)
-                    }
-                } catch (e: Exception) {
-                    Log.e("ArticleDetail", "Failed to get photo URL", e)
-                }
+            // 🔥 获取所有图片URL
+            try {
+                val urls = art.getAllPhotos()
+                Log.d("ArticleDetail", "getAllPhotos resolved: ${urls.size} images")
+                imageUrls = urls
+            } catch (e: Exception) {
+                Log.e("ArticleDetail", "Failed to get photo URLs", e)
             }
-            imageUrls = urls
         }
     }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -94,7 +90,6 @@ fun ArticleDetailScreen(
                     }
                 },
                 actions = {
-                    // Toggle view count visibility
                     IconButton(onClick = { showViewCount = !showViewCount }) {
                         Icon(
                             imageVector = if (showViewCount) Icons.Default.Visibility else Icons.Default.VisibilityOff,
@@ -139,7 +134,6 @@ fun ArticleDetailScreen(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier.weight(1f)
                             ) {
-                                // Author Avatar with ProfilePhoto
                                 author?.let { user ->
                                     ProfilePhoto(
                                         user = user,
@@ -170,7 +164,7 @@ fun ArticleDetailScreen(
                                 )
                             }
 
-                            // Views Count (conditionally shown)
+                            // Views Count
                             if (showViewCount) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically
@@ -213,23 +207,44 @@ fun ArticleDetailScreen(
                     }
                 }
 
-                // Article Images Section
+                // 🔥 Article Images Section - 支持大量图片
                 if (imageUrls.isNotEmpty()) {
                     Column(
                         modifier = Modifier.padding(horizontal = 16.dp)
                     ) {
                         Text(
-                            text = "Article Images",
+                            text = "Article Images (${imageUrls.size})",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(vertical = 16.dp)
                         )
 
-                        LazyRow(
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        // 🔥 动态网格布局，根据图片数量调整列数
+                        val columns = when {
+                            imageUrls.size == 1 -> 1
+                            imageUrls.size <= 4 -> 2
+                            else -> 3 // 超过4张图片时使用3列
+                        }
+
+                        // 🔥 修复：使用正确的 LazyVerticalGrid 和 items
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(columns),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(max = 600.dp) // 🔥 添加最大高度限制
                         ) {
-                            items(imageUrls) { imageUrl ->
-                                ArticleImageItem(imageUrl = imageUrl)
+                            items(imageUrls) { imageUrl -> // 🔥 正确使用 grid items
+                                ArticleImageItem(
+                                    imageUrl = imageUrl,
+                                    modifier = Modifier
+                                        .aspectRatio(1f) // 正方形显示
+                                        .clickable {
+                                            // 🔥 可选：点击图片查看大图
+                                            // 可以实现图片全屏查看功能
+                                        }
+                                )
                             }
                         }
                     }
@@ -251,12 +266,15 @@ fun ArticleDetailScreen(
     }
 }
 
+// 🔥 改进的图片组件
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun ArticleImageItem(imageUrl: String?) {
+fun ArticleImageItem(
+    imageUrl: String?,
+    modifier: Modifier = Modifier
+) {
     Card(
-        modifier = Modifier
-            .size(150.dp),
+        modifier = modifier,
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {

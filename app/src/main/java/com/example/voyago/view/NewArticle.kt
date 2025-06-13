@@ -6,7 +6,10 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -14,12 +17,16 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.example.voyago.model.Article
 import com.example.voyago.viewmodel.ArticleViewModel
 import com.example.voyago.viewmodel.UserViewModel
@@ -27,6 +34,12 @@ import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import coil3.compose.AsyncImage
+
+// 在 NewArticle.kt 中的修改部分
+
 
 @Composable
 fun CreateArticleScreen(
@@ -36,7 +49,10 @@ fun CreateArticleScreen(
 ) {
     var articleTitle by remember { mutableStateOf("") }
     var articleContent by remember { mutableStateOf("") }
-    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
+    // 🔥 修改为支持多张图片
+    var selectedImageUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
+
     var isLoading by remember { mutableStateOf(false) }
     var showError by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
@@ -44,11 +60,12 @@ fun CreateArticleScreen(
     val coroutineScope = rememberCoroutineScope()
     val currentUser by userViewModel.loggedUser.collectAsState()
 
-    // Image picker launcher
+    // 🔥 修改图片选择器支持多选（不限数量）
     val imagePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        selectedImageUri = uri
+        contract = ActivityResultContracts.GetMultipleContents()
+    ) { uris: List<Uri> ->
+        // 🔥 不限制图片数量
+        selectedImageUris = uris
     }
 
     Column(
@@ -108,7 +125,7 @@ fun CreateArticleScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Add Images Button
+        // 🔥 修改按钮文字，移除数量限制
         Button(
             onClick = { imagePickerLauncher.launch("image/*") },
             modifier = Modifier
@@ -127,19 +144,63 @@ fun CreateArticleScreen(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                "Add Images",
+                "Add Images", // 🔥 移除 "(Max 3)" 限制
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Medium
             )
         }
 
-        // Show selected image indicator
-        if (selectedImageUri != null) {
+        // 🔥 显示选中的图片数量和预览
+        if (selectedImageUris.isNotEmpty()) {
             Text(
-                "Image selected ✓",
+                "${selectedImageUris.size} image(s) selected ✓",
                 color = Color(0xFF4CAF50),
                 modifier = Modifier.padding(top = 8.dp)
             )
+
+            // 🔥 改进的图片预览，支持多行显示
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(4), // 每行显示4张图片
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .heightIn(max = 200.dp), // 最大高度
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(selectedImageUris) { uri ->
+                    Box {
+                        AsyncImage(
+                            model = uri,
+                            contentDescription = "Selected image",
+                            modifier = Modifier
+                                .size(80.dp)
+                                .clip(RoundedCornerShape(8.dp)),
+                            contentScale = ContentScale.Crop
+                        )
+
+                        // 🔥 添加删除按钮
+                        IconButton(
+                            onClick = {
+                                selectedImageUris = selectedImageUris - uri
+                            },
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .size(24.dp)
+                                .background(
+                                    Color.Black.copy(alpha = 0.5f),
+                                    CircleShape
+                                )
+                        ) {
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = "Remove image",
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -177,8 +238,8 @@ fun CreateArticleScreen(
                             try {
                                 Log.d("CreateArticle", "Starting to publish article...")
 
-                                // 🔥 修复图片上传逻辑
-                                val photoPath = selectedImageUri?.let { uri ->
+                                // 🔥 上传多张图片
+                                val photoPaths = selectedImageUris.mapNotNull { uri ->
                                     try {
                                         Log.d("CreateArticle", "Uploading image...")
                                         val imageFileName = "${UUID.randomUUID()}.jpg"
@@ -186,15 +247,13 @@ fun CreateArticleScreen(
                                             .reference
                                             .child("articles/$imageFileName")
 
-                                        // 上传图片
                                         imageRef.putFile(uri).await()
                                         Log.d("CreateArticle", "Image uploaded successfully")
 
-                                        // 🔥 关键修复：只存储路径，不存储完整URL
                                         "articles/$imageFileName"
                                     } catch (e: Exception) {
                                         Log.e("CreateArticle", "Image upload failed", e)
-                                        throw e
+                                        null
                                     }
                                 }
 
@@ -205,19 +264,17 @@ fun CreateArticleScreen(
                                     text = articleContent,
                                     authorId = currentUser.id,
                                     date = System.currentTimeMillis(),
-                                    photo = photoPath, // 存储路径，不是URL
+                                    photo = photoPaths, // 🔥 传递图片路径列表
                                     tags = emptyList(),
                                     viewCount = 0
                                 )
 
                                 Log.d("CreateArticle", "Publishing article: $newArticle")
 
-                                // 🔥 调用 ViewModel 的方法统一保存
                                 articleViewModel.publishArticle(newArticle)
 
                                 Log.d("CreateArticle", "Article published successfully")
 
-                                // Navigate back
                                 navController.popBackStack()
 
                             } catch (e: Exception) {

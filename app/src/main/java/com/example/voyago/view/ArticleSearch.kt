@@ -41,26 +41,44 @@ import kotlinx.coroutines.tasks.await
 fun ArticleSearchScreen(
     navController: NavController,
     articleViewModel: ArticleViewModel,
-    userViewModel: UserViewModel  // 添加 UserViewModel 参数
+    userViewModel: UserViewModel
 ) {
     // 获取搜索相关的状态
     val searchQuery by articleViewModel.searchQuery.collectAsState()
     val searchResults by articleViewModel.searchResults.collectAsState(initial = emptyList())
-    val popularArticles by articleViewModel.getPopularArticles(1).collectAsState(initial = emptyList())
-    val recentArticles by articleViewModel.getRecentArticles(10).collectAsState(initial = emptyList())
+
+    // 🔥 获取所有文章来进行分类
+    val allArticles by articleViewModel.articleList.collectAsState()
+
+    // 🔥 分类文章：最热门的3篇 vs 其余文章
+    val mostPopularArticles = allArticles
+        .sortedWith(
+            compareByDescending<Article> { it.viewCount }
+                .thenByDescending { it.date }
+        )
+        .take(3) // 🔥 取前3篇最热门的文章
+
+    val recommendedArticles = allArticles
+        .sortedWith(
+            compareByDescending<Article> { it.viewCount }
+                .thenByDescending { it.date }
+        )
+        .drop(3) // 🔥 跳过最热门的前3篇，显示其余文章
+
+    // 🔥 推荐文章的显示状态
+    var showAllRecommended by remember { mutableStateOf(false) }
 
     // 决定显示哪些文章
-    val articlesToShow = if (searchQuery.isNotEmpty()) {
-        searchResults
-    } else {
-        recentArticles
+    val articlesToShow = when {
+        searchQuery.isNotEmpty() -> searchResults
+        showAllRecommended -> recommendedArticles
+        else -> recommendedArticles.take(5) // 默认显示前5篇
     }
 
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    // 导航到创建文章页面
                     navController.navigate("create_article")
                 },
                 containerColor = Color(0xFF2E2E2E),
@@ -82,11 +100,14 @@ fun ArticleSearchScreen(
                 .verticalScroll(rememberScrollState())
                 .background(Color(0xFFF5F5F5))
         ) {
-            // Search Section with functional search
+            // Search Section
             SearchSection(
                 searchQuery = searchQuery,
                 onSearchQueryChange = { articleViewModel.updateSearchQuery(it) },
-                onClearSearch = { articleViewModel.clearSearch() }
+                onClearSearch = {
+                    articleViewModel.clearSearch()
+                    showAllRecommended = false // 重置显示状态
+                }
             )
 
             if (searchQuery.isNotEmpty() && searchResults.isEmpty()) {
@@ -104,20 +125,19 @@ fun ArticleSearchScreen(
                     )
                 }
             } else {
-                // Most Popular Article Section
-                if (popularArticles.isNotEmpty() && searchQuery.isEmpty()) {
+                // 🔥 Most Popular Articles Section - 显示3篇最热门的
+                if (mostPopularArticles.isNotEmpty() && searchQuery.isEmpty()) {
                     MostPopularSection(
-                        article = popularArticles.first(),
+                        articles = mostPopularArticles, // 传递3篇文章
                         onArticleClick = { selectedArticle ->
-                            // RED: 点击后跳转到详情页
                             navController.navigate("article_detail/${selectedArticle.id}")
                         },
-                        userViewModel = userViewModel,  // 传递参数
-                                searchQuery = searchQuery
+                        userViewModel = userViewModel,
+                        searchQuery = searchQuery
                     )
                 }
 
-                // Search Results or Recommended Section
+                // 🔥 Recommended Section - 显示其余文章
                 if (articlesToShow.isNotEmpty()) {
                     val sectionTitle = if (searchQuery.isNotEmpty()) {
                         "Search Results (${searchResults.size})"
@@ -127,12 +147,18 @@ fun ArticleSearchScreen(
 
                     RecommendedSection(
                         title = sectionTitle,
-                        articles = if (searchQuery.isNotEmpty()) searchResults else articlesToShow,
+                        articles = articlesToShow,
                         onArticleClick = { selectedArticle ->
-                            // RED: 点击后跳转到详情页
                             navController.navigate("article_detail/${selectedArticle.id}")
                         },
-                        userViewModel = userViewModel,  // 传递参数
+                        onViewAllClick = {
+                            // 🔥 切换显示全部推荐文章
+                            if (!showAllRecommended) {
+                                showAllRecommended = true
+                            }
+                        },
+                        showViewAll = searchQuery.isEmpty() && !showAllRecommended && recommendedArticles.size > 5,
+                        userViewModel = userViewModel,
                         searchQuery = searchQuery
                     )
                 }
@@ -140,7 +166,6 @@ fun ArticleSearchScreen(
         }
     }
 }
-
 
 
 // 高亮文本组件
@@ -300,10 +325,10 @@ fun SearchSection(
 
 @Composable
 fun MostPopularSection(
-    article: Article,
+    articles: List<Article>, // 🔥 改为接收文章列表（3篇）
     onArticleClick: (Article) -> Unit,
-    userViewModel: UserViewModel,  // 添加参数
-    searchQuery: String = ""  // 添加搜索关键词参数
+    userViewModel: UserViewModel,
+    searchQuery: String = ""
 ) {
     Card(
         modifier = Modifier
@@ -316,32 +341,43 @@ fun MostPopularSection(
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Most Popular Article",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                TextButton(onClick = { /* Handle view more */ }) {
-                    Text(
-                        text = "View More",
-                        color = Color(0xFF6B5B95)
-                    )
-                }
-            }
+            // 🔥 标题改为复数形式
+            Text(
+                text = "Most Popular Articles", // 🔥 复数形式
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            ArticleSearchItem(
-                article = article,
-                onClick = { onArticleClick(article) },
-                userViewModel = userViewModel,  // 传递参数
-                searchQuery = searchQuery  // 传递搜索关键词
-            )
+            // 🔥 显示3篇热门文章
+            articles.forEachIndexed { index, article ->
+                if (index > 0) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+                ArticleSearchItem(
+                    article = article,
+                    onClick = { onArticleClick(article) },
+                    userViewModel = userViewModel,
+                    searchQuery = searchQuery
+                )
+            }
+
+            // 🔥 如果文章不足3篇，显示提示
+            if (articles.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No popular articles available",
+                        color = Color.Gray,
+                        fontSize = 14.sp
+                    )
+                }
+            }
         }
     }
 }
@@ -351,8 +387,10 @@ fun RecommendedSection(
     title: String = "Recommended For You",
     articles: List<Article>,
     onArticleClick: (Article) -> Unit,
-    userViewModel: UserViewModel,  // 添加参数
-    searchQuery: String = ""  // 添加搜索关键词参数
+    onViewAllClick: () -> Unit,
+    showViewAll: Boolean = true, // 🔥 控制是否显示 View All 按钮
+    userViewModel: UserViewModel,
+    searchQuery: String = ""
 ) {
     Card(
         modifier = Modifier
@@ -375,14 +413,19 @@ fun RecommendedSection(
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
-                TextButton(onClick = { /* Handle view all */ }) {
-                    Text(
-                        text = "View All",
-                        color = Color(0xFF6B5B95)
-                    )
+
+                // 🔥 只在特定条件下显示 View All 按钮
+                if (showViewAll) {
+                    TextButton(onClick = onViewAllClick) {
+                        Text(
+                            text = "View All",
+                            color = Color(0xFF6B5B95)
+                        )
+                    }
                 }
             }
 
+            // 🔥 显示文章列表
             articles.forEachIndexed { index, article ->
                 if (index > 0) {
                     Spacer(modifier = Modifier.height(16.dp))
@@ -390,9 +433,29 @@ fun RecommendedSection(
                 ArticleSearchItem(
                     article = article,
                     onClick = { onArticleClick(article) },
-                    userViewModel = userViewModel,  // 传递参数
-                    searchQuery = searchQuery  // 传递搜索关键词
+                    userViewModel = userViewModel,
+                    searchQuery = searchQuery
                 )
+            }
+
+            // 🔥 如果没有文章，显示占位文本
+            if (articles.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = if (searchQuery.isNotEmpty()) {
+                            "No articles found for \"$searchQuery\""
+                        } else {
+                            "No recommended articles available"
+                        },
+                        color = Color.Gray,
+                        fontSize = 14.sp
+                    )
+                }
             }
         }
     }
