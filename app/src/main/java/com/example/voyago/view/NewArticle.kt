@@ -31,6 +31,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 @Composable
@@ -180,24 +182,28 @@ fun CreateArticleScreen(
                         isLoading = true
                         coroutineScope.launch {
                             try {
-                                // Upload image if selected
-                                var photoPath: String? = null
-                                selectedImageUri?.let { uri ->
-                                    photoPath = uploadImageToFirebase(uri)
-                                }
 
-                                // Create article
+                                // RED: 简化保存，直接调用新的保存方法
+                                // RED: 构建 Article，date 使用时间戳
                                 val newArticle = Article(
+                                    id = null,
                                     title = articleTitle,
                                     text = articleContent,
                                     authorId = currentUser.id,
                                     date = System.currentTimeMillis(),
-                                    photo = photoPath,
-                                    tags = emptyList() // You can add tag functionality later
+                                    photo = selectedImageUri?.let { uri ->
+                                        val imageRef = FirebaseStorage.getInstance()
+                                            .reference
+                                            .child("articles/${UUID.randomUUID()}.jpg")
+                                        imageRef.putFile(uri).await()
+                                        imageRef.downloadUrl.await().toString()
+                                    },
+                                    tags = emptyList(),
+                                    viewCount = 0
                                 )
 
-                                // Save to Firestore
-                                saveArticleToFirestore(newArticle)
+                                // RED: 调用 ViewModel 的方法统一保存
+                                articleViewModel.publishArticle(newArticle)
 
                                 // Navigate back
                                 navController.popBackStack()

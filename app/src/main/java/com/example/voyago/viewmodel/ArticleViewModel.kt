@@ -4,14 +4,21 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.voyago.model.Article
 import com.example.voyago.model.*
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.tasks.await
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
+
+
 
 
 class ArticleViewModel(model: TheArticlesModel) : ViewModel() {
+    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 
     val articleList: Flow<List<Article>> = model.getArticles()
 
@@ -97,6 +104,20 @@ class ArticleViewModel(model: TheArticlesModel) : ViewModel() {
                 )
                 .take(limit)
         }
+    }
+    suspend fun publishArticle(article: Article) {
+        // 获取当前文档数量
+        val snapshot = firestore.collection("articles").get().await()
+        val newId = snapshot.documents.size + 1
+
+        // 复制并设置新 ID
+        val articleWithId = article.copy(id = newId)
+
+        // 保存至 Firestore
+        firestore.collection("articles")
+            .document(newId.toString())
+            .set(articleWithId)
+            .await()
     }
 
     // 获取特定作者的最新文章
