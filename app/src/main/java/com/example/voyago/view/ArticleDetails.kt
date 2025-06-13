@@ -46,36 +46,34 @@ fun ArticleDetailScreen(
     articleViewModel: ArticleViewModel,
     userViewModel: UserViewModel
 ) {
-    var article by remember { mutableStateOf<Article?>(null) }
+    val articles by articleViewModel.articleList.collectAsState()
+    val article = articles.find { it.id == articleId }
+
     var author by remember { mutableStateOf<User?>(null) }
     var imageUrls by remember { mutableStateOf<List<String>>(emptyList()) }
     var viewCount by remember { mutableStateOf(0) }
     var showViewCount by remember { mutableStateOf(true) }
-    val coroutineScope = rememberCoroutineScope()
+    var viewIncremented by remember { mutableStateOf(false) }
 
-    // Load article data and increment view count
-    LaunchedEffect(articleId) {
-        // Get article by ID
-        article = articleViewModel.articleList.first().find { it.id == articleId }
+    // 副作用只触发一次
+    LaunchedEffect(article) {
+        article?.let { art ->
+            if (!viewIncremented) {
+                incrementViewCount(art.id ?: return@LaunchedEffect) { newCount ->
+                    viewCount = newCount
+                }
+                viewIncremented = true
+            }
 
-        // Increment view count in Firestore
-        incrementViewCount(articleId) { newCount ->
-            viewCount = newCount
-        }
-
-        // Get author info from Firestore
-        article?.authorId?.let { authorId ->
-            coroutineScope.launch {
+            art.authorId?.let { authorId ->
                 author = getUserFromFirestore(authorId)
             }
-        }
 
-        // Get image URLs
-        article?.let { art ->
             val urls = mutableListOf<String>()
             art.photo?.let { photo ->
                 try {
                     val url = art.getPhoto()
+                    Log.d("ArticleDetail", "getPhoto resolved: $url")
                     if (!url.isNullOrEmpty()) {
                         urls.add(url)
                     }
@@ -86,7 +84,6 @@ fun ArticleDetailScreen(
             imageUrls = urls
         }
     }
-
     Scaffold(
         topBar = {
             TopAppBar(

@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 
@@ -20,7 +22,9 @@ import kotlinx.coroutines.launch
 class ArticleViewModel(model: TheArticlesModel) : ViewModel() {
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 
-    val articleList: Flow<List<Article>> = model.getArticles()
+    val articleList = model.getArticles()
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
 
     // 搜索关键词的状态
     private val _searchQuery = MutableStateFlow("")

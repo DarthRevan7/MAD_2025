@@ -67,7 +67,8 @@ fun HomePageScreen(
 
 
 //    val tripLists by vm1.tripList.collectAsState()
-    val articles by vm2.articleList.collectAsState(initial = emptyList())
+
+    val articles by vm2.articleList.collectAsState()
     var displayCount by remember { mutableIntStateOf(5) }
     val scrollState = rememberScrollState()
     // 1. 先拿到"现在"的时间点
