@@ -108,7 +108,10 @@ fun ArticleSearchScreen(
                 if (popularArticles.isNotEmpty() && searchQuery.isEmpty()) {
                     MostPopularSection(
                         article = popularArticles.first(),
-                        onArticleClick = { /* 处理文章点击 */ },
+                        onArticleClick = { selectedArticle ->
+                            // RED: 点击后跳转到详情页
+                            navController.navigate("article_detail/${selectedArticle.id}")
+                        },
                         userViewModel = userViewModel,  // 传递参数
                                 searchQuery = searchQuery
                     )
@@ -125,7 +128,10 @@ fun ArticleSearchScreen(
                     RecommendedSection(
                         title = sectionTitle,
                         articles = if (searchQuery.isNotEmpty()) searchResults else articlesToShow,
-                        onArticleClick = { /* 处理文章点击 */ },
+                        onArticleClick = { selectedArticle ->
+                            // RED: 点击后跳转到详情页
+                            navController.navigate("article_detail/${selectedArticle.id}")
+                        },
                         userViewModel = userViewModel,  // 传递参数
                         searchQuery = searchQuery
                     )
