@@ -1,5 +1,6 @@
 package com.example.voyago.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.voyago.model.Article
@@ -12,19 +13,32 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.firestore.CollectionReference
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 
-
-
-
-class ArticleViewModel(model: TheArticlesModel) : ViewModel() {
+class ArticleViewModel(private val model: TheArticlesModel) : ViewModel() {
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+
+    init {
+        Log.d("ArticleViewModel", "🔥 ArticleViewModel initialized")
+    }
 
     val articleList = model.getArticles()
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
-
+        .also { stateFlow ->
+            // 🔥 添加调试，监听 articleList 的变化
+            viewModelScope.launch {
+                stateFlow.collect { articles ->
+                    Log.d("ArticleViewModel", "🔥 ArticleList updated: ${articles.size} articles")
+                    articles.forEachIndexed { index, article ->
+                        Log.d("ArticleViewModel", "🔥 Article $index: ${article.title}")
+                    }
+                }
+            }
+        }
 
     // 搜索关键词的状态
     private val _searchQuery = MutableStateFlow("")
@@ -35,15 +49,13 @@ class ArticleViewModel(model: TheArticlesModel) : ViewModel() {
         articleList,
         searchQuery
     ) { articles, query ->
+        Log.d("ArticleViewModel", "🔥 Search filtering: ${articles.size} articles, query='$query'")
         if (query.isEmpty()) {
             articles
         } else {
             articles.filter { article ->
-                // 搜索标题
                 article.title?.contains(query, ignoreCase = true) == true ||
-                        // 搜索内容
                         article.text?.contains(query, ignoreCase = true) == true ||
-                        // 搜索标签
                         article.tags.any { tag ->
                             tag.contains(query, ignoreCase = true)
                         }
@@ -91,6 +103,7 @@ class ArticleViewModel(model: TheArticlesModel) : ViewModel() {
     // 获取最近的文章（按日期排序）
     fun getRecentArticles(limit: Int = 5): Flow<List<Article>> {
         return articleList.map { articles ->
+            Log.d("ArticleViewModel", "🔥 Getting recent articles: ${articles.size} total, limit=$limit")
             articles
                 .sortedByDescending { it.date }
                 .take(limit)
@@ -103,25 +116,11 @@ class ArticleViewModel(model: TheArticlesModel) : ViewModel() {
             // 按浏览次数降序排序，如果浏览次数相同则按日期排序
             articles
                 .sortedWith(
-                    compareByDescending<Article> { it.viewCount }  // ← 🔴 按浏览次数排序
+                    compareByDescending<Article> { it.viewCount }
                         .thenByDescending { it.date }
                 )
                 .take(limit)
         }
-    }
-    suspend fun publishArticle(article: Article) {
-        // 获取当前文档数量
-        val snapshot = firestore.collection("articles").get().await()
-        val newId = snapshot.documents.size + 1
-
-        // 复制并设置新 ID
-        val articleWithId = article.copy(id = newId)
-
-        // 保存至 Firestore
-        firestore.collection("articles")
-            .document(newId.toString())
-            .set(articleWithId)
-            .await()
     }
 
     // 获取特定作者的最新文章
@@ -131,6 +130,68 @@ class ArticleViewModel(model: TheArticlesModel) : ViewModel() {
                 .filter { it.authorId == authorId }
                 .sortedByDescending { it.date }
                 .take(limit)
+        }
+    }
+
+    // 🔥 按顺序添加文章：使用连续的数字 ID
+    suspend fun publishArticle(article: Article) {
+        try {
+            val db = FirebaseFirestore.getInstance()
+            val articlesCollection = db.collection("articles")
+
+            // 🔥 方法1：找到当前最大的数字 ID，然后 +1
+            val nextId = findNextAvailableId(articlesCollection)
+
+            val articleWithId = article.copy(id = nextId)
+
+            // 🔥 使用数字 ID 作为文档 ID
+            articlesCollection.document(nextId.toString()).set(articleWithId).await()
+
+            // 强制刷新
+            viewModelScope.launch {
+                delay(500)
+                try {
+                    model.forceRefresh()
+                } catch (e: Exception) {
+                    // 忽略刷新错误
+                }
+            }
+
+        } catch (e: Exception) {
+            throw e
+        }
+    }
+
+    // 🔥 辅助方法：找到下一个可用的 ID
+    private suspend fun findNextAvailableId(articlesCollection: CollectionReference): Int {
+        return try {
+            // 获取所有文档
+            val snapshot = articlesCollection.get().await()
+
+            // 找到所有数字文档 ID 中的最大值
+            val maxNumericId = snapshot.documents
+                .mapNotNull { doc ->
+                    // 尝试将文档 ID 转换为数字
+                    doc.id.toIntOrNull()
+                }
+                .maxOrNull() ?: 0
+
+            // 返回最大 ID + 1
+            maxNumericId + 1
+
+        } catch (e: Exception) {
+            // 如果出错，默认从 1 开始
+            1
+        }
+    }
+    // 🔥 新增：手动强制刷新方法
+    fun forceRefreshArticles() {
+        viewModelScope.launch {
+            try {
+                model.forceRefresh()
+            } catch (e: Exception) {
+                // 处理刷新错误
+            }
         }
     }
 
@@ -180,7 +241,6 @@ class ArticleViewModel(model: TheArticlesModel) : ViewModel() {
         }
     }
 }
-
 
 object ArticleFactory: ViewModelProvider.Factory{
     private val model = TheArticlesModel()

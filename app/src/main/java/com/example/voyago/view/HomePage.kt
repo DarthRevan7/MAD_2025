@@ -1,6 +1,7 @@
 package com.example.voyago.view
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -69,6 +70,12 @@ fun HomePageScreen(
 //    val tripLists by vm1.tripList.collectAsState()
 
     val articles by vm2.articleList.collectAsState()
+    LaunchedEffect(articles) {
+        Log.d("HomePage", "🔥 Articles in HomePage: ${articles.size}")
+        articles.forEachIndexed { index, article ->
+            Log.d("HomePage", "🔥 HomePage Article $index: ${article.title}")
+        }
+    }
     var displayCount by remember { mutableIntStateOf(5) }
     val scrollState = rememberScrollState()
     // 1. 先拿到"现在"的时间点
@@ -141,15 +148,16 @@ fun HomePageScreen(
 
         val toDisplay = articles.take(displayCount)
 
-       //  修改这部分：传递整个 article 对象
+
+        // 🔥 显示每篇文章
         toDisplay.forEach { article ->
+            Log.d("HomePage", "🔥 Displaying article: ${article.title}")
             ArticleShow(
-                article = article,  // 传递整个 article 对象
+                article = article,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
                     .clickable {
-                        // 导航到 Article Search 页面
                         navController.navigate("article_detail/${article.id}")
                     }
             )

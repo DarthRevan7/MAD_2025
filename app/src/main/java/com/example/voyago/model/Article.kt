@@ -4,7 +4,9 @@ import android.util.Log
 import com.example.voyago.Collections
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.QuerySnapshot
+import com.google.firebase.firestore.Source
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
@@ -18,32 +20,24 @@ data class Article(
     var title: String? = null,
     var text: String? = null,
     var authorId: Int? = null,
-    var date: Long? = null,    // Calendar 改成 Long 时间戳
+    var date: Long? = null,
     var photo: String? = null,
     val contentUrl: String? = null,
     val tags: List<String> = emptyList(),
-    var viewCount: Int = 0     // ←  新增字段
-
+    var viewCount: Int = 0
 ) {
-    // 添加获取 Firebase Storage 图片 URL 的方法
     suspend fun getPhoto(): String? {
         return try {
             if (photo.isNullOrEmpty()) {
-                // 如果没有照片，返回默认占位图
                 return com.example.voyago.StorageHelper.getImageDownloadUrl("articles/placeholder.jpg")
             }
 
             when {
-                // 如果已经是完整的 HTTP URL，直接返回
                 photo!!.startsWith("http") -> photo
-
-                // 如果包含路径分隔符，说明是 Firebase Storage 路径
                 photo!!.contains("/") -> {
                     val storageRef = Firebase.storage.reference.child(photo!!)
                     storageRef.downloadUrl.await().toString()
                 }
-
-                // 否则假设是在 articles/ 目录下
                 else -> {
                     val storageRef = Firebase.storage.reference.child("articles/$photo")
                     storageRef.downloadUrl.await().toString()
@@ -51,89 +45,118 @@ data class Article(
             }
         } catch (e: Exception) {
             Log.e("Article", "Failed to get photo URL for $photo", e)
-            // 返回默认占位图
             com.example.voyago.StorageHelper.getImageDownloadUrl("articles/placeholder.jpg")
         }
     }
 
-
-    // 可选：无参构造函数（其实默认参数已经自动生成了）
     constructor() : this(null, null, null, null, null, null, null, emptyList())
 }
 
 fun parseArticles(snapshot: QuerySnapshot): List<Article> {
+    Log.d("parseArticles", "🔥 Starting to parse ${snapshot.documents.size} documents")
+
     return snapshot.documents.mapNotNull { doc ->
         try {
-            val id        = doc.getLong("id")?.toInt()
-            val title     = doc.getString("title")
-            val text      = doc.getString("text")
-            val authorId  = doc.getLong("authorId")?.toInt()
-            // 1) 先拿 Timestamp，再转 Date 再拿 time
-            val ts        = doc.getTimestamp("date")
-            val dateMs    = ts?.toDate()?.time
-            val photo     = doc.getString("photo")
-            val contentUrl= doc.getString("contentUrl")
-            val tags      = doc.get("tags") as? List<String> ?: emptyList()
-            val viewCount = doc.getLong("viewCount")?.toInt() ?: 0  // ←  新增行
+            Log.d("parseArticles", "🔥 Parsing document: ${doc.id}")
+            Log.d("parseArticles", "🔥 Document data: ${doc.data}")
 
-            Article(
-                id        = id,
-                title     = title,
-                text      = text,
-                authorId  = authorId,
-                date      = dateMs,     // Long 毫秒
-                photo     = photo,
-                contentUrl= contentUrl,
-                tags      = tags,
-                viewCount = viewCount   // ←  新增参数
+            val id = doc.getLong("id")?.toInt()
+            val title = doc.getString("title")
+            val text = doc.getString("text")
+            val authorId = doc.getLong("authorId")?.toInt()
+            val ts = doc.getTimestamp("date")
+            val dateMs = ts?.toDate()?.time
+            val photo = doc.getString("photo")
+            val contentUrl = doc.getString("contentUrl")
+            val tags = doc.get("tags") as? List<String> ?: emptyList()
+            val viewCount = doc.getLong("viewCount")?.toInt() ?: 0
+
+            val article = Article(
+                id = id,
+                title = title,
+                text = text,
+                authorId = authorId,
+                date = dateMs,
+                photo = photo,
+                contentUrl = contentUrl,
+                tags = tags,
+                viewCount = viewCount
             )
+
+            Log.d("parseArticles", "🔥 Successfully parsed article: id=${article.id}, title=${article.title}")
+            article
+
         } catch (e: Exception) {
-            // 解析某条文档失败就跳过
+            Log.e("parseArticles", "🔥 Error parsing document ${doc.id}: ${e.message}", e)
             null
         }
     }
 }
 
-
-object CollectionsArticles{
-
-    private val db: FirebaseFirestore
-        get() = Firebase.firestore
-
-    init {
-        db.firestoreSettings = FirebaseFirestoreSettings.Builder()
-            .setPersistenceEnabled(true) //false to Disable LocalChaching
-            .build()
-    }
-
-    val articles = Collections.articles
-
-}
-
 class TheArticlesModel {
 
     fun getArticles(): Flow<List<Article>> = callbackFlow {
-        val listenerRegistration = CollectionsArticles.articles
+        Log.d("TheArticlesModel", "🔥 Starting to listen for articles...")
+
+        // 🔥 直接使用 Collections.articles，但添加更多调试信息
+        val listenerRegistration = Collections.articles
+            .orderBy("date", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, exception ->
+                Log.d("TheArticlesModel", "🔥 Snapshot listener triggered")
+
                 when {
                     exception != null -> {
-                        // 监听出错，发一个空列表过去
-                        Log.e("TheArticlesModel", "listen error", exception)
+                        Log.e("TheArticlesModel", "🔥 Listen error: ${exception.message}", exception)
                         trySend(emptyList())
                     }
                     snapshot != null -> {
-                        // snapshot 不为 null，才去解析
+                        Log.d("TheArticlesModel", "🔥 Snapshot received with ${snapshot.documents.size} documents")
+                        Log.d("TheArticlesModel", "🔥 Snapshot metadata: fromCache=${snapshot.metadata.isFromCache}")
+
+                        // 🔥 记录文档详情
+                        snapshot.documents.forEachIndexed { index, doc ->
+                            Log.d("TheArticlesModel", "🔥 Document $index: ID=${doc.id}, exists=${doc.exists()}")
+                        }
+
                         val articles = parseArticles(snapshot)
-                        trySend(articles)
+                        Log.d("TheArticlesModel", "🔥 Parsed ${articles.size} articles successfully")
+
+                        // 🔥 发送结果
+                        val success = trySend(articles)
+                        Log.d("TheArticlesModel", "🔥 trySend result: ${success.isSuccess}")
+
                     }
                     else -> {
-                        // snapshot 和 exception 同时为 null，极少见，但也发空列表兜底
+                        Log.w("TheArticlesModel", "🔥 Both snapshot and exception are null")
                         trySend(emptyList())
                     }
                 }
             }
 
-        // channel 关闭时注销 listener
-        awaitClose { listenerRegistration.remove() }
+        awaitClose {
+            Log.d("TheArticlesModel", "🔥 Removing Firebase listener")
+            listenerRegistration.remove()
+        }
+    }
+
+    suspend fun forceRefresh(): List<Article> {
+        return try {
+            Log.d("TheArticlesModel", "🔥 Force refresh starting...")
+
+            val snapshot = Collections.articles
+                .orderBy("date", Query.Direction.DESCENDING)
+                .get(Source.SERVER)
+                .await()
+
+            Log.d("TheArticlesModel", "🔥 Force refresh got ${snapshot.documents.size} documents")
+
+            val articles = parseArticles(snapshot)
+            Log.d("TheArticlesModel", "🔥 Force refresh parsed ${articles.size} articles")
+            articles
+
+        } catch (e: Exception) {
+            Log.e("TheArticlesModel", "🔥 Force refresh failed: ${e.message}", e)
+            emptyList()
+        }
     }
 }

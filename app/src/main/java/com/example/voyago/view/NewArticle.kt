@@ -1,12 +1,10 @@
 package com.example.voyago.view
 
-
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,23 +14,18 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.voyago.model.Article
 import com.example.voyago.viewmodel.ArticleViewModel
 import com.example.voyago.viewmodel.UserViewModel
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 @Composable
@@ -182,32 +175,53 @@ fun CreateArticleScreen(
                         isLoading = true
                         coroutineScope.launch {
                             try {
+                                Log.d("CreateArticle", "Starting to publish article...")
 
-                                // RED: 简化保存，直接调用新的保存方法
-                                // RED: 构建 Article，date 使用时间戳
+                                // 🔥 修复图片上传逻辑
+                                val photoPath = selectedImageUri?.let { uri ->
+                                    try {
+                                        Log.d("CreateArticle", "Uploading image...")
+                                        val imageFileName = "${UUID.randomUUID()}.jpg"
+                                        val imageRef = FirebaseStorage.getInstance()
+                                            .reference
+                                            .child("articles/$imageFileName")
+
+                                        // 上传图片
+                                        imageRef.putFile(uri).await()
+                                        Log.d("CreateArticle", "Image uploaded successfully")
+
+                                        // 🔥 关键修复：只存储路径，不存储完整URL
+                                        "articles/$imageFileName"
+                                    } catch (e: Exception) {
+                                        Log.e("CreateArticle", "Image upload failed", e)
+                                        throw e
+                                    }
+                                }
+
+                                // 🔥 构建 Article 对象
                                 val newArticle = Article(
                                     id = null,
                                     title = articleTitle,
                                     text = articleContent,
                                     authorId = currentUser.id,
                                     date = System.currentTimeMillis(),
-                                    photo = selectedImageUri?.let { uri ->
-                                        val imageRef = FirebaseStorage.getInstance()
-                                            .reference
-                                            .child("articles/${UUID.randomUUID()}.jpg")
-                                        imageRef.putFile(uri).await()
-                                        imageRef.downloadUrl.await().toString()
-                                    },
+                                    photo = photoPath, // 存储路径，不是URL
                                     tags = emptyList(),
                                     viewCount = 0
                                 )
 
-                                // RED: 调用 ViewModel 的方法统一保存
+                                Log.d("CreateArticle", "Publishing article: $newArticle")
+
+                                // 🔥 调用 ViewModel 的方法统一保存
                                 articleViewModel.publishArticle(newArticle)
+
+                                Log.d("CreateArticle", "Article published successfully")
 
                                 // Navigate back
                                 navController.popBackStack()
+
                             } catch (e: Exception) {
+                                Log.e("CreateArticle", "Failed to publish article", e)
                                 errorMessage = "Failed to publish article: ${e.message}"
                                 showError = true
                             } finally {
@@ -258,33 +272,4 @@ fun CreateArticleScreen(
             }
         )
     }
-}
-
-// Helper function to upload image to Firebase Storage
-suspend fun uploadImageToFirebase(uri: Uri): String {
-    val storageRef = FirebaseStorage.getInstance().reference
-    val imageRef = storageRef.child("articles/${UUID.randomUUID()}.jpg")
-
-    imageRef.putFile(uri).await()
-    return imageRef.path
-}
-
-// Helper function to save article to Firestore
-suspend fun saveArticleToFirestore(article: Article) {
-    val db = FirebaseFirestore.getInstance()
-    val articlesCollection = db.collection("articles")
-
-    // Get next article ID
-    val counterRef = db.collection("metadata").document("articleCounter")
-    val newId = db.runTransaction { transaction ->
-        val snapshot = transaction.get(counterRef)
-        val lastId = snapshot.getLong("lastArticleId") ?: 0
-        val newId = lastId + 1
-        transaction.update(counterRef, "lastArticleId", newId)
-        newId
-    }.await()
-
-    // Save article with new ID
-    val articleWithId = article.copy(id = newId.toInt())
-    articlesCollection.document(newId.toString()).set(articleWithId).await()
 }
