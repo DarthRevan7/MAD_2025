@@ -89,10 +89,13 @@ import com.example.voyago.model.NavItem
 import com.example.voyago.model.User
 import com.example.voyago.model.UserModel
 import com.example.voyago.view.ActivitiesList
+import com.example.voyago.view.ArticleDetailScreen
+import com.example.voyago.view.ArticleSearchScreen
 import com.example.voyago.view.ChatScreen
 import com.example.voyago.view.CompleteAccount
 import com.example.voyago.view.CreateAccount2Screen
 import com.example.voyago.view.CreateAccountScreen
+import com.example.voyago.view.CreateArticleScreen
 import com.example.voyago.view.CreateNewTrip
 import com.example.voyago.view.EditActivity
 import com.example.voyago.view.EditProfileScreen
@@ -372,6 +375,47 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
         chatsNavGraph(navController)
         profileNavGraph(navController)
         loginNavGraph(navController, auth)
+        // 添加全局的 article_search 路由，这样从任何地方都可以访问
+        composable("article_search") {
+            val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
+            val userViewModel: UserViewModel = viewModel(factory = UserFactory)
+
+            ArticleSearchScreen(
+                navController = navController,
+                articleViewModel = articleViewModel,
+                userViewModel =  userViewModel
+            )
+        }
+        // 添加 create_article 路由
+        composable("create_article") {
+            RequireAuth(navController) {
+                val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
+                val userViewModel: UserViewModel = viewModel(factory = UserFactory)
+
+                CreateArticleScreen(
+                    navController = navController,
+                    articleViewModel = articleViewModel,
+                    userViewModel = userViewModel
+                )
+            }
+        }
+
+        // 添加 article_detail 路由
+        composable(
+            "article_detail/{articleId}",
+            arguments = listOf(navArgument("articleId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val articleId = backStackEntry.arguments?.getInt("articleId") ?: 0
+            val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
+            val userViewModel: UserViewModel = viewModel(factory = UserFactory)
+
+            ArticleDetailScreen(
+                navController = navController,
+                articleId = articleId,
+                articleViewModel = articleViewModel,
+                userViewModel = userViewModel
+            )
+        }
 
         composable("camera") {
             val context = LocalContext.current
@@ -514,6 +558,16 @@ fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
                 nvm = notificationViewModel
             )
         }
+        composable("article_search") {
+            val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
+            val userViewModel: UserViewModel = viewModel(factory = UserFactory)  // 添加这行
+
+            ArticleSearchScreen(
+                navController = navController,
+                articleViewModel = articleViewModel,
+                userViewModel = userViewModel  // 传递 userViewModel
+            )
+        }
 
         composable(
             "user_profile/{userId}",
@@ -622,6 +676,8 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
                 nvm = notificationViewModel
             )
         }
+
+
 
         composable("my_reviews") { entry ->
             val exploreGraphEntry = remember(entry) {
@@ -1141,11 +1197,11 @@ fun ProfilePhoto(
     }
 }
 
+// 在 MainActivity.kt 中修改 TopBar 组件
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBar(nvm: NotificationViewModel, navController: NavController, uvm: UserViewModel) {
-
-
     val user by uvm.loggedUser.collectAsState()
     val userId = user.id.toString()
     val hasNewNotification by nvm.hasNewNotification
@@ -1171,16 +1227,21 @@ fun TopBar(nvm: NotificationViewModel, navController: NavController, uvm: UserVi
                 contentDescription = "logo",
                 modifier = Modifier.size(120.dp)
             )
-
         },
         actions = {
-            IconButton(onClick = {/*TO DO*/ }) {
+            // News Icon - 点击跳转到 ArticleSearch
+            IconButton(onClick = {
+                // 导航到 ArticleSearch 页面
+                navController.navigate("article_search")
+            }) {
                 Image(
                     painter = painterNews,
                     contentDescription = "news",
                     modifier = Modifier.padding(end = 10.dp)
                 )
             }
+
+            // Notification Icon
             IconButton(onClick = {
                 nvm.markNotificationsRead(userId)
                 navController.navigate(Screen.Notifications.route) {
@@ -1190,8 +1251,8 @@ fun TopBar(nvm: NotificationViewModel, navController: NavController, uvm: UserVi
                 Box(
                     modifier = Modifier
                         .padding(top = 7.dp, end = 10.dp)
-                        .size(45.dp), // ensure space for bell + dot
-                    contentAlignment = Alignment.TopEnd // Makes the red dot align top-end
+                        .size(45.dp),
+                    contentAlignment = Alignment.TopEnd
                 ) {
                     Image(
                         painter = painterNotification,
@@ -1209,8 +1270,6 @@ fun TopBar(nvm: NotificationViewModel, navController: NavController, uvm: UserVi
                     }
                 }
             }
-
-
         },
         modifier = Modifier.shadow(8.dp)
     )

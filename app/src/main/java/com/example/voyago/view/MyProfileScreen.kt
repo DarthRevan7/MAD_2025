@@ -500,7 +500,7 @@ fun TabAboutTripsReview(
                             ) {
 
                                 articles.forEach { item ->
-                                    ShowUserArticle(item)
+                                    ShowUserArticle(item,navController)
                                 }
                             }
                         }
@@ -608,18 +608,39 @@ fun ShowUserTrip(trip: Trip, vm: TripViewModel, navController: NavController) {
     }
 }
 
+// 修复 MyProfileScreen.kt 中的 ShowUserArticle 函数
+
 @OptIn(ExperimentalGlideComposeApi::class)
 @SuppressLint("DiscouragedApi")
 @Composable
-fun ShowUserArticle(article: Article) {
-
+fun ShowUserArticle(article: Article, navController: NavController) {
     val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
     val formattedDate = dateFormat.format(article.date ?: 0L)
+
+    // 🔥 用于获取第一张图片的状态
+    var imageUrl by remember { mutableStateOf<String?>(null) }
+    val coroutineScope = rememberCoroutineScope()
+
+    // 🔥 异步获取第一张图片
+    LaunchedEffect(article.photo) {
+        coroutineScope.launch {
+            try {
+                imageUrl = article.getPhoto() // 获取第一张图片
+            } catch (e: Exception) {
+                Log.e("ShowUserArticle", "Failed to get photo", e)
+            }
+        }
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(60.dp)
             .background(Color(0xf9, 0xf6, 0xf9, 255))
+            .clickable {
+                // 🔥 添加点击导航到文章详情
+                navController.navigate("article_detail/${article.id}")
+            }
             .padding(horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -629,32 +650,78 @@ fun ShowUserArticle(article: Article) {
                 .clip(CircleShape)
                 .background(Color.Gray) // fallback background
         ) {
-            if (article.photo?.isNotBlank() == true) {
-                val context = LocalContext.current
-
-                val imageModel = if (article.photo?.isUriString() == true) {
-                    // Local drawable resource
-                    context.resources.getIdentifier(article.photo, "drawable", context.packageName)
-                } else {
-                    // URI string
-                    article.photo
+            when {
+                imageUrl != null -> {
+                    // 🔥 使用 Firebase Storage URL
+                    GlideImage(
+                        model = imageUrl,
+                        contentDescription = "Article Image",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(CircleShape)
+                    )
                 }
+                article.photo.isNotEmpty() -> {
+                    // 🔥 备用：尝试本地资源
+                    val context = LocalContext.current
+                    val firstPhoto = article.photo.first()
+                    val resId = remember(firstPhoto) {
+                        context.resources.getIdentifier(
+                            firstPhoto,
+                            "drawable",
+                            context.packageName
+                        )
+                    }
 
-                GlideImage(
-                    model = imageModel,
-                    contentDescription = "Trip or Article Image",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(CircleShape)
-                )
+                    if (resId != 0) {
+                        GlideImage(
+                            model = resId,
+                            contentDescription = "Article Image",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(CircleShape)
+                        )
+                    } else {
+                        // 🔥 显示占位图标
+                        Icon(
+                            Icons.Filled.AddPhotoAlternate,
+                            contentDescription = "No Image",
+                            tint = Color.White,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                }
+                else -> {
+                    // 🔥 没有图片时显示占位图标
+                    Icon(
+                        Icons.Filled.AddPhotoAlternate,
+                        contentDescription = "No Image",
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
             }
         }
 
         Spacer(modifier = Modifier.width(12.dp))
 
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = article.title ?: "No title", maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(
+                text = article.title ?: "No title",
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            // 🔥 可选：显示图片数量
+            if (article.photo.isNotEmpty()) {
+                Text(
+                    text = "${article.photo.size} photo(s)",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray,
+                    maxLines = 1
+                )
+            }
         }
 
         Text(
@@ -664,6 +731,9 @@ fun ShowUserArticle(article: Article) {
         )
     }
 }
+
+// 🔥 删除不需要的扩展函数（如果有的话）
+// String.isUriString() 这个函数不存在，需要删除或替换
 
 @Composable
 fun ShowUserReview(review: Review, navController: NavController, uvm: UserViewModel) {
