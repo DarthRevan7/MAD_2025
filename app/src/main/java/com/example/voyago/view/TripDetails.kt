@@ -830,7 +830,7 @@ fun TripDetails(
 
                                 val isRegistered = isRegisteredList.getOrNull(i) == true
                                 val participant =
-                                    unregisteredParticipants.getOrNull(i) ?: Participant("", "", "")
+                                    unregisteredParticipants.getOrNull(i)// ?: Participant("", "", "")
 
                                 Column(modifier = Modifier.padding(vertical = 8.dp)) {
                                     Text(
@@ -847,11 +847,11 @@ fun TripDetails(
                                                     .also { it[i] = checked }
                                                 // Reset data
                                                 if (checked) {
-                                                    unregisteredParticipants =
-                                                        unregisteredParticipants.toMutableList()
-                                                            .also {
-                                                                it[i] = Participant("", "", "")
-                                                            }
+//                                                    unregisteredParticipants =
+//                                                        unregisteredParticipants.toMutableList()
+//                                                            .also {
+//                                                                it[i] = Participant("", "", "")
+//                                                            }
                                                 } else {
                                                     registeredUsernames =
                                                         registeredUsernames.toMutableList().also {
@@ -1029,6 +1029,8 @@ fun TripDetails(
                                     unregisteredParticipants,
                                     idList
                                 )
+
+                                //Cleaning variables
                                 showDialog = false
                                 dialogPhase = 0
                                 unregisteredParticipants = emptyList()
