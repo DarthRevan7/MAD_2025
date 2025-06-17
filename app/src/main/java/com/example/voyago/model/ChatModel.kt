@@ -1,38 +1,55 @@
 package com.example.voyago.model
 
-import com.example.voyago.Collections
+import android.util.Log
 import com.google.firebase.Firebase
-import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.coroutineScope
-import android.util.*
-import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
 
 
-data class TripChat(val chatId : String = "",                // chatId = tripId.toString() + "Chat"
-                    val messages : List<ChatMessage>)
-
-data class PrivateChat(val chatId : String = "",             // chatId = userId + "_to_" + userId [1_to_2]
-                       val messages : List<ChatMessage> = emptyList() )
-
-data class ChatMessage(
-    val senderId : Int,
-    val message : String,
-    val date : String
+data class TripChat(
+    val chatId: String = "",                // chatId = tripId.toString() + "Chat"
+    val messages: List<ChatMessage>
 )
 
-class ChatModel(){
+/*data class PrivateChat(
+    val chatId: String = "",             // chatId = userId + "_to_" + userId [1_to_2]
+    val messages: List<ChatMessage> = emptyList()
+)*/
+
+
+data class PrivateChat(
+    val userId: String = "",
+    val username: String = "",
+    val lastMessage: String = "",
+    val unreadCount: Int = 0
+)
+
+
+data class ChatMessage(
+    val senderId: Int,
+    val message: String,
+    val date: String
+)
+
+data class ChatGroup(
+    val id: String = "",
+    val title: String = "",
+    val lastMessage: String = "",
+    val timestamp: Long = 0L, // Timestamp in milliseconds
+    val unreadCount: Int = 0
+)
+
+class ChatModel() {
 
 
     private val _privateChat = MutableStateFlow<PrivateChat>(PrivateChat())
-    val privateChat : MutableStateFlow<PrivateChat> = _privateChat
+    val privateChat: MutableStateFlow<PrivateChat> = _privateChat
 
-    suspend fun getPrivateChat(userId1: Int, userId2 : Int) {
+    suspend fun getPrivateChat(userId1: Int, userId2: Int) {
 
         coroutineScope {
             callbackFlow {
@@ -40,12 +57,10 @@ class ChatModel(){
                 val listener = Chats.chats
                     .whereEqualTo("chatId", chatId)
                     .addSnapshotListener { snapshot, error ->
-                        if(snapshot != null) {
+                        if (snapshot != null) {
                             val objToSend = snapshot.toObjects(PrivateChat::class.java)
                             trySend(objToSend)
-                        }
-                        else
-                        {
+                        } else {
                             Log.e("ChatErrors", error.toString())
                             trySend(PrivateChat())
                         }
@@ -59,11 +74,11 @@ class ChatModel(){
 }
 
 //Chat singleton
-object Chats{
+object Chats {
 
     private const val C_CHATS = "chats"
 
-    private val db : FirebaseFirestore
+    private val db: FirebaseFirestore
         get() = Firebase.firestore
 
     init {

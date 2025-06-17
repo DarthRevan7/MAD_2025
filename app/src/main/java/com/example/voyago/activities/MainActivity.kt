@@ -383,7 +383,7 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
             ArticleSearchScreen(
                 navController = navController,
                 articleViewModel = articleViewModel,
-                userViewModel =  userViewModel
+                userViewModel = userViewModel
             )
         }
         // 添加 create_article 路由
@@ -940,7 +940,7 @@ fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
                     factory = ChatFactory
                 )
 
-                ChatScreen(chatViewModel)
+                ChatScreen(chatViewModel, navController, Modifier)
 
                 // 获取用户信息
                 val chatsGraphEntry = remember(entry) {
