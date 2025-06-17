@@ -1022,6 +1022,13 @@ fun TripDetails(
 
                             if (!hasErrors) {
                                 val idList = registeredUserList.map { it.id }.toList()
+
+                                unregisteredParticipants.forEach {
+                                    if(it.name.isEmpty() && it.surname.isEmpty() && it.email.isEmpty()) {
+                                        unregisteredParticipants -= it
+                                    }
+                                }
+
                                 vm.askToJoin(
                                     trip,
                                     loggedUser.id,

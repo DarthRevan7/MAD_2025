@@ -1,6 +1,7 @@
 package com.example.voyago.view
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -67,7 +68,14 @@ fun HomePageScreen(
 
 
 //    val tripLists by vm1.tripList.collectAsState()
-    val articles by vm2.articleList.collectAsState(initial = emptyList())
+
+    val articles by vm2.articleList.collectAsState()
+    LaunchedEffect(articles) {
+        Log.d("HomePage", "🔥 Articles in HomePage: ${articles.size}")
+        articles.forEachIndexed { index, article ->
+            Log.d("HomePage", "🔥 HomePage Article $index: ${article.title}")
+        }
+    }
     var displayCount by remember { mutableIntStateOf(5) }
     val scrollState = rememberScrollState()
     // 1. 先拿到"现在"的时间点
@@ -140,13 +148,18 @@ fun HomePageScreen(
 
         val toDisplay = articles.take(displayCount)
 
-       // 🔄 修改这部分：传递整个 article 对象
+
+        // 🔥 显示每篇文章
         toDisplay.forEach { article ->
+            Log.d("HomePage", "🔥 Displaying article: ${article.title}")
             ArticleShow(
-                article = article,  // 传递整个 article 对象
+                article = article,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
+                    .clickable {
+                        navController.navigate("article_detail/${article.id}")
+                    }
             )
         }
 
@@ -309,7 +322,8 @@ private fun TripCard(
 @Composable
 fun ArticleShow(
     article: Article,  // 🔄 改为接收整个 Article 对象而不是单独的字段
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null
 ) {
     var imageUrl by remember { mutableStateOf<String?>(null) }
 
@@ -321,7 +335,14 @@ fun ArticleShow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(4.dp),
+            .padding(4.dp)
+        .then(
+            if (onClick != null) {
+                Modifier.clickable { onClick() }
+            } else {
+                Modifier
+            }
+            ),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // 🔄 使用 GlideImage 和 Firebase Storage URL
@@ -340,7 +361,7 @@ fun ArticleShow(
             !article.photo.isNullOrEmpty() -> {
                 val context = LocalContext.current
                 val resId = remember(article.photo) {
-                    context.resources.getIdentifier(article.photo, "drawable", context.packageName)
+                    context.resources.getIdentifier(article.photo.toString(), "drawable", context.packageName)
                 }
 
                 if (resId != 0) {
