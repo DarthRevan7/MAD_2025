@@ -29,11 +29,20 @@ data class PrivateChat(
 )
 
 
-data class ChatMessage(
+/*data class ChatMessage(
     val senderId: Int,
     val message: String,
     val date: String
+)*/
+
+data class ChatMessage(
+    val senderName: String,
+    val message: String,
+    val date: String,        // e.g. "June 18, 2025"
+    val time: String,        // e.g. "9:42 AM"
+    val isCurrentUser: Boolean
 )
+
 
 data class ChatGroup(
     val id: String = "",
