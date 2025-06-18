@@ -98,7 +98,6 @@ import java.text.SimpleDateFormat
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
-import java.util.Date
 import java.util.Locale
 
 data class TripNotification(
@@ -136,7 +135,6 @@ fun TripDetails(
     // 添加登录状态检查
 
 
-
     //  修复：更准确的登录状态检查
     val isUserLoggedIn = remember(loggedUser) {
         loggedUser.id != 0 &&
@@ -155,7 +153,7 @@ fun TripDetails(
     val fields =
         navController.previousBackStackEntry?.savedStateHandle?.get<TripNotification>("notificationValues")
 
-    if (fields != null){
+    if (fields != null) {
         trip = Trip(
             fields.id,
             fields.photo,
@@ -199,7 +197,6 @@ fun TripDetails(
         trip.participants.containsKey(loggedUser.id.toString()) && trip.creatorId != loggedUser.id
 
     //Delete confirmation trip
-    var showPopup by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
     //Manage join request
@@ -226,7 +223,7 @@ fun TripDetails(
 
     var usernameValidationStates by remember { mutableStateOf(mutableMapOf<Int, Boolean>()) }
 
-    var registeredUserList : MutableList<User> = mutableListOf()
+    var registeredUserList: MutableList<User> = mutableListOf()
 
     //Initialization of the list of other participants
     LaunchedEffect(dialogPhase, selectedSpots) {
@@ -366,6 +363,11 @@ fun TripDetails(
                                 }
                             }
 
+                            Spacer(Modifier.weight(3f))
+
+                            //"Create a Copy" Button (creates a copy of the trip in the logged in user private trips)
+                            CreateACopyButton(trip, vm, loggedUser)
+
                             Spacer(Modifier.weight(1f))
 
                             //Private Button (makes the trip private)
@@ -411,7 +413,6 @@ fun TripDetails(
                                         Text("My Reviews")
                                     }
 
-                                    Log.d("L3", "isReviewed: $isReviewed")
                                     if (isReviewed == false) {
                                         Box(
                                             modifier = Modifier
@@ -428,52 +429,7 @@ fun TripDetails(
                             // 只有登录用户才显示 "Create a Copy" 按钮
                             if (isUserLoggedIn) {
                                 //"Create a Copy" Button (creates a copy of the trip in the logged in user private trips)
-
-
-                                //"Create a Copy" Button (creates a copy of the trip in the logged in user private trips)
-                                Button(
-                                    onClick = {
-                                        // 添加调试日志
-                                        Log.d("TripCopy", "Original trip photo: ${trip.photo}")
-
-                                        vm.addImportedTrip(
-                                            trip.photo,  // 或者尝试使用 trip.getPhoto() ?: trip.photo
-                                            trip.title,
-                                            trip.destination,
-                                            trip.startDateAsCalendar(),
-                                            trip.endDateAsCalendar(),
-                                            trip.estimatedPrice,
-                                            trip.groupSize,
-                                            trip.activities,
-                                            trip.typeTravel,
-                                            loggedUser.id,
-                                            false
-                                        ) { success, importedTrip ->
-                                            if (success) {
-                                                // 添加调试日志
-                                                Log.d(
-                                                    "TripCopy",
-                                                    "Imported trip created with photo: ${importedTrip?.photo}"
-                                                )
-
-                                                vm.updatePublishedTrip()
-
-                                                showPopup = true
-                                                coroutineScope.launch {
-                                                    delay(2000)
-                                                    showPopup = false
-                                                }
-                                            } else {
-                                                Log.e("TripDetails", "Failed to create trip copy")
-                                            }
-                                        }
-                                    },
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(0x65, 0x55, 0x8f, 255)
-                                    )
-                                ) {
-                                    Text("Create a Copy")
-                                }
+                                CreateACopyButton(trip, vm, loggedUser)
                             }
                         }
                     }
@@ -488,51 +444,52 @@ fun TripDetails(
                                 .fillMaxWidth(),
                             horizontalArrangement = Arrangement.End
                         ) {
-                            //Publish Button
-                            val context = LocalContext.current
-                            Button(
-                                onClick = {
-                                    if (isAfterToday) {
-                                        vm.changePublishedStatus(trip.id)
-                                        vm.updatePublishedTrip()
+                            Box {
+                                //Publish Button
+                                Button(
+                                    onClick = {
+                                        if (isAfterToday) {
+                                            vm.changePublishedStatus(trip.id)
+                                            vm.updatePublishedTrip()
 
-                                        //Send notifications
-                                        val title = "Check this out!"
-                                        val body =
-                                            "This trip to ${trip.destination} looks interesting for you!"
-                                        val notificationType = "TRIP"
-                                        val idLink = trip.id
+                                            //Send notifications
+                                            val title = "Check this out!"
+                                            val body =
+                                                "This trip to ${trip.destination} looks interesting for you!"
+                                            val notificationType = "TRIP"
+                                            val idLink = trip.id
 
-                                        uvm.getMatchingUserIdsByTypeTravel(trip.typeTravel) { compatibleUsers ->
-                                            compatibleUsers.forEach { userIdInt ->
-                                                if (userIdInt != loggedUser.id) {
-                                                    val userId = userIdInt.toString()
-                                                    nvm.sendNotificationToUser(
-                                                        userId,
-                                                        title,
-                                                        body,
-                                                        notificationType,
-                                                        idLink
-                                                    )
+                                            uvm.getMatchingUserIdsByTypeTravel(trip.typeTravel) { compatibleUsers ->
+                                                compatibleUsers.forEach { userIdInt ->
+                                                    if (userIdInt != loggedUser.id) {
+                                                        val userId = userIdInt.toString()
+                                                        nvm.sendNotificationToUser(
+                                                            userId,
+                                                            title,
+                                                            body,
+                                                            notificationType,
+                                                            idLink
+                                                        )
+                                                    }
                                                 }
-                                                //For debugging
-//                                                val userId = userIdInt.toString()
-//                                                nvm.sendNotificationToUser(userId, title, body, notificationType, idLink)
 
+                                                navController.popBackStack()
                                             }
-
-                                            navController.popBackStack()
+                                        } else {
+                                            publishError = true
                                         }
-                                    } else {
-                                        publishError = true
-                                    }
-                                },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0x14, 0xa1, 0x55, 255)
-                                )
-                            ) {
-                                Text("Publish")
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0x14, 0xa1, 0x55, 255)
+                                    )
+                                ) {
+                                    Text("Publish")
+                                }
                             }
+
+                            Spacer(Modifier.weight(1f))
+
+                            CreateACopyButton(trip, vm, loggedUser)
 
                             Spacer(Modifier.padding(5.dp))
 
@@ -571,38 +528,7 @@ fun TripDetails(
                         // 只有登录用户才显示 "Create a Copy" 按钮
                         if (isUserLoggedIn) {
                             //"Create a Copy" Button (creates a copy of the trip in the logged in user private trips)
-                            Button(
-                                onClick = {
-                                    vm.addImportedTrip(
-                                        trip.photo,
-                                        trip.title,
-                                        trip.destination,
-                                        trip.startDateAsCalendar(),
-                                        trip.endDateAsCalendar(),
-                                        trip.estimatedPrice,
-                                        trip.groupSize,
-                                        trip.activities,
-                                        trip.typeTravel,
-                                        loggedUser.id,  //  使用当前登录用户的ID
-                                        false
-                                    ) { success, importedTrip ->
-                                        if (success) {
-                                            vm.updatePublishedTrip()
-
-                                            showPopup = true
-                                            coroutineScope.launch {
-                                                delay(2000)
-                                                showPopup = false
-                                            }
-                                        }
-                                    }
-                                },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0x65, 0x55, 0x8f, 255)
-                                )
-                            ) {
-                                Text("Create a Copy")
-                            }
+                            CreateACopyButton(trip, vm, loggedUser)
 
                             Spacer(Modifier.padding(5.dp))
                         }
@@ -743,38 +669,7 @@ fun TripDetails(
 
         }
 
-        //PopUp that appears when the user creates a copy of the trip
-        if (showPopup) {
-            Popup(
-                alignment = Alignment.TopCenter,
-                onDismissRequest = {
-                    showPopup = false
-                }
-            ) {
-                Box(
-                    modifier = Modifier
-                        .wrapContentSize()
-                        .padding(top = 80.dp)
-                        .background(Color.White, shape = RoundedCornerShape(8.dp))
-                        .padding(16.dp)
-                ) {
-                    Row {
-                        Icon(
-                            imageVector = Icons.Default.CheckBox,
-                            contentDescription = "check",
-                            tint = Color.Green
-                        )
-                        Spacer(Modifier.padding(5.dp))
-                        Text(
-                            text = "Copy created in 'My Trips'",
-                            color = Color.Black,
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.align(Alignment.CenterVertically)
-                        )
-                    }
-                }
-            }
-        }
+
         var usernameValidationStates by remember { mutableStateOf(mutableMapOf<Int, Boolean>()) }
 
 
@@ -858,9 +753,10 @@ fun TripDetails(
                                                             it[i] = ""
                                                         }
                                                 }
-                                                usernameValidationStates = usernameValidationStates.toMutableMap().also {
-                                                    it.remove(i)
-                                                }
+                                                usernameValidationStates =
+                                                    usernameValidationStates.toMutableMap().also {
+                                                        it.remove(i)
+                                                    }
                                             }
                                         )
                                         Text("Are they registered to Voyago?")
@@ -871,37 +767,41 @@ fun TripDetails(
                                         AsyncValidatingUsernameField(
                                             text = registeredUsernames[i],
                                             updateState = { newValue ->
-                                                registeredUsernames = registeredUsernames.toMutableList()
-                                                    .also { it[i] = newValue }
-                                                usernameTouchedList = usernameTouchedList.toMutableList()
-                                                    .also { it[i] = true }
+                                                registeredUsernames =
+                                                    registeredUsernames.toMutableList()
+                                                        .also { it[i] = newValue }
+                                                usernameTouchedList =
+                                                    usernameTouchedList.toMutableList()
+                                                        .also { it[i] = true }
                                             },
                                             label = "Username",
                                             userViewModel = uvm,
                                             index = i,
                                             validationStates = usernameValidationStates,
                                             onValidationChange = { index, isValid, user ->
-                                                usernameValidationStates = usernameValidationStates.toMutableMap().also {
-                                                    it[index] = isValid
-                                                }
-                                                if(user.id > 0)
-                                                {
+                                                usernameValidationStates =
+                                                    usernameValidationStates.toMutableMap().also {
+                                                        it[index] = isValid
+                                                    }
+                                                if (user.id > 0) {
                                                     registeredUserList += user
                                                 }
                                             }
                                         )
 
                                     } else {
-                                        if(participant != null) {
+                                        if (participant != null) {
                                             ValidatingInputTextField(
                                                 participant.name,
                                                 { newValue ->
                                                     unregisteredParticipants =
-                                                        unregisteredParticipants.toMutableList().also {
-                                                            it[i] = it[i].copy(name = newValue)
-                                                        }
-                                                    nameTouchedList = nameTouchedList.toMutableList()
-                                                        .also { it[i] = true }
+                                                        unregisteredParticipants.toMutableList()
+                                                            .also {
+                                                                it[i] = it[i].copy(name = newValue)
+                                                            }
+                                                    nameTouchedList =
+                                                        nameTouchedList.toMutableList()
+                                                            .also { it[i] = true }
                                                 },
                                                 nameTouchedList[i] && (
                                                         participant.name.isBlank() ||                             // Empty or only whitespace
@@ -915,9 +815,11 @@ fun TripDetails(
                                                 participant.surname,
                                                 { newValue ->
                                                     unregisteredParticipants =
-                                                        unregisteredParticipants.toMutableList().also {
-                                                            it[i] = it[i].copy(surname = newValue)
-                                                        }
+                                                        unregisteredParticipants.toMutableList()
+                                                            .also {
+                                                                it[i] =
+                                                                    it[i].copy(surname = newValue)
+                                                            }
                                                     surnameTouchedList =
                                                         surnameTouchedList.toMutableList()
                                                             .also { it[i] = true }
@@ -934,11 +836,13 @@ fun TripDetails(
                                                 participant.email,
                                                 { newValue ->
                                                     unregisteredParticipants =
-                                                        unregisteredParticipants.toMutableList().also {
-                                                            it[i] = it[i].copy(email = newValue)
-                                                        }
-                                                    emailTouchedList = emailTouchedList.toMutableList()
-                                                        .also { it[i] = true }
+                                                        unregisteredParticipants.toMutableList()
+                                                            .also {
+                                                                it[i] = it[i].copy(email = newValue)
+                                                            }
+                                                    emailTouchedList =
+                                                        emailTouchedList.toMutableList()
+                                                            .also { it[i] = true }
                                                 },
                                                 emailTouchedList[i] && participant.email.isBlank()
                                             )
@@ -1024,7 +928,7 @@ fun TripDetails(
                                 val idList = registeredUserList.map { it.id }.toList()
 
                                 unregisteredParticipants.forEach {
-                                    if(it.name.isEmpty() && it.surname.isEmpty() && it.email.isEmpty()) {
+                                    if (it.name.isEmpty() && it.surname.isEmpty() && it.email.isEmpty()) {
                                         unregisteredParticipants -= it
                                     }
                                 }
@@ -1733,11 +1637,13 @@ fun AsyncValidatingUsernameField(
                         modifier = Modifier.size(20.dp),
                         strokeWidth = 2.dp
                     )
+
                     isValid -> Icon(
                         Icons.Default.Check,
                         contentDescription = "Valid",
                         tint = Color.Black
                     )
+
                     hasErrors -> Icon(
                         Icons.Default.Close,
                         contentDescription = "Invalid",
@@ -1747,5 +1653,89 @@ fun AsyncValidatingUsernameField(
             },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
         )
+    }
+}
+
+@Composable
+fun CreateACopyButton(trip: Trip, vm: TripViewModel, loggedUser: User) {
+    val coroutineScope = rememberCoroutineScope()
+    var showPopup by remember { mutableStateOf(false) }
+
+    //"Create a Copy" Button (creates a copy of the trip in the logged in user private trips)
+    Button(
+        onClick = {
+            // 添加调试日志
+            Log.d("TripCopy", "Original trip photo: ${trip.photo}")
+
+            vm.addImportedTrip(
+                trip.photo,  // 或者尝试使用 trip.getPhoto() ?: trip.photo
+                trip.title,
+                trip.destination,
+                trip.startDateAsCalendar(),
+                trip.endDateAsCalendar(),
+                trip.estimatedPrice,
+                trip.groupSize,
+                trip.activities,
+                trip.typeTravel,
+                loggedUser.id,
+                false
+            ) { success, importedTrip ->
+                if (success) {
+                    // 添加调试日志
+                    Log.d(
+                        "TripCopy",
+                        "Imported trip created with photo: ${importedTrip?.photo}"
+                    )
+
+                    vm.updatePublishedTrip()
+
+                    showPopup = true
+                    coroutineScope.launch {
+                        delay(2000)
+                        showPopup = false
+                    }
+                } else {
+                    Log.e("TripDetails", "Failed to create trip copy")
+                }
+            }
+        },
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color(0x65, 0x55, 0x8f, 255)
+        )
+    ) {
+        Text("Create a Copy")
+    }
+
+    //PopUp that appears when the user creates a copy of the trip
+    if (showPopup) {
+        Popup(
+            alignment = Alignment.TopCenter,
+            onDismissRequest = {
+                showPopup = false
+            }
+        ) {
+            Box(
+                modifier = Modifier
+                    .wrapContentSize()
+                    .padding(top = 80.dp)
+                    .background(Color.White, shape = RoundedCornerShape(8.dp))
+                    .padding(16.dp)
+            ) {
+                Row {
+                    Icon(
+                        imageVector = Icons.Default.CheckBox,
+                        contentDescription = "check",
+                        tint = Color.Green
+                    )
+                    Spacer(Modifier.padding(5.dp))
+                    Text(
+                        text = "Copy created in 'My Trips'",
+                        color = Color.Black,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.align(Alignment.CenterVertically)
+                    )
+                }
+            }
+        }
     }
 }

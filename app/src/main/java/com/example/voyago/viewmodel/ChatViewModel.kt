@@ -88,8 +88,8 @@ class ChatViewModel(
     fun loadPrivateChatsForUser(userId: String) {
         val loadedPrivateChats = listOf(
             PrivateChat("u1", "Alice", "Hey!", unreadCount = 1),
-            PrivateChat("u2", "Bob", "Let's plan!"),
-            PrivateChat("u3", "Charlie", "See you soon.")
+            PrivateChat("u2", "Sofia", "Let's plan!"),
+            PrivateChat("u3", "Liam", "See you soon.")
         )
         _privateChats.value = loadedPrivateChats
         _filteredPrivateChats.value = loadedPrivateChats

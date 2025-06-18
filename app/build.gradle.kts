@@ -119,6 +119,8 @@ dependencies {
 
     // chat
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation("androidx.compose.material:material-icons-extended:<compose_version>")
+
 
     // 文本选择支持 - 聊天室消息复制功能
     implementation("androidx.compose.foundation:foundation:1.5.4")
