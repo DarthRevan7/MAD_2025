@@ -4,29 +4,24 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Face
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -97,7 +92,7 @@ fun SingleChat(
             .fillMaxSize()
             .background(Color(0xFFF3E5F5))
     ) {
-        TopBarPrivate(recipientName, recipientHandle)
+        TopBarPrivate(recipientName, recipientHandle, onBlockUser = {})
 
         ChatMessagesView(
             messages = messages,
@@ -139,73 +134,17 @@ fun SingleChat(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InputBar(
-    inputText: String,
-    onTextChange: (String) -> Unit,
-    onSendClick: () -> Unit,
-    onEmojiClick: () -> Unit,
-    onAttachClick: () -> Unit,
+fun TopBarPrivate(
+    recipientName: String,
+    recipientHandle: String,
+    onBlockUser: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var expanded by remember { mutableStateOf(false) }
+
     Row(
         modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        IconButton(onClick = onAttachClick, modifier = Modifier.size(36.dp)) {
-            Icon(
-                Icons.Default.Add,
-                contentDescription = "Attach",
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(20.dp)
-            )
-        }
-
-        OutlinedTextField(
-            value = inputText,
-            onValueChange = onTextChange,
-            modifier = Modifier
-                .weight(1f)
-                .height(52.dp)
-                .padding(horizontal = 6.dp),
-            placeholder = { Text("Type a message...", fontSize = 14.sp) },
-            shape = RoundedCornerShape(20.dp),
-            textStyle = LocalTextStyle.current.copy(fontSize = 14.sp),
-            singleLine = true,
-            trailingIcon = {
-                IconButton(onClick = onEmojiClick, modifier = Modifier.size(32.dp)) {
-                    Icon(
-                        Icons.Default.Face,
-                        contentDescription = "Emoji",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-            },
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = Color.LightGray
-            )
-        )
-
-        IconButton(onClick = onSendClick, modifier = Modifier.size(36.dp)) {
-            Icon(
-                Icons.AutoMirrored.Filled.Send,
-                contentDescription = "Send",
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(20.dp)
-            )
-        }
-    }
-}
-
-@Composable
-fun TopBarPrivate(recipientName: String, recipientHandle: String) {
-    Row(
-        modifier = Modifier
             .fillMaxWidth()
             .background(Color(0xFF7E57C2))
             .padding(16.dp),
@@ -220,14 +159,48 @@ fun TopBarPrivate(recipientName: String, recipientHandle: String) {
                 .background(Color(0xFF5E35B1), CircleShape)
                 .padding(4.dp)
         )
+        // Spacer to add space between the avatar and text
         Spacer(modifier = Modifier.width(12.dp))
-        Column {
-            Text(recipientName, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-            Text(recipientHandle, color = Color.White.copy(alpha = 0.8f), fontSize = 12.sp)
+        // Column to display recipient's name and handle
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = recipientName,
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp
+            )
+            Text(
+                text = recipientHandle,
+                color = Color.White.copy(alpha = 0.8f),
+                fontSize = 12.sp
+            )
+        }
+
+        // Add the "More" button with dropdown menu for "Block User"
+        Box {
+            IconButton(onClick = { expanded = true }) {
+                Icon(
+                    imageVector = Icons.Default.MoreVert,
+                    contentDescription = "More options",
+                    tint = Color.White
+                )
+            }
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                DropdownMenuItem(
+                    text = { Text("Block User") },
+                    onClick = {
+                        expanded = false
+                        onBlockUser()
+                    }
+                )
+            }
+
         }
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable
