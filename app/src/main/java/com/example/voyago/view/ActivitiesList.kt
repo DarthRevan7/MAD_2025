@@ -2,6 +2,7 @@ package com.example.voyago.view
 
 
 import android.util.Log
+import com.example.voyago.view.KEY_DATE_FORMAT
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,10 +41,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.clickable
+import com.example.voyago.model.deepCopy
 import com.example.voyago.model.isTimestampLong
 import com.example.voyago.model.stringToCalendar
 import com.example.voyago.model.timestampToCalendar
 import com.example.voyago.viewmodel.TripViewModel
+import com.google.firebase.Timestamp
+import java.text.SimpleDateFormat
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
@@ -57,6 +61,14 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
     val selectedTrip by vm.selectedTrip
 
     var showIncompleteDialog by rememberSaveable { mutableStateOf(false) }
+    // 保存进入页面时的状态
+    val entryTripState = remember {
+        when (vm.userAction) {
+            TripViewModel.UserAction.EDIT_TRIP -> vm.editTrip.deepCopy()
+            TripViewModel.UserAction.CREATE_TRIP -> vm.newTrip.deepCopy()
+            else -> null
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -136,8 +148,17 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
                         //Back Button
                         Button(
                             onClick = {
+                                entryTripState?.let {
+                                    when (vm.userAction) {
+                                        TripViewModel.UserAction.EDIT_TRIP   -> vm.editTrip  = it
+                                        TripViewModel.UserAction.CREATE_TRIP -> vm.newTrip   = it
+                                        else                                 -> {}
+                                    }
+                                    vm.setSelectedTrip(it)   // 同步列表
+                                }
                                 navController.popBackStack()
                             },
+
                             modifier = Modifier
                                 .width(160.dp)
                                 .height(60.dp)
@@ -222,132 +243,157 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
 }
 
 // 在 ActivitiesListContent 函数中修改日期计算逻辑
+// 🔴 修复天数索引计算问题
+
 @Composable
 fun ActivitiesListContent(trip: Trip?, vm: TripViewModel, navController: NavController){
-    if (trip == null) { // 如果行程为空
-        Text("No trip selected", modifier = Modifier.padding(16.dp)) // 显示"未选择行程"文本
-        return // 返回，不继续执行
+    if (trip == null) {
+        Text("No trip selected", modifier = Modifier.padding(16.dp))
+        return
     }
 
-    val sortedDays = trip.activities.keys.sortedBy { it } // 按日期排序活动的天数
+        val dateFormat = SimpleDateFormat(KEY_DATE_FORMAT, Locale.US)
+       val sortedDays = trip.activities.keys.sortedBy { key ->
+               if (isTimestampLong(key)) key.toLong()
+                else parseActivityDate(key, dateFormat).timeInMillis
+            }
+    val hasNoActivities = trip.activities.values.all { it.isEmpty() }
+    var activityToDelete by rememberSaveable { mutableStateOf<Trip.Activity?>(null) }
 
-    // Check if all activity lists are empty 检查是否所有活动列表都为空
-    val hasNoActivities = trip.activities.values.all { it.isEmpty() } // 检查是否没有活动
-    var activityToDelete by rememberSaveable { mutableStateOf<Trip.Activity?>(null) } // 记住要删除的活动状态
+    val selectedTrip by vm.selectedTrip
+    var showIncompleteDialog by rememberSaveable { mutableStateOf(false) }
 
-    Column( // 创建一个垂直排列的列
-        modifier = Modifier.fillMaxSize() // 填满整个可用空间
+    // 保存进入页面时的状态
+    val entryState = remember {
+        when (vm.userAction) {
+            TripViewModel.UserAction.EDIT_TRIP -> {
+                vm.editTrip.copy(
+                    activities = vm.editTrip.activities.toMap()
+                )
+            }
+            TripViewModel.UserAction.CREATE_TRIP -> {
+                vm.newTrip.copy(
+                    activities = vm.newTrip.activities.toMap()
+                )
+            }
+            else -> null
+        }
+    }
+
+    Column(
+        modifier = Modifier.fillMaxSize()
     ) {
-        if (hasNoActivities) { // 如果没有活动
-            Text( // 创建文本
-                text = "No activities for trip to ${trip.destination}.", // 显示无活动提示文本
-                modifier = Modifier.padding(16.dp), // 内边距16dp
-                style = MaterialTheme.typography.bodyLarge, // 使用大号正文字体样式
-                color = Color.Gray // 文字颜色为灰色
+        if (hasNoActivities) {
+            Text(
+                text = "No activities for trip to ${trip.destination}.",
+                modifier = Modifier.padding(16.dp),
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.Gray
             )
-        } else { // 如果有活动
-            sortedDays.forEach { day -> // 遍历排序后的天数
-                Log.d("L1", "Activity List") // 打印调试日志
+        } else {
+            sortedDays.forEach { day ->
+                Log.d("L1", "Activity List")
 
                 // 修复后的日期计算逻辑
-                val activityCalendar = if (isTimestampLong(day)) { // 如果天数是时间戳格式
-                    Log.d("L1", "Day is a timestamp: $day") // 打印调试日志
-                    timestampToCalendar(day) // 转换时间戳为日历
-                } else { // 如果天数是字符串格式
-                    Log.d("L1", "Day is a string: $day") // 打印调试日志
-                    stringToCalendar(day) // 转换字符串为日历
+                val activityCalendar = if (isTimestampLong(day)) {
+                    Log.d("L1", "Day is a timestamp: $day")
+                    timestampToCalendar(day)
+                } else {
+                    Log.d("L1", "Day is a string: $day")
+                    stringToCalendar(day)
                 }
 
-                Log.d("L1", "Activity calendar: $activityCalendar") // 打印活动日历
-                Log.d("L1", "Trip start calendar: ${trip.startDateAsCalendar()}") // 打印行程开始日历
+                Log.d("L1", "Activity calendar: $activityCalendar")
+                Log.d("L1", "Trip start calendar: ${trip.startDateAsCalendar()}")
 
-                // 计算正确的天数索引
-                val dayIndex = calculateDayIndex(activityCalendar, trip.startDateAsCalendar())
+                // 🔴 修复：使用更新后的行程开始日期来计算天数索引
+                val currentTripStartCalendar = trip.startDateAsCalendar()
+                val dayIndex = calculateDayIndex(activityCalendar, currentTripStartCalendar)
 
-                Log.d("L1", "Calculated day index: $dayIndex") // 打印计算的天数索引
+                Log.d("L1", "Calculated day index: $dayIndex")
 
-                val formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.US) // 创建时间格式化器
-                val activitiesForDay = (trip.activities[day] ?: emptyList()) // 获取当天的活动列表
-                    .sortedBy { LocalTime.parse(it.time, formatter) } // 按时间排序活动
+                val formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.US)
+                val activitiesForDay = (trip.activities[day] ?: emptyList())
+                    .sortedBy { LocalTime.parse(it.time, formatter) }
 
-                Column(modifier = Modifier.padding(16.dp)) { // 创建带内边距的列
-                    Text( // 创建文本
-                        text = "Day $dayIndex", // 显示第几天
-                        style = MaterialTheme.typography.titleMedium, // 使用中号标题字体样式
-                        fontWeight = FontWeight.Bold, // 字体加粗
-                        color = Color(0xFF555555) // 文字颜色为深灰色
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Day $dayIndex",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF555555)
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp)) // 创建8dp高度的空白间距
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                    activitiesForDay.forEach { activity -> // 遍历当天的活动
-                        Row( // 创建一个水平排列的行
-                            verticalAlignment = Alignment.CenterVertically, // 垂直居中对齐
+                    activitiesForDay.forEach { activity ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
-                                .padding(bottom = 8.dp) // 底部内边距8dp
-                                .fillMaxWidth() // 填满可用宽度
+                                .padding(bottom = 8.dp)
+                                .fillMaxWidth()
                         ) {
-                            //Edit Activity Button 编辑活动按钮
-                            Icon( // 创建图标
-                                imageVector = Icons.Default.Edit, // 使用编辑图标
-                                contentDescription = "Edit Activity", // 内容描述
-                                tint = Color(0xFF4CAF50), // 图标颜色为绿色
+                            //Edit Activity Button
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Edit Activity",
+                                tint = Color(0xFF4CAF50),
                                 modifier = Modifier
-                                    .size(20.dp) // 图标大小为20dp
-                                    .clickable { // 设置可点击
-                                        vm.userAction = TripViewModel.UserAction.EDIT_ACTIVITY // 设置用户操作为编辑活动
-                                        navController.navigate("edit_Activity/${activity.id}") // 导航到编辑活动页面
+                                    .size(20.dp)
+                                    .clickable {
+                                        vm.userAction = TripViewModel.UserAction.EDIT_ACTIVITY
+                                        navController.navigate("edit_Activity/${activity.id}")
                                     }
                             )
 
-                            Spacer(modifier = Modifier.width(8.dp)) // 创建8dp宽度的空白间距
+                            Spacer(modifier = Modifier.width(8.dp))
 
-                            //Print Activity information 打印活动信息
-                            Column(modifier = Modifier.weight(1f)) { // 创建占用剩余空间的列
-                                Text( // 创建文本
-                                    text = "${activity.time} - ${activity.description}" + // 显示活动时间和描述
-                                            if (activity.isGroupActivity) " (group activity)" else "", // 如果是团体活动则添加标注
-                                    style = MaterialTheme.typography.bodyMedium // 使用中号正文字体样式
+                            //Print Activity information
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "${activity.time} - ${activity.description}" +
+                                            if (activity.isGroupActivity) " (group activity)" else "",
+                                    style = MaterialTheme.typography.bodyMedium
                                 )
                             }
 
-                            //Delete Activity Button 删除活动按钮
-                            OutlinedButton( // 创建轮廓按钮
+                            //Delete Activity Button
+                            OutlinedButton(
                                 onClick = {
-                                    Log.d("DeleteButton", "Delete button clicked for activity: ${activity.id}") // 打印调试日志
-                                    activityToDelete = activity // 设置要删除的活动
+                                    Log.d("DeleteButton", "Delete button clicked for activity: ${activity.id}")
+                                    activityToDelete = activity
                                 },
-                                modifier = Modifier.height(36.dp) // 设置高度为36dp
+                                modifier = Modifier.height(36.dp)
                             ) {
-                                Text("Delete", color = Color.Red) // 显示红色的"Delete"文本
+                                Text("Delete", color = Color.Red)
                             }
                         }
                     }
 
-                    activityToDelete?.let { activity -> // 如果有要删除的活动
-                        AlertDialog( // 创建警告对话框
-                            onDismissRequest = { // 设置取消对话框的事件
-                                Log.d("DeleteDialog", "Dialog dismissed") // 打印调试日志
-                                activityToDelete = null // 清空要删除的活动
+                    activityToDelete?.let { activity ->
+                        AlertDialog(
+                            onDismissRequest = {
+                                Log.d("DeleteDialog", "Dialog dismissed")
+                                activityToDelete = null
                             },
-                            title = { Text("Delete Activity") }, // 对话框标题
-                            text = { Text("Are you sure you want to delete this activity?") }, // 对话框内容
-                            confirmButton = { // 确认按钮
-                                TextButton(onClick = { // 创建文本按钮
-                                    Log.d("DeleteDialog", "Confirming delete for activity: ${activity.id}") // 打印调试日志
-                                    vm.deleteActivity(activity) // 调用视图模型删除活动
-                                    activityToDelete = null // 清空要删除的活动
-                                    Log.d("DeleteDialog", "Delete operation completed") // 打印调试日志
+                            title = { Text("Delete Activity") },
+                            text = { Text("Are you sure you want to delete this activity?") },
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    Log.d("DeleteDialog", "Confirming delete for activity: ${activity.id}")
+                                    vm.deleteActivity(activity)
+                                    activityToDelete = null
+                                    Log.d("DeleteDialog", "Delete operation completed")
                                 }) {
-                                    Text("Delete") // 显示"Delete"文本
+                                    Text("Delete")
                                 }
                             },
-                            dismissButton = { // 取消按钮
-                                TextButton(onClick = { // 创建文本按钮
-                                    Log.d("DeleteDialog", "Delete cancelled") // 打印调试日志
-                                    activityToDelete = null // 清空要删除的活动
+                            dismissButton = {
+                                TextButton(onClick = {
+                                    Log.d("DeleteDialog", "Delete cancelled")
+                                    activityToDelete = null
                                 }) {
-                                    Text("Cancel") // 显示"Cancel"文本
+                                    Text("Cancel")
                                 }
                             }
                         )
@@ -355,6 +401,89 @@ fun ActivitiesListContent(trip: Trip?, vm: TripViewModel, navController: NavCont
                 }
             }
         }
+    }
+}
+
+
+
+// 🔴 额外修复：确保智能重新分配时日期格式正确
+private fun reallocateWithShorterInterval(
+    originalActivities: Map<String, List<Trip.Activity>>,
+    oldStartCal: Calendar,
+    newStartCal: Calendar,
+    newEndCal: Calendar,
+    updatedActivities: MutableMap<String, List<Trip.Activity>>,
+    dateFormat: SimpleDateFormat
+) {
+    val newStartDate = Calendar.getInstance().apply {
+        timeInMillis = newStartCal.timeInMillis
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }
+
+    val newEndDate = Calendar.getInstance().apply {
+        timeInMillis = newEndCal.timeInMillis
+        set(Calendar.HOUR_OF_DAY, 23)
+        set(Calendar.MINUTE, 59)
+        set(Calendar.SECOND, 59)
+        set(Calendar.MILLISECOND, 999)
+    }
+
+    val lastDayKey = dateFormat.format(newEndDate.time)
+    val activitiesToLastDay = mutableListOf<Trip.Activity>()
+
+    originalActivities.forEach { (oldDateKey, activities) ->
+        try {
+            val oldActivityDate = parseActivityDate(oldDateKey, dateFormat)
+
+            when {
+                // 活动在新范围内 - 计算相对位置并重新分配
+                oldActivityDate.timeInMillis >= newStartDate.timeInMillis &&
+                        oldActivityDate.timeInMillis <= newEndDate.timeInMillis -> {
+
+                    val relativeDay = calculateDaysBetween(oldStartCal, oldActivityDate) - 1
+                    val newActivityDate = Calendar.getInstance().apply {
+                        timeInMillis = newStartCal.timeInMillis
+                        add(Calendar.DAY_OF_MONTH, minOf(relativeDay, calculateDaysBetween(newStartCal, newEndCal) - 1))
+                    }
+
+                    val newDateKey = dateFormat.format(newActivityDate.time)
+                    val updatedActivityList = activities.map { activity ->
+                        // 🔴 确保活动的日期也正确更新
+                        activity.copy(date = Timestamp(newActivityDate.time))
+                    }
+
+                    updatedActivities[newDateKey] = (updatedActivities[newDateKey] ?: emptyList()) + updatedActivityList
+                    Log.d("SmartReallocation", "Kept activities from $oldDateKey at $newDateKey")
+                }
+
+                // 所有超出范围的活动都分配到最后一天
+                else -> {
+                    val updatedActivityList = activities.map { activity ->
+                        // 🔴 确保活动的日期也正确更新为最后一天
+                        activity.copy(date = Timestamp(newEndDate.time))
+                    }
+                    activitiesToLastDay.addAll(updatedActivityList)
+                    Log.d("SmartReallocation", "Moving activities from $oldDateKey (outside range) to last day")
+                }
+            }
+
+        } catch (e: Exception) {
+            Log.e("SmartReallocation", "Error processing date $oldDateKey", e)
+            // 解析失败的活动也分配到最后一天
+            val updatedActivityList = activities.map { activity ->
+                activity.copy(date = Timestamp(newEndDate.time))
+            }
+            activitiesToLastDay.addAll(updatedActivityList)
+        }
+    }
+
+    // 将所有溢出的活动添加到最后一天
+    if (activitiesToLastDay.isNotEmpty()) {
+        updatedActivities[lastDayKey] = (updatedActivities[lastDayKey] ?: emptyList()) + activitiesToLastDay
+        Log.d("SmartReallocation", "Added ${activitiesToLastDay.size} overflow activities to last day")
     }
 }
 

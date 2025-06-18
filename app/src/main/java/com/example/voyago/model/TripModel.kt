@@ -979,3 +979,11 @@ class TripModel {
     }
 }
 
+fun Trip.deepCopy(): Trip =
+    this.copy(
+        activities   = this.activities.mapValues { (_, list) -> list.map { it.copy() } },
+        typeTravel   = this.typeTravel.toList(),
+        participants = this.participants.toMap(),
+        appliedUsers = this.appliedUsers.toMap(),
+        rejectedUsers= this.rejectedUsers.toMap()
+    )

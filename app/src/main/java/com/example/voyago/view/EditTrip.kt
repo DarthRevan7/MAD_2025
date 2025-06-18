@@ -24,6 +24,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddPhotoAlternate
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -31,6 +32,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -54,20 +56,31 @@ import androidx.navigation.NavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.example.voyago.model.Trip
-import com.example.voyago.model.TypeTravel
 import com.example.voyago.viewmodel.TripViewModel
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
 import java.util.Locale
-
 
 @Composable
 fun EditTrip(navController: NavController, vm: TripViewModel) {
     val trip = vm.editTrip
     vm.userAction = TripViewModel.UserAction.EDIT_TRIP
+    val originalTripState = remember {
+        vm.editTrip.copy(
+            // activities：Map<String, List<Activity>> – 逐层 copy
+            activities = vm.editTrip.activities
+                .mapValues { (_, acts) -> acts.map { it.copy() } },
 
+            // List<String> / Map<…> 等如果后面会改，也一并 copy
+            typeTravel   = vm.editTrip.typeTravel.toList(),
+            participants = vm.editTrip.participants.toMap(),
+            appliedUsers = vm.editTrip.appliedUsers.toMap(),
+            rejectedUsers= vm.editTrip.rejectedUsers.toMap()
+        )
+    }
     var tripImageError by rememberSaveable { mutableStateOf(false) }
     var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
     var remoteImageUrl by remember { mutableStateOf<String?>(null) }
@@ -85,12 +98,14 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
         mutableStateListOf(
             trip.title,
             trip.destination,
-            trip.estimatedPrice,
-            trip.groupSize,
+            trip.estimatedPrice.toString(),
+            trip.groupSize.toString(),
         )
     }
     val fieldNames = listOf("Title", "Destination", "Price Estimated", "Group Size")
-    var fieldErrors = arrayOf(false, false, false, false)
+    val fieldErrors = remember { mutableStateListOf(false, false, false, false) }
+    val fieldTouched = remember { mutableStateListOf(false, false, false, false) }
+
 
     val typeTravel = listOf("party", "adventure", "culture", "relax")
     val selected = rememberSaveable(
@@ -103,7 +118,6 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
     }
     var typeTravelError by rememberSaveable { mutableStateOf(false) }
 
-
     //Date Handling
     var startDate by rememberSaveable { mutableStateOf(trip.startDateAsCalendar().toStringDate()) }
     var startCalendar by rememberSaveable { mutableStateOf<Calendar?>(trip.startDateAsCalendar()) }
@@ -113,7 +127,35 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
 
     var dateError by rememberSaveable { mutableStateOf("") }
 
+    // 添加用于确认对话框的状态
+    var showReallocationDialog by remember { mutableStateOf(false) }
+    var dialogMessage by remember { mutableStateOf("") }
+    var onConfirmReallocation by remember { mutableStateOf<(() -> Unit)?>(null) }
+    var onCancelReallocation by remember { mutableStateOf<(() -> Unit)?>(null) }
+
+    // 存储原始日期范围以便比较
+    val originalStartDate = remember { vm.editTrip.startDate }
+    val originalEndDate = remember { vm.editTrip.endDate }
+
+
     val coroutineScope = rememberCoroutineScope()
+
+    fun validateField(index: Int, value: String) {
+        when (index) {
+            0, 1 -> { // Title and Destination
+                fieldErrors[index] = value.isBlank() || !value.any { it.isLetter() }
+            }
+            2 -> { // Price
+                fieldErrors[index] = value.isBlank() ||
+                        value.toDoubleOrNull()?.let { it <= 0.0 } != false ||
+                        !value.matches(Regex("^\\d+(\\.\\d{1,2})?$"))
+            }
+            3 -> { // Group Size
+                fieldErrors[index] = value.isBlank() ||
+                        value.toIntOrNull()?.let { it <= 1 } != false
+            }
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -169,13 +211,18 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
 
                             fieldErrors[index] = textHasErrors // 设置错误状态
 
-                            ValidatingInputTextField( // 验证输入文本字段
-                                item.toString(), // 当前值
-                                {
-                                    fieldValues[index] = it // 更新值的回调
+                            ValidatingInputTextField(
+                                item.toString(),
+                                { newValue ->
+                                    fieldValues[index] = newValue
+                                    // 🔴 设置触摸状态
+                                    fieldTouched[index] = true
+                                    // 🔴 实时验证
+                                    validateField(index, newValue)
                                 },
-                                textHasErrors, // 是否有错误
-                                fieldNames[index] // 字段名称
+                                // 🔴 只有触摸后才显示错误
+                                fieldTouched[index] && fieldErrors[index],
+                                fieldNames[index]
                             )
                         } else if (index == 2) { //Price Estimated Field 价格估算字段
                             // 修改后的价格验证逻辑 - 精确到两位小数
@@ -307,40 +354,35 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
             }
 
             //Dates
-
             item {
-                val context = LocalContext.current // 获取当前上下文
-                val calendar = Calendar.getInstance() // 获取当前日历实例
-                val year = calendar.get(Calendar.YEAR) // 获取当前年份
-                val month = calendar.get(Calendar.MONTH) // 获取当前月份
-                val day = calendar.get(Calendar.DAY_OF_MONTH) // 获取当前日期
+                val context = LocalContext.current
+                val calendar = Calendar.getInstance()
+                val year = calendar.get(Calendar.YEAR)
+                val month = calendar.get(Calendar.MONTH)
+                val day = calendar.get(Calendar.DAY_OF_MONTH)
 
                 // 获取今天的日期作为最小可选日期
                 val today = Calendar.getInstance().apply {
-                    set(Calendar.HOUR_OF_DAY, 0) // 设置小时为0
-                    set(Calendar.MINUTE, 0) // 设置分钟为0
-                    set(Calendar.SECOND, 0) // 设置秒为0
-                    set(Calendar.MILLISECOND, 0) // 设置毫秒为0
+                    set(Calendar.HOUR_OF_DAY, 0)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
                 }
 
+                // 修改日期选择器逻辑 - 直接处理，不显示对话框
                 val startDatePickerDialog = remember {
                     DatePickerDialog(
                         context,
-                        { _: DatePicker, y: Int, m: Int, d: Int -> // 开始日期选择回调
-                            startDate = "$d/${m + 1}/$y" // 更新开始日期显示
+                        { _: DatePicker, y: Int, m: Int, d: Int ->
+                            startDate = "$d/${m + 1}/$y"
                             val newStartCalendar = Calendar.getInstance().apply {
-                                set(y, m, d, 0, 0, 0) // 设置选择的日期
-                                set(Calendar.MILLISECOND, 0) // 清除毫秒
+                                set(y, m, d, 0, 0, 0)
+                                set(Calendar.MILLISECOND, 0)
                             }
-                            startCalendar = newStartCalendar // 更新开始日期日历
+                            startCalendar = newStartCalendar
 
-                            // 检查并清理超出新日期范围的活动
-                            if (endCalendar != null) {
-                                cleanActivitiesOutsideDateRange(vm, newStartCalendar, endCalendar!!)
-                            }
                         }, year, month, day
                     ).apply {
-                        // 设置最小日期为今天，不能选择过去的日期
                         datePicker.minDate = today.timeInMillis
                     }
                 }
@@ -348,76 +390,53 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                 val endDatePickerDialog = remember {
                     DatePickerDialog(
                         context,
-                        { _: DatePicker, y: Int, m: Int, d: Int -> // 结束日期选择回调
-                            endDate = "$d/${m + 1}/$y" // 更新结束日期显示
+                        { _: DatePicker, y: Int, m: Int, d: Int ->
+                            endDate = "$d/${m + 1}/$y"
                             val newEndCalendar = Calendar.getInstance().apply {
-                                set(y, m, d, 0, 0, 0) // 设置选择的日期
-                                set(Calendar.MILLISECOND, 0) // 清除毫秒
-                            }
-                            endCalendar = newEndCalendar // 更新结束日期日历
-
-                            // 检查并清理超出新日期范围的活动
-                            if (startCalendar != null) {
-                                cleanActivitiesOutsideDateRange(vm, startCalendar!!, newEndCalendar)
-                            }
-                        }, year, month, day
-                    ).apply {
-                        // 动态设置最小日期
-                        if (startCalendar != null) {
-                            // 如果已选择开始日期，结束日期不能早于开始日期
-                            val startDateMin = Calendar.getInstance().apply {
-                                timeInMillis = startCalendar!!.timeInMillis
-                                set(Calendar.HOUR_OF_DAY, 0)
-                                set(Calendar.MINUTE, 0)
-                                set(Calendar.SECOND, 0)
+                                set(y, m, d, 0, 0, 0)
                                 set(Calendar.MILLISECOND, 0)
                             }
-                            datePicker.minDate = startDateMin.timeInMillis
-                        } else {
-                            // 如果没有选择开始日期，最小日期为今天
-                            datePicker.minDate = today.timeInMillis
-                        }
-                    }
+                            endCalendar = newEndCalendar
+
+                        }, year, month, day
+                    )
                 }
 
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth() // 填满可用宽度
-                        .padding(horizontal = 35.dp), // 设置水平内边距
-                    horizontalArrangement = Arrangement.spacedBy(5.dp) // 设置元素间距
+                        .fillMaxWidth()
+                        .padding(horizontal = 35.dp),
+                    horizontalArrangement = Arrangement.spacedBy(5.dp)
                 ) {
                     Column(
-                        horizontalAlignment = Alignment.Start, // 水平左对齐
+                        horizontalAlignment = Alignment.Start,
                         modifier = Modifier
-                            .weight(1f) // 占用一半宽度
-                            .padding(vertical = 8.dp) // 设置垂直内边距
+                            .weight(1f)
+                            .padding(vertical = 8.dp)
                     ) {
                         OutlinedButton(onClick = {
-                            // 每次打开对话框前重新设置最小日期
                             startDatePickerDialog.datePicker.minDate = today.timeInMillis
                             startDatePickerDialog.show()
-                        }) { // 开始日期按钮
-                            Text("Start Date") // 按钮文本
+                        }) {
+                            Text("Start Date")
                         }
 
-                        if (startDate.isNotEmpty()) { // 如果开始日期不为空
+                        if (startDate.isNotEmpty()) {
                             Text(
-                                "Start: $startDate", // 显示开始日期
-                                modifier = Modifier.padding(top = 8.dp) // 设置顶部内边距
+                                "Start: $startDate",
+                                modifier = Modifier.padding(top = 8.dp)
                             )
                         }
                     }
 
                     Column(
-                        horizontalAlignment = Alignment.End, // 水平右对齐
+                        horizontalAlignment = Alignment.End,
                         modifier = Modifier
-                            .weight(1f) // 占用一半宽度
-                            .padding(vertical = 8.dp) // 设置垂直内边距
+                            .weight(1f)
+                            .padding(vertical = 8.dp)
                     ) {
                         OutlinedButton(onClick = {
-                            // 每次打开对话框前重新设置最小日期
                             if (startCalendar != null) {
-                                // 如果已选择开始日期，结束日期不能早于开始日期
                                 val startDateMin = Calendar.getInstance().apply {
                                     timeInMillis = startCalendar!!.timeInMillis
                                     set(Calendar.HOUR_OF_DAY, 0)
@@ -427,35 +446,32 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                                 }
                                 endDatePickerDialog.datePicker.minDate = startDateMin.timeInMillis
                             } else {
-                                // 如果没有选择开始日期，最小日期为今天
                                 endDatePickerDialog.datePicker.minDate = today.timeInMillis
                             }
                             endDatePickerDialog.show()
-                        }) { // 结束日期按钮
-                            Text("End Date") // 按钮文本
+                        }) {
+                            Text("End Date")
                         }
 
-                        if (endDate.isNotEmpty()) { // 如果结束日期不为空
-                            Text("End: $endDate", modifier = Modifier.padding(top = 8.dp)) // 显示结束日期
+                        if (endDate.isNotEmpty()) {
+                            Text("End: $endDate", modifier = Modifier.padding(top = 8.dp))
                         }
                     }
                 }
 
-                if (dateError.isNotEmpty()) { // 如果有日期错误
+                if (dateError.isNotEmpty()) {
                     Text(
-                        text = dateError, // 显示错误信息
-                        color = MaterialTheme.colorScheme.error, // 错误颜色
-                        style = MaterialTheme.typography.bodySmall, // 小字体样式
-                        modifier = Modifier.padding(top = 6.dp) // 设置顶部内边距
+                        text = dateError,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(top = 6.dp)
                     )
                 }
             }
 
-
             item {
                 Spacer(modifier = Modifier.height(50.dp))
             }
-
 
             //Cancel Button and Next Button
             item {
@@ -467,6 +483,8 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                     //Cancel Button
                     Button(
                         onClick = {
+                            vm.editTrip = originalTripState
+                            vm.setSelectedTrip(originalTripState)
                             navController.popBackStack()
                         },
                         modifier = Modifier
@@ -480,7 +498,6 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                     Spacer(modifier = Modifier.weight(1f))
 
                     //Next Button
-                    //Next Button 下一步按钮
                     Button(
                         onClick = {
                             Log.d("NextButton", "=== Next button clicked ===")
@@ -489,11 +506,6 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
 
                             // 验证旅行类型
                             typeTravelError = selected.isEmpty()
-                            Log.d("NextButton", "Travel type selected: $selected")
-                            Log.d("NextButton", "Travel type error: $typeTravelError")
-
-                            // 调试日期解析
-                            debugDateParsing(startDate, endDate, startCalendar, endCalendar)
 
                             // 验证日期
                             val isDateValid = validateDateOrder(startCalendar, endCalendar)
@@ -502,93 +514,48 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                             } else {
                                 ""
                             }
-                            Log.d("NextButton", "Date validation result: $isDateValid")
-                            Log.d("NextButton", "Date error message: '$dateError'")
 
                             // 检查所有字段错误
                             val hasFieldErrors = fieldErrors.any { it }
-                            Log.d("NextButton", "Field values: ${fieldValues.map { it.toString() }}")
-                            Log.d("NextButton", "Field errors: ${fieldErrors.contentToString()}")
-                            Log.d("NextButton", "Has field errors: $hasFieldErrors")
 
-                            // 检查图片错误
-                            Log.d("NextButton", "Trip image error: $tripImageError")
+                            if (!typeTravelError && dateError.isEmpty() && !hasFieldErrors) {
+                                // 如果日期发生了变化，进行最终的智能重新分配
+                                val originalStartCal = Calendar.getInstance().apply { time = originalStartDate.toDate() }
+                                val originalEndCal = Calendar.getInstance().apply { time = originalEndDate.toDate() }
 
-                            // 总体验证
-                            val allValidationsPass = !tripImageError && !hasFieldErrors && !typeTravelError && isDateValid
-                            Log.d("NextButton", "=== Validation Summary ===")
-                            Log.d("NextButton", "tripImageError: $tripImageError")
-                            Log.d("NextButton", "hasFieldErrors: $hasFieldErrors")
-                            Log.d("NextButton", "typeTravelError: $typeTravelError")
-                            Log.d("NextButton", "isDateValid: $isDateValid")
-                            Log.d("NextButton", "All validations pass: $allValidationsPass")
+                                val hasDateChanged = startCalendar?.timeInMillis != originalStartCal.timeInMillis ||
+                                        endCalendar?.timeInMillis != originalEndCal.timeInMillis
 
-                            if (allValidationsPass) {
-                                Log.d("NextButton", "✅ All validations passed, proceeding...")
+                                if (hasDateChanged && startCalendar != null && endCalendar != null) {
+                                    Log.d("NextButton", "Date changed, performing final reallocation...")
 
-                                if (vm.userAction == TripViewModel.UserAction.EDIT_TRIP) {
-                                    val currentTrip = vm.editTrip
-                                    Log.d("NextButton", "Current trip: $currentTrip")
+                                    // 🔴 选择1：完全自动，不询问
+                                    smartReallocateActivitiesDirectly(
+                                        vm = vm,
+                                        oldStartCal = originalStartCal,
+                                        oldEndCal = originalEndCal,
+                                        newStartCal = startCalendar!!,
+                                        newEndCal = endCalendar!!
+                                    )
 
-                                    try {
-                                        val updatedTrip = Trip(
-                                            photo = currentTrip.photo,
-                                            title = fieldValues[0].toString(),
-                                            destination = fieldValues[1].toString(),
-                                            startDate = Timestamp(startCalendar!!.time),
-                                            endDate = Timestamp(endCalendar!!.time),
-                                            estimatedPrice = fieldValues[2].toString().toDouble(),
-                                            groupSize = fieldValues[3].toString().toInt(),
-                                            activities = currentTrip.activities,
-                                            typeTravel = selected.map {
-                                                TypeTravel.valueOf(it.uppercase()).toString()
-                                            },
-                                            creatorId = currentTrip.creatorId,
-                                            published = currentTrip.published,
-                                            id = currentTrip.id,
-                                            participants = currentTrip.participants,
-                                            status = currentTrip.status,
-                                            appliedUsers = currentTrip.appliedUsers,
-                                            rejectedUsers = currentTrip.rejectedUsers
-                                        )
+                                    updateTripAndNavigate(
+                                        vm, startCalendar!!, endCalendar!!, navController,
+                                        selected, fieldValues[0], fieldValues[1],
+                                        fieldValues[3].toIntOrNull() ?: 2, imageUri
+                                    )
 
-                                        Log.d("NextButton", "✅ Updated trip created successfully")
-                                        vm.editTrip = updatedTrip
-                                        vm.setSelectedTrip(updatedTrip)
+                                    // 🔴 选择2：只在 Next 按钮时询问一次（如果你想保留一次确认）
 
-                                        coroutineScope.launch {
-                                            try {
-                                                val success = if (imageUri != null) {
-                                                    Log.d("NextButton", "Setting new photo...")
-                                                    updatedTrip.setPhoto(imageUri!!)
-                                                } else {
-                                                    Log.d("NextButton", "No new photo to set")
-                                                    true
-                                                }
 
-                                                if (success) {
-                                                    Log.d("NextButton", "Saving trip to database...")
-                                                    vm.editExistingTrip(updatedTrip) { success2 ->
-                                                        if (success2) {
-                                                            Log.d("NextButton", "✅ Trip saved successfully, navigating...")
-                                                            navController.navigate("activities_list")
-                                                        } else {
-                                                            Log.e("NextButton", "❌ Failed to save trip to database")
-                                                        }
-                                                    }
-                                                } else {
-                                                    Log.e("NextButton", "❌ Failed to set photo")
-                                                }
-                                            } catch (e: Exception) {
-                                                Log.e("NextButton", "❌ Exception in coroutine: ${e.message}", e)
-                                            }
-                                        }
-                                    } catch (e: Exception) {
-                                        Log.e("NextButton", "❌ Exception creating updated trip: ${e.message}", e)
-                                    }
+
+                                } else {
+                                    // 没有日期变化，直接更新行程
+                                    updateTripAndNavigate(
+                                        vm, startCalendar!!, endCalendar!!, navController,
+                                        selected, fieldValues[0], fieldValues[1],
+                                        fieldValues[3].toIntOrNull() ?: 2, imageUri
+                                    )
                                 }
-                            } else {
-                                Log.d("NextButton", "❌ Validations failed, showing errors...")
                             }
                         },
                         modifier = Modifier
@@ -603,18 +570,40 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
         }
     }
 
+    // 重新分配确认对话框
+    if (showReallocationDialog) {
+        AlertDialog(
+            onDismissRequest = { showReallocationDialog = false },
+            title = { Text("Activity Reallocation") },
+            text = { Text(dialogMessage) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showReallocationDialog = false
+                        onConfirmReallocation?.invoke()
+                    }
+                ) {
+                    // 🔴 修改：更新按钮文本
+                    Text("Move to Last Day")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showReallocationDialog = false
+                        onCancelReallocation?.invoke()
+                    }
+                ) {
+                    Text("Delete Activities")
+                }
+            }
+        )
+    }
 }
 
-
-
-// 检查字符串是否为时间戳格式的辅助函数
-fun isTimestampLong(input: String): Boolean {
-    return input.toLongOrNull() != null
-}
-
-
+// 扩展函数：Calendar转字符串
 fun Calendar.toStringDate(): String {
-    val format = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    val format = SimpleDateFormat(KEY_DATE_FORMAT, Locale.getDefault())
     return format.format(this.time)
 }
 
@@ -679,17 +668,52 @@ fun TripImageEdit(trip: Trip, imageUri: Uri?, onUriSelected: (Uri?) -> Unit) {
         }
     }
 }
+val KEY_DATE_FORMAT = "yyyy-MM-dd"
+// 智能活动重新分配函数
+fun smartReallocateActivities(vm: TripViewModel, oldStartCal: Calendar, oldEndCal: Calendar, newStartCal: Calendar, newEndCal: Calendar) {
+    val currentTrip = vm.editTrip
+    val dateFormat = SimpleDateFormat(KEY_DATE_FORMAT, Locale.US)
 
-// 在文件末尾添加这个函数，在 TripImageEdit 函数之前
+    // 计算原始和新的日期间隔
+    val oldIntervalDays = calculateDaysBetween(oldStartCal, oldEndCal)
+    val newIntervalDays = calculateDaysBetween(newStartCal, newEndCal)
 
+    Log.d("SmartReallocation", "Original interval: $oldIntervalDays days, New interval: $newIntervalDays days")
 
-// 修复后的 cleanActivitiesOutsideDateRange 函数
-fun cleanActivitiesOutsideDateRange(vm: TripViewModel, startCal: Calendar, endCal: Calendar) {
-    val currentTrip = vm.editTrip // 获取当前编辑的行程
-    val updatedActivities = currentTrip.activities.toMutableMap() // 复制活动映射
-    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US) // 日期格式化器
+    val updatedActivities = mutableMapOf<String, List<Trip.Activity>>()
 
-    // 标准化开始和结束日期，去除时间部分
+    when {
+        // 情况1: 间隔相同 - 保留所有活动，只调整日期
+        oldIntervalDays == newIntervalDays -> {
+            Log.d("SmartReallocation", "Same interval - adjusting dates")
+            reallocateWithSameInterval(currentTrip.activities, oldStartCal, newStartCal, updatedActivities, dateFormat)
+        }
+
+        // 情况2: 间隔变长 - 调整活动日期到新范围，多余日期留空
+        newIntervalDays > oldIntervalDays -> {
+            Log.d("SmartReallocation", "Longer interval - adjusting to new range")
+            reallocateWithLongerInterval(currentTrip.activities, oldStartCal, newStartCal, updatedActivities, dateFormat)
+        }
+
+        // 情况3: 间隔变短 - 提供选择：删除超出活动 或 重新分配到边界日期
+        newIntervalDays < oldIntervalDays -> {
+            Log.d("SmartReallocation", "Shorter interval - reallocating overflow activities")
+            reallocateWithShorterInterval(currentTrip.activities, oldStartCal, newStartCal, newEndCal, updatedActivities, dateFormat)
+        }
+    }
+
+    // 更新行程
+    vm.editTrip = currentTrip.copy(
+        activities = updatedActivities,
+        startDate = Timestamp(newStartCal.time),
+        endDate = Timestamp(newEndCal.time)
+    )
+
+    vm.setSelectedTrip(vm.editTrip)
+}
+
+// 计算两个日期之间的天数
+fun calculateDaysBetween(startCal: Calendar, endCal: Calendar): Int {
     val startDate = Calendar.getInstance().apply {
         timeInMillis = startCal.timeInMillis
         set(Calendar.HOUR_OF_DAY, 0)
@@ -700,71 +724,146 @@ fun cleanActivitiesOutsideDateRange(vm: TripViewModel, startCal: Calendar, endCa
 
     val endDate = Calendar.getInstance().apply {
         timeInMillis = endCal.timeInMillis
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }
+
+    val diffInMillis = endDate.timeInMillis - startDate.timeInMillis
+    return (diffInMillis / (24 * 60 * 60 * 1000)).toInt() + 1
+}
+
+// 情况1: 相同间隔 - 保持相对位置，调整绝对日期
+private fun reallocateWithSameInterval(
+    originalActivities: Map<String, List<Trip.Activity>>,
+    oldStartCal: Calendar,
+    newStartCal: Calendar,
+    updatedActivities: MutableMap<String, List<Trip.Activity>>,
+    dateFormat: SimpleDateFormat
+) {
+    val dayOffset = calculateDaysBetween(oldStartCal, newStartCal) - 1
+
+    originalActivities.forEach { (oldDateKey, activities) ->
+        try {
+            val oldActivityDate = parseActivityDate(oldDateKey, dateFormat)
+            val newActivityDate = Calendar.getInstance().apply {
+                timeInMillis = oldActivityDate.timeInMillis
+                add(Calendar.DAY_OF_MONTH, dayOffset)
+            }
+
+            val newDateKey = dateFormat.format(newActivityDate.time)
+
+            val updatedActivityList = activities.map { activity ->
+                activity.copy(date = Timestamp(newActivityDate.time))
+            }
+
+            updatedActivities[newDateKey] = updatedActivityList
+            Log.d("SmartReallocation", "Moved activities from $oldDateKey to $newDateKey")
+
+        } catch (e: Exception) {
+            Log.e("SmartReallocation", "Error processing date $oldDateKey", e)
+        }
+    }
+}
+
+// 情况2: 更长间隔 - 按比例调整活动位置
+private fun reallocateWithLongerInterval(
+    originalActivities: Map<String, List<Trip.Activity>>,
+    oldStartCal: Calendar,
+    newStartCal: Calendar,
+    updatedActivities: MutableMap<String, List<Trip.Activity>>,
+    dateFormat: SimpleDateFormat
+) {
+    originalActivities.forEach { (oldDateKey, activities) ->
+        try {
+            val oldActivityDate = parseActivityDate(oldDateKey, dateFormat)
+
+            // 计算在原始行程中的相对位置（第几天）
+            val relativeDay = calculateDaysBetween(oldStartCal, oldActivityDate) - 1
+
+            // 在新的日期范围中保持相同的相对位置
+            val newActivityDate = Calendar.getInstance().apply {
+                timeInMillis = newStartCal.timeInMillis
+                add(Calendar.DAY_OF_MONTH, relativeDay)
+            }
+
+            val newDateKey = dateFormat.format(newActivityDate.time)
+
+            val updatedActivityList = activities.map { activity ->
+                activity.copy(date = Timestamp(newActivityDate.time))
+            }
+
+            updatedActivities[newDateKey] = updatedActivityList
+            Log.d("SmartReallocation", "Reallocated activities from day ${relativeDay + 1} ($oldDateKey) to $newDateKey")
+
+        } catch (e: Exception) {
+            Log.e("SmartReallocation", "Error processing date $oldDateKey", e)
+        }
+    }
+}
+
+
+// 辅助函数：检查是否为时间戳格式
+fun isTimestampLong(dateKey: String): Boolean {
+    return try {
+        dateKey.toLong()
+        dateKey.length > 10 // 时间戳通常比较长
+    } catch (e: NumberFormatException) {
+        false
+    }
+}
+
+
+
+// 删除超出范围的活动（破坏性操作）
+private fun deleteOverflowActivities(vm: TripViewModel, newStartCal: Calendar, newEndCal: Calendar) {
+    val currentTrip = vm.editTrip
+    val dateFormat = SimpleDateFormat(KEY_DATE_FORMAT, Locale.US)
+    val updatedActivities = mutableMapOf<String, List<Trip.Activity>>()
+
+    val newStartDate = Calendar.getInstance().apply {
+        timeInMillis = newStartCal.timeInMillis
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }
+
+    val newEndDate = Calendar.getInstance().apply {
+        timeInMillis = newEndCal.timeInMillis
         set(Calendar.HOUR_OF_DAY, 23)
         set(Calendar.MINUTE, 59)
         set(Calendar.SECOND, 59)
         set(Calendar.MILLISECOND, 999)
     }
 
-    // 遍历所有活动日期
-    val keysToRemove = mutableListOf<String>()
-    for ((dateKey, activities) in updatedActivities) {
+    currentTrip.activities.forEach { (dateKey, activities) ->
         try {
-            // 解析活动日期
-            val activityDate = if (isTimestampLong(dateKey)) {
-                // 如果是时间戳格式
-                Calendar.getInstance().apply {
-                    timeInMillis = dateKey.toLong()
-                }
+            val activityDate = parseActivityDate(dateKey, dateFormat)
+
+            if (activityDate.timeInMillis >= newStartDate.timeInMillis &&
+                activityDate.timeInMillis <= newEndDate.timeInMillis) {
+                updatedActivities[dateKey] = activities
+                Log.d("SmartReallocation", "Kept activities for $dateKey (within range)")
             } else {
-                // 如果是字符串格式
-                Calendar.getInstance().apply {
-                    val parsedDate = dateFormat.parse(dateKey)
-                    time = parsedDate ?: java.util.Date() // 使用完整路径
-                }
-            }
-
-            // 标准化活动日期
-            activityDate.set(Calendar.HOUR_OF_DAY, 12) // 设置为中午以避免时区问题
-            activityDate.set(Calendar.MINUTE, 0)
-            activityDate.set(Calendar.SECOND, 0)
-            activityDate.set(Calendar.MILLISECOND, 0)
-
-            // 检查活动日期是否在新的日期范围内 - 使用 timeInMillis 比较
-            if (activityDate.timeInMillis < startDate.timeInMillis ||
-                activityDate.timeInMillis > endDate.timeInMillis) {
-                keysToRemove.add(dateKey) // 标记要删除的日期键
-                Log.d("EditTrip", "Removing activities for date $dateKey as it's outside new range")
+                Log.d("SmartReallocation", "Deleted activities for $dateKey (outside range)")
             }
         } catch (e: Exception) {
-            Log.e("EditTrip", "Error parsing activity date: $dateKey", e)
-            keysToRemove.add(dateKey) // 解析失败的也删除
+            Log.e("SmartReallocation", "Error processing date $dateKey", e)
         }
     }
 
-    // 删除超出范围的活动
-    keysToRemove.forEach { key ->
-        updatedActivities.remove(key)
-    }
-
-    // 更新行程的活动数据
     vm.editTrip = currentTrip.copy(
         activities = updatedActivities,
-        startDate = Timestamp(startCal.time), // 更新开始日期
-        endDate = Timestamp(endCal.time) // 更新结束日期
+        startDate = Timestamp(newStartCal.time),
+        endDate = Timestamp(newEndCal.time)
     )
 
-    // 同步更新选中的行程
     vm.setSelectedTrip(vm.editTrip)
-
-    // 如果有活动被删除，显示提示信息
-    if (keysToRemove.isNotEmpty()) {
-        Log.i("EditTrip", "Removed ${keysToRemove.size} activity dates due to date range change")
-    }
 }
 
-
-// 增强的日期验证函数，包含详细调试信息
+// 日期验证函数
 fun validateDateOrder(startCalendar: Calendar?, endCalendar: Calendar?): Boolean {
     Log.d("DateValidation", "=== Starting date validation ===")
     Log.d("DateValidation", "startCalendar: $startCalendar")
@@ -779,10 +878,6 @@ fun validateDateOrder(startCalendar: Calendar?, endCalendar: Calendar?): Boolean
         Log.e("DateValidation", "endCalendar is null")
         return false
     }
-
-    // 打印原始日期
-    Log.d("DateValidation", "Raw start date: ${startCalendar.time}")
-    Log.d("DateValidation", "Raw end date: ${endCalendar.time}")
 
     // 标准化日期，去除时间部分进行比较
     val startDate = Calendar.getInstance().apply {
@@ -801,18 +896,6 @@ fun validateDateOrder(startCalendar: Calendar?, endCalendar: Calendar?): Boolean
         set(Calendar.MILLISECOND, 0)
     }
 
-    // 打印标准化后的日期
-    Log.d("DateValidation", "Normalized start date: ${startDate.time}")
-    Log.d("DateValidation", "Normalized end date: ${endDate.time}")
-    Log.d("DateValidation", "Start millis: ${startDate.timeInMillis}")
-    Log.d("DateValidation", "End millis: ${endDate.timeInMillis}")
-
-    // 计算日期差
-    val diffMillis = endDate.timeInMillis - startDate.timeInMillis
-    val diffDays = diffMillis / (1000 * 60 * 60 * 24)
-    Log.d("DateValidation", "Difference in milliseconds: $diffMillis")
-    Log.d("DateValidation", "Difference in days: $diffDays")
-
     // 结束日期必须等于或晚于开始日期
     val isValid = endDate.timeInMillis >= startDate.timeInMillis
 
@@ -822,26 +905,229 @@ fun validateDateOrder(startCalendar: Calendar?, endCalendar: Calendar?): Boolean
     return isValid
 }
 
-// 同时，让我们检查日期字符串的解析
-fun debugDateParsing(startDate: String, endDate: String, startCalendar: Calendar?, endCalendar: Calendar?) {
-    Log.d("DateParsing", "=== Date Parsing Debug ===")
-    Log.d("DateParsing", "Start date string: '$startDate'")
-    Log.d("DateParsing", "End date string: '$endDate'")
-    Log.d("DateParsing", "Start calendar: $startCalendar")
-    Log.d("DateParsing", "End calendar: $endCalendar")
+// 辅助函数：更新行程并导航
+private fun updateTripAndNavigate(
+    vm: TripViewModel,
+    startCalendar: Calendar,
+    endCalendar: Calendar,
+    navController: NavController,
+    selected: MutableList<String>,
+    title: String,
+    destination: String,
+    groupSize: Int,
+    imageUri: Uri?
+) {
+    Log.d("UpdateTrip", ">>> updateTripAndNavigate() called, tripId=${vm.editTrip.id}")
 
-    if (startCalendar != null) {
-        Log.d("DateParsing", "Start calendar date: ${startCalendar.time}")
-        Log.d("DateParsing", "Start year: ${startCalendar.get(Calendar.YEAR)}")
-        Log.d("DateParsing", "Start month: ${startCalendar.get(Calendar.MONTH) + 1}") // +1 因为月份从0开始
-        Log.d("DateParsing", "Start day: ${startCalendar.get(Calendar.DAY_OF_MONTH)}")
+    // 更新行程的其他信息
+    vm.editTrip = vm.editTrip.copy(
+        typeTravel = selected.toList(),
+        title = title,
+        destination = destination,
+        groupSize = groupSize,
+        photo = imageUri?.toString() ?: vm.editTrip.photo,
+        startDate = Timestamp(startCalendar.time),
+        endDate = Timestamp(endCalendar.time)
+    )
+
+    // 🔴 关键修复：同步更新 selectedTrip，确保 ActivitiesList 显示正确的数据
+    vm.setSelectedTrip(vm.editTrip)
+
+    // 🔴 确保 userAction 设置正确
+    vm.userAction = TripViewModel.UserAction.EDIT_TRIP
+
+    // 🔴 添加活动数据调试日志
+    Log.d("EditTrip", "EditTrip activities: ${vm.editTrip.activities}")
+    Log.d("EditTrip", "SelectedTrip activities: ${vm.selectedTrip.value.activities}")
+    Log.d("EditTrip", "Navigation to activities_list...")
+
+    // 🔴 修复：只保留一个导航调用
+    navController.navigate("activities_list")
+}
+fun smartReallocateActivitiesDirectly(
+    vm: TripViewModel,
+    oldStartCal: Calendar,
+    oldEndCal: Calendar,
+    newStartCal: Calendar,
+    newEndCal: Calendar
+) {
+    val oldIntervalDays = calculateDaysBetween(oldStartCal, oldEndCal)
+    val newIntervalDays = calculateDaysBetween(newStartCal, newEndCal)
+
+    Log.d("SmartReallocation", "Direct reallocation - Old: $oldIntervalDays days, New: $newIntervalDays days")
+
+    // 🔴 直接处理所有情况，不询问用户
+    smartReallocateActivities(vm, oldStartCal, oldEndCal, newStartCal, newEndCal)
+}
+
+// 修改 parseActivityDate 函数以更好地处理日期
+fun parseActivityDate(dateKey: String, dateFormat: SimpleDateFormat): Calendar {
+    return try {
+        when {
+            // 检查是否为时间戳格式（纯数字且长度大于10）
+            dateKey.toLongOrNull() != null && dateKey.length > 10 -> {
+                Calendar.getInstance().apply {
+                    timeInMillis = dateKey.toLong()
+                }
+            }
+            // 尝试按照标准格式解析
+            else -> {
+                Calendar.getInstance().apply {
+                    val parsedDate = dateFormat.parse(dateKey)
+                    if (parsedDate != null) {
+                        time = parsedDate
+                    } else {
+                        throw IllegalArgumentException("Cannot parse date: $dateKey")
+                    }
+                }
+            }
+        }
+    } catch (e: Exception) {
+        Log.e("DateParsing", "Error parsing date $dateKey: ${e.message}")
+        // 如果解析失败，尝试其他格式
+        try {
+            // 尝试 "d/M/yyyy" 格式
+            val alternativeFormat = SimpleDateFormat("d/M/yyyy", Locale.US)
+            Calendar.getInstance().apply {
+                time = alternativeFormat.parse(dateKey) ?: throw IllegalArgumentException()
+            }
+        } catch (e2: Exception) {
+            // 如果所有格式都失败，返回当前日期
+            Log.e("DateParsing", "All parsing attempts failed for $dateKey")
+            Calendar.getInstance()
+        }
+    }
+}
+
+// 更新的 reallocateWithShorterInterval 函数
+private fun reallocateWithShorterInterval(
+    originalActivities: Map<String, List<Trip.Activity>>,
+    oldStartCal: Calendar,
+    newStartCal: Calendar,
+    newEndCal: Calendar,
+    updatedActivities: MutableMap<String, List<Trip.Activity>>,
+    dateFormat: SimpleDateFormat
+) {
+    Log.d("SmartReallocation", "=== Shorter Interval Reallocation ===")
+
+    // 标准化日期用于比较
+    val oldStart = Calendar.getInstance().apply {
+        timeInMillis = oldStartCal.timeInMillis
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
     }
 
-    if (endCalendar != null) {
-        Log.d("DateParsing", "End calendar date: ${endCalendar.time}")
-        Log.d("DateParsing", "End year: ${endCalendar.get(Calendar.YEAR)}")
-        Log.d("DateParsing", "End month: ${endCalendar.get(Calendar.MONTH) + 1}") // +1 因为月份从0开始
-        Log.d("DateParsing", "End day: ${endCalendar.get(Calendar.DAY_OF_MONTH)}")
+    val newStart = Calendar.getInstance().apply {
+        timeInMillis = newStartCal.timeInMillis
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
     }
-    Log.d("DateParsing", "=== End Date Parsing Debug ===")
+
+    val newEnd = Calendar.getInstance().apply {
+        timeInMillis = newEndCal.timeInMillis
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }
+
+    // 计算新行程的天数
+    val newTripDays = calculateDaysBetween(newStart, newEnd)
+    Log.d("SmartReallocation", "New trip has $newTripDays days")
+
+    // 用于存储溢出活动
+    val overflowActivities = mutableListOf<Trip.Activity>()
+
+    // 创建一个映射来存储每天的活动
+    val dayToActivitiesMap = mutableMapOf<Int, MutableList<Trip.Activity>>()
+
+    // 处理每个原始活动
+    originalActivities.forEach { (oldDateKey, activities) ->
+        try {
+            val activityDate = parseActivityDate(oldDateKey, dateFormat)
+
+            // 标准化活动日期
+            val normalizedActivityDate = Calendar.getInstance().apply {
+                timeInMillis = activityDate.timeInMillis
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+
+            // 计算这是原始行程的第几天
+            val dayNumber = calculateDaysBetween(oldStart, normalizedActivityDate)
+
+            Log.d("SmartReallocation",
+                "Processing activities from $oldDateKey (Day $dayNumber)")
+
+            if (dayNumber <= newTripDays) {
+                // 如果在新行程范围内，保持在相同的天数
+                if (!dayToActivitiesMap.containsKey(dayNumber)) {
+                    dayToActivitiesMap[dayNumber] = mutableListOf()
+                }
+                dayToActivitiesMap[dayNumber]?.addAll(activities)
+
+                Log.d("SmartReallocation",
+                    "Keeping Day $dayNumber activities (${activities.size} items)")
+            } else {
+                // 如果超出新行程范围，添加到溢出活动
+                overflowActivities.addAll(activities)
+                Log.d("SmartReallocation",
+                    "Day $dayNumber exceeds new trip length, adding ${activities.size} activities to overflow")
+            }
+
+        } catch (e: Exception) {
+            Log.e("SmartReallocation", "Error processing date $oldDateKey: ${e.message}")
+            // 错误情况下，将活动添加到溢出
+            overflowActivities.addAll(activities)
+        }
+    }
+
+    // 将活动分配到新的日期
+    dayToActivitiesMap.forEach { (dayNumber, activities) ->
+        val newDate = Calendar.getInstance().apply {
+            timeInMillis = newStart.timeInMillis
+            add(Calendar.DAY_OF_MONTH, dayNumber - 1)
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+
+        val newDateKey = dateFormat.format(newDate.time)
+
+        val updatedActivityList = activities.map { activity ->
+            activity.copy(date = Timestamp(newDate.time))
+        }
+
+        updatedActivities[newDateKey] = updatedActivityList
+
+        Log.d("SmartReallocation",
+            "Assigned ${activities.size} activities to Day $dayNumber ($newDateKey)")
+    }
+
+    // 将溢出活动添加到最后一天
+    if (overflowActivities.isNotEmpty()) {
+        val lastDayKey = dateFormat.format(newEnd.time)
+
+        val overflowWithNewDate = overflowActivities.map { activity ->
+            activity.copy(date = Timestamp(newEnd.time))
+        }
+
+        updatedActivities[lastDayKey] =
+            (updatedActivities[lastDayKey] ?: emptyList()) + overflowWithNewDate
+
+        Log.d("SmartReallocation",
+            "Added ${overflowActivities.size} overflow activities to last day ($lastDayKey)")
+    }
+
+    Log.d("SmartReallocation", "=== Final Distribution ===")
+    updatedActivities.forEach { (date, activities) ->
+        Log.d("SmartReallocation", "$date: ${activities.size} activities")
+    }
 }
