@@ -66,7 +66,8 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
     val trip by vm.selectedTrip
     val tripReview by rvm.tripReview.collectAsState()
 
-    val usersReviews by rvm.usersReviews.collectAsState()
+    val usersReviews = remember { rvm.usersReviews }
+    Log.d("R1", "usersReviews = ${usersReviews.collectAsState().value}")
 
     val hasReviews by rvm.isReviewed.collectAsState()
 
@@ -78,6 +79,8 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
     }
 
     val participantsMap by vm.tripParticipants.collectAsState()
+    participantsMap.entries.forEach{ item -> Log.d("P1", "User = ${item.key.id}") }
+
 
     val listState = rememberLazyListState()
     LaunchedEffect(Unit) {
@@ -125,6 +128,8 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
         val rating = ratingMap[key] ?: 0f
         return (ratingTouchedMap[key] == true) && rating < 0.5f
     }
+
+    val othersReviews = usersReviews.collectAsState()
 
     //Start composable environment
     Box(modifier = Modifier.fillMaxSize()) {
@@ -298,11 +303,12 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
                 Spacer(Modifier.padding(5.dp))
             }
 
+
             if(hasReviews) {
                 //Review of the users made by the logged in user
-//                val reviews = vm.getUsersReviewsTrip(uvm.loggedUser.value.id, trip.id)
-                if(usersReviews.isNotEmpty()) {
-                    items(usersReviews) { review ->
+
+                if(othersReviews.value.isNotEmpty()) {
+                    items(othersReviews.value) { review ->
                         ShowReview(review, vm, true, uvm, navController)
                     }
                 }

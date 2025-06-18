@@ -1331,15 +1331,9 @@ fun ShowReview(
     navController: NavController
 ) {
 
-    val reviewer by uvm.getUserData(review.reviewerId).collectAsState(initial = User())
+    if(review.isTripReview) {
+        val reviewer by uvm.getUserData(review.reviewerId).collectAsState(initial = User())
 
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-    ) {
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -1347,125 +1341,96 @@ fun ShowReview(
                 .fillMaxWidth()
                 .padding(8.dp)
         ) {
-            val reviewer = reviewer
-            if (reviewer != null && reviewer.isValid() == true) {
-                Box(
-                    contentAlignment = Alignment.CenterStart,
-                    modifier = Modifier
-                        .size(30.dp)
-                        .background(Color.Gray, shape = CircleShape)
-                ) {
-                    ProfilePhoto(reviewer!!, true, Modifier, uvm)
-                }
-
-                Text(
-                    "${reviewer!!.firstname} ${reviewer!!.surname}",
-                    modifier = Modifier
-                        .padding(start = 16.dp)
-                        .clickable {
-                            navController.navigate("user_profile/${review.reviewerId}")
-                        }
-                )
-            }
-
-            Spacer(modifier = Modifier.weight(1f))
 
             Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            ) {
+                //val reviewer = reviewer
+                if (reviewer != null && reviewer?.isValid() == true) {
+                    Box(
+                        contentAlignment = Alignment.CenterStart,
+                        modifier = Modifier
+                            .size(30.dp)
+                            .background(Color.Gray, shape = CircleShape)
+                    ) {
+                        ProfilePhoto(reviewer!!, true, Modifier, uvm)
+                        Log.d("R1", "Reviewer: ${reviewer?.id}")
+                    }
+
+                    Text(
+                        "${reviewer!!.firstname} ${reviewer!!.surname}",
+                        modifier = Modifier
+                            .padding(start = 16.dp)
+                            .clickable {
+                                navController.navigate("user_profile/${review.reviewerId}")
+                            }
+                    )
+                }
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    PrintStars(review.score)
+                }
+            }
+
+
+            //Stars rating
+            Row(
+                modifier = Modifier
+                    .weight(1f),
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
-            ) {
+            )
+            {
                 PrintStars(review.score)
             }
         }
 
-
-        //Stars rating
-        Row(
-            modifier = Modifier
-                .weight(1f),
-            horizontalArrangement = Arrangement.End,
-            verticalAlignment = Alignment.CenterVertically
-        )
-        {
-            PrintStars(review.score)
+        //Review title
+        Row {
+            Text(
+                text = review.title,
+                modifier = Modifier.padding(start = 50.dp, end = 16.dp),
+                fontWeight = FontWeight.Bold
+            )
         }
-    }
 
-    //Review title
-    Row {
-        Text(
-            text = review.title,
-            modifier = Modifier.padding(start = 50.dp, end = 16.dp),
-            fontWeight = FontWeight.Bold
-        )
-    }
+        //Review content
+        Row {
+            Text(
+                text = review.comment,
+                modifier = Modifier.padding(start = 50.dp, end = 16.dp)
+            )
+        }
 
-    //Review content
-    Row {
-        Text(
-            text = review.comment,
-            modifier = Modifier.padding(start = 50.dp, end = 16.dp)
-        )
-    }
+        // Show photos if there are any
+        if (review.photos.isNotEmpty()) {
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 50.dp, top = 8.dp, end = 16.dp)
+            ) {
+                items(review.photos) { photoPath ->
+                    var imageUrl by remember(photoPath) { mutableStateOf<String?>(null) }
 
-    // Show photos if there are any
-    // Show photos if there are any
-    if (review.photos.isNotEmpty()) {
-        LazyRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 50.dp, top = 8.dp, end = 16.dp)
-        ) {
-            items(review.photos) { photoPath ->
-                var imageUrl by remember(photoPath) { mutableStateOf<String?>(null) }
-
-                LaunchedEffect(photoPath) {
-                    // 获取 Firebase Storage URL
-                    imageUrl = review.getPhotoUrl(photoPath)
-                }
-
-                when {
-                    // Firebase Storage 或 URI 图片
-                    imageUrl != null && (imageUrl!!.startsWith("http") || imageUrl!!.startsWith("content://")) -> {
-                        GlideImage(
-                            model = imageUrl,
-                            contentDescription = "Review photo",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .size(100.dp)
-                                .padding(end = 8.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                        )
+                    LaunchedEffect(photoPath) {
+                        // 获取 Firebase Storage URL
+                        imageUrl = review.getPhotoUrl(photoPath)
                     }
-                    // URI 图片的备用处理
-                    photoPath.isUriString() -> {
-                        Image(
-                            painter = rememberAsyncImagePainter(photoPath),
-                            contentDescription = "Review photo",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .size(100.dp)
-                                .padding(end = 8.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                        )
-                    }
-                    // Drawable 资源
-                    else -> {
-                        val context = LocalContext.current
-                        val drawableId = remember(photoPath) {
-                            context.resources.getIdentifier(
-                                photoPath,
-                                "drawable",
-                                context.packageName
-                            )
-                        }
-                        if (drawableId != 0) {
-                            AsyncImage(
-                                model = ImageRequest.Builder(context)
-                                    .data(drawableId)
-                                    .crossfade(true)
-                                    .build(),
-                                contentDescription = photoPath,
+
+                    when {
+                        // Firebase Storage 或 URI 图片
+                        imageUrl != null && (imageUrl!!.startsWith("http") || imageUrl!!.startsWith("content://")) -> {
+                            GlideImage(
+                                model = imageUrl,
+                                contentDescription = "Review photo",
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
                                     .size(100.dp)
@@ -1473,13 +1438,202 @@ fun ShowReview(
                                     .clip(RoundedCornerShape(8.dp))
                             )
                         }
+                        // URI 图片的备用处理
+                        photoPath.isUriString() -> {
+                            Image(
+                                painter = rememberAsyncImagePainter(photoPath),
+                                contentDescription = "Review photo",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .size(100.dp)
+                                    .padding(end = 8.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                            )
+                        }
+                        // Drawable 资源
+                        else -> {
+                            val context = LocalContext.current
+                            val drawableId = remember(photoPath) {
+                                context.resources.getIdentifier(
+                                    photoPath,
+                                    "drawable",
+                                    context.packageName
+                                )
+                            }
+                            if (drawableId != 0) {
+                                AsyncImage(
+                                    model = ImageRequest.Builder(context)
+                                        .data(drawableId)
+                                        .crossfade(true)
+                                        .build(),
+                                    contentDescription = photoPath,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .size(100.dp)
+                                        .padding(end = 8.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                )
+                            }
+                        }
                     }
                 }
             }
         }
-    }
 
-    Spacer(Modifier.padding(16.dp))
+        Spacer(Modifier.padding(16.dp))
+    }
+    //Review for other users
+    else {
+        val reviewer by uvm.getUserData(review.reviewedUserId).collectAsState(initial = User())
+
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+        ) {
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            ) {
+                //val reviewer = reviewer
+                if (reviewer != null && reviewer?.isValid() == true) {
+                    Box(
+                        contentAlignment = Alignment.CenterStart,
+                        modifier = Modifier
+                            .size(30.dp)
+                            .background(Color.Gray, shape = CircleShape)
+                    ) {
+                        ProfilePhoto(reviewer!!, true, Modifier, uvm)
+                        Log.d("R1", "Reviewer: ${reviewer?.id}")
+                    }
+
+                    Text(
+                        "${reviewer!!.firstname} ${reviewer!!.surname}",
+                        modifier = Modifier
+                            .padding(start = 16.dp)
+                            .clickable {
+                                navController.navigate("user_profile/${review.reviewerId}")
+                            }
+                    )
+                }
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    PrintStars(review.score)
+                }
+            }
+
+
+            //Stars rating
+            Row(
+                modifier = Modifier
+                    .weight(1f),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            )
+            {
+                PrintStars(review.score)
+            }
+        }
+
+        //Review title
+        Row {
+            Text(
+                text = review.title,
+                modifier = Modifier.padding(start = 50.dp, end = 16.dp),
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        //Review content
+        Row {
+            Text(
+                text = review.comment,
+                modifier = Modifier.padding(start = 50.dp, end = 16.dp)
+            )
+        }
+
+        // Show photos if there are any
+        if (review.photos.isNotEmpty()) {
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 50.dp, top = 8.dp, end = 16.dp)
+            ) {
+                items(review.photos) { photoPath ->
+                    var imageUrl by remember(photoPath) { mutableStateOf<String?>(null) }
+
+                    LaunchedEffect(photoPath) {
+                        // 获取 Firebase Storage URL
+                        imageUrl = review.getPhotoUrl(photoPath)
+                    }
+
+                    when {
+                        // Firebase Storage 或 URI 图片
+                        imageUrl != null && (imageUrl!!.startsWith("http") || imageUrl!!.startsWith("content://")) -> {
+                            GlideImage(
+                                model = imageUrl,
+                                contentDescription = "Review photo",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .size(100.dp)
+                                    .padding(end = 8.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                            )
+                        }
+                        // URI 图片的备用处理
+                        photoPath.isUriString() -> {
+                            Image(
+                                painter = rememberAsyncImagePainter(photoPath),
+                                contentDescription = "Review photo",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .size(100.dp)
+                                    .padding(end = 8.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                            )
+                        }
+                        // Drawable 资源
+                        else -> {
+                            val context = LocalContext.current
+                            val drawableId = remember(photoPath) {
+                                context.resources.getIdentifier(
+                                    photoPath,
+                                    "drawable",
+                                    context.packageName
+                                )
+                            }
+                            if (drawableId != 0) {
+                                AsyncImage(
+                                    model = ImageRequest.Builder(context)
+                                        .data(drawableId)
+                                        .crossfade(true)
+                                        .build(),
+                                    contentDescription = photoPath,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .size(100.dp)
+                                        .padding(end = 8.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        Spacer(Modifier.padding(16.dp))
+    }
 }
 
 @Composable
