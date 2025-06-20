@@ -109,20 +109,9 @@ data class User(
 
 class UserModel {
 
-    /*private val firestore = FirebaseFirestore.getInstance()
-
-    suspend fun getUser(uid: String): User? {
-        return try {
-            val snapshot = firestore.collection("users").document(uid).get().await()
-            snapshot.toObject(User::class.java)
-        } catch (e: Exception) {
-            Log.e("UserRepository", "Failed to get user", e)
-            null
-        }
-    }*/
-
+    //Create a new user in the database
     fun createUser(newUser: User, onResult: (Boolean, User?) -> Unit): User {
-        val firestore = com.google.firebase.Firebase.firestore
+        val firestore = Firebase.firestore
         val counterRef = firestore.collection("metadata").document("userCounter")
 
         var userToReturn = User()
@@ -140,7 +129,6 @@ class UserModel {
             userWithId
         }.addOnSuccessListener { user ->
             onResult(true, user)
-//            userToReturn = user
         }.addOnFailureListener { e ->
             onResult(false, null)
         }
@@ -149,6 +137,7 @@ class UserModel {
 
     //SUBSET OF USER LIST
 
+    //Get a list of users given their usernames
     fun getUsersFromUsernames(usernameList: List<String>): Flow<List<User>> =
         callbackFlow {//Observes update from the Server
 
@@ -169,6 +158,7 @@ class UserModel {
             }
         }
 
+    //Get a list of users given their ids
     fun getUsers(userIds: List<Int>): Flow<List<User>> = callbackFlow {
         if (userIds.isEmpty()) {
             trySend(emptyList())
@@ -230,19 +220,6 @@ class UserModel {
         docRef.set(updatedUser)
     }
 
-    fun getUserByUid(uid: String): Flow<User?> = callbackFlow {
-        val ref = FirebaseFirestore.getInstance().collection("users").document(uid)
-        val listener = ref.addSnapshotListener { snapshot, error ->
-            if (error != null) {
-                close(error)
-                return@addSnapshotListener
-            }
-            val user = snapshot?.toObject(User::class.java)
-            trySend(user)
-        }
-        awaitClose { listener.remove() }
-    }
-
     fun getUserByEmail(email: String): Flow<User?> = callbackFlow {
         val query = FirebaseFirestore.getInstance()
             .collection("users")
@@ -262,45 +239,23 @@ class UserModel {
         awaitClose { listener.remove() }
     }
 
+    //MANAGEMENT OF RELIABILITY
 
-    // -------------------------------------------------
-    /*
-    private var _users = privateUsers
-    var users = _users
+    //Function that updates the reliability of a user
+    fun updateUserReliability(userId: String, delta: Int, onResult: (Boolean) -> Unit) {
+        val userRef = FirebaseFirestore.getInstance().collection("users").document(userId)
 
-    //SUBSET OF USER LIST
-
-    //Get a list of user given their ids
-    fun getUsers(ids: List<Int>): List<UserData> {
-        return _users.value.filter { it.id in ids }
+        FirebaseFirestore.getInstance().runTransaction { transaction ->
+            val snapshot = transaction.get(userRef)
+            val currentReliability = snapshot.getLong("reliability")?.toInt() ?: 100
+            val newReliability = (currentReliability + delta).coerceIn(0, 100)
+            transaction.update(userRef, "reliability", newReliability)
+        }.addOnSuccessListener { onResult(true) }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "Failed to update reliability", e)
+                onResult(false)
+            }
     }
-
-    //GET USER INFORMATION
-
-
-
-    fun getUserDataById(id: Int): UserData {
-        return _users.value.find { it.id == id }
-            ?: throw NoSuchElementException("User with ID $id not found")
-    }
-
-    //EDIT USER
-
-    //Edit user information
-    fun editUserData(updatedUserData: UserData): List<UserData> {
-        _users.value = _users.value.map {
-            if (it.id == updatedUserData.id) updatedUserData else it
-        }
-        return _users.value
-    }
-
-    //Calculate average user rating by id
-    fun refreshAllRatings(reviewModel: ReviewModel) {
-        _users.value = _users.value.map { user ->
-            user.copy(rating = reviewModel.calculateRatingById(user.id))
-        }
-
-    */
 
 }
 

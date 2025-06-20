@@ -409,7 +409,7 @@ fun TripDetails(
                             Spacer(Modifier.padding(5.dp))
 
                             //Delete button with popup for confirmation
-                            DeleteMyTrip(trip, navController, vm)
+                            DeleteMyTrip(trip, navController, vm, uvm)
                         }
                     }
                 }
@@ -449,7 +449,7 @@ fun TripDetails(
 
                             if (isUserLoggedIn) {
                                 //Delete button with popup for confirmation
-                                LeaveTrip(trip, navController, vm, loggedUser)
+                                LeaveTrip(trip, navController, vm, loggedUser, uvm)
                             }
                         }
                     }
@@ -514,7 +514,7 @@ fun TripDetails(
                             Spacer(Modifier.padding(5.dp))
 
                             //Delete button with popup for confirmation
-                            DeleteMyTrip(trip, navController, vm)
+                            DeleteMyTrip(trip, navController, vm, uvm)
                         }
 
                         if (publishError) {
@@ -1194,7 +1194,7 @@ fun ItineraryText(trip: Trip, modifier: Modifier = Modifier, vm: TripViewModel) 
 }
 
 @Composable
-fun DeleteMyTrip(trip: Trip, navController: NavController, vm: TripViewModel) {
+fun DeleteMyTrip(trip: Trip, navController: NavController, vm: TripViewModel, uvm: UserViewModel) {
     val showDialog = remember { mutableStateOf(false) }
 
     //Delete Button
@@ -1249,7 +1249,16 @@ fun DeleteMyTrip(trip: Trip, navController: NavController, vm: TripViewModel) {
                                         trip.creatorId.toInt()
                                     )
                                 }
-                                //Add how it affects reliability
+                                uvm.updateUserReliability(
+                                    trip.creatorId.toString(),
+                                    -10
+                                ) { success ->
+                                    if (success) {
+                                        Log.d("TripDetails", "Reliability updated successfully")
+                                    } else {
+                                        Log.e("TripDetails", "Failed to update reliability")
+                                    }
+                                }
                             }
                         } else {
                             //Don't show the trip in this section anymore
@@ -1276,7 +1285,13 @@ fun DeleteMyTrip(trip: Trip, navController: NavController, vm: TripViewModel) {
 }
 
 @Composable
-fun LeaveTrip(trip: Trip, navController: NavController, vm: TripViewModel, loggedUser: User) {
+fun LeaveTrip(
+    trip: Trip,
+    navController: NavController,
+    vm: TripViewModel,
+    loggedUser: User,
+    uvm: UserViewModel
+) {
     val showDialog = remember { mutableStateOf(false) }
 
     //Delete Button
@@ -1312,7 +1327,16 @@ fun LeaveTrip(trip: Trip, navController: NavController, vm: TripViewModel, logge
                     onClick = {
                         if (trip.status != Trip.TripStatus.COMPLETED.toString()) {
                             vm.updateTripParticipants(trip.id, loggedUser.id)
-                            //Add how it affects the reliability
+                            uvm.updateUserReliability(
+                                loggedUser.id.toString(),
+                                -5
+                            ) { success ->
+                                if (success) {
+                                    Log.d("TripDetails", "Reliability updated successfully")
+                                } else {
+                                    Log.e("TripDetails", "Failed to update reliability")
+                                }
+                            }
                         } else {
                             //Don't show the trip in this section anymore
                             vm.cancelTrip(trip.creatorId.toString(), trip.id.toString())
