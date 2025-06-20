@@ -242,8 +242,8 @@ class UserModel {
     //MANAGEMENT OF RELIABILITY
 
     //Function that updates the reliability of a user
-    fun updateUserReliability(userId: String, delta: Int, onResult: (Boolean) -> Unit) {
-        val userRef = FirebaseFirestore.getInstance().collection("users").document(userId)
+    fun updateUserReliability(userId: Int, delta: Int, onResult: (Boolean) -> Unit) {
+        val userRef = FirebaseFirestore.getInstance().collection("users").document(userId.toString())
 
         FirebaseFirestore.getInstance().runTransaction { transaction ->
             val snapshot = transaction.get(userRef)

@@ -497,7 +497,7 @@ fun MyReviews(
 
                                 }
                                 uvm.updateUserReliability(
-                                    uvm.loggedUser.value.id.toString(),
+                                    uvm.loggedUser.value.id,
                                     +2
                                 ) { success ->
                                     if (success) {

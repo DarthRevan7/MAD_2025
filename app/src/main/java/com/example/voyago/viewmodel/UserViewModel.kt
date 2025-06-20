@@ -232,7 +232,7 @@ class UserViewModel(val model: UserModel) : ViewModel() {
         }
     }
 
-    fun updateUserReliability(userId: String, delta: Int, onResult: (Boolean) -> Unit) =
+    fun updateUserReliability(userId: Int, delta: Int, onResult: (Boolean) -> Unit) =
         model.updateUserReliability(userId, delta) { success ->
             onResult(success)
         }

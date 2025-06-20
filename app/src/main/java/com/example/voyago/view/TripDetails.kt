@@ -1251,7 +1251,7 @@ fun DeleteMyTrip(trip: Trip, navController: NavController, vm: TripViewModel,
                                     )
                                 }
                                 uvm.updateUserReliability(
-                                    trip.creatorId.toString(),
+                                    trip.creatorId,
                                     -10
                                 ) { success ->
                                     if (success) {
@@ -1329,7 +1329,7 @@ fun LeaveTrip(
                         if (trip.status != Trip.TripStatus.COMPLETED.toString()) {
                             vm.updateTripParticipants(trip.id, loggedUser.id)
                             uvm.updateUserReliability(
-                                loggedUser.id.toString(),
+                                loggedUser.id,
                                 -5
                             ) { success ->
                                 if (success) {
