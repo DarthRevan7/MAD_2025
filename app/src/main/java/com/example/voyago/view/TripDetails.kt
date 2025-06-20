@@ -1388,7 +1388,7 @@ fun ShowReview(
     }
     //Review for other users
     else {
-        val reviewer by uvm.getUserData(review.reviewedUserId).collectAsState(initial = User())
+        val reviewed by uvm.getUserData(review.reviewedUserId).collectAsState(initial = User())
 
 
         Row(
@@ -1405,23 +1405,23 @@ fun ShowReview(
                     .padding(8.dp)
             ) {
                 //val reviewer = reviewer
-                if (reviewer != null && reviewer?.isValid() == true) {
+                if (reviewed != null && reviewed?.isValid() == true) {
                     Box(
                         contentAlignment = Alignment.CenterStart,
                         modifier = Modifier
                             .size(30.dp)
                             .background(Color.Gray, shape = CircleShape)
                     ) {
-                        ProfilePhoto(reviewer!!, true, Modifier, uvm)
-                        Log.d("R1", "Reviewer: ${reviewer?.id}")
+                        ProfilePhoto(reviewed!!, true, Modifier, uvm)
+                        Log.d("R1", "Reviewer: ${reviewed?.id}")
                     }
 
                     Text(
-                        "${reviewer!!.firstname} ${reviewer!!.surname}",
+                        "${reviewed!!.firstname} ${reviewed!!.surname}",
                         modifier = Modifier
                             .padding(start = 16.dp)
                             .clickable {
-                                navController.navigate("user_profile/${review.reviewerId}")
+                                navController.navigate("user_profile/${reviewed!!.id}")
                             }
                     )
                 }

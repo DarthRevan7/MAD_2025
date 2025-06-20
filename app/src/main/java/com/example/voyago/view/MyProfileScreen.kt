@@ -76,6 +76,7 @@ import com.example.voyago.viewmodel.UserViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -94,6 +95,8 @@ fun MyProfileScreen(
 
     //Get the logged in user (id=1)
     val user by uvm.loggedUser.collectAsState()
+    val rating = rvm.calculateRatingById(user.id).collectAsState(0.0f)
+
 
     LaunchedEffect(user) {
         Log.d("MyProfileScreen", "=== User Profile Debug ===")
@@ -224,7 +227,7 @@ fun MyProfileScreen(
                 horizontalArrangement = Arrangement.Center
             ) {
                 RatingAndReliability(
-                    user.rating,
+                    rating.value,
                     user.reliability
                 )
             }

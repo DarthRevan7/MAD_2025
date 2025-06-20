@@ -59,6 +59,7 @@ fun UserProfileScreen(
     //List of trip the logged in user (id=1) joined
     val joinedTrips by vm.joinedTrips.collectAsState()
 
+
     if (user == null) {
         Log.d("UserProfileScreen", "User data is null")
         return
@@ -76,6 +77,8 @@ fun UserProfileScreen(
     val listState = rememberLazyListState()
 
     val painterChat = painterResource(R.drawable.start_chat)
+    //Rating updated real time
+    val rating = rvm.calculateRatingById(user!!.id).collectAsState(0.0f)
 
     LazyColumn(
         state = listState,
@@ -144,7 +147,7 @@ fun UserProfileScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-                RatingAndReliability(user!!.rating, user!!.reliability)
+                RatingAndReliability(rating.value, user!!.reliability)
             }
         }
 
