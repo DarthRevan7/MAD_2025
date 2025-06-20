@@ -36,6 +36,7 @@ import kotlinx.coroutines.tasks.await
 import java.util.UUID
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.core.text.isDigitsOnly
 import coil3.compose.AsyncImage
 
 // 在 NewArticle.kt 中的修改部分
@@ -49,6 +50,11 @@ fun CreateArticleScreen(
 ) {
     var articleTitle by remember { mutableStateOf("") }
     var articleContent by remember { mutableStateOf("") }
+
+    var articleContentCheck by remember { mutableStateOf(false) }
+    var articleTitleCheck by remember { mutableStateOf(false) }
+    var articleContentTouched by remember { mutableStateOf(false) }
+    var articleTitleTouched by remember { mutableStateOf(false) }
 
     // 🔥 修改为支持多张图片
     var selectedImageUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
@@ -78,9 +84,11 @@ fun CreateArticleScreen(
         // Title Input
         OutlinedTextField(
             value = articleTitle,
-            onValueChange = { articleTitle = it },
+            onValueChange = { item -> articleTitle = item; articleTitleTouched = true;
+                articleTitleCheck = item.isNotBlank() && !item.isDigitsOnly() && item.any{ it.isLetter() || it.isDigit()}},
             label = { Text("Article Title") },
             placeholder = { Text("Input") },
+            isError = articleTitleTouched && !articleTitleCheck,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
@@ -89,6 +97,7 @@ fun CreateArticleScreen(
                 unfocusedBorderColor = Color(0xFFCCC2DC),
                 focusedContainerColor = Color(0xFFE8E0E9),
                 unfocusedContainerColor = Color(0xFFE8E0E9)
+                //errorBorderColor = Color.Red
             ),
             shape = RoundedCornerShape(8.dp),
             trailingIcon = {
@@ -104,13 +113,20 @@ fun CreateArticleScreen(
             }
         )
 
+        if(!articleTitleCheck && articleTitleTouched) {
+            Spacer(modifier = Modifier.height(1.dp))
+            Text("Empty or invalid field!", color = Color.Red)
+        }
+
         Spacer(modifier = Modifier.height(16.dp))
 
         // Content Input
         OutlinedTextField(
             value = articleContent,
-            onValueChange = { articleContent = it },
+            onValueChange = { item -> articleContent = item; articleContentTouched = true;
+                articleContentCheck = item.isNotBlank() && !item.isDigitsOnly() },
             placeholder = { Text("Write here your article") },
+            isError = articleContentTouched && !articleContentCheck,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(400.dp),
@@ -122,6 +138,11 @@ fun CreateArticleScreen(
             ),
             shape = RoundedCornerShape(8.dp)
         )
+
+        if(!articleContentCheck && articleContentTouched) {
+            Spacer(modifier = Modifier.height(1.dp))
+            Text("Empty or invalid field!", color = Color.Red)
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -232,7 +253,7 @@ fun CreateArticleScreen(
             // Publish Button
             Button(
                 onClick = {
-                    if (articleTitle.isNotBlank() && articleContent.isNotBlank()) {
+                    if (articleTitleCheck && articleContentCheck) {
                         isLoading = true
                         coroutineScope.launch {
                             try {
