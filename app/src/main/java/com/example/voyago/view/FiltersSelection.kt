@@ -59,6 +59,7 @@ import androidx.compose.ui.window.PopupProperties
 import com.example.voyago.model.TypeTravel
 import com.example.voyago.viewmodel.Factory
 import com.example.voyago.viewmodel.TripViewModel
+import com.example.voyago.viewmodel.UserViewModel
 
 
 data class SelectableItem(
@@ -70,7 +71,10 @@ data class SelectableItem(
 )
 
 @Composable
-fun FiltersSelection(navController: NavController, vm: TripViewModel = viewModel(factory = Factory)) {
+fun FiltersSelection(navController: NavController,
+                     vm: TripViewModel = viewModel(factory = Factory),
+                     uvm: UserViewModel
+) {
 
     val listState = rememberLazyListState()
     var query by remember { mutableStateOf("") }
@@ -325,7 +329,7 @@ fun FiltersSelection(navController: NavController, vm: TripViewModel = viewModel
                 Button(
                     onClick = {
                         vm.userAction = TripViewModel.UserAction.SEARCHING
-                        vm.applyFilters()
+                        vm.applyFilters(uvm.loggedUser.value.id)
                         navController.popBackStack() //reset backstack
                     },
                     modifier = Modifier

@@ -526,7 +526,11 @@ fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = Factory
             )
-            ExplorePage(navController = navController, vm = tripViewModel)
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = Factory
+            )
+            ExplorePage(navController = navController, vm = tripViewModel, userViewModel)
         }
 
         composable("trip_details") { entry ->
@@ -612,7 +616,11 @@ fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = Factory
             )
-            FiltersSelection(navController = navController, vm = tripViewModel)
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = Factory
+            )
+            FiltersSelection(navController = navController, vm = tripViewModel, uvm = userViewModel)
         }
     }
 }

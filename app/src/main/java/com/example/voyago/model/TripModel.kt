@@ -524,7 +524,7 @@ class TripModel {
         filterMinPrice: Double, filterMaxPrice: Double,
         filterDuration: Pair<Int, Int>, filterGroupSize: Pair<Int, Int>,
         filtersTripType: List<SelectableItem>, filterUpcomingTrips: Boolean,
-        filterCompletedTrips: Boolean, filterBySeats: Int,
+        filterCompletedTrips: Boolean, filterBySeats: Int, loggedUserId : Int = 0,
         coroutineScope: CoroutineScope
     ) {
         coroutineScope.launch {
@@ -549,7 +549,7 @@ class TripModel {
 
                     val completed =
                         !filterCompletedTrips || trip.status == TripStatus.COMPLETED.toString()
-                    val canJoin = !filterUpcomingTrips || trip.loggedInUserCanJoin(1)
+                    val canJoin = !filterUpcomingTrips || trip.loggedInUserCanJoin(loggedUserId)
                     val spots = trip.availableSpots() >= filterBySeats
 
                     trip.published && destination && price && duration && groupSize && canJoin && completed && spots

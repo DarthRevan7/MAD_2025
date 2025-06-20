@@ -54,11 +54,15 @@ import com.example.voyago.R
 import com.example.voyago.model.Trip
 import com.example.voyago.viewmodel.Factory
 import com.example.voyago.viewmodel.TripViewModel
+import com.example.voyago.viewmodel.UserViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExplorePage(navController: NavController, vm: TripViewModel = viewModel(factory = Factory)) {
+fun ExplorePage(navController: NavController,
+                vm: TripViewModel = viewModel(factory = Factory),
+                uvm: UserViewModel
+) {
 
     val filteredTrips by vm.filteredList.collectAsState()
 
@@ -72,13 +76,13 @@ fun ExplorePage(navController: NavController, vm: TripViewModel = viewModel(fact
         vm.filterCompletedTrips,
         vm.filterBySeats
     ) {
-        vm.updatePublishedTrip()
+        vm.updatePublishedTrip(uvm.loggedUser.value.id)
         vm.setMaxMinPrice()
 
         if (vm.userAction != TripViewModel.UserAction.SEARCHING && vm.userAction != TripViewModel.UserAction.VIEW_TRIP) {
             vm.resetFilters()
         }
-        vm.applyFilters()
+        vm.applyFilters(uvm.loggedUser.value.id)
     }
 
     LazyVerticalGrid(

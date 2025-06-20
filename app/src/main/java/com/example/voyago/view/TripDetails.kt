@@ -396,7 +396,7 @@ fun TripDetails(
                                 Button(
                                     onClick = {
                                         vm.changePublishedStatus(trip.id)
-                                        vm.updatePublishedTrip()
+                                        vm.updatePublishedTrip(uvm.loggedUser.value.id)
                                         navController.popBackStack()
                                     },
                                     colors = ButtonDefaults.buttonColors(
@@ -409,7 +409,7 @@ fun TripDetails(
                             Spacer(Modifier.padding(5.dp))
 
                             //Delete button with popup for confirmation
-                            DeleteMyTrip(trip, navController, vm)
+                            DeleteMyTrip(trip, navController, vm, uvm = uvm)
                         }
                     }
                 }
@@ -470,7 +470,7 @@ fun TripDetails(
                                     onClick = {
                                         if (isAfterToday) {
                                             vm.changePublishedStatus(trip.id)
-                                            vm.updatePublishedTrip()
+                                            vm.updatePublishedTrip(uvm.loggedUser.value.id)
 
                                             //Send notifications
                                             val title = "Check this out!"
@@ -514,7 +514,7 @@ fun TripDetails(
                             Spacer(Modifier.padding(5.dp))
 
                             //Delete button with popup for confirmation
-                            DeleteMyTrip(trip, navController, vm)
+                            DeleteMyTrip(trip, navController, vm, uvm = uvm)
                         }
 
                         if (publishError) {
@@ -1194,7 +1194,8 @@ fun ItineraryText(trip: Trip, modifier: Modifier = Modifier, vm: TripViewModel) 
 }
 
 @Composable
-fun DeleteMyTrip(trip: Trip, navController: NavController, vm: TripViewModel) {
+fun DeleteMyTrip(trip: Trip, navController: NavController, vm: TripViewModel,
+                 uvm:UserViewModel) {
     val showDialog = remember { mutableStateOf(false) }
 
     //Delete Button
@@ -1236,7 +1237,7 @@ fun DeleteMyTrip(trip: Trip, navController: NavController, vm: TripViewModel) {
                                     }
                                 }
                                 vm.deleteTrip(trip.id)
-                                vm.updatePublishedTrip()
+                                vm.updatePublishedTrip(uvm.loggedUser.value.id)
                             }
 
                             if (trip.participants.size > 1) {
@@ -1815,7 +1816,7 @@ fun CreateACopyButton(
                             "TripCopy",
                             "Imported trip created with photo: ${importedTrip?.photo}"
                         )
-                        vm.updatePublishedTrip()
+                        vm.updatePublishedTrip(loggedUser.id)
 
                         showPopup = true
                         coroutineScope.launch {

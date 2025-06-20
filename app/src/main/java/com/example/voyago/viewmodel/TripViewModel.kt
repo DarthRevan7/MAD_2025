@@ -212,7 +212,7 @@ class TripViewModel(
     }
 
     //Apply selected filters
-    fun applyFilters() = tripModel.filterFunction(
+    fun applyFilters(loggedUserId : Int) = tripModel.filterFunction(
         allPublishedList,
         filterDestination,
         filterMinPrice,
@@ -222,7 +222,7 @@ class TripViewModel(
         filtersTripType,
         filterUpcomingTrips,
         filterCompletedTrips,
-        filterBySeats,
+        filterBySeats, loggedUserId = loggedUserId,
         viewModelScope
     )
 
@@ -251,9 +251,9 @@ class TripViewModel(
     //Update list of published trips after filter application
     val allPublishedList = tripModel.allPublishedTrips
 
-    fun updatePublishedTrip() {
+    fun updatePublishedTrip(loggedUserId: Int) {
         tripModel.getAllPublishedTrips(viewModelScope)
-        applyFilters()
+        applyFilters(loggedUserId)
     }
 
 
