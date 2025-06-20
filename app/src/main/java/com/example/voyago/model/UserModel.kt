@@ -5,8 +5,8 @@ import com.example.voyago.Collections
 import com.google.common.io.Files.getFileExtension
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
-import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.storage
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -30,8 +30,7 @@ data class User(
     var typeTravel: List<TypeTravel> = emptyList(),
     var desiredDestination: List<String> = emptyList(),
     var rating: Float = 0f,
-    var reliability: Int = 0,
-    var role: String? = null,
+    var reliability: Int = 0
 ) : Serializable {
     fun isValid(): Boolean {
         return firstname.isNotBlank() &&

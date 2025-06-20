@@ -23,7 +23,6 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import kotlin.text.set
 
 
 //Function that converts a Long in a Calendar
@@ -386,6 +385,74 @@ class TripModel {
                 Log.e("Firestore", "Failed to update trip status", error)
             }
     }
+
+    fun updateCreatorId(tripId: Int, newCreatorId: Int, oldCreatorId: Int) {
+        Collections.trips
+            .whereEqualTo("id", tripId)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                for (document in snapshot.documents) {
+                    val participants = document.get("participants") as? Map<*, *>
+
+                    if (participants != null) {
+                        val updatedParticipants = participants.toMutableMap().apply {
+                            remove(oldCreatorId.toString())
+                        }
+
+                        document.reference.update(
+                            mapOf(
+                                "creatorId" to newCreatorId,
+                                "participants" to updatedParticipants
+                            )
+                        ).addOnSuccessListener {
+                            Log.d("Firestore", "Trip creator and participants updated successfully")
+                        }.addOnFailureListener { error ->
+                            Log.e("Firestore", "Failed to update trip data", error)
+                        }
+                    } else {
+                        Log.e("Firestore", "Participants field is missing or invalid")
+                    }
+                }
+            }
+            .addOnFailureListener { error ->
+                Log.e("Firestore", "Failed to fetch trip document", error)
+            }
+    }
+
+    fun removeParticipantFromTrip(tripId: Int, participantId: String, onResult: (Boolean) -> Unit) {
+        Collections.trips
+            .whereEqualTo("id", tripId)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                if (snapshot.documents.isEmpty()) {
+                    Log.e("Firestore", "Trip not found")
+                    onResult(false)
+                    return@addOnSuccessListener
+                }
+
+                val document = snapshot.documents[0]
+                val participants = document.get("participants") as? Map<*, *>
+
+                // Create a new map without the participant to remove
+                val updatedParticipants = participants?.toMutableMap()
+                updatedParticipants?.remove(participantId)
+
+                // Update Firestore
+                document.reference.update("participants", updatedParticipants)
+                    .addOnSuccessListener {
+                        onResult(true)
+                    }
+                    .addOnFailureListener { error ->
+                        Log.e("Firestore", "Failed to update participants", error)
+                        onResult(false)
+                    }
+            }
+            .addOnFailureListener { error ->
+                Log.e("Firestore", "Failed to fetch trip document", error)
+                onResult(false)
+            }
+    }
+
 
     //Function that return the Trips a user has joined
     private val _joinedTrips = MutableStateFlow<List<Trip>>(emptyList())
@@ -936,6 +1003,7 @@ class TripModel {
                 onResult(null)
             }
     }
+
     fun addActivityToTrip(activity: Trip.Activity, trip: Trip?): Trip {
         val currentTrip = trip ?: Trip()
 
@@ -981,9 +1049,9 @@ class TripModel {
 
 fun Trip.deepCopy(): Trip =
     this.copy(
-        activities   = this.activities.mapValues { (_, list) -> list.map { it.copy() } },
-        typeTravel   = this.typeTravel.toList(),
+        activities = this.activities.mapValues { (_, list) -> list.map { it.copy() } },
+        typeTravel = this.typeTravel.toList(),
         participants = this.participants.toMap(),
         appliedUsers = this.appliedUsers.toMap(),
-        rejectedUsers= this.rejectedUsers.toMap()
+        rejectedUsers = this.rejectedUsers.toMap()
     )

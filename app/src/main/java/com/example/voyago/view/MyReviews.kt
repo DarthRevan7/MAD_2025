@@ -35,7 +35,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
@@ -52,6 +51,7 @@ import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.example.voyago.activities.ProfilePhoto
 import com.example.voyago.model.Review
+import com.example.voyago.model.User
 import com.example.voyago.viewmodel.NotificationViewModel
 import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.TripViewModel
@@ -61,7 +61,10 @@ import kotlinx.coroutines.launch
 import java.util.Calendar
 
 @Composable
-fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewModel, rvm: ReviewViewModel, nvm: NotificationViewModel) {
+fun MyReviews(
+    navController: NavController, vm: TripViewModel, uvm: UserViewModel,
+    rvm: ReviewViewModel, nvm: NotificationViewModel
+) {
 
     val trip by vm.selectedTrip
     val tripReview by rvm.tripReview.collectAsState()
@@ -79,15 +82,13 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
     }
 
     val participantsMap by vm.tripParticipants.collectAsState()
-    participantsMap.entries.forEach{ item -> Log.d("P1", "User = ${item.key.id}") }
+    participantsMap.entries.forEach { item -> Log.d("P1", "User = ${item.key.id}") }
 
 
     val listState = rememberLazyListState()
     LaunchedEffect(Unit) {
         Log.d("L3", "rvm.getTripReview = ${rvm.tripReview.value}")
     }
-
-
 
 
     val titleMap = remember { mutableStateMapOf<String, String>() }
@@ -140,7 +141,7 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
         ) {
             //Trip image
             item {
-                Hero(trip)
+                Hero(trip, vm, User())
             }
 
             item {
@@ -189,15 +190,14 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
             }
 
             Log.d("L3", "Has reviews: $hasReviews")
-            if(hasReviews) {
+            if (hasReviews) {
                 //Review of the trip made by the logged in user
 //                val review = vm.tripReview(uvm.loggedUser.value.id, trip.id)
-                if(tripReview.isValidReview()) {
+                if (tripReview.isValidReview()) {
                     item {
                         ShowReview(tripReview, vm, true, uvm, navController)
                     }
-                } else
-                {
+                } else {
                     item {
                         Text("No review yet")
                     }
@@ -304,15 +304,14 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
             }
 
 
-            if(hasReviews) {
+            if (hasReviews) {
                 //Review of the users made by the logged in user
 
-                if(othersReviews.value.isNotEmpty()) {
+                if (othersReviews.value.isNotEmpty()) {
                     items(othersReviews.value) { review ->
                         ShowReview(review, vm, true, uvm, navController)
                     }
-                }
-                else {
+                } else {
                     item {
                         Text("No reviews yet")
                     }
@@ -341,7 +340,7 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
                                 "${user.firstname} ${user.surname}",
                                 modifier = Modifier
                                     .padding(start = 16.dp)
-                                    .clickable{
+                                    .clickable {
                                         navController.navigate("user_profile/${user.id}")
                                     },
                                 fontSize = 20.sp
@@ -448,7 +447,8 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
                                         val comment = reviewMap[key].orEmpty()
                                         val rawScore = ratingMap[key] ?: 0f
                                         val score = (rawScore * 2).toInt()
-                                        val photos = if (isTripReview) selectedUris.map { it.toString() } else emptyList()
+                                        val photos =
+                                            if (isTripReview) selectedUris.map { it.toString() } else emptyList()
 
                                         val review = Review(
                                             reviewId = -1,
@@ -462,12 +462,15 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
                                             photos = photos,
                                             date = Timestamp(currentDate.time)
                                         )
-                                        Log.d("Date", "Current date: ${currentDate.time}, Timestamp: ${currentDate.time}")
+                                        Log.d(
+                                            "Date",
+                                            "Current date: ${currentDate.time}, Timestamp: ${currentDate.time}"
+                                        )
                                         reviewsToSubmit.add(review)
                                     }
 
                                     composableScope.launch {
-                                        rvm.addAllTripReviews(reviewsToSubmit) {success, reviews ->
+                                        rvm.addAllTripReviews(reviewsToSubmit) { success, reviews ->
                                             if (success) {
                                                 for (review in reviews) {
                                                     if (review.reviewerId != -1) {
@@ -475,18 +478,26 @@ fun MyReviews(navController: NavController, vm: TripViewModel, uvm: UserViewMode
                                                     }
                                                 }
                                                 // Notification for users
-                                                val title = "New review from ${uvm.loggedUser.value.username}!"
+                                                val title =
+                                                    "New review from ${uvm.loggedUser.value.username}!"
                                                 val body = "Check you profile for more information!"
                                                 val notificationType = "REVIEW"
                                                 val idLink = uvm.loggedUser.value.id
 
-                                                participantsMap.entries.toList().forEach() { entry ->
-                                                    val user = entry.key
-                                                    if (user.id != uvm.loggedUser.value.id) {
-                                                        val userId = user.id.toString()
-                                                        nvm.sendNotificationToUser(userId, title, body, notificationType, idLink)
+                                                participantsMap.entries.toList()
+                                                    .forEach() { entry ->
+                                                        val user = entry.key
+                                                        if (user.id != uvm.loggedUser.value.id) {
+                                                            val userId = user.id.toString()
+                                                            nvm.sendNotificationToUser(
+                                                                userId,
+                                                                title,
+                                                                body,
+                                                                notificationType,
+                                                                idLink
+                                                            )
+                                                        }
                                                     }
-                                                }
 
 
                                                 navController.popBackStack()

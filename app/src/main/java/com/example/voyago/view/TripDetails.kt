@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -31,6 +32,7 @@ import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
@@ -120,6 +122,7 @@ data class TripNotification(
     var isDraft: Boolean
 ) : Serializable
 
+@SuppressLint("MutableCollectionMutableState")
 @Composable
 fun TripDetails(
     navController: NavController,
@@ -196,9 +199,6 @@ fun TripDetails(
     val joined =
         trip.participants.containsKey(loggedUser.id.toString()) && trip.creatorId != loggedUser.id
 
-    //Delete confirmation trip
-    val coroutineScope = rememberCoroutineScope()
-
     //Manage join request
     val askedTrips: Map<String, Int> by vm.askedTrips.collectAsState()
     vm.syncAskedTrips(loggedUser.id) {}
@@ -220,8 +220,6 @@ fun TripDetails(
     var nameTouchedList by remember { mutableStateOf(listOf<Boolean>()) }
     var surnameTouchedList by remember { mutableStateOf(listOf<Boolean>()) }
     var emailTouchedList by remember { mutableStateOf(listOf<Boolean>()) }
-
-    var usernameValidationStates by remember { mutableStateOf(mutableMapOf<Int, Boolean>()) }
 
     var registeredUserList: MutableList<User> = mutableListOf()
 
@@ -296,7 +294,7 @@ fun TripDetails(
         ) {
             //Trip image
             item {
-                Hero(trip)
+                Hero(trip, vm, loggedUser, true)
             }
 
             item {
@@ -332,7 +330,7 @@ fun TripDetails(
             //The logged in user see a trip created by them in the "My Trip" section
             if (owner) {
                 //The trip created by the logged in user is published
-                if (trip.published && trip.status == Trip.TripStatus.NOT_STARTED.toString() && trip.creatorId == loggedUser.id) {
+                if (trip.published && trip.creatorId == loggedUser.id) {
                     item {
                         Row(
                             modifier = Modifier
@@ -341,16 +339,39 @@ fun TripDetails(
                             horizontalArrangement = Arrangement.End
                         ) {
                             Box {
-                                //Applications Button
-                                Button(
-                                    onClick = {
-                                        navController.navigate("trip_applications")
-                                    },
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(0x14, 0xa1, 0x55, 255)
-                                    )
-                                ) {
-                                    Text("Applications")
+                                if (trip.status == Trip.TripStatus.COMPLETED.toString()) {
+                                    Box {
+                                        //Applications Button
+                                        Button(
+                                            onClick = { navController.navigate("my_reviews") },
+                                            colors = ButtonDefaults.buttonColors(
+                                                containerColor = Color(0xd9, 0x24, 0xd6, 255)
+                                            )
+                                        ) {
+                                            Text("My Reviews")
+                                        }
+
+                                        if (isReviewed == false) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(15.dp)
+                                                    .background(Color(0xFF448AFF), CircleShape)
+                                                    .align(Alignment.TopEnd)
+                                            )
+                                        }
+                                    }
+                                } else {
+                                    //Applications Button
+                                    Button(
+                                        onClick = {
+                                            navController.navigate("trip_applications")
+                                        },
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = Color(0x14, 0xa1, 0x55, 255)
+                                        )
+                                    ) {
+                                        Text("Applications")
+                                    }
                                 }
 
                                 if (trip.appliedUsers.isNotEmpty()) {
@@ -366,7 +387,7 @@ fun TripDetails(
                             Spacer(Modifier.weight(3f))
 
                             //"Create a Copy" Button (creates a copy of the trip in the logged in user private trips)
-                            CreateACopyButton(trip, vm, loggedUser)
+                            //CreateACopyButton(trip, vm, loggedUser)
 
                             Spacer(Modifier.weight(1f))
 
@@ -388,7 +409,7 @@ fun TripDetails(
                             Spacer(Modifier.padding(5.dp))
 
                             //Delete button with popup for confirmation
-                            DeleteButtonWithConfirmation(trip, navController, vm)
+                            DeleteMyTrip(trip, navController, vm)
                         }
                     }
                 }
@@ -426,10 +447,9 @@ fun TripDetails(
 
                             Spacer(Modifier.weight(1f))
 
-                            // 只有登录用户才显示 "Create a Copy" 按钮
                             if (isUserLoggedIn) {
-                                //"Create a Copy" Button (creates a copy of the trip in the logged in user private trips)
-                                CreateACopyButton(trip, vm, loggedUser)
+                                //Delete button with popup for confirmation
+                                LeaveTrip(trip, navController, vm, loggedUser)
                             }
                         }
                     }
@@ -489,12 +509,12 @@ fun TripDetails(
 
                             Spacer(Modifier.weight(1f))
 
-                            CreateACopyButton(trip, vm, loggedUser)
+                            //CreateACopyButton(trip, vm, loggedUser)
 
                             Spacer(Modifier.padding(5.dp))
 
                             //Delete button with popup for confirmation
-                            DeleteButtonWithConfirmation(trip, navController, vm)
+                            DeleteMyTrip(trip, navController, vm)
                         }
 
                         if (publishError) {
@@ -528,7 +548,7 @@ fun TripDetails(
                         // 只有登录用户才显示 "Create a Copy" 按钮
                         if (isUserLoggedIn) {
                             //"Create a Copy" Button (creates a copy of the trip in the logged in user private trips)
-                            CreateACopyButton(trip, vm, loggedUser)
+                            //CreateACopyButton(trip, vm, loggedUser)
 
                             Spacer(Modifier.padding(5.dp))
                         }
@@ -625,7 +645,7 @@ fun TripDetails(
                 if (user != null) {
                     ShowParticipants(
                         user = user,
-                        joinRequest = Trip.JoinRequest(
+                        joinRequest = JoinRequest(
                             user.id,
                             1,
                             emptyList(),
@@ -983,8 +1003,7 @@ fun TripDetails(
 @OptIn(ExperimentalGlideComposeApi::class)
 @SuppressLint("DiscouragedApi")
 @Composable
-fun Hero(trip: Trip) {
-    val context = LocalContext.current
+fun Hero(trip: Trip, vm: TripViewModel, loggedUser: User, import: Boolean = false) {
     var imageUrl by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(trip.id) {
         imageUrl = trip.getPhoto()
@@ -1043,6 +1062,18 @@ fun Hero(trip: Trip) {
                     .padding(16.dp)
             )
         }
+
+        if (import && loggedUser != User()) {
+            CreateACopyButton(
+                trip = trip,
+                vm = vm,
+                loggedUser = loggedUser,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(vertical = 30.dp, horizontal = 10.dp)
+            )
+        }
+
 
         if (trip.status == Trip.TripStatus.COMPLETED.toString()) {
             //Banner that indicated that the trip has already happened
@@ -1163,7 +1194,7 @@ fun ItineraryText(trip: Trip, modifier: Modifier = Modifier, vm: TripViewModel) 
 }
 
 @Composable
-fun DeleteButtonWithConfirmation(trip: Trip, navController: NavController, vm: TripViewModel) {
+fun DeleteMyTrip(trip: Trip, navController: NavController, vm: TripViewModel) {
     val showDialog = remember { mutableStateOf(false) }
 
     //Delete Button
@@ -1193,16 +1224,82 @@ fun DeleteButtonWithConfirmation(trip: Trip, navController: NavController, vm: T
             confirmButton = {
                 Button(
                     onClick = {
-                        val newOwner =
-                            trip.participants.entries.firstOrNull { it.key != trip.creatorId.toString() }
-                        if (!trip.published || newOwner == null) {
-                            vm.deleteTrip(trip.id)
-                            vm.updatePublishedTrip()
-                        } else {
-                            trip.participants = trip.participants.toMutableMap().apply {
-                                remove(trip.creatorId.toString())
+                        if (trip.status != Trip.TripStatus.COMPLETED.toString()) {
+                            if (!trip.published || trip.participants.size == 1) {
+                                if (trip.appliedUsers.isNotEmpty()) {
+                                    trip.appliedUsers.forEach { userId, joinRequest ->
+                                        vm.rejectApplication(trip, userId.toInt())
+                                    }
+                                }
+                                vm.deleteTrip(trip.id)
+                                vm.updatePublishedTrip()
                             }
-                            trip.creatorId = newOwner.key.toInt()
+
+                            if (trip.participants.size > 1) {
+                                val newOwner = trip.participants.entries.firstOrNull()
+                                { it.key != trip.creatorId.toString() }
+                                if (newOwner?.key?.toInt() != null) {
+                                    vm.updateTripCreator(
+                                        trip.id,
+                                        newOwner.key.toInt(),
+                                        trip.creatorId.toInt()
+                                    )
+                                }
+                            }
+                        }
+                        navController.popBackStack()
+                        showDialog.value = false
+                    }
+                ) {
+                    Text("Confirm")
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = {
+                        showDialog.value = false
+                    }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun LeaveTrip(trip: Trip, navController: NavController, vm: TripViewModel, loggedUser: User) {
+    val showDialog = remember { mutableStateOf(false) }
+
+    //Delete Button
+    Button(
+        onClick = {
+            showDialog.value = true
+        },
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color(0xd8, 0x1f, 0x1f, 255)
+        )
+    ) {
+        Text("Leave Trip")
+    }
+
+    //PupUp that asks for confirmation of the cancellation of the trip
+    if (showDialog.value) {
+        AlertDialog(
+            onDismissRequest = {
+                showDialog.value = false
+            },
+            title = {
+                Text(text = "Confirm Leave Trip ")
+            },
+            text = {
+                Text("Are you sure you want to leave this trip? This action will affect your reliability.")
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (trip.status != Trip.TripStatus.COMPLETED.toString()) {
+                            vm.updateTripParticipants(trip.id, loggedUser.id)
                         }
                         navController.popBackStack()
                         showDialog.value = false
@@ -1235,7 +1332,7 @@ fun ShowReview(
     navController: NavController
 ) {
 
-    if(review.isTripReview) {
+    if (review.isTripReview) {
         val reviewer by uvm.getUserData(review.reviewerId).collectAsState(initial = User())
 
 
@@ -1331,7 +1428,9 @@ fun ShowReview(
 
                     when {
                         // Firebase Storage 或 URI 图片
-                        imageUrl != null && (imageUrl!!.startsWith("http") || imageUrl!!.startsWith("content://")) -> {
+                        imageUrl != null && (imageUrl!!.startsWith("http") || imageUrl!!.startsWith(
+                            "content://"
+                        )) -> {
                             GlideImage(
                                 model = imageUrl,
                                 contentDescription = "Review photo",
@@ -1483,7 +1582,9 @@ fun ShowReview(
 
                     when {
                         // Firebase Storage 或 URI 图片
-                        imageUrl != null && (imageUrl!!.startsWith("http") || imageUrl!!.startsWith("content://")) -> {
+                        imageUrl != null && (imageUrl!!.startsWith("http") || imageUrl!!.startsWith(
+                            "content://"
+                        )) -> {
                             GlideImage(
                                 model = imageUrl,
                                 contentDescription = "Review photo",
@@ -1657,62 +1758,74 @@ fun AsyncValidatingUsernameField(
 }
 
 @Composable
-fun CreateACopyButton(trip: Trip, vm: TripViewModel, loggedUser: User) {
+fun CreateACopyButton(
+    trip: Trip,
+    vm: TripViewModel,
+    loggedUser: User,
+    modifier: Modifier = Modifier
+) {
     val coroutineScope = rememberCoroutineScope()
     var showPopup by remember { mutableStateOf(false) }
 
-    //"Create a Copy" Button (creates a copy of the trip in the logged in user private trips)
-    Button(
-        onClick = {
-            // 添加调试日志
-            Log.d("TripCopy", "Original trip photo: ${trip.photo}")
-
-            vm.addImportedTrip(
-                trip.photo,  // 或者尝试使用 trip.getPhoto() ?: trip.photo
-                trip.title,
-                trip.destination,
-                trip.startDateAsCalendar(),
-                trip.endDateAsCalendar(),
-                trip.estimatedPrice,
-                trip.groupSize,
-                trip.activities,
-                trip.typeTravel,
-                loggedUser.id,
-                false
-            ) { success, importedTrip ->
-                if (success) {
-                    // 添加调试日志
-                    Log.d(
-                        "TripCopy",
-                        "Imported trip created with photo: ${importedTrip?.photo}"
-                    )
-
-                    vm.updatePublishedTrip()
-
-                    showPopup = true
-                    coroutineScope.launch {
-                        delay(2000)
-                        showPopup = false
-                    }
-                } else {
-                    Log.e("TripDetails", "Failed to create trip copy")
-                }
-            }
-        },
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0x65, 0x55, 0x8f, 255)
-        )
+    // Floating "Create a Copy" IconButton with styled background
+    Box(
+        modifier = modifier
+            .background(
+                color = Color(0xC8F3EDF7), // semi-transparent soft lavender
+                shape = CircleShape
+            )
+            .size(40.dp),
+        contentAlignment = Alignment.Center
     ) {
-        Text("Create a Copy")
+        IconButton(
+            onClick = {
+                Log.d("TripCopy", "Original trip photo: ${trip.photo}")
+
+                vm.addImportedTrip(
+                    trip.photo,
+                    trip.title,
+                    trip.destination,
+                    trip.startDateAsCalendar(),
+                    trip.endDateAsCalendar(),
+                    trip.estimatedPrice,
+                    trip.groupSize,
+                    trip.activities,
+                    trip.typeTravel,
+                    loggedUser.id,
+                    false
+                ) { success, importedTrip ->
+                    if (success) {
+                        Log.d(
+                            "TripCopy",
+                            "Imported trip created with photo: ${importedTrip?.photo}"
+                        )
+                        vm.updatePublishedTrip()
+
+                        showPopup = true
+                        coroutineScope.launch {
+                            delay(2000)
+                            showPopup = false
+                        }
+                    } else {
+                        Log.e("TripDetails", "Failed to create trip copy")
+                    }
+                }
+            },
+            modifier = Modifier.size(24.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.FileDownload, // Change icon if desired
+                contentDescription = "Create a Copy",
+                tint = Color(0xFF3C3C43) // High contrast for visibility
+            )
+        }
     }
 
-    //PopUp that appears when the user creates a copy of the trip
+    // Confirmation Popup
     if (showPopup) {
         Popup(
             alignment = Alignment.TopCenter,
-            onDismissRequest = {
-                showPopup = false
-            }
+            onDismissRequest = { showPopup = false }
         ) {
             Box(
                 modifier = Modifier
@@ -1721,18 +1834,17 @@ fun CreateACopyButton(trip: Trip, vm: TripViewModel, loggedUser: User) {
                     .background(Color.White, shape = RoundedCornerShape(8.dp))
                     .padding(16.dp)
             ) {
-                Row {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.CheckBox,
-                        contentDescription = "check",
+                        contentDescription = "Success",
                         tint = Color.Green
                     )
-                    Spacer(Modifier.padding(5.dp))
+                    Spacer(Modifier.width(8.dp))
                     Text(
                         text = "Copy created in 'My Trips'",
                         color = Color.Black,
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.align(Alignment.CenterVertically)
+                        style = MaterialTheme.typography.bodyLarge
                     )
                 }
             }

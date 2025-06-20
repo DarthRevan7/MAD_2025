@@ -1,7 +1,6 @@
 package com.example.voyago.viewmodel
 
 import android.net.Uri
-import android.os.Bundle
 import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
@@ -9,14 +8,12 @@ import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.AbstractSavedStateViewModelFactory
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import androidx.savedstate.SavedStateRegistryOwner
 import com.example.voyago.model.ReviewModel
 import com.example.voyago.model.Trip
 import com.example.voyago.model.Trip.Activity
@@ -47,6 +44,7 @@ class TripViewModel(
             if (it < 0) -it else it
         } ?: -1
     }
+
     //Use in the new Trip interface
     var newTrip: Trip = Trip()
 
@@ -344,6 +342,20 @@ class TripViewModel(
         }
     }
 
+    //Update creator of a trip
+    fun updateTripCreator(tripId: Int, newCreatorId: Int, oldCreatorId: Int) =
+        tripModel.updateCreatorId(tripId, newCreatorId, oldCreatorId)
+
+    //Update trip participants
+    fun updateTripParticipants(tripId: Int, participantId: Int) =
+        tripModel.removeParticipantFromTrip(tripId, participantId.toString()) { success ->
+            if (success) {
+                Log.d("TripViewModel", "Trip participants updated successfully")
+            } else {
+                Log.e("TripViewModel", "Failed to update trip participants")
+            }
+        }
+
     //Delete a trip from the database
     fun deleteTrip(id: Int) {
         tripModel.deleteTrip(id) { success ->
@@ -537,8 +549,6 @@ class TripViewModel(
     }
 
 
-
-
     //Delete activity from a specific trip
     //Delete activity from a specific trip
     fun deleteActivity(activity: Trip.Activity) {
@@ -622,7 +632,6 @@ class TripViewModel(
     }
 
 
-
     private fun updateAllTripStatuses() {
         val trips = tripModel.allPublishedTrips.value
 
@@ -697,7 +706,10 @@ class TripViewModel(
                                     }
                                 } else {
                                     // 图片上传失败，但Trip已创建，使用默认图片
-                                    Log.w("TripViewModel", "Image upload failed, using default image")
+                                    Log.w(
+                                        "TripViewModel",
+                                        "Image upload failed, using default image"
+                                    )
                                     onResult(true, createdTrip, null)
                                 }
                             }
@@ -715,16 +727,19 @@ class TripViewModel(
             }
         }
     }
+
     fun refreshSelectedTrip() {
         when (userAction) {
             UserAction.CREATE_TRIP -> {
                 _selectedTrip.value = newTrip
                 Log.d("TripViewModel", "Refreshed selected trip to newTrip: ${newTrip.id}")
             }
+
             UserAction.EDIT_TRIP -> {
                 _selectedTrip.value = editTrip
                 Log.d("TripViewModel", "Refreshed selected trip to editTrip: ${editTrip.id}")
             }
+
             else -> {
                 Log.d("TripViewModel", "Keeping current selected trip: ${_selectedTrip.value.id}")
             }
@@ -744,6 +759,7 @@ class TripViewModel(
                 _selectedTrip.value = newTrip
                 Log.d("TripViewModel", "Updated newTrip activities: ${newTrip.activities}")
             }
+
             UserAction.EDIT_TRIP -> {
                 Log.d("TripViewModel", "Adding activity to edit trip")
                 val updatedTrip = tripModel.addActivityToTrip(activity, editTrip)
@@ -751,6 +767,7 @@ class TripViewModel(
                 _selectedTrip.value = editTrip
                 Log.d("TripViewModel", "Updated editTrip activities: ${editTrip.activities}")
             }
+
             else -> {
                 Log.d("TripViewModel", "Adding activity to selected trip")
                 val currentTrip = _selectedTrip.value
@@ -782,26 +799,6 @@ class TripViewModel(
         }
     }
 }
-
-//class Factory(
-//    private val tripModel: TripModel,
-//    private val userModel: UserModel,
-//    private val reviewModel: ReviewModel,
-//    owner: SavedStateRegistryOwner,
-//    defaultArgs: Bundle? = null
-//) : AbstractSavedStateViewModelFactory(owner, defaultArgs) {
-//    override fun <T : ViewModel> create(
-//        key: String,
-//        modelClass: Class<T>,
-//        handle: SavedStateHandle
-//    ): T {
-//        if (modelClass.isAssignableFrom(TripViewModel::class.java)) {
-//            @Suppress("UNCHECKED_CAST")
-//            return TripViewModel(tripModel, userModel, reviewModel, handle) as T
-//        }
-//        throw IllegalArgumentException("Unknown ViewModel class")
-//    }
-//}
 
 object Factory : ViewModelProvider.Factory {
     private val tripModel: TripModel = TripModel()

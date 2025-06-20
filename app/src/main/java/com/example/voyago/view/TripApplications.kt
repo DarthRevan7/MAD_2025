@@ -81,7 +81,7 @@ fun TripApplications(
     ) {
         // Trip photo
         item {
-            Hero(trip)
+            Hero(trip, vm, User())
         }
 
         item {
@@ -126,7 +126,7 @@ fun TripApplications(
             )
         }
 
-        if (participantsMap.isNotEmpty()) {
+        if (participantsMap.size > 1) { // Assuming you want to skip the logged-in user
             items(participantsMap.entries.toList()) { entry ->
                 val user = entry.key
                 val joinRequest = entry.value
