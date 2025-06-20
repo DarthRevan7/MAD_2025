@@ -87,6 +87,8 @@ fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
 
     var usernameTouched by remember { mutableStateOf(false) }
 
+    var alreadyExists by remember { mutableStateOf(false) }
+
     val travelTypes = listOf("ADVENTURE", "PARTY", "CULTURE", "RELAX")
     val allDestinations = isCountryList
 
@@ -156,7 +158,9 @@ fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
             // Username TextField
             OutlinedTextField(
                 value = username,
-                onValueChange = { username = it; usernameTouched = true },
+                onValueChange = { username = it; usernameTouched = true;
+                    uvm.checkUserExistsAsync(username,
+                        { exists, _ -> alreadyExists = exists; }) },
                 placeholder = {
                     Text(
                         text = "username",
@@ -165,12 +169,15 @@ fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
                 },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                isError = usernameTouched && !isValidUsername(username),
+                isError = usernameTouched && (!isValidUsername(username) || alreadyExists),
                 supportingText = {
                     if (usernameTouched && username.isEmpty()) {
-                        Text("This field cannot be empty.")
+                        Text("This field cannot be empty.", color = Color.Red)
                     } else if (usernameTouched && !isValidUsername(username)) {
                         Text("Username must start with a letter and be 3-20 characters long.")
+                    }
+                    else if (usernameTouched && alreadyExists) {
+                        Text("Username already exists!")
                     }
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
@@ -373,7 +380,7 @@ fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
             // Create Account Button
             Button(
                 onClick = {
-                    if (!isValidUsername(username)) {
+                    if (!isValidUsername(username) || alreadyExists) {
                         usernameTouched = true
                         return@Button
                     }
