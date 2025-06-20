@@ -70,7 +70,6 @@ fun MyReviews(
     val tripReview by rvm.tripReview.collectAsState()
 
     val usersReviews = remember { rvm.usersReviews }
-    Log.d("R1", "usersReviews = ${usersReviews.collectAsState().value}")
 
     val hasReviews by rvm.isReviewed.collectAsState()
 
@@ -189,10 +188,7 @@ fun MyReviews(
                 Spacer(Modifier.padding(5.dp))
             }
 
-            Log.d("L3", "Has reviews: $hasReviews")
             if (hasReviews) {
-                //Review of the trip made by the logged in user
-//                val review = vm.tripReview(uvm.loggedUser.value.id, trip.id)
                 if (tripReview.isValidReview()) {
                     item {
                         ShowReview(tripReview, vm, true, uvm, navController)
@@ -462,10 +458,6 @@ fun MyReviews(
                                             photos = photos,
                                             date = Timestamp(currentDate.time)
                                         )
-                                        Log.d(
-                                            "Date",
-                                            "Current date: ${currentDate.time}, Timestamp: ${currentDate.time}"
-                                        )
                                         reviewsToSubmit.add(review)
                                     }
 
@@ -498,15 +490,22 @@ fun MyReviews(
                                                             )
                                                         }
                                                     }
-
-
                                                 navController.popBackStack()
                                             }
                                         }
                                     }
 
                                 }
-
+                                uvm.updateUserReliability(
+                                    uvm.loggedUser.value.id.toString(),
+                                    +2
+                                ) { success ->
+                                    if (success) {
+                                        Log.d("TripDetails", "Reliability updated successfully")
+                                    } else {
+                                        Log.e("TripDetails", "Failed to update reliability")
+                                    }
+                                }
                             },
                             modifier = Modifier
                                 .width(160.dp)

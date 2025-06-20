@@ -8,14 +8,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import com.example.voyago.Collections
 import com.example.voyago.model.User
 import com.example.voyago.model.UserModel
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.example.voyago.Collections
-import com.example.voyago.model.*
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,10 +23,11 @@ import kotlinx.coroutines.withContext
 
 class UserViewModel(val model: UserModel) : ViewModel() {
 
-    //For now user with id = 1 is the logged user.
+    //Logged in user
     private val _loggedUser = MutableStateFlow<User>(User())
     val loggedUser: StateFlow<User> = _loggedUser
 
+    // Initialize the ViewModel by fetching the logged-in user from Firebase
     init {
         val firebaseUser = FirebaseAuth.getInstance().currentUser
         val email = firebaseUser?.email
@@ -132,7 +130,6 @@ class UserViewModel(val model: UserModel) : ViewModel() {
 
     //Given a list of username get a list of their ids
     fun getIdListFromUsernames(usernames: List<String>): List<Int> {
-
         var userList = emptyList<User>()
 
         viewModelScope.launch {
@@ -146,14 +143,12 @@ class UserViewModel(val model: UserModel) : ViewModel() {
         return idList
     }
 
+    //Given a username check if the user exists
     fun doesUserExist(username: String): Boolean {
-
         var userList = emptyList<User>()
-
         viewModelScope.launch {
             model.getUsersFromUsernames(listOf(username)).collect { users -> userList = users }
         }
-
         return userList.isNotEmpty()
     }
 
@@ -161,28 +156,26 @@ class UserViewModel(val model: UserModel) : ViewModel() {
     private val _profileImageUri = mutableStateOf<Uri?>(null)
     var profileImageUri: State<Uri?> = _profileImageUri
 
+    // Set the profile image URI
     fun setProfileImageUri(uri: Uri?) {
         _profileImageUri.value = uri
     }
-
-    /*
-    fun updateAllRatings(reviewModel: ReviewModel) {
-        model.refreshAllRatings(reviewModel)
-    }
-     */
 
     // Add verification state
     private val _userVerified = MutableStateFlow(false)
     val userVerified: StateFlow<Boolean> = _userVerified
 
+    // Set the user verification state
     fun setUserVerified(value: Boolean) {
         _userVerified.value = value
     }
 
+    // Reset the user verification state
     fun resetUserVerified() {
         _userVerified.value = false
     }
 
+    // Get a list of user IDs that match the given type of travel
     fun getMatchingUserIdsByTypeTravel(
         typeTravelInput: List<String>,
         onResult: (List<Int>) -> Unit
@@ -202,6 +195,8 @@ class UserViewModel(val model: UserModel) : ViewModel() {
                 onResult(emptyList())
             }
     }
+
+    // Check if a user exists asynchronously and return the user object if it exists
     fun checkUserExistsAsync(username: String, callback: (Boolean, User) -> Unit) {
         viewModelScope.launch {
             var user = User()
@@ -212,9 +207,9 @@ class UserViewModel(val model: UserModel) : ViewModel() {
                     .whereEqualTo("username", username)
                     .get()
                     .addOnSuccessListener { snapshot ->
-                        if(!snapshot.isEmpty) {
+                        if (!snapshot.isEmpty) {
                             val userGot = snapshot.documents[0].toObject(User::class.java)
-                            if(userGot != null) {
+                            if (userGot != null) {
                                 user = userGot
                             }
                         }
@@ -237,7 +232,10 @@ class UserViewModel(val model: UserModel) : ViewModel() {
         }
     }
 
-
+    fun updateUserReliability(userId: String, delta: Int, onResult: (Boolean) -> Unit) =
+        model.updateUserReliability(userId, delta) { success ->
+            onResult(success)
+        }
 }
 
 object UserFactory : ViewModelProvider.Factory {
