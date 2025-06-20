@@ -307,6 +307,10 @@ class TripViewModel(
     val joinedTrips = tripModel.joinedTrips
     fun tripUserJoined(userId: Int) = tripModel.getJoinedTrips(userId, viewModelScope)
 
+    //List of of completed trips the logged in user decided to cancel
+    val canceledTrips = tripModel.canceledTrips
+    fun getCanceledTrips(userId: Int) = tripModel.getCanceledTrips(userId, viewModelScope)
+
     //Import an already published trip as a private trip of the logged in user (id=1)
     fun addImportedTrip(
         photo: String?, title: String, destination: String, startDate: Calendar,

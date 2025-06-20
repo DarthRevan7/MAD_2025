@@ -483,6 +483,36 @@ class TripModel {
         }
     }
 
+    //Function that return the completed Trips a user has canceled from its personal page
+    private val _canceledTrips = MutableStateFlow<Set<String>>(emptySet())
+    val canceledTrips: StateFlow<Set<String>> = _canceledTrips
+
+    fun getCanceledTrips(userId: String, coroutineScope: CoroutineScope) {
+        coroutineScope.launch {
+            callbackFlow<Set<String>> {
+                val listener = FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(userId)
+                    .collection("canceledTrips")
+                    .addSnapshotListener { snapshot, error ->
+                        if (snapshot != null) {
+                            val tripIds = snapshot.documents.map { it.id }.toSet()
+                            trySend(tripIds).onFailure {
+                                Log.e("Firestore", "Failed to send canceledTrips", it)
+                            }
+                        } else {
+                            Log.e("Firestore", "Error fetching canceledTrips", error)
+                            trySend(emptySet())
+                        }
+                    }
+
+                awaitClose { listener.remove() }
+            }.collect { ids ->
+                _canceledTrips.value = ids
+            }
+        }
+    }
+
 
     //List of filtered Trips
     private val _filteredList = MutableStateFlow<List<Trip>>(emptyList())
