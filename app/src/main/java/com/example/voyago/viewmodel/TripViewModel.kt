@@ -308,8 +308,9 @@ class TripViewModel(
     fun tripUserJoined(userId: Int) = tripModel.getJoinedTrips(userId, viewModelScope)
 
     //List of of completed trips the logged in user decided to cancel
-    val canceledTrips = tripModel.canceledTrips
-    fun getCanceledTrips(userId: Int) = tripModel.getCanceledTrips(userId, viewModelScope)
+    val canceledTrips: StateFlow<Set<String>> = tripModel.canceledTrips
+    fun loadCanceledTrips(userId: String) = tripModel.getCanceledTrips(userId, viewModelScope)
+
 
     //Import an already published trip as a private trip of the logged in user (id=1)
     fun addImportedTrip(
@@ -370,6 +371,18 @@ class TripViewModel(
             }
         }
     }
+
+    //Delete a trip from the logged in user personal trips
+    fun cancelTrip(userId: String, tripId: String) {
+        tripModel.cancelTripForUser(userId, tripId) { success ->
+            if (success) {
+                Log.d("TripViewModel", "Trip canceled successfully")
+            } else {
+                Log.e("TripViewModel", "Failed to cancel trip")
+            }
+        }
+    }
+
 
     //Mutable list of applications
     private val _applications = MutableStateFlow<Map<User, Trip.JoinRequest>>(emptyMap())

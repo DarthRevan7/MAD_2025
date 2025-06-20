@@ -370,7 +370,6 @@ class TripModel {
         }
     }
 
-
     //Function that updates the status of a specific Trip
     fun updateTripStatus(tripId: Int, newStatus: String) {
         Collections.trips
@@ -386,6 +385,7 @@ class TripModel {
             }
     }
 
+    //Function that updates the creatorId of a specific Trip and removes the old creator from participants
     fun updateCreatorId(tripId: Int, newCreatorId: Int, oldCreatorId: Int) {
         Collections.trips
             .whereEqualTo("id", tripId)
@@ -419,6 +419,7 @@ class TripModel {
             }
     }
 
+    //Function that removes a participant from a trip
     fun removeParticipantFromTrip(tripId: Int, participantId: String, onResult: (Boolean) -> Unit) {
         Collections.trips
             .whereEqualTo("id", tripId)
@@ -452,7 +453,6 @@ class TripModel {
                 onResult(false)
             }
     }
-
 
     //Function that return the Trips a user has joined
     private val _joinedTrips = MutableStateFlow<List<Trip>>(emptyList())
@@ -939,6 +939,23 @@ class TripModel {
                 onResult(false)
             }
     }
+
+    //Delete a trip from the "My Trips" section of the logged in user
+    fun cancelTripForUser(userId: String, tripId: String, onResult: (Boolean) -> Unit) {
+        val firebase = FirebaseFirestore.getInstance()
+        val ref = firebase.collection("users")
+            .document(userId)
+            .collection("canceledTrips")
+            .document(tripId)
+
+        ref.set(emptyMap<String, Any>()) // Write an empty document
+            .addOnSuccessListener { onResult(true) }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "Failed to cancel trip", e)
+                onResult(false)
+            }
+    }
+
 
     //MANAGEMENT OF APPLICATIONS TO TRIPS
 

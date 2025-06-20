@@ -1,7 +1,6 @@
 package com.example.voyago.view
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,28 +11,29 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.runtime.collectAsState
-import com.example.voyago.model.Trip
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Color
-import androidx.navigation.NavController
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.TaskAlt
-import androidx.compose.material3.*
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import androidx.navigation.NavController
+import com.example.voyago.model.Trip
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
 
@@ -42,20 +42,23 @@ import com.example.voyago.viewmodel.UserViewModel
 @Composable
 fun MyTripsPage(navController: NavController, vm: TripViewModel, uvm: UserViewModel) {
 
-    //Get the logged in user (id=1)
+    //Get the logged in user
     val loggedUser by uvm.loggedUser.collectAsState()
-    //List of trip created and published by the logged in user (id=1)
+    //List of trip created and published by the logged in user
     val publishedTrips by vm.publishedTrips.collectAsState()
-    //List of trip created, but not published by the logged in user (id=1)
+    //List of trip created, but not published by the logged in user
     val privateTrips by vm.privateTrips.collectAsState()
-    //List of trip the logged in user (id=1) joined
+    //List of trip the logged in user joined
     val joinedTrips by vm.joinedTrips.collectAsState()
+    //List of trip cancelled by the logged in user
+    val canceledTrips by vm.canceledTrips.collectAsState()
 
     LaunchedEffect(loggedUser.id) {
         if (loggedUser.id != 0) {
             vm.creatorPublicFilter(loggedUser.id)
             vm.creatorPrivateFilter(loggedUser.id)
             vm.tripUserJoined(loggedUser.id)
+            vm.loadCanceledTrips(loggedUser.id.toString())
         }
     }
 
@@ -81,7 +84,7 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel, uvm: UserViewMo
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start
         ) {
-            //List of published trips created by the logged in user (id=1)
+            //List of published trips created by the logged in user
             item {
                 Text(
                     text = "Published Trips:",
@@ -91,14 +94,25 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel, uvm: UserViewMo
             }
 
             if (publishedTrips.isNotEmpty()) {
-                items(publishedTrips, key = { it.id }) { trip ->
+                val visiblePublishedTrips = publishedTrips.filter { trip ->
+                    !canceledTrips.contains(trip.id.toString())
+                }
+                items(visiblePublishedTrips, key = { it.id }) { trip ->
                     vm.userAction = TripViewModel.UserAction.VIEW_TRIP
-                    TripCard(trip, navController, vm, vm.userAction == TripViewModel.UserAction.EDIT_TRIP, isDraft = false)
+                    TripCard(
+                        trip,
+                        navController,
+                        vm,
+                        vm.userAction == TripViewModel.UserAction.EDIT_TRIP,
+                        isDraft = false
+                    )
                 }
             } else {
                 item {
-                    Row (
-                        modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                    Row(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center
                     ) {
                         Text("You haven't published any trip yet.")
@@ -106,7 +120,7 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel, uvm: UserViewMo
                 }
             }
 
-            //List of private trips created by the logged in user (id=1)
+            //List of private trips created by the logged in user
             item {
                 Text(
                     text = "Private Trips:",
@@ -115,15 +129,23 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel, uvm: UserViewMo
                 )
             }
 
-            if(privateTrips.isNotEmpty()) {
+            if (privateTrips.isNotEmpty()) {
                 items(privateTrips, key = { it.id }) { trip ->
                     vm.userAction = TripViewModel.UserAction.EDIT_TRIP
-                    TripCard(trip, navController, vm, vm.userAction == TripViewModel.UserAction.EDIT_TRIP,isDraft = trip.isDraft)
+                    TripCard(
+                        trip,
+                        navController,
+                        vm,
+                        vm.userAction == TripViewModel.UserAction.EDIT_TRIP,
+                        isDraft = trip.isDraft
+                    )
                 }
             } else {
                 item {
-                    Row (
-                        modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                    Row(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center
                     ) {
                         Text("You don't have private trips yet.")
@@ -141,14 +163,19 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel, uvm: UserViewMo
             }
 
             if (joinedTrips.isNotEmpty()) {
-                items(joinedTrips, key = { it.id }) { trip ->
+                val visibleJoinedTrips = joinedTrips.filter { trip ->
+                    !canceledTrips.contains(trip.id.toString())
+                }
+                items(visibleJoinedTrips, key = { it.id }) { trip ->
                     vm.userAction = TripViewModel.UserAction.VIEW_TRIP
                     TripCard(trip, navController, vm, false)
                 }
             } else {
                 item {
-                    Row (
-                        modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                    Row(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center
                     ) {
                         Text("You haven't joined any trip yet.")

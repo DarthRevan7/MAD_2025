@@ -1219,7 +1219,11 @@ fun DeleteMyTrip(trip: Trip, navController: NavController, vm: TripViewModel) {
                 Text(text = "Confirm Cancellation")
             },
             text = {
-                Text("Are you sure you want to delete this trip?")
+                if (trip.status != Trip.TripStatus.COMPLETED.toString() && trip.participants.size > 1) {
+                    Text("Are you sure you want to delete this trip? This action will affect your reliability.")
+                } else {
+                    Text("Are you sure you want to delete this trip? This action cannot be undone.")
+                }
             },
             confirmButton = {
                 Button(
@@ -1245,7 +1249,11 @@ fun DeleteMyTrip(trip: Trip, navController: NavController, vm: TripViewModel) {
                                         trip.creatorId.toInt()
                                     )
                                 }
+                                //Add how it affects reliability
                             }
+                        } else {
+                            //Don't show the trip in this section anymore
+                            vm.cancelTrip(trip.creatorId.toString(), trip.id.toString())
                         }
                         navController.popBackStack()
                         showDialog.value = false
@@ -1293,13 +1301,21 @@ fun LeaveTrip(trip: Trip, navController: NavController, vm: TripViewModel, logge
                 Text(text = "Confirm Leave Trip ")
             },
             text = {
-                Text("Are you sure you want to leave this trip? This action will affect your reliability.")
+                if (trip.status != Trip.TripStatus.COMPLETED.toString()) {
+                    Text("Are you sure you want to leave this trip? This action will affect your reliability.")
+                } else {
+                    Text("Are you sure you want to leave this trip? The trip won't be visible in this section anymore. This action cannot be undone.")
+                }
             },
             confirmButton = {
                 Button(
                     onClick = {
                         if (trip.status != Trip.TripStatus.COMPLETED.toString()) {
                             vm.updateTripParticipants(trip.id, loggedUser.id)
+                            //Add how it affects the reliability
+                        } else {
+                            //Don't show the trip in this section anymore
+                            vm.cancelTrip(trip.creatorId.toString(), trip.id.toString())
                         }
                         navController.popBackStack()
                         showDialog.value = false
