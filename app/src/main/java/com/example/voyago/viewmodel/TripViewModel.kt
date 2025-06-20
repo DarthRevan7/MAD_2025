@@ -567,7 +567,6 @@ class TripViewModel(
 
 
     //Delete activity from a specific trip
-    //Delete activity from a specific trip
     fun deleteActivity(activity: Trip.Activity) {
         Log.d("TripViewModel", "Deleting activity: ${activity.id}")
 
