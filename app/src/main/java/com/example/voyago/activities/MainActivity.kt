@@ -553,7 +553,7 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
         profileNavGraph(navController)
         loginNavGraph(navController, auth)
 
-        // WE NEED TO ADD THE FOLLOWING ROUTES AND NAVIGATIONS GRAPH: NOTIFICATIONS, ARTICLE
+        // WE NEED TO ADD THE FOLLOWING ROUTES AND NAVIGATION'S GRAPH: NOTIFICATIONS, ARTICLE
         // FROM THIS POINT, WE NEED TO RELOCATE STUFF
 
         // 添加全局的 article_search 路由，这样从任何地方都可以访问
