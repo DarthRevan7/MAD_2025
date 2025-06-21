@@ -5,6 +5,8 @@ import com.example.voyago.Collections
 import com.example.voyago.model.Trip.Activity
 import com.example.voyago.model.Trip.Participant
 import com.example.voyago.model.Trip.TripStatus
+import com.example.voyago.toCalendar
+import com.example.voyago.toStringDate
 import com.example.voyago.view.SelectableItem
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
@@ -21,8 +23,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.Calendar
 import java.util.Date
-import com.example.voyago.toCalendar
-import com.example.voyago.toStringDate
 
 //Function that converts a Long in a Calendar
 //fun toCalendar(timeDate: Timestamp): Calendar {
@@ -981,6 +981,45 @@ class TripModel {
     //ACTIVITY MANAGEMENT
 
     //Function that add an Activity to a specific Trip
+    fun addActivityToTrip(activity: Activity, trip: Trip?): Trip {
+        // Use the provided trip or create a new default Trip if null
+        val currentTrip = trip ?: Trip()
+
+        // Create a mutable copy of the existing activities map
+        val updatedActivities = currentTrip.activities.toMutableMap().apply {
+            // Use the activity's date as a string key
+            val dateKey: String = activity.dateAsCalendar().toStringDate()
+
+            // Retrieve existing activities for the given date or an empty list
+            val existingActivities = getOrDefault(dateKey, emptyList())
+
+            // Add the new activity to the existing list
+            val updatedList: List<Activity> = existingActivities + activity
+
+            // Put the updated list back into the map
+            put(dateKey, updatedList)
+        }
+
+        // Create a new Trip object with the updated activities
+        val updatedTrip = currentTrip.copy(activities = updatedActivities)
+
+        // If the trip already exists in Firestore (has a valid ID), persist the update
+        if (currentTrip.id > 0) {
+            FirebaseFirestore.getInstance()
+                .collection("trips")
+                .document(updatedTrip.id.toString())    // Use trip ID as document ID
+                .set(updatedTrip)           // Overwrite the document with the updated trip
+                .addOnSuccessListener {
+                    Log.d("TripModel", "Activity saved to Firestore successfully")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("TripModel", "Failed to save activity to Firestore", e)
+                }
+        }
+
+        // Return the updated Trip object (whether persisted or just updated locally)
+        return updatedTrip
+    }
 
 
     //Function that edits an Activity
@@ -988,58 +1027,79 @@ class TripModel {
         activityId: Int, updatedActivity: Activity, trip: Trip,
         onResult: (Boolean, Trip?) -> Unit
     ) {
+        // Get Firestore document ID from trip ID
         val docId = trip.id.toString()
+        // Reference to the trip document
         val tripRef = Collections.trips.document(docId)
 
+        // Fetch the current trip document from Firestore
         tripRef.get()
             .addOnSuccessListener { snapshot ->
+                // Convert snapshot to Trip object
                 val currentTrip = snapshot.toObject(Trip::class.java)
                 if (currentTrip == null) {
+                    // Trip not found, return failure
                     onResult(false, null)
                     return@addOnSuccessListener
                 }
 
+                // Make a mutable copy of activities
                 val originalActivities = currentTrip.activities.toMutableMap()
+                // Flag to track if the activity to edit is found
                 var found = false
 
+                // Iterate over each date and its activity list to find the target activity
                 for ((date, activities) in originalActivities) {
                     if (activities.any { it.id == activityId }) {
+                        // Remove the activity with the matching ID from the list
                         val newList = activities.filter { it.id != activityId }
+                        // If no activities remain for the date, remove the date key from map
                         if (newList.isEmpty()) {
                             originalActivities.remove(date)
                         } else {
+                            // Otherwise, update the list with the filtered activities
                             originalActivities[date] = newList
                         }
+                        // Mark as found
                         found = true
+                        // Exit loop since the activity was found
                         break
                     }
                 }
 
                 if (!found) {
+                    // Activity ID not found in any date, return failure
                     onResult(false, trip)
                     return@addOnSuccessListener
                 }
 
-                // Add updated activity to its new date
-                val newDateKey: String = updatedActivity.dateAsCalendar().toStringDate()//dateFormat.format(updatedActivity.dateAsCalendar().time)
+                // Add the updated activity to its (possibly new) date key
+                val newDateKey: String = updatedActivity.dateAsCalendar()
+                    .toStringDate()//dateFormat.format(updatedActivity.dateAsCalendar().time)
                 val updatedList = originalActivities.getOrDefault(
                     newDateKey,
                     emptyList<Activity>()
                 ) + updatedActivity
+                // Update the activities map
                 originalActivities[newDateKey] = updatedList
 
+                // Create a new Trip object with the updated activities map
                 val updatedTrip = currentTrip.copy(activities = originalActivities)
 
+                // Save the updated trip back to Firestore
                 tripRef.set(updatedTrip)
                     .addOnSuccessListener {
+                        // Report success with updated trip
                         onResult(true, updatedTrip)
                     }
                     .addOnFailureListener { e ->
+                        // Report failure
                         Log.e("Firestore", "Failed to update activity", e)
                         onResult(false, null)
                     }
             }
             .addOnFailureListener { e ->
+                // Report failure fetching the trip document
                 Log.e("Firestore", "Failed to fetch trip", e)
                 onResult(false, null)
             }
@@ -1047,46 +1107,56 @@ class TripModel {
 
     //Delete an activity from a trip
     fun removeActivityFromTrip(activityId: Int, trip: Trip, onResult: (Boolean, Trip?) -> Unit) {
-        // 直接使用传入的trip对象，而不是从数据库重新获取
+        // Create a mutable copy of the trip's activities map
         val updatedActivities = trip.activities.toMutableMap()
+        // Flag to track if the activity to remove is found
         var found = false
 
-        // 查找并删除指定ID的活动
+        // Iterate over a copy of the map entries (date to activities list)
         for ((date, activities) in updatedActivities.toMap()) {
+            // Check if any activity in the list matches the activityId to remove
             if (activities.any { it.id == activityId }) {
+                // Filter out the activity to remove
                 val filteredActivities = activities.filter { it.id != activityId }
+                // If no activities remain for that date, remove the date key from the map
                 if (filteredActivities.isEmpty()) {
                     updatedActivities.remove(date)
                 } else {
+                    // Otherwise, update the activities list for that date
                     updatedActivities[date] = filteredActivities
                 }
+                // Mark that the activity was found and removed
                 found = true
+                // Exit the loop since we found and removed the activity
                 break
             }
         }
 
+        // If the activity was not found, return failure with the original trip
         if (!found) {
             onResult(false, trip)
             return
         }
 
-        // 创建更新后的trip对象，保持所有原有数据
+        // Create a new Trip instance with the updated activities map
         val updatedTrip = trip.copy(activities = updatedActivities)
 
-        // 只有当trip已经保存到数据库时才更新数据库
+
+        // Check if the trip has a valid Firestore document ID
         if (trip.id != -1) {
             val docId = trip.id.toString()
+            // Update the trip document in Firestore with the new activities map
             Collections.trips.document(docId)
                 .set(updatedTrip)
                 .addOnSuccessListener {
-                    onResult(true, updatedTrip)
+                    onResult(true, updatedTrip)     // Notify success with updated trip
                 }
                 .addOnFailureListener { e ->
                     Log.e("Firestore", "Failed to delete activity", e)
-                    onResult(false, null)
+                    onResult(false, null)       // Notify failure
                 }
         } else {
-            // 如果trip还没有保存到数据库，直接返回更新后的trip
+            // If the trip ID is invalid (e.g., not saved in Firestore), just return success with the updated trip locally
             onResult(true, updatedTrip)
         }
     }
@@ -1095,15 +1165,17 @@ class TripModel {
 
     //Delete a trip
     fun deleteTrip(id: Int, onResult: (Boolean) -> Unit) {
+        // Convert the trip ID to a string to use as Firestore document ID
         val docId = id.toString()
 
         Collections.trips
-            .document(docId)
-            .delete()
+            .document(docId)        // Reference the Firestore document with the given ID
+            .delete()               // Attempt to delete the document from Firestore
             .addOnSuccessListener {
-                onResult(true)
+                onResult(true)      // Notify success if deletion is successful
             }
             .addOnFailureListener { e ->
+                // Notify failure
                 Log.e("Firestore", "Failed to delete trip with ID: $id", e)
                 onResult(false)
             }
@@ -1111,17 +1183,21 @@ class TripModel {
 
     //Delete a trip from the "My Trips" section of the logged in user
     fun cancelTripForUser(userId: String, tripId: String, onResult: (Boolean) -> Unit) {
+        // Get Firestore instance
         val firebase = FirebaseFirestore.getInstance()
+
+        // Reference to the user's canceledTrips subcollection document for the given tripId
         val ref = firebase.collection("users")
             .document(userId)
             .collection("canceledTrips")
             .document(tripId)
 
+        // Write an empty document to mark the trip as canceled for the user
         ref.set(emptyMap<String, Any>()) // Write an empty document
-            .addOnSuccessListener { onResult(true) }
+            .addOnSuccessListener { onResult(true) }        // Notify success if operation succeeds
             .addOnFailureListener { e ->
                 Log.e("Firestore", "Failed to cancel trip", e)
-                onResult(false)
+                onResult(false)     // Notify failure
             }
     }
 
@@ -1137,9 +1213,12 @@ class TripModel {
         unregisteredParticipants: List<Participant>,
         registeredParticipants: List<Int>, onResult: (Boolean) -> Unit
     ) {
+        // Convert trip ID to string for Firestore document ID
         val docId = trip.id.toString()
+        // Reference to the trip document
         val tripDocRef = Collections.trips.document(docId)
 
+        // Create a JoinRequest object with user details and requested spots
         val joinRequest = Trip.JoinRequest(
             userId = userId,
             requestedSpots = spots,
@@ -1147,125 +1226,109 @@ class TripModel {
             registeredParticipants = registeredParticipants
         )
 
+        // Prepare the map to update the appliedUsers field with the new join request
         val joinRequestMap = mapOf("appliedUsers.$userId" to joinRequest)
 
+        // Prepare the map to update the appliedUsers field with the new join request
         tripDocRef.update(joinRequestMap)
             .addOnSuccessListener {
+                // On success, add the trip ID and spots to the askedTrips state
                 _askedTrips.value = _askedTrips.value + (trip.id.toString() to spots)
-                onResult(true)
+                onResult(true)  // Notify success
             }
             .addOnFailureListener { e ->
                 Log.e("Firestore", "Failed to apply to trip ${trip.id}", e)
-                onResult(false)
+                onResult(false)     // Notify failure
             }
     }
 
     //Function that removes a request to join to a specific Trip
     fun cancelRequestToJoin(trip: Trip, userId: Int, onResult: (Boolean) -> Unit) {
+        // Reference to the trip document in Firestore
         val docRef = Collections.trips.document(trip.id.toString())
 
-        // Remove the userId from appliedUsers map locally
+        // Create a mutable copy of the appliedUsers map and remove the userId from it locally
         val updatedAppliedUsers = trip.appliedUsers.toMutableMap().apply {
-            remove(userId.toString())
+            remove(userId.toString())   // Remove the user's join request
         }
 
-        // Update Firestore document's appliedUsers field
+        // Update the appliedUsers field in Firestore with the updated map (without the cancelled user)
         docRef.update("appliedUsers", updatedAppliedUsers)
             .addOnSuccessListener {
-                // Optionally update local state if needed
+                // Update local state by removing this trip from askedTrips
                 _askedTrips.value = _askedTrips.value - trip.id.toString()
-                onResult(true)
+                onResult(true)      // Notify that cancellation succeeded
             }
             .addOnFailureListener { e ->
                 Log.e("Firestore", "Failed to cancel join request", e)
-                onResult(false)
+                onResult(false)     // Notify that cancellation failed
             }
     }
 
     //Function that syncs the join request of a user with the AppliedUser of the trips
     fun syncAskedTripsWithAppliedUsers(userId: Int, onResult: (Boolean) -> Unit) {
+        // Fetch all trips from the Firestore collection
         Collections.trips
             .get()
             .addOnSuccessListener { querySnapshot ->
+                // Create a map of tripId to requestedSpots for trips where the user has applied
                 val askedMap = querySnapshot.documents.mapNotNull { doc ->
                     val trip = doc.toObject(Trip::class.java)
+                    // Get the number of spots requested by the current user (if any)
                     val requestedSpots =
                         trip?.appliedUsers?.get(userId.toString())?.requestedSpots ?: 0
+                    // Include in map only if the user has requested one or more spots
                     if (requestedSpots > 0 && trip != null) trip.id.toString() to requestedSpots else null
                 }.toMap()
+                // Update the local askedTrips state with the newly constructed map
                 _askedTrips.value = askedMap
                 onResult(true)
             }
             .addOnFailureListener { e ->
+                // Log and report failure if the Firestore read operation fails
                 Log.e("Firestore", "Failed to sync asked trips", e)
                 onResult(false)
             }
     }
 
+    // Firestore instance used throughout the class
     private val firestore = FirebaseFirestore.getInstance()
+
+    // Retrieves a trip document by its ID and returns the result via a callback
     fun getTripById(tripId: String, onResult: (Trip?) -> Unit) {
+        // Access the "trips" collection and fetch the document with the given tripId
         firestore.collection("trips").document(tripId)
             .get()
             .addOnSuccessListener { document ->
                 if (document.exists()) {
+                    // Convert the document to a Trip object if it exists
                     val trip = document.toObject(Trip::class.java)
                     onResult(trip)
                 } else {
+                    // If the document does not exist, return null
                     onResult(null)
                 }
             }
             .addOnFailureListener {
+                // Log any errors that occur while fetching the document
                 Log.e("TripModel", "Failed to fetch trip by ID", it)
+                // Return null in case of failure
                 onResult(null)
             }
     }
 
-    fun addActivityToTrip(activity: Activity, trip: Trip?): Trip {
-        val currentTrip = trip ?: Trip()
 
-        // 🔴 添加详细的调试日志
-        Log.d("TripModel", "=== Adding Activity ===")
-        Log.d("TripModel", "Activity: $activity")
-        Log.d("TripModel", "Activity date: ${activity.date.toDate()}")
-        Log.d("TripModel", "Current trip: ${currentTrip.id}")
-
-        val updatedActivities = currentTrip.activities.toMutableMap().apply {
-            val dateKey: String = activity.dateAsCalendar().toStringDate()//dateFormat.format(activity.date.toDate())
-            Log.d("TripModel", "Date key: $dateKey")
-
-            val existingActivities = getOrDefault(dateKey, emptyList())
-            val updatedList: List<Activity> = existingActivities + activity
-            put(dateKey, updatedList)
-
-            Log.d("TripModel", "Updated activities for $dateKey: ${updatedList.size} activities")
-        }
-
-        val updatedTrip = currentTrip.copy(activities = updatedActivities)
-
-        Log.d("TripModel", "Final trip activities: ${updatedTrip.activities}")
-
-        // 🔴 修复点20: 使用正确的Firestore引用
-        if (currentTrip.id > 0) {
-            FirebaseFirestore.getInstance()
-                .collection("trips")
-                .document(updatedTrip.id.toString())
-                .set(updatedTrip)
-                .addOnSuccessListener {
-                    Log.d("TripModel", "Activity saved to Firestore successfully")
-                }
-                .addOnFailureListener { e ->
-                    Log.e("TripModel", "Failed to save activity to Firestore", e)
-                }
-        }
-
-        return updatedTrip
-    }
 }
 
+// Creates a deep copy of a Trip instance to avoid shared references in mutable fields
 fun Trip.deepCopy(): Trip =
     this.copy(
+        // Deep copy of the activities map:
+        // For each date key, create a new list of copied Activity instances
         activities = this.activities.mapValues { (_, list) -> list.map { it.copy() } },
+        // Copy the typeTravel list to ensure it's a separate instance
         typeTravel = this.typeTravel.toList(),
+        // Create shallow copies of these maps (sufficient if their contents are immutable or not shared)
         participants = this.participants.toMap(),
         appliedUsers = this.appliedUsers.toMap(),
         rejectedUsers = this.rejectedUsers.toMap()
