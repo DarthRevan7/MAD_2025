@@ -37,9 +37,6 @@ import com.example.voyago.viewmodel.ArticleViewModel
 import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.firebase.auth.FirebaseAuth
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -103,12 +100,11 @@ fun UserProfileScreen(
                 )
 
                 ProfilePhoto(
-                    user!!,
-                    false,
                     Modifier
                         .align(Alignment.Center)
                         .offset(y = (-50).dp),
-                    uvm
+                    user!!,
+                    false
                 )
                 Text(
                     text = user!!.username,

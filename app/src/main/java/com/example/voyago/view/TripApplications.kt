@@ -246,7 +246,7 @@ fun ShowParticipants(
                 .size(30.dp)
                 .background(Color.Gray, shape = CircleShape)
         ) {
-            ProfilePhoto(user, true, Modifier, uvm)
+            ProfilePhoto(Modifier, user, true)
         }
 
         // Participant information
@@ -377,7 +377,7 @@ fun ShowApplications(
                 .size(30.dp)
                 .background(Color.Gray, shape = CircleShape)
         ) {
-            ProfilePhoto(user, true, Modifier, uvm)
+            ProfilePhoto(Modifier, user, true)
         }
         // User information
         Row(

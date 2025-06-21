@@ -1194,8 +1194,10 @@ fun ItineraryText(trip: Trip, modifier: Modifier = Modifier, vm: TripViewModel) 
 }
 
 @Composable
-fun DeleteMyTrip(trip: Trip, navController: NavController, vm: TripViewModel,
-                 uvm:UserViewModel) {
+fun DeleteMyTrip(
+    trip: Trip, navController: NavController, vm: TripViewModel,
+    uvm: UserViewModel
+) {
     val showDialog = remember { mutableStateOf(false) }
 
     //Delete Button
@@ -1398,7 +1400,7 @@ fun ShowReview(
                             .size(30.dp)
                             .background(Color.Gray, shape = CircleShape)
                     ) {
-                        ProfilePhoto(reviewer!!, true, Modifier, uvm)
+                        ProfilePhoto(Modifier, reviewer!!, true)
                         Log.d("R1", "Reviewer: ${reviewer?.id}")
                     }
 
@@ -1552,7 +1554,7 @@ fun ShowReview(
                             .size(30.dp)
                             .background(Color.Gray, shape = CircleShape)
                     ) {
-                        ProfilePhoto(reviewed!!, true, Modifier, uvm)
+                        ProfilePhoto(Modifier, reviewed!!, true)
                         Log.d("R1", "Reviewer: ${reviewed?.id}")
                     }
 

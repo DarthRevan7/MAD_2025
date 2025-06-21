@@ -330,7 +330,7 @@ fun MyReviews(
                                     .size(60.dp)
                                     .background(Color.Gray, shape = CircleShape)
                             ) {
-                                ProfilePhoto(user, true, Modifier, uvm)
+                                ProfilePhoto(Modifier, user, true)
                             }
                             Text(
                                 "${user.firstname} ${user.surname}",

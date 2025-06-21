@@ -76,7 +76,6 @@ import com.example.voyago.viewmodel.UserViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -176,12 +175,11 @@ fun MyProfileScreen(
                 )
 
                 ProfilePhoto(
-                    user,
-                    false,
                     modifier = Modifier
                         .align(Alignment.Center)
                         .offset(y = (-50).dp),
-                    uvm
+                    user,
+                    false
                 )
 
                 Text(
@@ -503,7 +501,7 @@ fun TabAboutTripsReview(
                             ) {
 
                                 articles.forEach { item ->
-                                    ShowUserArticle(item,navController)
+                                    ShowUserArticle(item, navController)
                                 }
                             }
                         }
@@ -665,6 +663,7 @@ fun ShowUserArticle(article: Article, navController: NavController) {
                             .clip(CircleShape)
                     )
                 }
+
                 article.photo.isNotEmpty() -> {
                     // 🔥 备用：尝试本地资源
                     val context = LocalContext.current
@@ -696,6 +695,7 @@ fun ShowUserArticle(article: Article, navController: NavController) {
                         )
                     }
                 }
+
                 else -> {
                     // 🔥 没有图片时显示占位图标
                     Icon(
@@ -762,7 +762,7 @@ fun ShowUserReview(review: Review, navController: NavController, uvm: UserViewMo
                         .size(30.dp)
                         .background(Color.Gray, shape = CircleShape)
                 ) {
-                    ProfilePhoto(reviewer!!, true, uvm = uvm, modifier = Modifier)
+                    ProfilePhoto(modifier = Modifier, reviewer!!, true)
                 }
                 Text(
                     text = "${reviewer!!.firstname} ${reviewer!!.surname}",

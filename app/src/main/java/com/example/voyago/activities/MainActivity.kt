@@ -137,7 +137,7 @@ import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
-
+// List of screens in the app, routing to different parts of the app
 sealed class Screen(val route: String) {
     object Explore : Screen("explore_root")
     object MyTrips : Screen("my_trips_root")
@@ -148,21 +148,26 @@ sealed class Screen(val route: String) {
     object Login : Screen("login_root")
 }
 
-fun createNewUser(
-    firebaseUser: FirebaseUser, newUser: User, onResult: (Boolean, User?) -> Unit
-) {
+// Function to create a new user in Firestore
+fun createNewUser(firebaseUser: FirebaseUser, newUser: User, onResult: (Boolean, User?) -> Unit) {
+    // Get Firestore instance and reference to the user counter document
     val firestore = com.google.firebase.Firebase.firestore
     val counterRef = firestore.collection("metadata").document("userCounter")
 
+    // Set the new user's email
     newUser.email = firebaseUser.email ?: ""
 
+    // Run a transaction to ensure atomicity when creating a new user
     firestore.runTransaction { transaction ->
+        // Get the current value of the user counter
         val snapshot = transaction.get(counterRef)
         val lastUserId = snapshot.getLong("lastUserId") ?: 0
+        // Increment the user ID and create a new user document
         val newUserId = lastUserId + 1
         transaction.update(counterRef, "lastUserId", newUserId)
         val userWithId = newUser.copy(id = newUserId.toInt())
         val userDocRef = firestore.collection("users").document(newUserId.toString())
+        // Set the user document with the new user ID
         transaction.set(userDocRef, userWithId)
         userWithId
     }.addOnSuccessListener { user ->
@@ -173,28 +178,37 @@ fun createNewUser(
 }
 
 class MainActivity : ComponentActivity() {
+    // Executor for camera operations
     private lateinit var cameraExecutor: ExecutorService
-
     private lateinit var context: Context
 
+    // Initialize Firebase and set up the main activity
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Call the superclass onCreate method
         super.onCreate(savedInstanceState)
 
+        // Initialize Firebase
         FirebaseApp.initializeApp(this)
 
+        // Initialize the UserViewModel with the UserFactory
         val viewModel: UserViewModel by viewModels { UserFactory }
 
+        // Handle deep link for email verification
         val data = intent?.data
         val mode = data?.getQueryParameter("mode")
         val oobCode = data?.getQueryParameter("oobCode")
 
+        // If the mode is "verifyEmail" and oobCode is not null, apply the action code
         if (mode == "verifyEmail" && oobCode != null) {
             FirebaseAuth.getInstance().applyActionCode(oobCode)
                 .addOnSuccessListener {
+                    // Get the current user and pending user from the ViewModel
                     val currentUser = FirebaseAuth.getInstance().currentUser
                     val pendingUser = viewModel.pendingUser
 
+                    // If the current user is not null, email is verified, and pending user exists,
                     if (currentUser != null && currentUser.isEmailVerified && pendingUser != null) {
+                        // Create a new user in Firestore
                         createNewUser(
                             firebaseUser = currentUser,
                             newUser = pendingUser,
@@ -206,6 +220,7 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                     } else {
+                        // If user data is missing or not verified, show a toast message
                         Toast.makeText(this, "User data missing or not verified", Toast.LENGTH_LONG)
                             .show()
                     }
@@ -216,12 +231,13 @@ class MainActivity : ComponentActivity() {
                 }
         }
 
+        // Enable edge-to-edge mode for the activity
+        // This allows the app to use the full screen, including the status bar and navigation bar
         enableEdgeToEdge()
         context = this
-
         cameraExecutor = Executors.newSingleThreadExecutor()
 
-
+        // Subscribe to the "all" topic for Firebase Cloud Messaging
         FirebaseMessaging.getInstance().subscribeToTopic("all")
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
@@ -231,31 +247,35 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-
         // Check for camera permissions
         if (!allPermissionsGranted()) {
             requestPermissions()
         }
 
+        // Set the content view with the main screen
         setContent {
             MainScreen(viewModel)
         }
 
     }
 
+    // Request camera permissions
     private fun requestPermissions() {
         activityResultLauncher.launch(REQUIRED_PERMISSIONS)
     }
 
+    // Check if all required permissions are granted
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(baseContext, it) == PackageManager.PERMISSION_GRANTED
     }
 
+    // Destroy the camera executor when the activity is destroyed
     override fun onDestroy() {
         super.onDestroy()
         cameraExecutor.shutdown()
     }
 
+    // Companion object to hold the required permissions
     companion object {
         @SuppressLint("ObsoleteSdkInt")
         private val REQUIRED_PERMISSIONS = mutableListOf(
@@ -268,6 +288,7 @@ class MainActivity : ComponentActivity() {
         }.toTypedArray()
     }
 
+    // Activity result launcher for handling permission requests
     private val activityResultLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
             val permissionGranted = permissions.entries.all {
@@ -279,14 +300,15 @@ class MainActivity : ComponentActivity() {
         }
 }
 
+// Composable function to display the main screen with a top bar and bottom navigation
 @Composable
 fun MainScreen(viewModel: UserViewModel) {
     val navController = rememberNavController()
     val notificationViewModel = NotificationViewModel()
     val userVerified by viewModel.userVerified.collectAsState()
 
+    // Observe user verification state and navigate to profile overview if verified
     LaunchedEffect(userVerified) {
-        //notificationViewModel.loadNotificationsForUser(viewModel.loggedUser.value.id.toString())
         if (userVerified) {
             navController.navigate("profile_overview") {
                 popUpTo(navController.graph.findStartDestination().id) {
@@ -299,6 +321,7 @@ fun MainScreen(viewModel: UserViewModel) {
         }
     }
 
+    // Set the main content with a Scaffold that includes a top bar and bottom navigation
     Scaffold(
         topBar = {
             TopBar(
@@ -313,8 +336,10 @@ fun MainScreen(viewModel: UserViewModel) {
     }
 }
 
+// Composable function to display the bottom navigation bar
 @Composable
 fun BottomBar(navController: NavHostController) {
+    // Define the navigation items for the bottom bar
     val items = listOf(
         NavItem("Explore", Icons.Filled.LocationOn, Screen.Explore.route, "explore_main"),
         NavItem("My Trips", Icons.Filled.Commute, Screen.MyTrips.route, "my_trips_main"),
@@ -323,10 +348,12 @@ fun BottomBar(navController: NavHostController) {
         NavItem("Profile", Icons.Filled.AccountCircle, Screen.Profile.route, "profile_overview")
     )
 
+    // Get the current back stack entry to determine the selected item
     NavigationBar {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentDestination = navBackStackEntry?.destination
 
+        // Create a navigation bar item for each item in the list
         items.forEach { item ->
             val selected = currentDestination
                 ?.hierarchy
@@ -337,6 +364,7 @@ fun BottomBar(navController: NavHostController) {
                 label = { Text(item.label) },
                 selected = selected,
                 onClick = {
+                    // Navigate to the selected route
                     if (item.label == "Home") {
                         navController.navigate(item.startRoute) {
                             popUpTo(navController.graph.findStartDestination().id) {
@@ -361,20 +389,136 @@ fun BottomBar(navController: NavHostController) {
     }
 }
 
+// Composable function to display the top app bar with logo,  notifications and articles
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TopBar(nvm: NotificationViewModel, navController: NavController, uvm: UserViewModel) {
+    val user by uvm.loggedUser.collectAsState()
+    val userId = user.id.toString()
+    val hasNewNotification by nvm.hasNewNotification
+    val context = LocalContext.current
 
+    // Load notifications for the user when the top bar is first composed
+    LaunchedEffect(userId) {
+        nvm.loadNotificationsForUser(context, userId)
+    }
+
+    //Top Bar Images (logo, news, notification)
+    val painterLogo = painterResource(R.drawable.logo)
+    val painterNews = painterResource(R.drawable.news)
+    val painterNotification = painterResource(R.drawable.notifications)
+
+    // Top App Bar with logo, news icon and notification icon
+    TopAppBar(
+        // Set the background color
+        colors = topAppBarColors(
+            containerColor = Color(0xe6, 0xe0, 0xe9, 255),
+            titleContentColor = MaterialTheme.colorScheme.primary,
+        ),
+        // Set the title with the logo
+        title = {
+            Image(
+                painter = painterLogo,
+                contentDescription = "logo",
+                modifier = Modifier.size(120.dp)
+            )
+        },
+        actions = {
+            // News Icon - Click to go to ArticleSearch
+            IconButton(onClick = {
+                // Navigate to the ArticleSearch page
+                navController.navigate("article_search")
+            }) {
+                Image(
+                    painter = painterNews,
+                    contentDescription = "news",
+                    modifier = Modifier.padding(end = 10.dp)
+                )
+            }
+
+            // Notification Icon - Click to mark notifications as read and navigate to Notifications screen
+            IconButton(
+                onClick = {
+                    // Mark notifications as read
+                    nvm.markNotificationsRead(userId)
+                    // Navigate to the Notifications screen
+                    navController.navigate(Screen.Notifications.route) {
+                        launchSingleTop = true // Prevents multiple instances of the same screen
+                    }
+                }
+            ) {
+                // Notification Icon with a red dot if there are new notifications
+                Box(
+                    modifier = Modifier
+                        .padding(top = 7.dp, end = 10.dp)
+                        .size(45.dp),
+                    contentAlignment = Alignment.TopEnd
+                ) {
+                    // Display the notification icon
+                    Image(
+                        painter = painterNotification,
+                        contentDescription = "notification"
+                    )
+                    // If there are new notifications, display a red dot
+                    if (hasNewNotification) {
+                        Box(
+                            modifier = Modifier
+                                .size(10.dp)
+                                .background(Color.Red, shape = CircleShape)
+                                .align(Alignment.TopEnd)
+                                .offset(x = (-2).dp, y = 2.dp)
+                                .zIndex(1f)
+                        )
+                    }
+                }
+            }
+        },
+        modifier = Modifier.shadow(8.dp)
+    )
+}
+
+// Composable function to require authentication before accessing certain screens
+@Composable
+fun RequireAuth(navController: NavController, content: @Composable () -> Unit) {
+    // Get the current context and Firebase user
+    val context = LocalContext.current
+    val currentUser = FirebaseAuth.getInstance().currentUser
+
+    // Check if the user is authenticated
+    if (currentUser != null) {
+        // If authenticated, display the content
+        content()
+    } else {
+        // If not authenticated, show a toast message and navigate to the login screen
+        LaunchedEffect(Unit) {
+            Toast.makeText(context, "Please log in to access this section", Toast.LENGTH_SHORT)
+                .show()
+            navController.navigate(Screen.Login.route)
+        }
+    }
+}
+
+// Composable function to set up the navigation graph for the app
 @Composable
 fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modifier) {
+    // Initialize Firebase Auth instance
     val auth = FirebaseAuth.getInstance()
+    // Initialize the start destination for the navigation graph
     val startDest = Screen.Home.route
 
+    // Create a NavHost with the NavController and start destination
     NavHost(navController = navController, startDestination = startDest, modifier = modifier) {
-
+        // Define the navigation graphs for different sections of the app
         exploreNavGraph(navController)
         myTripsNavGraph(navController)
         homeNavGraph(navController)
         chatsNavGraph(navController)
         profileNavGraph(navController)
         loginNavGraph(navController, auth)
+
+        // WE NEED TO ADD THE FOLLOWING ROUTES AND NAVIGATIONS GRAPH: NOTIFICATIONS, ARTICLE
+        // FROM THIS POINT, WE NEED TO RELOCATE STUFF
+
         // 添加全局的 article_search 路由，这样从任何地方都可以访问
         composable("article_search") {
             val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
@@ -444,24 +588,12 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
     }
 }
 
-@Composable
-fun RequireAuth(navController: NavController, content: @Composable () -> Unit) {
-    val context = LocalContext.current
-    val currentUser = FirebaseAuth.getInstance().currentUser
 
-    if (currentUser != null) {
-        content()
-    } else {
-        LaunchedEffect(Unit) {
-            Toast.makeText(context, "Please log in to access this section", Toast.LENGTH_SHORT)
-                .show()
-            navController.navigate(Screen.Login.route)
-        }
-    }
-}
-
+// Composable function to set up the navigation graph for the "Login" section
 fun NavGraphBuilder.loginNavGraph(navController: NavHostController, auth: FirebaseAuth) {
+    // Define the start destination for the login navigation graph
     navigation(startDestination = "login", route = Screen.Login.route) {
+        // Define the composable for the login screen
         composable("login") { entry ->
             val loginGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.Login.route)
@@ -472,9 +604,13 @@ fun NavGraphBuilder.loginNavGraph(navController: NavHostController, auth: Fireba
             )
             LoginScreen(navController = navController, auth = auth, uvm = userViewModel)
         }
+
+        // Define the composable for the retrieve password screen
         composable("retrieve_password") {
             RetrievePassword(navController = navController)
         }
+
+        // Define the composable for the registration screens
         composable("register") {
             CreateAccountScreen(navController)
         }
@@ -488,6 +624,8 @@ fun NavGraphBuilder.loginNavGraph(navController: NavHostController, auth: Fireba
             )
             CreateAccount2Screen(navController, userViewModel)
         }
+
+        // Define the composable for the registration verification email screen
         composable("register_verification_code") { entry ->
             val loginGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.Login.route)
@@ -499,6 +637,7 @@ fun NavGraphBuilder.loginNavGraph(navController: NavHostController, auth: Fireba
             RegistrationVerificationCodeScreen(navController, userViewModel)
         }
 
+        // Define the composable for the completion of profile for new users that did the sign in with google
         composable("complete_profile") { entry ->
             val loginGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.Login.route)
@@ -510,14 +649,18 @@ fun NavGraphBuilder.loginNavGraph(navController: NavHostController, auth: Fireba
             CompleteAccount(navController, uvm = userViewModel)
         }
 
+        // Define the composable for the retrieve password screen
         composable("retrieve_password") { entry ->
             RetrievePassword(navController)
         }
     }
 }
 
+// Composable function to set up the navigation graph for the "Explore" section
 fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
+    // Define the start destination for the explore navigation graph
     navigation(startDestination = "explore_main", route = Screen.Explore.route) {
+        // Define the composable for the explore main page
         composable("explore_main") { entry ->
             val exploreGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.Explore.route)
@@ -533,6 +676,7 @@ fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
             ExplorePage(navController = navController, vm = tripViewModel, userViewModel)
         }
 
+        // Define the composable for the trip details page
         composable("trip_details") { entry ->
             val exploreGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.Explore.route)
@@ -562,6 +706,8 @@ fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
                 nvm = notificationViewModel
             )
         }
+
+        // Why is this here? It is not used in the the explore section
         composable("article_search") {
             val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
             val userViewModel: UserViewModel = viewModel(factory = UserFactory)  // 添加这行
@@ -569,10 +715,11 @@ fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
             ArticleSearchScreen(
                 navController = navController,
                 articleViewModel = articleViewModel,
-                userViewModel = userViewModel  // 传递 userViewModel
+                userViewModel = userViewModel
             )
         }
 
+        // Define the composable to view a user's profile
         composable(
             "user_profile/{userId}",
             arguments = listOf(navArgument("userId") { type = NavType.IntType })
@@ -596,7 +743,6 @@ fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = ArticleFactory
             )
-
             val userId = entry.arguments?.getInt("userId") ?: 1
             UserProfileScreen(
                 navController = navController,
@@ -608,6 +754,7 @@ fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
             )
         }
 
+        // Define the composable for the filters selection page
         composable("filters_selection") { entry ->
             val exploreGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.Explore.route)
@@ -625,11 +772,13 @@ fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
     }
 }
 
-
+// Composable function to set up the navigation graph for the "My trips" section
 fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
-
+    // Define the start destination for the my trips navigation graph
     navigation(startDestination = "my_trips_main", route = Screen.MyTrips.route) {
+        // Define the composable for the main My Trips page
         composable("my_trips_main") { entry ->
+            // Require authentication before accessing the My Trips page
             RequireAuth(navController) {
                 val exploreGraphEntry = remember(entry) {
                     navController.getBackStackEntry(Screen.MyTrips.route)
@@ -647,14 +796,12 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
 
         }
 
-        composable(
-            "trip_details?owner={owner}",
-            arguments = listOf(
-                navArgument("owner") {
-                    type = NavType.BoolType
-                    defaultValue = false
-                }
-            )
+        // Define the composable for the trip details page with an owner parameter
+        composable("trip_details?owner={owner}", arguments = listOf(navArgument("owner") {
+            type = NavType.BoolType
+            defaultValue = false
+        }
+        )
         ) { entry ->
             val exploreGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.MyTrips.route)
@@ -1149,10 +1296,9 @@ fun NavGraphBuilder.profileNavGraph(
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun ProfilePhoto(
-    user: User,
-    small: Boolean = false,
     modifier: Modifier = Modifier,
-    uvm: UserViewModel
+    user: User,
+    small: Boolean = false
 ) {
     // 🔄 替代方案：直接使用 MutableState
     val profileImageUrl = remember { mutableStateOf<String?>(null) }
@@ -1203,84 +1349,6 @@ fun ProfilePhoto(
             }
         }
     }
-}
-
-// 在 MainActivity.kt 中修改 TopBar 组件
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TopBar(nvm: NotificationViewModel, navController: NavController, uvm: UserViewModel) {
-    val user by uvm.loggedUser.collectAsState()
-    val userId = user.id.toString()
-    val hasNewNotification by nvm.hasNewNotification
-    val context = LocalContext.current
-
-    LaunchedEffect(userId) {
-        nvm.loadNotificationsForUser(context, userId)
-    }
-
-    //Top Bar Images
-    val painterLogo = painterResource(R.drawable.logo)
-    val painterNews = painterResource(R.drawable.news)
-    val painterNotification = painterResource(R.drawable.notifications)
-
-    TopAppBar(
-        colors = topAppBarColors(
-            containerColor = Color(0xe6, 0xe0, 0xe9, 255),
-            titleContentColor = MaterialTheme.colorScheme.primary,
-        ),
-        title = {
-            Image(
-                painter = painterLogo,
-                contentDescription = "logo",
-                modifier = Modifier.size(120.dp)
-            )
-        },
-        actions = {
-            // News Icon - 点击跳转到 ArticleSearch
-            IconButton(onClick = {
-                // 导航到 ArticleSearch 页面
-                navController.navigate("article_search")
-            }) {
-                Image(
-                    painter = painterNews,
-                    contentDescription = "news",
-                    modifier = Modifier.padding(end = 10.dp)
-                )
-            }
-
-            // Notification Icon
-            IconButton(onClick = {
-                nvm.markNotificationsRead(userId)
-                navController.navigate(Screen.Notifications.route) {
-                    launchSingleTop = true // Prevents multiple instances of the same screen
-                }
-            }) {
-                Box(
-                    modifier = Modifier
-                        .padding(top = 7.dp, end = 10.dp)
-                        .size(45.dp),
-                    contentAlignment = Alignment.TopEnd
-                ) {
-                    Image(
-                        painter = painterNotification,
-                        contentDescription = "notification"
-                    )
-                    if (hasNewNotification) {
-                        Box(
-                            modifier = Modifier
-                                .size(10.dp)
-                                .background(Color.Red, shape = CircleShape)
-                                .align(Alignment.TopEnd)
-                                .offset(x = (-2).dp, y = 2.dp)
-                                .zIndex(1f)
-                        )
-                    }
-                }
-            }
-        },
-        modifier = Modifier.shadow(8.dp)
-    )
 }
 
 @SuppressLint("ObsoleteSdkInt")
