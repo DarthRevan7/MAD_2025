@@ -709,17 +709,17 @@ class TripModel {
     //Function that returns the list of all the destinations present in the database
     // Uses callbackFlow to bridge Firestore's snapshot listener with Kotlin Flow.
     fun getDestinations(): Flow<List<String>> = callbackFlow {
-        // The function sets up a real-time listener on the "trips" collection
+        // Set up a Firestore listener on the "trips" collection filtering published trips only
         val listener = Collections.trips
             .whereEqualTo("published", true)        // Filter for trips where published is true
-            //Whenever data changes, it extracts the "destination" field from
-            // each document, removes duplicates, and emits the list of destinations.
             .addSnapshotListener { snapshot, error ->
                 if (snapshot != null) {
+                    // Extract the "destination" field from each document and remove duplicates
                     val destinations = snapshot.documents
                         .mapNotNull { it.getString("destination") }
                         .distinct()
 
+                    // Send the list of destinations downstream through the flow
                     trySend(destinations).onFailure {
                         Log.e("Firestore", "Failed to send destinations", it)
                     }
@@ -729,7 +729,7 @@ class TripModel {
                     trySend(emptyList())
                 }
             }
-        // Remove the listener when the flow is closed or cancelled
+        // Clean up listener when the flow is closed or cancelled
         awaitClose { listener.remove() }
     }
 
@@ -739,12 +739,18 @@ class TripModel {
 
     suspend fun setMaxMinPrice() {
         try {
+            // Fetch all documents from the "trips" collection in Firestore
             val snapshot = Collections.trips.get().await()
+
+            // Convert Firestore documents to a list of Trip objects
             val trips = snapshot.toObjects(Trip::class.java)
 
+            // Find the minimum estimated price among all trips or use Double.MAX_VALUE if the list is empty
             minPrice = trips.minOfOrNull { it.estimatedPrice } ?: Double.MAX_VALUE
+            // Find the maximum estimated price among all trips or use Double.MIN_VALUE if the list is empty
             maxPrice = trips.maxOfOrNull { it.estimatedPrice } ?: Double.MIN_VALUE
         } catch (e: Exception) {
+            // If an error occurs while fetching or processing the data, log it and set fallback values
             Log.e("Firestore", "Failed to fetch trips for min/max price", e)
             minPrice = Double.MAX_VALUE
             maxPrice = Double.MIN_VALUE
@@ -753,60 +759,75 @@ class TripModel {
 
     //Function that sets the Range of the Price slider
     fun setRange(list: List<SelectableItem>): Pair<Int, Int> {
+        // Initialize min and max with extreme values
         var min = Int.MAX_VALUE
         var max = Int.MIN_VALUE
 
+        // Iterate through the list of SelectableItem
         list.forEach { item ->
             if (item.isSelected) {
+                // Update min if the item's min is smaller than current min
                 if (item.min < min) {
                     min = item.min
                 }
+                // Update max if the item's max is larger than current max
                 if (item.max > max) {
                     max = item.max
                 }
             }
         }
 
+        // If no items were selected, return (-1, -1) as a default "not set" value
         if (min == Int.MAX_VALUE && max == Int.MIN_VALUE) {
             min = -1
             max = -1
         }
+
+        // Return the calculated min and max range as a Pair
         return Pair(min, max)
     }
 
     //Function that returns the list of completed Trips
     fun getCompletedTrips(): Flow<List<Trip>> = callbackFlow {
+        // Set up a Firestore listener for trips with status "COMPLETED"
         val listener = Collections.trips
             .whereEqualTo("status", "COMPLETED")
             .addSnapshotListener { snapshot, error ->
                 if (snapshot != null) {
+                    // If the snapshot is valid, convert documents to Trip objects and send them through the flow
                     trySend(snapshot.toObjects(Trip::class.java)).onFailure {
                         Log.e("Firestore", "Send failed", it)
                     }
                 } else {
+                    // If there's an error with the listener, log it and send an empty list
                     Log.e("Firestore", "Listener error", error)
                     trySend(emptyList())
                 }
             }
 
+        // Clean up the listener when the flow collector is cancelled
         awaitClose { listener.remove() }
     }
 
     //Function that return the list of Upcoming Trips
     fun getUpcomingTrips(): Flow<List<Trip>> = callbackFlow {
+        // Create a Firestore snapshot listener for trips with status "NOT_STARTED"
         val listener = Collections.trips
-            .whereEqualTo("status", "NOT_STARTED")
+            .whereEqualTo("status", "NOT_STARTED")      // Filter trips that haven't started yet
             .addSnapshotListener { snapshot, error ->
                 if (snapshot != null) {
+                    // Convert the snapshot documents to a list of Trip objects and send it to the flow
                     trySend(snapshot.toObjects(Trip::class.java)).onFailure {
                         Log.e("Firestore", "Send failed", it)
                     }
                 } else {
+                    // If there's an error fetching the snapshot, log the error and send an empty list
                     Log.e("Firestore", "Listener error", error)
                     trySend(emptyList())
                 }
             }
 
+        // Automatically remove the listener when the flow is closed to prevent memory leaks
         awaitClose { listener.remove() }
     }
 
@@ -814,28 +835,34 @@ class TripModel {
 
     //Function that creates a new Trip
     fun createNewTrip(newTrip: Trip, onResult: (Boolean, Trip?) -> Unit) {
+        // Get Firestore instance and reference to the trip counter document
         val firestore = Firebase.firestore
         val counterRef = firestore.collection("metadata").document("tripCounter")
 
+        // Use a Firestore transaction to safely increment the trip ID and create a new trip
         firestore.runTransaction { transaction ->
+            // Retrieve the current trip counter
             val snapshot = transaction.get(counterRef)
             val lastTripId = snapshot.getLong("lastTripId") ?: 0
             val newTripId = lastTripId + 1
 
-            // Set the new ID back to the counter document
+            // Update the counter document with the new trip ID
             transaction.update(counterRef, "lastTripId", newTripId)
 
-            // Create the trip with the new ID
+            // Create a new Trip object with the generated ID
             val tripWithId = newTrip.copy(id = newTripId.toInt())
 
-            // Create a new document in the trips collection
+            // Create a new document in the "trips" collection using the new trip ID
             val tripDocRef = firestore.collection("trips").document(newTripId.toString())
             transaction.set(tripDocRef, tripWithId)
 
+            // Return the created trip from the transaction
             tripWithId
         }.addOnSuccessListener { trip ->
+            // If transaction succeeds, return the created trip via callback
             onResult(true, trip)
         }.addOnFailureListener { e ->
+            // If transaction fails, log the error and notify the caller
             Log.e("Firestore", "Failed to create trip", e)
             onResult(false, null)
         }
@@ -849,30 +876,33 @@ class TripModel {
         activities: Map<String, List<Activity>>, typeTravel: List<String>, creatorId: Int,
         published: Boolean, onResult: (Boolean, Trip?) -> Unit
     ) {
+        // Get Firestore instance and reference to the trip counter document
         val firestore = Firebase.firestore
         val counterRef = firestore.collection("metadata").document("tripCounter")
 
         firestore.runTransaction { transaction ->
-            //Get and increment trip ID counter
+            // Retrieve the current trip ID counter and increment it
             val snapshot = transaction.get(counterRef)
             val lastTripId = snapshot.getLong("lastTripId") ?: 0
             val newTripId = lastTripId + 1
             transaction.update(counterRef, "lastTripId", newTripId)
 
-            //Create new Firestore doc reference
+            // Create a new Firestore document reference using the new trip ID
             val docRef = firestore.collection("trips").document(newTripId.toString())
 
-            //Build Trip object with new ID
+            // Construct the Trip object with all the provided and default fields
             val newTrip = Trip(
                 id = newTripId.toInt(),
-                photo = photo ?: "",  // 添加 photo 字段
+                photo = photo
+                    ?: "",                        // If no photo is provided, use an empty string
                 title = title,
                 destination = destination,
-                startDate = Timestamp(startDate.time),
-                endDate = Timestamp(endDate.time),
+                startDate = Timestamp(startDate.time),  // Convert Calendar to Timestamp
+                endDate = Timestamp(endDate.time),      // Convert Calendar to Timestamp
                 estimatedPrice = estimatedPrice,
                 groupSize = groupSize,
                 participants = mapOf(
+                    // Initialize participants with the creator
                     creatorId.toString() to Trip.JoinRequest(
                         userId = creatorId,
                         requestedSpots = 1,
@@ -881,21 +911,23 @@ class TripModel {
                     )
                 ),
                 activities = activities,
-                status = TripStatus.NOT_STARTED.toString(),
+                status = TripStatus.NOT_STARTED.toString(),     // Default status when importing
                 typeTravel = typeTravel,
                 creatorId = creatorId,
                 appliedUsers = emptyMap(),
                 rejectedUsers = emptyMap(),
                 published = published,
-                isDraft = true  // 设置为草稿
+                isDraft = true          // Mark as a draft (used for imported but unpublished trips)
             )
 
-            //Save to Firestore
+            // Save the new trip to Firestore in the transaction
             transaction.set(docRef, newTrip)
             newTrip
         }.addOnSuccessListener { trip ->
+            // Call the result callback with success and the created trip
             onResult(true, trip)
         }.addOnFailureListener { e ->
+            // Log error and return failure through the callback
             Log.e("Firestore", "Failed to import trip", e)
             onResult(false, null)
         }
@@ -906,15 +938,19 @@ class TripModel {
 
     //Functions that edits the information of a specific Trip
     fun editTrip(updatedTrip: Trip, onResult: (Boolean) -> Unit) {
-        val docId = updatedTrip.id.toString() // Assumes Firestore document ID
+        // Convert the trip ID to a string to match the Firestore document ID format
+        val docId = updatedTrip.id.toString()
 
+        // Access the "trips" collection and update the document with the given ID
         Collections.trips
             .document(docId)
-            .set(updatedTrip)
+            .set(updatedTrip)           // Overwrites the document with the new trip data
             .addOnSuccessListener {
+                // If successful, return true through the callback
                 onResult(true)
             }
             .addOnFailureListener { e ->
+                // If there's an error, log it and return false through the callback
                 Log.e("Firestore", "Failed to update trip", e)
                 onResult(false)
             }
@@ -922,28 +958,36 @@ class TripModel {
 
     //Function that changes the Published status of a specific Trip
     fun changePublishedStatus(id: Int, onResult: (Boolean) -> Unit) {
+        // Convert trip ID to string to match Firestore document ID
         val docId = id.toString()
 
+        // Reference the specific trip document
         val tripDocRef = Collections.trips.document(docId)
 
-        // Get current trip to toggle the published status
+        // Fetch the current trip data to toggle the published status
         tripDocRef.get()
             .addOnSuccessListener { snapshot ->
+                // Convert snapshot to Trip object
                 val trip = snapshot.toObject(Trip::class.java)
                 if (trip != null) {
+                    // Toggle the current published value
                     val updatedPublished = !trip.published
+
+                    // Update the "published" field in Firestore
                     tripDocRef.update("published", updatedPublished)
-                        .addOnSuccessListener { onResult(true) }
+                        .addOnSuccessListener { onResult(true) }    // Notify success
                         .addOnFailureListener {
                             Log.e("Firestore", "Failed to update published status", it)
-                            onResult(false)
+                            onResult(false)     // Notify failure if update fails
                         }
                 } else {
+                    // Trip does not exist in the database
                     Log.e("Firestore", "Trip not found for ID: $id")
                     onResult(false)
                 }
             }
             .addOnFailureListener {
+                // Failed to retrieve trip document
                 Log.e("Firestore", "Failed to fetch trip for ID: $id", it)
                 onResult(false)
             }

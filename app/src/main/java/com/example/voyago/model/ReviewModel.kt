@@ -356,8 +356,8 @@ class ReviewModel {
 
     // Creates a new review in Firestore with a unique incrementing ID.
     fun createReview(review: Review, onResult: (Boolean, Review?) -> Unit) {
+        // Get Firestore instance and reference to the review counter document
         val firestore = Firebase.firestore
-        // Reference to a special document that stores metadata like the last used review ID
         val counterRef = firestore.collection("metadata").document("reviewCounter")
 
         // Start a Firestore transaction to ensure atomic read/write of the ID counter and review creation
