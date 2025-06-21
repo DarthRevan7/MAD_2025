@@ -23,7 +23,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-
+import com.example.voyago.toCalendar
 
 //Function that converts a Long in a Calendar
 fun toCalendar(timeDate: Timestamp): Calendar {
@@ -224,8 +224,8 @@ data class Trip(
                         Calendar.DAY_OF_YEAR
                     )
                 } else {
-                    stringToCalendar(activityDate).get(Calendar.YEAR) == current.get(Calendar.YEAR) &&
-                            stringToCalendar(activityDate).get(Calendar.DAY_OF_YEAR) == current.get(
+                    activityDate.toCalendar().get(Calendar.YEAR) == current.get(Calendar.YEAR) &&
+                            activityDate.toCalendar().get(Calendar.DAY_OF_YEAR) == current.get(
                         Calendar.DAY_OF_YEAR
                     )
 
@@ -256,16 +256,6 @@ data class Trip(
             )
             .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { onFailure(it) }
-    }
-}
-
-fun stringToCalendar(string: String): Calendar {
-    val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-    val date = formatter.parse(string)
-    return Calendar.getInstance().apply {
-        if (date != null) {
-            time = date
-        }
     }
 }
 

@@ -86,8 +86,8 @@ import com.example.voyago.model.Trip.JoinRequest
 import com.example.voyago.model.Trip.Participant
 import com.example.voyago.model.User
 import com.example.voyago.model.isTimestampLong
-import com.example.voyago.model.stringToCalendar
 import com.example.voyago.model.timestampToCalendar
+import com.example.voyago.toCalendar
 import com.example.voyago.viewmodel.NotificationViewModel
 import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.TripViewModel
@@ -1161,7 +1161,7 @@ fun ItineraryText(trip: Trip, modifier: Modifier = Modifier, vm: TripViewModel) 
                 timestampToCalendar(day).daysUntil(trip.startDateAsCalendar()) + 1
             } else {
                 Log.d("L1", "Day is a string: $day")
-                stringToCalendar(day).daysUntil(trip.startDateAsCalendar()) + 1
+                day.toCalendar().daysUntil(trip.startDateAsCalendar()) + 1
             }
             val dayHeader = "Day $dayIndex:\n"
 

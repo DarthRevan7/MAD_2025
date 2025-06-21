@@ -43,8 +43,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.clickable
 import com.example.voyago.model.deepCopy
 import com.example.voyago.model.isTimestampLong
-import com.example.voyago.model.stringToCalendar
 import com.example.voyago.model.timestampToCalendar
+import com.example.voyago.toCalendar
 import com.example.voyago.viewmodel.TripViewModel
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
@@ -252,10 +252,9 @@ fun ActivitiesListContent(trip: Trip?, vm: TripViewModel, navController: NavCont
         return
     }
 
-        val dateFormat = SimpleDateFormat(KEY_DATE_FORMAT, Locale.US)
+       val dateFormat = SimpleDateFormat(KEY_DATE_FORMAT, Locale.US)
        val sortedDays = trip.activities.keys.sortedBy { key ->
-               if (isTimestampLong(key)) key.toLong()
-                else parseActivityDate(key, dateFormat).timeInMillis
+               parseActivityDate(key).timeInMillis
             }
     val hasNoActivities = trip.activities.values.all { it.isEmpty() }
     var activityToDelete by rememberSaveable { mutableStateOf<Trip.Activity?>(null) }
@@ -300,7 +299,7 @@ fun ActivitiesListContent(trip: Trip?, vm: TripViewModel, navController: NavCont
                     timestampToCalendar(day)
                 } else {
                     Log.d("L1", "Day is a string: $day")
-                    stringToCalendar(day)
+                    day.toCalendar()
                 }
 
                 Log.d("L1", "Activity calendar: $activityCalendar")
@@ -436,7 +435,7 @@ private fun reallocateWithShorterInterval(
 
     originalActivities.forEach { (oldDateKey, activities) ->
         try {
-            val oldActivityDate = parseActivityDate(oldDateKey, dateFormat)
+            val oldActivityDate = parseActivityDate(oldDateKey)
 
             when {
                 // 活动在新范围内 - 计算相对位置并重新分配

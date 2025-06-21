@@ -59,10 +59,10 @@ import com.example.voyago.model.Trip
 import com.example.voyago.viewmodel.TripViewModel
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import com.example.voyago.toStringDate
 
 @Composable
 fun EditTrip(navController: NavController, vm: TripViewModel) {
@@ -601,12 +601,6 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
     }
 }
 
-// 扩展函数：Calendar转字符串
-fun Calendar.toStringDate(): String {
-    val format = SimpleDateFormat(KEY_DATE_FORMAT, Locale.getDefault())
-    return format.format(this.time)
-}
-
 @OptIn(ExperimentalGlideComposeApi::class)
 @SuppressLint("DiscouragedApi")
 @Composable
@@ -672,7 +666,7 @@ val KEY_DATE_FORMAT = "yyyy-MM-dd"
 // 智能活动重新分配函数
 fun smartReallocateActivities(vm: TripViewModel, oldStartCal: Calendar, oldEndCal: Calendar, newStartCal: Calendar, newEndCal: Calendar) {
     val currentTrip = vm.editTrip
-    val dateFormat = SimpleDateFormat(KEY_DATE_FORMAT, Locale.US)
+
 
     // 计算原始和新的日期间隔
     val oldIntervalDays = calculateDaysBetween(oldStartCal, oldEndCal)
@@ -686,19 +680,19 @@ fun smartReallocateActivities(vm: TripViewModel, oldStartCal: Calendar, oldEndCa
         // 情况1: 间隔相同 - 保留所有活动，只调整日期
         oldIntervalDays == newIntervalDays -> {
             Log.d("SmartReallocation", "Same interval - adjusting dates")
-            reallocateWithSameInterval(currentTrip.activities, oldStartCal, newStartCal, updatedActivities, dateFormat)
+            reallocateWithSameInterval(currentTrip.activities, oldStartCal, newStartCal, updatedActivities)
         }
 
         // 情况2: 间隔变长 - 调整活动日期到新范围，多余日期留空
         newIntervalDays > oldIntervalDays -> {
             Log.d("SmartReallocation", "Longer interval - adjusting to new range")
-            reallocateWithLongerInterval(currentTrip.activities, oldStartCal, newStartCal, updatedActivities, dateFormat)
+            reallocateWithLongerInterval(currentTrip.activities, oldStartCal, newStartCal, updatedActivities)
         }
 
         // 情况3: 间隔变短 - 提供选择：删除超出活动 或 重新分配到边界日期
         newIntervalDays < oldIntervalDays -> {
             Log.d("SmartReallocation", "Shorter interval - reallocating overflow activities")
-            reallocateWithShorterInterval(currentTrip.activities, oldStartCal, newStartCal, newEndCal, updatedActivities, dateFormat)
+            reallocateWithShorterInterval(currentTrip.activities, oldStartCal, newStartCal, newEndCal, updatedActivities)
         }
     }
 
@@ -739,20 +733,19 @@ private fun reallocateWithSameInterval(
     originalActivities: Map<String, List<Trip.Activity>>,
     oldStartCal: Calendar,
     newStartCal: Calendar,
-    updatedActivities: MutableMap<String, List<Trip.Activity>>,
-    dateFormat: SimpleDateFormat
+    updatedActivities: MutableMap<String, List<Trip.Activity>>
 ) {
     val dayOffset = calculateDaysBetween(oldStartCal, newStartCal) - 1
 
     originalActivities.forEach { (oldDateKey, activities) ->
         try {
-            val oldActivityDate = parseActivityDate(oldDateKey, dateFormat)
+            val oldActivityDate = parseActivityDate(oldDateKey)
             val newActivityDate = Calendar.getInstance().apply {
                 timeInMillis = oldActivityDate.timeInMillis
                 add(Calendar.DAY_OF_MONTH, dayOffset)
             }
 
-            val newDateKey = dateFormat.format(newActivityDate.time)
+            val newDateKey = newActivityDate.toStringDate()
 
             val updatedActivityList = activities.map { activity ->
                 activity.copy(date = Timestamp(newActivityDate.time))
@@ -772,12 +765,11 @@ private fun reallocateWithLongerInterval(
     originalActivities: Map<String, List<Trip.Activity>>,
     oldStartCal: Calendar,
     newStartCal: Calendar,
-    updatedActivities: MutableMap<String, List<Trip.Activity>>,
-    dateFormat: SimpleDateFormat
+    updatedActivities: MutableMap<String, List<Trip.Activity>>
 ) {
     originalActivities.forEach { (oldDateKey, activities) ->
         try {
-            val oldActivityDate = parseActivityDate(oldDateKey, dateFormat)
+            val oldActivityDate = parseActivityDate(oldDateKey)
 
             // 计算在原始行程中的相对位置（第几天）
             val relativeDay = calculateDaysBetween(oldStartCal, oldActivityDate) - 1
@@ -788,7 +780,7 @@ private fun reallocateWithLongerInterval(
                 add(Calendar.DAY_OF_MONTH, relativeDay)
             }
 
-            val newDateKey = dateFormat.format(newActivityDate.time)
+            val newDateKey = newActivityDate.toStringDate()
 
             val updatedActivityList = activities.map { activity ->
                 activity.copy(date = Timestamp(newActivityDate.time))
@@ -819,7 +811,6 @@ fun isTimestampLong(dateKey: String): Boolean {
 // 删除超出范围的活动（破坏性操作）
 private fun deleteOverflowActivities(vm: TripViewModel, newStartCal: Calendar, newEndCal: Calendar) {
     val currentTrip = vm.editTrip
-    val dateFormat = SimpleDateFormat(KEY_DATE_FORMAT, Locale.US)
     val updatedActivities = mutableMapOf<String, List<Trip.Activity>>()
 
     val newStartDate = Calendar.getInstance().apply {
@@ -840,7 +831,7 @@ private fun deleteOverflowActivities(vm: TripViewModel, newStartCal: Calendar, n
 
     currentTrip.activities.forEach { (dateKey, activities) ->
         try {
-            val activityDate = parseActivityDate(dateKey, dateFormat)
+            val activityDate = parseActivityDate(dateKey)
 
             if (activityDate.timeInMillis >= newStartDate.timeInMillis &&
                 activityDate.timeInMillis <= newEndDate.timeInMillis) {
@@ -960,6 +951,62 @@ fun smartReallocateActivitiesDirectly(
     smartReallocateActivities(vm, oldStartCal, oldEndCal, newStartCal, newEndCal)
 }
 
+fun parseActivityDate(dateKey: String): Calendar {
+    return try {
+        when {
+            dateKey.toLongOrNull() != null && dateKey.length > 10 -> {
+                Calendar.getInstance().apply {
+                    timeInMillis = dateKey.toLong()
+                }
+            }
+            else -> {
+                parseDateManually(dateKey)
+            }
+        }
+    } catch (e: Exception) {
+        Log.e("DateParsing", "Errore nel parsing della data $dateKey: ${e.message}")
+        try {
+            parseDateManually(dateKey, "d/M/yyyy")
+        } catch (e2: Exception) {
+            Log.e("DateParsing", "Tutti i tentativi di parsing sono falliti per $dateKey")
+            Calendar.getInstance()
+        }
+    }
+}
+
+private fun parseDateManually(dateString: String, format: String = "YYYY-MM-DD"): Calendar {
+    val parts = dateString.split("-", "/")
+
+    if (parts.size != 3) {
+        throw IllegalArgumentException("Formato data non valido: $dateString")
+    }
+
+    return when (format) {
+        "YYYY-MM-DD" -> {
+            val anno = parts[0].toInt()
+            val mese = parts[1].toInt() - 1
+            val giorno = parts[2].toInt()
+
+            Calendar.getInstance().apply {
+                set(anno, mese, giorno)
+            }
+        }
+        "d/M/yyyy" -> {
+            val giorno = parts[0].toInt()
+            val mese = parts[1].toInt() - 1
+            val anno = parts[2].toInt()
+
+            Calendar.getInstance().apply {
+                set(anno, mese, giorno)
+            }
+        }
+        else -> {
+            throw IllegalArgumentException("Formato di parsing non supportato: $format")
+        }
+    }
+}
+
+/*
 // 修改 parseActivityDate 函数以更好地处理日期
 fun parseActivityDate(dateKey: String, dateFormat: SimpleDateFormat): Calendar {
     return try {
@@ -998,15 +1045,14 @@ fun parseActivityDate(dateKey: String, dateFormat: SimpleDateFormat): Calendar {
         }
     }
 }
-
+*/
 // 更新的 reallocateWithShorterInterval 函数
 private fun reallocateWithShorterInterval(
     originalActivities: Map<String, List<Trip.Activity>>,
     oldStartCal: Calendar,
     newStartCal: Calendar,
     newEndCal: Calendar,
-    updatedActivities: MutableMap<String, List<Trip.Activity>>,
-    dateFormat: SimpleDateFormat
+    updatedActivities: MutableMap<String, List<Trip.Activity>>
 ) {
     Log.d("SmartReallocation", "=== Shorter Interval Reallocation ===")
 
@@ -1048,7 +1094,7 @@ private fun reallocateWithShorterInterval(
     // 处理每个原始活动
     originalActivities.forEach { (oldDateKey, activities) ->
         try {
-            val activityDate = parseActivityDate(oldDateKey, dateFormat)
+            val activityDate = parseActivityDate(oldDateKey)
 
             // 标准化活动日期
             val normalizedActivityDate = Calendar.getInstance().apply {
@@ -1099,7 +1145,7 @@ private fun reallocateWithShorterInterval(
             set(Calendar.MILLISECOND, 0)
         }
 
-        val newDateKey = dateFormat.format(newDate.time)
+        val newDateKey = newDate.toStringDate()
 
         val updatedActivityList = activities.map { activity ->
             activity.copy(date = Timestamp(newDate.time))
@@ -1113,7 +1159,7 @@ private fun reallocateWithShorterInterval(
 
     // 将溢出活动添加到最后一天
     if (overflowActivities.isNotEmpty()) {
-        val lastDayKey = dateFormat.format(newEnd.time)
+        val lastDayKey = newEnd.toStringDate()
 
         val overflowWithNewDate = overflowActivities.map { activity ->
             activity.copy(date = Timestamp(newEnd.time))

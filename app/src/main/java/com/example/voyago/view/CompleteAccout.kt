@@ -56,7 +56,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.voyago.model.TypeTravel
 import com.example.voyago.model.User
-import com.example.voyago.model.stringToCalendar
+import com.example.voyago.toCalendar
 import com.example.voyago.viewmodel.UserViewModel
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -464,7 +464,7 @@ fun CompleteAccount(
                         username = username,
                         email = uvm.account?.email.toString(),
                         userDescription = "",
-                        dateOfBirth = Timestamp(stringToCalendar(dateOfBirth).time),
+                        dateOfBirth = Timestamp(dateOfBirth.toCalendar().time),
                         password = "",
                         profilePictureUrl = uvm.account?.photoUrl?.toString(),
                         typeTravel = selectedTravelTypes.map { TypeTravel.valueOf(it) },
@@ -484,7 +484,7 @@ fun CompleteAccount(
                             username = username,
                             email = uvm.account?.email.toString(),
                             userDescription = "",
-                            dateOfBirth = Timestamp(stringToCalendar(dateOfBirth).time),
+                            dateOfBirth = Timestamp(dateOfBirth.toCalendar().time),
                             password = "",
                             profilePictureUrl = uvm.account?.photoUrl?.toString(),
                             typeTravel = selectedTravelTypes.map { TypeTravel.valueOf(it) },
