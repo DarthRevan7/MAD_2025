@@ -43,7 +43,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.voyago.model.Trip
-import java.text.SimpleDateFormat
+import com.example.voyago.parseAndSetTime
+import com.example.voyago.toCalendar
+import com.example.voyago.toStringDate
 import java.util.Calendar
 import java.util.Locale
 import com.example.voyago.viewmodel.TripViewModel
@@ -90,20 +92,19 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
 
                 when {
                     selectedTrip.startDate.seconds > 0 -> {
-                        val date = selectedTrip.startDate.toDate()
-                        val formatted = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(date)
+                        val formatted = toCalendar(selectedTrip.startDate).toStringDate()
                         Log.d("NewActivity", "Using trip start date: $formatted")
                         formatted
                     }
                     else -> {
-                        val currentDate = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
+                        val currentDate = Calendar.getInstance().toStringDate()
                         Log.d("NewActivity", "Using current date: $currentDate")
                         currentDate
                     }
                 }
             } catch (e: Exception) {
                 Log.e("NewActivity", "Error computing default date", e)
-                SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
+                Calendar.getInstance().toStringDate()
             }
         }
     }
@@ -256,8 +257,7 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                                     Log.d("NewActivity", "Date selected: $activityDate")
                                 } else {
                                     showDateError = true
-                                    val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                                    dateErrorMessage = "Activity date must be within the trip period \n(${dateFormat.format(tripStartCal.time)} - ${dateFormat.format(tripEndCal.time)})"
+                                    dateErrorMessage = "Activity date must be within the trip period \n(${tripStartCal.toStringDate()} - ${tripEndCal.toStringDate()})"
                                     Log.w("NewActivity", "Invalid date selected: $activityDate")
                                 }
                             } catch (e: Exception) {
@@ -329,10 +329,8 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                     // 🔴 修复点11: 增强时间解析错误处理
                     val (currentHour, currentMinute) = remember {
                         try {
-                            val sdf = SimpleDateFormat("hh:mm a", Locale.US)
-                            val time = sdf.parse(selectedTime)
                             val cal = Calendar.getInstance()
-                            cal.time = time ?: Date()
+                            cal.time = parseAndSetTime(cal, selectedTime).time
                             Pair(cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE))
                         } catch (e: Exception) {
                             Log.e("NewActivity", "Error parsing time", e)
@@ -424,11 +422,8 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                             Log.d("NewActivity", "Trip end: ${selectedTrip.endDate.toDate()}")
 
                             // 🔴 修复点13: 增强日期解析和验证
-                            val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
                             val parsedDate = try {
-                                val date = dateFormat.parse(activityDate)
-                                Log.d("NewActivity", "Parsed date: $date")
-                                date
+                                activityDate.toCalendar()
                             } catch (e: Exception) {
                                 Log.e("NewActivity", "Date parsing failed: $activityDate", e)
                                 null
@@ -440,13 +435,14 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                                 return@Button
                             }
 
-                            val activityCalendar = Calendar.getInstance().apply {
-                                time = parsedDate
-                                set(Calendar.HOUR_OF_DAY, 0)
-                                set(Calendar.MINUTE, 0)
-                                set(Calendar.SECOND, 0)
-                                set(Calendar.MILLISECOND, 0)
-                            }
+                            val activityCalendar = parsedDate
+//                            Calendar.getInstance().apply {
+//                                time = parsedDate.time
+//                                set(Calendar.HOUR_OF_DAY, 0)
+//                                set(Calendar.MINUTE, 0)
+//                                set(Calendar.SECOND, 0)
+//                                set(Calendar.MILLISECOND, 0)
+//                            }
 
                             Log.d("NewActivity", "Activity calendar: ${activityCalendar.time}")
 

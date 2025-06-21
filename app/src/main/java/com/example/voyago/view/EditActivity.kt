@@ -47,7 +47,6 @@ import com.example.voyago.viewmodel.TripViewModel
 import com.google.firebase.Timestamp
 import java.util.Calendar
 import java.util.Locale
-import java.text.SimpleDateFormat
 
 
 

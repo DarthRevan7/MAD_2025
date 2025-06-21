@@ -42,12 +42,10 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.clickable
 import com.example.voyago.model.deepCopy
-import com.example.voyago.model.isTimestampLong
-import com.example.voyago.model.timestampToCalendar
 import com.example.voyago.toCalendar
+import com.example.voyago.toStringDate
 import com.example.voyago.viewmodel.TripViewModel
 import com.google.firebase.Timestamp
-import java.text.SimpleDateFormat
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
@@ -252,7 +250,6 @@ fun ActivitiesListContent(trip: Trip?, vm: TripViewModel, navController: NavCont
         return
     }
 
-       val dateFormat = SimpleDateFormat(KEY_DATE_FORMAT, Locale.US)
        val sortedDays = trip.activities.keys.sortedBy { key ->
            val calendar = key.toCalendar()
            // Zeroing hours
@@ -411,8 +408,7 @@ private fun reallocateWithShorterInterval(
     oldStartCal: Calendar,
     newStartCal: Calendar,
     newEndCal: Calendar,
-    updatedActivities: MutableMap<String, List<Trip.Activity>>,
-    dateFormat: SimpleDateFormat
+    updatedActivities: MutableMap<String, List<Trip.Activity>>
 ) {
     val newStartDate = Calendar.getInstance().apply {
         timeInMillis = newStartCal.timeInMillis
@@ -430,7 +426,7 @@ private fun reallocateWithShorterInterval(
         set(Calendar.MILLISECOND, 999)
     }
 
-    val lastDayKey = dateFormat.format(newEndDate.time)
+    val lastDayKey = newEndDate.toStringDate()
     val activitiesToLastDay = mutableListOf<Trip.Activity>()
 
     originalActivities.forEach { (oldDateKey, activities) ->
@@ -448,7 +444,7 @@ private fun reallocateWithShorterInterval(
                         add(Calendar.DAY_OF_MONTH, minOf(relativeDay, calculateDaysBetween(newStartCal, newEndCal) - 1))
                     }
 
-                    val newDateKey = dateFormat.format(newActivityDate.time)
+                    val newDateKey = newActivityDate.toStringDate()
                     val updatedActivityList = activities.map { activity ->
                         // 🔴 确保活动的日期也正确更新
                         activity.copy(date = Timestamp(newActivityDate.time))
