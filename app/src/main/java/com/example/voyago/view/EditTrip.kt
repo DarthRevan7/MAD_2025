@@ -58,10 +58,7 @@ import com.bumptech.glide.integration.compose.GlideImage
 import com.example.voyago.model.Trip
 import com.example.voyago.viewmodel.TripViewModel
 import com.google.firebase.Timestamp
-import kotlinx.coroutines.launch
 import java.util.Calendar
-import java.util.Date
-import java.util.Locale
 import com.example.voyago.toStringDate
 
 @Composable

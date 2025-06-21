@@ -21,7 +21,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.Calendar
 import java.util.Date
-import java.util.Locale
 import com.example.voyago.toCalendar
 import com.example.voyago.toStringDate
 

@@ -198,7 +198,7 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                                 time = selectedTrip.startDate.toDate()
                                 Log.d("NewActivity", "Initial calendar set to trip start: $time")
                             } else {
-                                time = Date()
+                                time = Date(0)
                                 Log.d("NewActivity", "Initial calendar set to current: $time")
                             }
                         } catch (e: Exception) {
