@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 
+// Article data structure
 data class Article(
     val id: Int? = null,
     var title: String? = null,
@@ -169,9 +170,8 @@ fun parseArticles(snapshot: QuerySnapshot): List<Article> {
     }
 }
 
-
+// Article model
 class TheArticlesModel {
-
     fun getArticles(): Flow<List<Article>> = callbackFlow {
         Log.d("TheArticlesModel", "🔥 Starting to listen for articles...")
 

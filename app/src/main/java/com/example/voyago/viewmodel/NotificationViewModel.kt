@@ -1,37 +1,28 @@
 package com.example.voyago.viewmodel
 
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
-import android.graphics.Color
 import android.os.Build
 import android.util.Log
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.voyago.R
-import com.example.voyago.model.NotificationItem
-import com.google.firebase.Firebase
+import com.example.voyago.model.NotificationModel
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
-import com.google.firebase.functions.functions
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 class NotificationViewModel : ViewModel() {
     private val _hasNewNotification = mutableStateOf(false)
     val hasNewNotification: State<Boolean> = _hasNewNotification
 
-    private val _notifications = mutableStateListOf<NotificationItem>()
-    val notifications: List<NotificationItem> = _notifications
+    private val _notifications = mutableStateListOf<NotificationModel>()
+    val notifications: List<NotificationModel> = _notifications
 
 
     fun markNotificationsRead(userId: String) {
@@ -83,7 +74,7 @@ class NotificationViewModel : ViewModel() {
                     _notifications.clear()
                     var hasUnread = false
                     for (doc in snapshots) {
-                        val notification = NotificationItem(
+                        val notification = NotificationModel(
                             title = doc.getString("title") ?: "",
                             body = doc.getString("body") ?: "",
                             type = doc.getString("type") ?: "",
@@ -98,7 +89,11 @@ class NotificationViewModel : ViewModel() {
                     val previousValue = _hasNewNotification.value
                     _hasNewNotification.value = hasUnread
                     if (hasUnread && !previousValue) {
-                        showLocalNotification(context, "New Voyago notification!", "Check out what's new.")
+                        showLocalNotification(
+                            context,
+                            "New Voyago notification!",
+                            "Check out what's new."
+                        )
                     }
                 }
             }
@@ -152,6 +147,7 @@ object NotificationFactory : ViewModelProvider.Factory {
             modelClass.isAssignableFrom(NotificationViewModel::class.java) -> {
                 NotificationViewModel() as T
             }
+
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         }
     }

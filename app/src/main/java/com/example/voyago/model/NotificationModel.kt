@@ -1,6 +1,7 @@
 package com.example.voyago.model
 
-data class NotificationItem(
+// Data Structure for Notification
+data class NotificationModel(
     val title: String = "",
     val body: String = "",
     val type: String = "",
