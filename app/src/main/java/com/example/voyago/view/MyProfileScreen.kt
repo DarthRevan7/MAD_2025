@@ -69,16 +69,18 @@ import com.example.voyago.model.Article
 import com.example.voyago.model.Review
 import com.example.voyago.model.Trip
 import com.example.voyago.model.User
+import com.example.voyago.toCalendar
+import com.example.voyago.toStringDate
 import com.example.voyago.viewmodel.ArticleViewModel
 import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Locale
+import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -552,10 +554,9 @@ fun TabAboutTripsReview(
 @SuppressLint("DiscouragedApi")
 @Composable
 fun ShowUserTrip(trip: Trip, vm: TripViewModel, navController: NavController) {
-    val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-    val formattedDate = dateFormat.format(trip.startDateAsLong())
+    val formattedDate = toCalendar(trip.startDate).toStringDate()
 
-    val context = LocalContext.current
+
     var imageUrl by remember { mutableStateOf<String?>(null) }
     val coroutineScope = rememberCoroutineScope()
     LaunchedEffect(trip.id) {
@@ -610,13 +611,11 @@ fun ShowUserTrip(trip: Trip, vm: TripViewModel, navController: NavController) {
 }
 
 // 修复 MyProfileScreen.kt 中的 ShowUserArticle 函数
-
 @OptIn(ExperimentalGlideComposeApi::class)
 @SuppressLint("DiscouragedApi")
 @Composable
 fun ShowUserArticle(article: Article, navController: NavController) {
-    val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
-    val formattedDate = dateFormat.format(article.date ?: 0L)
+    val formattedDate = toCalendar(Timestamp(Date(article.date!!)))         //Revamp this later
 
     // 🔥 用于获取第一张图片的状态
     var imageUrl by remember { mutableStateOf<String?>(null) }
@@ -728,7 +727,7 @@ fun ShowUserArticle(article: Article, navController: NavController) {
         }
 
         Text(
-            text = formattedDate,
+            text = formattedDate.toStringDate(),
             style = MaterialTheme.typography.bodySmall,
             textAlign = TextAlign.End
         )

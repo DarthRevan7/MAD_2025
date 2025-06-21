@@ -86,8 +86,9 @@ import com.example.voyago.model.Trip.JoinRequest
 import com.example.voyago.model.Trip.Participant
 import com.example.voyago.model.User
 import com.example.voyago.model.isTimestampLong
-import com.example.voyago.model.stringToCalendar
 import com.example.voyago.model.timestampToCalendar
+import com.example.voyago.toCalendar
+import com.example.voyago.toStringDate
 import com.example.voyago.viewmodel.NotificationViewModel
 import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.TripViewModel
@@ -96,7 +97,6 @@ import com.google.firebase.Timestamp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.Serializable
-import java.text.SimpleDateFormat
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
@@ -1089,9 +1089,8 @@ fun Hero(trip: Trip, vm: TripViewModel, loggedUser: User, import: Boolean = fals
 fun formatTripDate(calendar: Calendar): String {
     val day = calendar.get(Calendar.DAY_OF_MONTH)
     val suffix = getDayOfMonthSuffix(day)
-    val dateFormat = SimpleDateFormat("MMMM d'$suffix', yyyy", Locale.ENGLISH)
 
-    return dateFormat.format(calendar.time)
+    return calendar.toStringDate()
 }
 
 fun getDayOfMonthSuffix(day: Int): String {
@@ -1161,7 +1160,7 @@ fun ItineraryText(trip: Trip, modifier: Modifier = Modifier, vm: TripViewModel) 
                 timestampToCalendar(day).daysUntil(trip.startDateAsCalendar()) + 1
             } else {
                 Log.d("L1", "Day is a string: $day")
-                stringToCalendar(day).daysUntil(trip.startDateAsCalendar()) + 1
+                day.toCalendar().daysUntil(trip.startDateAsCalendar()) + 1
             }
             val dayHeader = "Day $dayIndex:\n"
 
