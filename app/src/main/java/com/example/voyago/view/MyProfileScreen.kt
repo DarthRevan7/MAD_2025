@@ -92,7 +92,7 @@ fun MyProfileScreen(
 ) {
     val context = LocalContext.current
 
-    //Get the logged in user (id=1)
+    //Get the logged in user
     val user by uvm.loggedUser.collectAsState()
     val rating = rvm.calculateRatingById(user.id).collectAsState(0.0f)
 

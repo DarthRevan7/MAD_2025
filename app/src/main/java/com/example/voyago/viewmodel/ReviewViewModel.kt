@@ -6,17 +6,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import com.example.voyago.model.*
-import com.google.android.play.core.integrity.v
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import com.example.voyago.model.Review
+import com.example.voyago.model.ReviewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 
 
-class ReviewViewModel(val reviewModel:ReviewModel): ViewModel() {
+class ReviewViewModel(val reviewModel: ReviewModel) : ViewModel() {
 
     fun addNewReview(newReview: Review, onResult: (Boolean, Review?) -> Unit) {
         reviewModel.createReview(newReview) { success, createdReview ->
@@ -57,7 +54,7 @@ class ReviewViewModel(val reviewModel:ReviewModel): ViewModel() {
 
     //Reviews of a trip
     val tripReviews = reviewModel.tripReviews
-    fun getTripReviews(tripId:Int) = reviewModel.getTripReviews(tripId, viewModelScope)
+    fun getTripReviews(tripId: Int) = reviewModel.getTripReviews(tripId, viewModelScope)
 
     //Reviews of a user
     val userReviews = reviewModel.userReviews
@@ -65,15 +62,18 @@ class ReviewViewModel(val reviewModel:ReviewModel): ViewModel() {
 
     //Tells if a trip has been reviewed by the user
     val isReviewed = reviewModel.isReviewed
-    fun isReviewed(userId: Int, tripId: Int) = reviewModel.isReviewed(userId, tripId, viewModelScope)
+    fun isReviewed(userId: Int, tripId: Int) =
+        reviewModel.isReviewed(userId, tripId, viewModelScope)
 
     //Get review of a trip by user
     val tripReview = reviewModel.tripReview
-    fun getTripReview(tripId: Int, userId: Int) = reviewModel.getTripReview(userId, tripId, viewModelScope)
+    fun getTripReview(tripId: Int, userId: Int) =
+        reviewModel.getTripReview(userId, tripId, viewModelScope)
 
     //Get users reviews by Logged IN user ID
     val usersReviews = reviewModel.usersTripReviews
-    fun getUsersReviews(userId: Int, tripId: Int) = reviewModel.getUsersReviewsTrip(userId, tripId, viewModelScope)
+    fun getUsersReviews(userId: Int, tripId: Int) =
+        reviewModel.getUsersReviewsTrip(userId, tripId, viewModelScope)
 
     // Select photos
     private val _selectedUris = MutableStateFlow<List<Uri>>(emptyList())
@@ -84,17 +84,17 @@ class ReviewViewModel(val reviewModel:ReviewModel): ViewModel() {
     }
 
     fun calculateRatingById(id: Int): Flow<Float> = reviewModel.calculateRatingById(id)
-
 }
 
-object ReviewFactory : ViewModelProvider.Factory{
-    private val model:ReviewModel = ReviewModel()
+object ReviewFactory : ViewModelProvider.Factory {
+    private val model: ReviewModel = ReviewModel()
 
     override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
         @Suppress("UNCHECKED_CAST")
-        return when{
-            modelClass.isAssignableFrom(ReviewViewModel::class.java)->
+        return when {
+            modelClass.isAssignableFrom(ReviewViewModel::class.java) ->
                 ReviewViewModel(model) as T
+
             else -> throw IllegalArgumentException("Unknown ViewModel")
         }
     }
