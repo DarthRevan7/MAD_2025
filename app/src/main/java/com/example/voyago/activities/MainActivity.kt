@@ -234,7 +234,10 @@ class MainActivity : ComponentActivity() {
         // Enable edge-to-edge mode for the activity
         // This allows the app to use the full screen, including the status bar and navigation bar
         enableEdgeToEdge()
+
+        // Set the content view to the main activity layout
         context = this
+        // Initialize the camera executor for handling camera operations
         cameraExecutor = Executors.newSingleThreadExecutor()
 
         // Subscribe to the "all" topic for Firebase Cloud Messaging
@@ -290,10 +293,13 @@ class MainActivity : ComponentActivity() {
 
     // Activity result launcher for handling permission requests
     private val activityResultLauncher =
+        // Register for the result of requesting multiple permissions
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            // Check if all required permissions are granted
             val permissionGranted = permissions.entries.all {
                 it.key in REQUIRED_PERMISSIONS && it.value
             }
+            // If any permission is denied, show a toast message
             if (!permissionGranted) {
                 Toast.makeText(baseContext, "Permission request denied", Toast.LENGTH_SHORT).show()
             }
@@ -309,14 +315,20 @@ fun MainScreen(viewModel: UserViewModel) {
 
     // Observe user verification state and navigate to profile overview if verified
     LaunchedEffect(userVerified) {
+        // If the user is verified, navigate to the profile overview screen
         if (userVerified) {
+            // Navigate to the profile overview screen
             navController.navigate("profile_overview") {
+                // Pop up to the start destination of the navigation graph
                 popUpTo(navController.graph.findStartDestination().id) {
                     saveState = true
                 }
+                // Launch the profile overview screen as a single top instance
                 launchSingleTop = true
+                // Restore the state of the profile overview screen
                 restoreState = true
             }
+            // Reset the user verification state in the ViewModel
             viewModel.resetUserVerified()
         }
     }
@@ -324,14 +336,19 @@ fun MainScreen(viewModel: UserViewModel) {
     // Set the main content with a Scaffold that includes a top bar and bottom navigation
     Scaffold(
         topBar = {
+            // Display the top bar with notifications and articles
             TopBar(
                 nvm = notificationViewModel,
                 navController = navController,
                 uvm = UserViewModel(UserModel())
             )
         },
-        bottomBar = { BottomBar(navController) }
+        bottomBar = {
+            // Display the bottom navigation bar
+            BottomBar(navController)
+        }
     ) { innerPadding ->
+        // Main content of the app, which includes the navigation graph
         NavigationGraph(navController = navController, modifier = Modifier.padding(innerPadding))
     }
 }
@@ -348,17 +365,21 @@ fun BottomBar(navController: NavHostController) {
         NavItem("Profile", Icons.Filled.AccountCircle, Screen.Profile.route, "profile_overview")
     )
 
-    // Get the current back stack entry to determine the selected item
+    // Create a NavigationBar to display the bottom navigation bar
     NavigationBar {
+        // Get the current back stack entry as state
         val navBackStackEntry by navController.currentBackStackEntryAsState()
+        // Get the current destination from the back stack entry
         val currentDestination = navBackStackEntry?.destination
 
         // Create a navigation bar item for each item in the list
         items.forEach { item ->
+            // Check if the current destination matches the item's root route
             val selected = currentDestination
                 ?.hierarchy
                 ?.any { it.route == item.rootRoute } == true
 
+            // Create a NavigationBarItem for the item
             NavigationBarItem(
                 icon = { Icon(item.icon, contentDescription = item.label) },
                 label = { Text(item.label) },
@@ -367,19 +388,25 @@ fun BottomBar(navController: NavHostController) {
                     // Navigate to the selected route
                     if (item.label == "Home") {
                         navController.navigate(item.startRoute) {
+                            // If the selected item is "Home", pop up to the start destination
                             popUpTo(navController.graph.findStartDestination().id) {
                                 saveState = true
                             }
+                            // Launch the home screen as a single top instance
                             launchSingleTop = true
+                            // Restore the state of the home screen
                             restoreState = false
                         }
                     } else {
-                        // Restore last visited tab for other items
+                        // For other items, navigate to the start route of the item
                         navController.navigate(item.startRoute) {
+                            // Pop up to the start destination of the navigation graph
                             popUpTo(navController.graph.findStartDestination().id) {
                                 saveState = true
                             }
+                            // Launch the selected screen as a single top instance
                             launchSingleTop = true
+                            // Restore the state of the selected screen
                             restoreState = true
                         }
                     }
@@ -393,9 +420,12 @@ fun BottomBar(navController: NavHostController) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBar(nvm: NotificationViewModel, navController: NavController, uvm: UserViewModel) {
+    // Get the logged-in user from the UserViewModel
     val user by uvm.loggedUser.collectAsState()
     val userId = user.id.toString()
+    // Check if there are new notifications
     val hasNewNotification by nvm.hasNewNotification
+    // Get the current context
     val context = LocalContext.current
 
     // Load notifications for the user when the top bar is first composed
@@ -429,6 +459,7 @@ fun TopBar(nvm: NotificationViewModel, navController: NavController, uvm: UserVi
                 // Navigate to the ArticleSearch page
                 navController.navigate("article_search")
             }) {
+                // Display the news icon
                 Image(
                     painter = painterNews,
                     contentDescription = "news",
@@ -443,15 +474,19 @@ fun TopBar(nvm: NotificationViewModel, navController: NavController, uvm: UserVi
                     nvm.markNotificationsRead(userId)
                     // Navigate to the Notifications screen
                     navController.navigate(Screen.Notifications.route) {
-                        launchSingleTop = true // Prevents multiple instances of the same screen
+                        // Launch the Notifications screen as a single top instance
+                        launchSingleTop = true
                     }
                 }
             ) {
                 // Notification Icon with a red dot if there are new notifications
+                // Use a Box to overlay the notification icon and the red dot
                 Box(
+                    // Set the modifier for the box to position it correctly
                     modifier = Modifier
                         .padding(top = 7.dp, end = 10.dp)
                         .size(45.dp),
+                    // Align the content to the top end of the box
                     contentAlignment = Alignment.TopEnd
                 ) {
                     // Display the notification icon
@@ -461,6 +496,7 @@ fun TopBar(nvm: NotificationViewModel, navController: NavController, uvm: UserVi
                     )
                     // If there are new notifications, display a red dot
                     if (hasNewNotification) {
+                        // Red dot to indicate new notifications
                         Box(
                             modifier = Modifier
                                 .size(10.dp)
@@ -473,6 +509,7 @@ fun TopBar(nvm: NotificationViewModel, navController: NavController, uvm: UserVi
                 }
             }
         },
+        // Set the modifier for the top app bar to add a shadow effect
         modifier = Modifier.shadow(8.dp)
     )
 }
@@ -535,7 +572,8 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
             RequireAuth(navController) {
                 val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
                 val userViewModel: UserViewModel = viewModel(factory = UserFactory)
-                val notificationViewModel: NotificationViewModel = viewModel(factory = NotificationFactory)
+                val notificationViewModel: NotificationViewModel =
+                    viewModel(factory = NotificationFactory)
 
                 CreateArticleScreen(
                     navController = navController,
@@ -548,8 +586,12 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
 
         // 添加 article_detail 路由
         composable(
-            "article_detail/{articleId}",
-            arguments = listOf(navArgument("articleId") { type = NavType.IntType })
+            route = "article_detail/{articleId}",
+            arguments = listOf(
+                navArgument("articleId") {
+                    type = NavType.IntType
+                }
+            )
         ) { backStackEntry ->
             val articleId = backStackEntry.arguments?.getInt("articleId") ?: 0
             val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
@@ -583,7 +625,8 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
                 viewModel(viewModelStoreOwner = parentEntry, factory = NotificationFactory)
             val uvm: UserViewModel = viewModel(viewModelStoreOwner = parentEntry, factory = Factory)
             val vm: TripViewModel = viewModel(viewModelStoreOwner = parentEntry, factory = Factory)
-            val avm: ArticleViewModel = viewModel(viewModelStoreOwner = parentEntry, factory = ArticleFactory)
+            val avm: ArticleViewModel =
+                viewModel(viewModelStoreOwner = parentEntry, factory = ArticleFactory)
 
             NotificationView(navController, nvm, uvm, vm, avm)
         }
@@ -597,62 +640,77 @@ fun NavGraphBuilder.loginNavGraph(navController: NavHostController, auth: Fireba
     navigation(startDestination = "login", route = Screen.Login.route) {
         // Define the composable for the login screen
         composable("login") { entry ->
+            // Get the back stack entry for the login graph
             val loginGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.Login.route)
             }
+            // Create a UserViewModel instance using the Factory
             val userViewModel: UserViewModel = viewModel(
                 viewModelStoreOwner = loginGraphEntry,
                 factory = Factory
             )
+            // Pass the UserViewModel and FirebaseAuth instance to the LoginScreen composable
             LoginScreen(navController = navController, auth = auth, uvm = userViewModel)
         }
 
         // Define the composable for the retrieve password screen
         composable("retrieve_password") {
+            // Pass the NavController to the RetrievePassword composable
             RetrievePassword(navController = navController)
         }
 
         // Define the composable for the registration screens
         composable("register") {
+            // Pass the NavController to the CreateAccountScreen composable
             CreateAccountScreen(navController)
         }
         composable("register2") { entry ->
+            // Get the back stack entry for the login graph
             val loginGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.Login.route)
             }
+            // Create a UserViewModel instance using the Factory
             val userViewModel: UserViewModel = viewModel(
                 viewModelStoreOwner = loginGraphEntry,
                 factory = Factory
             )
+            // Pass the NavController and UserViewModel to the CreateAccount2Screen composable
             CreateAccount2Screen(navController, userViewModel)
         }
 
         // Define the composable for the registration verification email screen
         composable("register_verification_code") { entry ->
+            // Get the back stack entry for the login graph
             val loginGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.Login.route)
             }
+            // Create a UserViewModel instance using the Factory
             val userViewModel: UserViewModel = viewModel(
                 viewModelStoreOwner = loginGraphEntry,
                 factory = Factory
             )
+            // Pass the NavController and UserViewModel to the RegistrationVerificationCodeScreen composable
             RegistrationVerificationCodeScreen(navController, userViewModel)
         }
 
         // Define the composable for the completion of profile for new users that did the sign in with google
         composable("complete_profile") { entry ->
+            // Get the back stack entry for the login graph
             val loginGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.Login.route)
             }
+            // Create a UserViewModel instance using the Factory
             val userViewModel: UserViewModel = viewModel(
                 viewModelStoreOwner = loginGraphEntry,
                 factory = Factory
             )
+            // Pass the NavController and UserViewModel to the CompleteAccount composable
             CompleteAccount(navController, uvm = userViewModel)
         }
 
         // Define the composable for the retrieve password screen
         composable("retrieve_password") { entry ->
+            // Pass the NavController to the RetrievePassword composable
             RetrievePassword(navController)
         }
     }
@@ -664,41 +722,51 @@ fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
     navigation(startDestination = "explore_main", route = Screen.Explore.route) {
         // Define the composable for the explore main page
         composable("explore_main") { entry ->
+            // Get the back stack entry for the explore graph
             val exploreGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.Explore.route)
             }
+            // Create instances of the TripViewModel using the Factory
             val tripViewModel: TripViewModel = viewModel(
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = Factory
             )
+            // Create an instance of the UserViewModel using the Factory
             val userViewModel: UserViewModel = viewModel(
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = Factory
             )
+            // Pass the NavController and ViewModels to the ExplorePage composable
             ExplorePage(navController = navController, vm = tripViewModel, userViewModel)
         }
 
         // Define the composable for the trip details page
         composable("trip_details") { entry ->
+            // Get the back stack entry for the explore graph
             val exploreGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.Explore.route)
             }
+            // Create instances of the TripViewModel using the Factory
             val tripViewModel: TripViewModel = viewModel(
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = Factory
             )
+            // Create an instance of the UserViewModel using the Factory
             val userViewModel: UserViewModel = viewModel(
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = Factory
             )
+            // Create an instance of the ReviewViewModel using the Factory
             val reviewViewModel: ReviewViewModel = viewModel(
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = Factory
             )
+            // Create an instance of the NotificationViewModel using the NotificationFactory
             val notificationViewModel: NotificationViewModel = viewModel(
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = NotificationFactory
             )
+            // Pass the NavController and ViewModels to the TripDetails composable
             TripDetails(
                 navController = navController,
                 vm = tripViewModel,
@@ -709,11 +777,23 @@ fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
             )
         }
 
-        // Why is this here? It is not used in the the explore section
-        composable("article_search") {
-            val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
-            val userViewModel: UserViewModel = viewModel(factory = UserFactory)  // 添加这行
-
+        // Define the composable for the article search page
+        composable("article_search") { entry ->
+            // Get the back stack entry for the explore graph
+            val exploreGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Explore.route)
+            }
+            // Create an instance of the ArticleViewModel using the ArticleFactory
+            val articleViewModel: ArticleViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = ArticleFactory
+            )
+            // Create an instance of the UserViewModel using the UserFactory
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = UserFactory
+            )
+            // Pass the NavController, ArticleViewModel, and UserViewModel to the ArticleSearchScreen composable
             ArticleSearchScreen(
                 navController = navController,
                 articleViewModel = articleViewModel,
@@ -723,29 +803,40 @@ fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
 
         // Define the composable to view a user's profile
         composable(
-            "user_profile/{userId}",
-            arguments = listOf(navArgument("userId") { type = NavType.IntType })
+            route = "user_profile/{userId}",
+            arguments = listOf(
+                navArgument("userId") {
+                    type = NavType.IntType
+                }
+            )
         ) { entry ->
+            // Get the back stack entry for the explore graph
             val exploreGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.Explore.route)
             }
+            // Create instances of the TripViewModel using the Factory
             val tripViewModel: TripViewModel = viewModel(
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = Factory
             )
+            // Create an instance of the UserViewModel using the Factory
             val userViewModel: UserViewModel = viewModel(
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = Factory
             )
+            // Create an instance of the ReviewViewModel using the Factory
             val reviewViewModel: ReviewViewModel = viewModel(
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = Factory
             )
+            // Create an instance of the ArticleViewModel using the ArticleFactory
             val vm2: ArticleViewModel = viewModel(
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = ArticleFactory
             )
-            val userId = entry.arguments?.getInt("userId") ?: 1
+            // Get the userId from the arguments, defaulting to -1 if not provided
+            val userId = entry.arguments?.getInt("userId") ?: -1
+            // Pass the NavController, ViewModels, userId to the UserProfileScreen composable
             UserProfileScreen(
                 navController = navController,
                 vm = tripViewModel,
@@ -758,17 +849,21 @@ fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
 
         // Define the composable for the filters selection page
         composable("filters_selection") { entry ->
+            // Get the back stack entry for the explore graph
             val exploreGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.Explore.route)
             }
+            // Create instances of the TripViewModel using the Factory
             val tripViewModel: TripViewModel = viewModel(
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = Factory
             )
+            // Create an instance of the UserViewModel using the Factory
             val userViewModel: UserViewModel = viewModel(
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = Factory
             )
+            // Pass the NavController and ViewModels to the FiltersSelection composable
             FiltersSelection(navController = navController, vm = tripViewModel, uvm = userViewModel)
         }
     }
@@ -782,48 +877,62 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
         composable("my_trips_main") { entry ->
             // Require authentication before accessing the My Trips page
             RequireAuth(navController) {
-                val exploreGraphEntry = remember(entry) {
+                // Get the back stack entry for the My Trips graph
+                val myTripGraphEntry = remember(entry) {
                     navController.getBackStackEntry(Screen.MyTrips.route)
                 }
+                // Create instances of the TripViewModel using the Factory
                 val tripViewModel: TripViewModel = viewModel(
-                    viewModelStoreOwner = exploreGraphEntry,
+                    viewModelStoreOwner = myTripGraphEntry,
                     factory = Factory
                 )
+                // Create an instance of the UserViewModel using the Factory
                 val userViewModel: UserViewModel = viewModel(
-                    viewModelStoreOwner = exploreGraphEntry,
+                    viewModelStoreOwner = myTripGraphEntry,
                     factory = Factory
                 )
+                // Pass the NavController and ViewModels to the MyTripsPage composable
                 MyTripsPage(navController = navController, vm = tripViewModel, uvm = userViewModel)
             }
 
         }
 
         // Define the composable for the trip details page with an owner parameter
-        composable("trip_details?owner={owner}", arguments = listOf(navArgument("owner") {
-            type = NavType.BoolType
-            defaultValue = false
-        }
-        )
+        composable(
+            route = "trip_details?owner={owner}",
+            arguments = listOf(
+                navArgument("owner") {
+                    type = NavType.BoolType
+                    defaultValue = false
+                }
+            )
         ) { entry ->
-            val exploreGraphEntry = remember(entry) {
+            // Get the back stack entry for the My Trips graph
+            val myTripGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.MyTrips.route)
             }
+            // Create instances of the TripViewModel using the Factory
             val tripViewModel: TripViewModel = viewModel(
-                viewModelStoreOwner = exploreGraphEntry,
+                viewModelStoreOwner = myTripGraphEntry,
                 factory = Factory
             )
+            // Create an instance of the UserViewModel using the Factory
             val userViewModel: UserViewModel = viewModel(
-                viewModelStoreOwner = exploreGraphEntry,
+                viewModelStoreOwner = myTripGraphEntry,
                 factory = Factory
             )
+            // Create an instance of the ReviewViewModel using the Factory
             val reviewViewModel: ReviewViewModel = viewModel(
-                viewModelStoreOwner = exploreGraphEntry,
+                viewModelStoreOwner = myTripGraphEntry,
                 factory = Factory
             )
+            // Create an instance of the NotificationViewModel using the NotificationFactory
             val notificationViewModel: NotificationViewModel = viewModel(
-                viewModelStoreOwner = exploreGraphEntry,
+                viewModelStoreOwner = myTripGraphEntry,
                 factory = NotificationFactory
             )
+            // Get the owner parameter from the arguments, defaulting to false if not provided
+            // Pass the NavController, ViewModels, and owner parameter to the TripDetails composable
             TripDetails(
                 navController = navController,
                 vm = tripViewModel,
@@ -834,147 +943,201 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
             )
         }
 
-
-
+        // Define the composable for the My Reviews page
         composable("my_reviews") { entry ->
-            val exploreGraphEntry = remember(entry) {
+            // Get the back stack entry for the My Trips graph
+            val myTripGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.MyTrips.route)
             }
+            // Create instances of the TripViewModel using the Factory
             val tripViewModel: TripViewModel = viewModel(
-                viewModelStoreOwner = exploreGraphEntry,
+                viewModelStoreOwner = myTripGraphEntry,
                 factory = Factory
             )
+            // Create an instance of the UserViewModel using the UserFactory
             val userViewModel: UserViewModel = viewModel(
-                viewModelStoreOwner = exploreGraphEntry,
+                viewModelStoreOwner = myTripGraphEntry,
                 factory = UserFactory
             )
+            // Create an instance of the ReviewViewModel using the ReviewFactory
             val reviewViewModel: ReviewViewModel = viewModel(
-                viewModelStoreOwner = exploreGraphEntry,
+                viewModelStoreOwner = myTripGraphEntry,
                 factory = ReviewFactory
             )
+            // Create an instance of the NotificationViewModel using the NotificationFactory
             val notificationViewModel: NotificationViewModel = viewModel(
-                viewModelStoreOwner = exploreGraphEntry,
+                viewModelStoreOwner = myTripGraphEntry,
                 factory = NotificationFactory
             )
+            // Pass the NavController and ViewModels to the MyReviews composable
             MyReviews(
-                navController = navController, vm = tripViewModel, uvm = userViewModel,
+                navController = navController,
+                vm = tripViewModel,
+                uvm = userViewModel,
                 rvm = reviewViewModel,
                 nvm = notificationViewModel
             )
         }
 
+        // Define the composable for the trip applications page
         composable("trip_applications") { entry ->
-            val exploreGraphEntry = remember(entry) {
+            // Get the back stack entry for the My Trips graph
+            val myTripGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.MyTrips.route)
             }
+            // Create instances of the TripViewModel using the Factory
             val tripViewModel: TripViewModel = viewModel(
-                viewModelStoreOwner = exploreGraphEntry,
+                viewModelStoreOwner = myTripGraphEntry,
                 factory = Factory
             )
+            // Create an instance of the UserViewModel using the Factory
             val userViewModel: UserViewModel = viewModel(
-                viewModelStoreOwner = exploreGraphEntry,
+                viewModelStoreOwner = myTripGraphEntry,
                 factory = Factory
             )
+            // Create an instance of the NotificationViewModel using the NotificationFactory
             val notificationViewModel: NotificationViewModel = viewModel(
-                viewModelStoreOwner = exploreGraphEntry,
+                viewModelStoreOwner = myTripGraphEntry,
                 factory = NotificationFactory
             )
+            // Pass the NavController and ViewModels to the TripApplications composable
             TripApplications(
                 vm = tripViewModel,
-                userViewModel,
-                navController,
-                notificationViewModel
+                uvm = userViewModel,
+                navController = navController,
+                nvm = notificationViewModel
             )
         }
 
+        // Define the composable for editing a trip
         composable("edit_trip") { entry ->
-            val exploreGraphEntry = remember(entry) {
+            // Get the back stack entry for the My Trips graph
+            val myTripGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.MyTrips.route)
             }
+            // Create instances of the TripViewModel using the Factory
             val tripViewModel: TripViewModel = viewModel(
-                viewModelStoreOwner = exploreGraphEntry,
+                viewModelStoreOwner = myTripGraphEntry,
                 factory = Factory
             )
+            // Pass the NavController and TripViewModel to the EditTrip composable
             EditTrip(navController = navController, vm = tripViewModel)
         }
 
+        // Define the composable for creating a new trip
         composable("create_new_trip") { entry ->
-            val exploreGraphEntry = remember(entry) {
+            // Get the back stack entry for the My Trips graph
+            val myTripGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.MyTrips.route)
             }
+            // Create instances of the TripViewModel using the Factory
             val tripViewModel: TripViewModel = viewModel(
-                viewModelStoreOwner = exploreGraphEntry,
+                viewModelStoreOwner = myTripGraphEntry,
                 factory = Factory
             )
+            // Create an instance of the UserViewModel using the Factory
             val userViewModel: UserViewModel = viewModel(
-                viewModelStoreOwner = exploreGraphEntry,
+                viewModelStoreOwner = myTripGraphEntry,
                 factory = Factory
             )
+            // Pass the NavController, TripViewModel, and UserViewModel to the CreateNewTrip composable
             CreateNewTrip(navController = navController, vm = tripViewModel, uvm = userViewModel)
         }
 
+        // Define the composable for the activities list page
         composable("activities_list") { entry ->
-            val exploreGraphEntry = remember(entry) {
+            // Get the back stack entry for the My Trips graph
+            val myTripGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.MyTrips.route)
             }
+            // Create instances of the TripViewModel using the Factory
             val tripViewModel: TripViewModel = viewModel(
-                viewModelStoreOwner = exploreGraphEntry,
+                viewModelStoreOwner = myTripGraphEntry,
                 factory = Factory
             )
+            // Pass the NavController and TripViewModel to the ActivitiesList composable
             ActivitiesList(navController = navController, vm = tripViewModel)
         }
 
+        // Define the composable for creating a new activity
         composable("new_activity") { entry ->
-            val exploreGraphEntry = remember(entry) {
+            // Get the back stack entry for the My Trips graph
+            val myTripGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.MyTrips.route)
             }
+            // Create instances of the TripViewModel using the Factory
             val tripViewModel: TripViewModel = viewModel(
-                viewModelStoreOwner = exploreGraphEntry,
+                viewModelStoreOwner = myTripGraphEntry,
                 factory = Factory
             )
+            // Pass the NavController and TripViewModel to the NewActivity composable
             NewActivity(navController = navController, vm = tripViewModel)
         }
 
+        // Define the composable for editing an activity
         composable(
-            "edit_activity/{activityId}",
-            arguments = listOf(navArgument("activityId") { type = NavType.IntType })
+            route = "edit_activity/{activityId}",
+            arguments = listOf(
+                navArgument("activityId") {
+                    type = NavType.IntType
+                }
+            )
         ) { entry ->
-            val exploreGraphEntry = remember(entry) {
+            // Get the back stack entry for the My Trips graph
+            val myTripGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.MyTrips.route)
             }
+            // Create instances of the TripViewModel using the Factory
             val tripViewModel: TripViewModel = viewModel(
-                viewModelStoreOwner = exploreGraphEntry,
+                viewModelStoreOwner = myTripGraphEntry,
                 factory = Factory
             )
+            // Get the activityId from the arguments, defaulting to -1 if not provided
             val activityId = entry.arguments?.getInt("activityId") ?: -1
+            // Pass the NavController, TripViewModel, and activityId to the Edit
             EditActivity(navController = navController, vm = tripViewModel, activityId)
         }
 
+        // Define the composable for viewing a user's profile
         composable(
-            "user_profile/{userId}",
-            arguments = listOf(navArgument("userId") { type = NavType.IntType })
+            route = "user_profile/{userId}",
+            arguments = listOf(
+                navArgument("userId") {
+                    type = NavType.IntType
+                }
+            )
         ) { entry ->
-            val exploreGraphEntry = remember(entry) {
+            // Get the back stack entry for the My Trips graph
+            val myTripGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.MyTrips.route)
             }
+            // Create instances of the TripViewModel using the Factory
             val tripViewModel: TripViewModel = viewModel(
-                viewModelStoreOwner = exploreGraphEntry,
+                viewModelStoreOwner = myTripGraphEntry,
                 factory = Factory
             )
+            // Create an instance of the UserViewModel using the Factory
             val userViewModel: UserViewModel = viewModel(
-                viewModelStoreOwner = exploreGraphEntry,
+                viewModelStoreOwner = myTripGraphEntry,
                 factory = Factory
             )
+            // Create an instance of the ReviewViewModel using the Factory
             val reviewViewModel: ReviewViewModel = viewModel(
-                viewModelStoreOwner = exploreGraphEntry,
+                viewModelStoreOwner = myTripGraphEntry,
                 factory = Factory
             )
-            val vm2: ArticleViewModel = viewModel(factory = ArticleFactory)
-            val userId = entry.arguments?.getInt("userId") ?: 1
+            // Create an instance of the ArticleViewModel using the ArticleFactory
+            val articleViewModel: ArticleViewModel = viewModel(
+                viewModelStoreOwner = myTripGraphEntry,
+                factory = ArticleFactory
+            )
+            // Get the userId from the arguments, defaulting to -1 if not provided
+            val userId = entry.arguments?.getInt("userId") ?: -1
+            // Pass the NavController, ViewModels, userId to the UserProfileScreen composable
             UserProfileScreen(
                 navController = navController,
                 vm = tripViewModel,
-                vm2 = vm2,
+                vm2 = articleViewModel,
                 userId = userId,
                 uvm = userViewModel,
                 rvm = reviewViewModel
@@ -983,62 +1146,69 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
     }
 }
 
-
-fun NavGraphBuilder.homeNavGraph(
-    navController: NavHostController,
-    //vm1: TripListViewModel,
-
-) {
-
-    navigation(
-        startDestination = "home_main",
-        route = Screen.Home.route
-    ) {
-        // 1) 首页
+// Composable function to set up the navigation graph for the "Home" section
+fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
+    // Define the start destination for the home navigation graph
+    navigation(startDestination = "home_main", route = Screen.Home.route) {
+        // Define the composable for the main Home page
         composable("home_main") { entry ->
-            // 取同一个 HomeGraph 的 VM
-            val homeEntry = remember(entry) {
+            // Get the back stack entry for the home graph
+            val homeGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.Home.route)
             }
-            val homeVm: TripViewModel = viewModel(
-                viewModelStoreOwner = homeEntry,
+            // Create instances of the TripViewModel using the Factory
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = homeGraphEntry,
                 factory = Factory
             )
-            val vm2: ArticleViewModel = viewModel(factory = ArticleFactory)
+            // Create an instance of the UserViewModel using the Factory
+            val articleViewModel: ArticleViewModel = viewModel(
+                viewModelStoreOwner = homeGraphEntry,
+                factory = ArticleFactory
+            )
+            // Pass the NavController and ViewModels to the HomePageScreen composable
             HomePageScreen(
                 navController = navController,
-                vm1 = homeVm,
-                vm2 = vm2,
+                vm1 = tripViewModel,
+                vm2 = articleViewModel,
                 onTripClick = { trip ->
-                    homeVm.setSelectedTrip(trip)
+                    // When a trip is clicked, set the selected trip in the TripViewModel
+                    tripViewModel.setSelectedTrip(trip)
+                    // Navigate to the trip details screen
                     navController.navigate("trip_details")
                 }
             )
         }
-        // 2) 详情页，同样用 HomeGraph 的 VMScope
+        // Define the composable for the trip details page
         composable("trip_details") { entry ->
-            val homeEntry = remember(entry) {
+            // Get the back stack entry for the home graph
+            val homeGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.Home.route)
             }
-            val homeVm: TripViewModel = viewModel(
-                viewModelStoreOwner = homeEntry,
+            // Create instances of the TripViewModel using the Factory
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = homeGraphEntry,
                 factory = Factory
             )
+            // Create an instance of the UserViewModel using the Factory
             val userViewModel: UserViewModel = viewModel(
-                viewModelStoreOwner = homeEntry,
+                viewModelStoreOwner = homeGraphEntry,
                 factory = Factory
             )
+            // Create an instance of the ReviewViewModel using the Factory
             val reviewViewModel: ReviewViewModel = viewModel(
-                viewModelStoreOwner = homeEntry,
+                viewModelStoreOwner = homeGraphEntry,
                 factory = Factory
             )
+            // Create an instance of the NotificationViewModel using the NotificationFactory
             val notificationViewModel: NotificationViewModel = viewModel(
-                viewModelStoreOwner = homeEntry,
+                viewModelStoreOwner = homeGraphEntry,
                 factory = NotificationFactory
             )
+            // Pass the NavController and ViewModels to the TripDetails composable
             TripDetails(
                 navController = navController,
-                vm = homeVm,
+                vm = tripViewModel,
                 owner = false,
                 uvm = userViewModel,
                 rvm = reviewViewModel,
@@ -1047,56 +1217,70 @@ fun NavGraphBuilder.homeNavGraph(
         }
 
         composable(
-            "user_profile/{userId}",
-            arguments = listOf(navArgument("userId") { type = NavType.IntType })
+            route = "user_profile/{userId}",
+            arguments = listOf(
+                navArgument("userId") {
+                    type = NavType.IntType
+                }
+            )
         ) { entry ->
-            val profileNavGraphEntry = remember(entry) {
+            // Get the back stack entry for the home graph
+            val homeGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.Home.route)
             }
+            // Create instances of the TripViewModel using the Factory
             val tripViewModel: TripViewModel = viewModel(
-                viewModelStoreOwner = profileNavGraphEntry,
+                viewModelStoreOwner = homeGraphEntry,
                 factory = Factory
             )
+            // Create an instance of the UserViewModel using the Factory
             val userViewModel: UserViewModel = viewModel(
-                viewModelStoreOwner = profileNavGraphEntry,
+                viewModelStoreOwner = homeGraphEntry,
                 factory = Factory
             )
+            // Create an instance of the ReviewViewModel using the Factory
             val reviewViewModel: ReviewViewModel = viewModel(
-                viewModelStoreOwner = profileNavGraphEntry,
+                viewModelStoreOwner = homeGraphEntry,
                 factory = Factory
             )
-            val vm2: ArticleViewModel = viewModel(factory = ArticleFactory)
-            val userId = entry.arguments?.getInt("userId") ?: 1
+            // Create an instance of the ArticleViewModel using the ArticleFactory
+            val articleViewModel: ArticleViewModel = viewModel(
+                viewModelStoreOwner = homeGraphEntry,
+                factory = ArticleFactory
+            )
+            // Get the userId from the arguments, defaulting to -1 if not provided
+            val userId = entry.arguments?.getInt("userId") ?: -1
+            // Pass the NavController, ViewModels, userId to the UserProfileScreen composable
             UserProfileScreen(
                 navController = navController,
                 vm = tripViewModel,
-                vm2 = vm2,
+                vm2 = articleViewModel,
                 userId = userId,
                 uvm = userViewModel,
                 rvm = reviewViewModel
             )
-
         }
-
-
     }
 }
 
-
+// Composable function to set up the navigation graph for the "Chats" section
 fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
+    // Define the start destination for the chats navigation graph
     navigation(startDestination = "chats_list", route = Screen.Chats.route) {
+        // Define the composable for the chats list screen
         composable("chats_list") { entry ->
+            // Require authentication before accessing the chats list
             RequireAuth(navController) {
-
-                val chatNavGraphEntry = remember(entry) {
+                // Get the back stack entry for the chats graph
+                val chatGraphEntry = remember(entry) {
                     navController.getBackStackEntry(Screen.Chats.route)
                 }
-//                Text("Chats List Screen")
+                // Create an instance of the ChatViewModel using the ChatFactory
                 val chatViewModel: ChatViewModel = viewModel(
-                    viewModelStoreOwner = chatNavGraphEntry,
+                    viewModelStoreOwner = chatGraphEntry,
                     factory = ChatFactory
                 )
-
+                // Pass the NavController and ChatViewModel to the ChatScreen composable
                 ChatScreen(chatViewModel, navController, Modifier)
 
                 // 获取用户信息
@@ -1117,19 +1301,23 @@ fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
             }
         }
 
+        // Define the composable for the chat detail screen
         composable("chat_detail/{chatId}") { backStackEntry ->
+            // Require authentication before accessing the chat detail
             RequireAuth(navController) {
-                // 获取用户信息
+                // Get the back stack entry for the chats graph
                 val chatsGraphEntry = remember(backStackEntry) {
                     navController.getBackStackEntry(Screen.Chats.route)
                 }
+                // Create an instance of the ChatViewModel using the ChatFactory
                 val userViewModel: UserViewModel = viewModel(
                     viewModelStoreOwner = chatsGraphEntry,
                     factory = Factory
                 )
+                // Get the currentUser from the UserViewModel
                 val currentUser by userViewModel.loggedUser.collectAsState()
 
-                // 具体聊天室 - 可以根据 chatId 加载不同的聊天室
+                // Pass the chatId from the arguments
                 FirebaseChatRoomScreen(
                     currentUser = currentUser,
                     onBackClick = { navController.popBackStack() }
@@ -1140,13 +1328,10 @@ fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
 }
 
 
-fun NavGraphBuilder.profileNavGraph(
-    navController: NavHostController,
-    //vm1: TripListViewModel,
-
-) {
-
+fun NavGraphBuilder.profileNavGraph(navController: NavHostController) {
+    // Define the start destination for the profile navigation graph
     navigation(startDestination = "profile_overview", route = Screen.Profile.route) {
+        // Define the composable for the profile overview screen
         composable(
             route = "profile_overview?tabIndex={tabIndex}",
             arguments = listOf(
@@ -1156,29 +1341,39 @@ fun NavGraphBuilder.profileNavGraph(
                 }
             )
         ) { entry ->
+            // Require authentication before accessing the profile overview
             RequireAuth(navController) {
-                val profileNavGraphEntry = remember(entry) {
+                // Get the back stack entry for the profile graph
+                val profileGraphEntry = remember(entry) {
                     navController.getBackStackEntry(Screen.Profile.route)
                 }
-                val profileNavGraphEntryVm: TripViewModel = viewModel(
-                    viewModelStoreOwner = profileNavGraphEntry,
+                // Create instances of the ViewModels using the Factory
+                val tripViewModel: TripViewModel = viewModel(
+                    viewModelStoreOwner = profileGraphEntry,
                     factory = Factory
                 )
+                // Create an instance of the UserViewModel using the Factory
                 val userViewModel: UserViewModel = viewModel(
-                    viewModelStoreOwner = profileNavGraphEntry,
+                    viewModelStoreOwner = profileGraphEntry,
                     factory = Factory
                 )
+                // Create an instance of the ReviewViewModel using the Factory
                 val reviewViewModel: ReviewViewModel = viewModel(
-                    viewModelStoreOwner = profileNavGraphEntry,
+                    viewModelStoreOwner = profileGraphEntry,
                     factory = Factory
                 )
-                val vm2: ArticleViewModel = viewModel(factory = ArticleFactory)
+                // Create an instance of the ArticleViewModel using the ArticleFactory
+                val articleViewModel: ArticleViewModel = viewModel(
+                    viewModelStoreOwner = profileGraphEntry,
+                    factory = ArticleFactory
+                )
+                // Gat tab index from the arguments, defaulting to 0 if not provided
                 val tabIndex = entry.arguments?.getInt("tabIndex") ?: 0
-
+                // Pass the NavController and ViewModels to the MyProfileScreen composable
                 MyProfileScreen(
                     navController = navController,
-                    vm = profileNavGraphEntryVm,
-                    vm2 = vm2,
+                    vm = tripViewModel,
+                    vm2 = articleViewModel,
                     uvm = userViewModel,
                     rvm = reviewViewModel,
                     defaultTabIndex = tabIndex
@@ -1186,140 +1381,168 @@ fun NavGraphBuilder.profileNavGraph(
             }
         }
 
+
         composable(
-            "user_profile/{userId}",
-            arguments = listOf(navArgument("userId") { type = NavType.IntType })
+            route = "user_profile/{userId}",
+            arguments = listOf(
+                navArgument("userId") {
+                    type = NavType.IntType
+                }
+            )
         ) { entry ->
-            val profileNavGraphEntry = remember(entry) {
+            // Get the back stack entry for the profile graph
+            val profileGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.Profile.route)
             }
+            // Create an instance of the TripViewModel using the Factory
             val tripViewModel: TripViewModel = viewModel(
-                viewModelStoreOwner = profileNavGraphEntry,
+                viewModelStoreOwner = profileGraphEntry,
                 factory = Factory
             )
+            // Create an instance of the UserViewModel using the Factory
             val userViewModel: UserViewModel = viewModel(
-                viewModelStoreOwner = profileNavGraphEntry,
+                viewModelStoreOwner = profileGraphEntry,
                 factory = Factory
             )
+            // Create an instance of the ReviewViewModel using the Factory
             val reviewViewModel: ReviewViewModel = viewModel(
-                viewModelStoreOwner = profileNavGraphEntry,
+                viewModelStoreOwner = profileGraphEntry,
                 factory = Factory
             )
-            val vm2: ArticleViewModel = viewModel(factory = ArticleFactory)
-            val userId = entry.arguments?.getInt("userId") ?: 1
+            // Create an instance of the ArticleViewModel using the ArticleFactory
+            val articleViewModel: ArticleViewModel = viewModel(
+                viewModelStoreOwner = profileGraphEntry,
+                factory = ArticleFactory
+            )
+            // Get the userId from the arguments, defaulting to -1 if not provided
+            val userId = entry.arguments?.getInt("userId") ?: -1
+            // Pass the NavController, ViewModels, userId to the UserProfileScreen composable
             UserProfileScreen(
                 navController = navController,
                 vm = tripViewModel,
-                vm2 = vm2,
+                vm2 = articleViewModel,
                 userId = userId,
                 uvm = userViewModel,
                 rvm = reviewViewModel
             )
-
-
         }
 
+        // Define the composable for editing the profile
         composable("edit_profile") { entry ->
-
-            val profileNavGraphEntry = remember(entry) {
+            // Get the back stack entry for the profile graph
+            val profileGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.Profile.route)
             }
-            val profileNavGraphEntryVm: TripViewModel = viewModel(
-                viewModelStoreOwner = profileNavGraphEntry,
+            // Create instances of the ViewModels using the Factory
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = profileGraphEntry,
                 factory = Factory
             )
+            // Create an instance of the UserViewModel using the Factory
             val userViewModel: UserViewModel = viewModel(
-                viewModelStoreOwner = profileNavGraphEntry,
+                viewModelStoreOwner = profileGraphEntry,
                 factory = Factory
             )
+            // Pass the NavController and ViewModels to the EditProfileScreen composable
             EditProfileScreen(
                 navController = navController,
                 context = LocalContext.current,
-                vm = profileNavGraphEntryVm,
+                vm = tripViewModel,
                 uvm = userViewModel
             )
         }
 
+        // Define the composable for the camera screen
         composable("camera") { entry ->
-
-            val profileNavGraphEntry = remember(entry) {
+            // Get the back stack entry for the profile graph
+            val profileGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.Profile.route)
             }
-            val profileNavGraphEntryVm: UserViewModel = viewModel(
-                viewModelStoreOwner = profileNavGraphEntry,
+            // Create an instance of the UserViewModel using the Factory
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = profileGraphEntry,
                 factory = Factory
             )
+            // Pass the NavController and UserViewModel to the CameraScreen composable
             CameraScreen(
                 context = LocalContext.current,
                 onImageCaptured = { uri ->
-                    profileNavGraphEntryVm.setProfileImageUri(uri)
+                    userViewModel.setProfileImageUri(uri)
                     navController.popBackStack()
                 }
             )
         }
 
+        // Define the composable for the trip details page
         composable("trip_details") { entry ->
-            val profileNavGraphEntry = remember(entry) {
+            // Get the back stack entry for the profile graph
+            val profileGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.Profile.route)
             }
+            // Create an instance of the TripViewModel using the Factory
             val tripViewModel: TripViewModel = viewModel(
-                viewModelStoreOwner = profileNavGraphEntry,
+                viewModelStoreOwner = profileGraphEntry,
                 factory = Factory
             )
+            // Create an instance of the UserViewModel using the Factory
             val userViewModel: UserViewModel = viewModel(
-                viewModelStoreOwner = profileNavGraphEntry,
+                viewModelStoreOwner = profileGraphEntry,
                 factory = Factory
             )
+            // Create an instance of the ReviewViewModel using the Factory
             val reviewViewModel: ReviewViewModel = viewModel(
-                viewModelStoreOwner = profileNavGraphEntry,
+                viewModelStoreOwner = profileGraphEntry,
                 factory = Factory
             )
+            // Create an instance of the NotificationViewModel using the NotificationFactory
             val notificationViewModel: NotificationViewModel = viewModel(
-                viewModelStoreOwner = profileNavGraphEntry,
+                viewModelStoreOwner = profileGraphEntry,
                 factory = NotificationFactory
             )
+            // Pass the NavController and ViewModels to the TripDetails composable
             TripDetails(
-                navController = navController, vm = tripViewModel, owner = false,
+                navController = navController,
+                vm = tripViewModel,
+                owner = false,
                 uvm = userViewModel,
                 rvm = reviewViewModel,
                 nvm = notificationViewModel
             )
         }
-
     }
 }
 
-// 在 ProfilePhoto.kt 或相关文件中修改 ProfilePhoto 组件：
-
-// 在 ProfilePhoto 组件中修复：
-
-// 替代方案：不使用委托，直接使用 MutableState
-
+// Profile photo composable function, used to display a user's profile picture or initials if the
+// picture is not available.
+// The small parameter determines the size of the profile photo.
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun ProfilePhoto(
-    modifier: Modifier = Modifier,
-    user: User,
-    small: Boolean = false
-) {
-    // 🔄 替代方案：直接使用 MutableState
+fun ProfilePhoto(modifier: Modifier = Modifier, user: User, small: Boolean = false) {
+    // Use remember to hold the profile image URL state
     val profileImageUrl = remember { mutableStateOf<String?>(null) }
+    // Get the initials from the user's first name and surname
     val initials = "${user.firstname.firstOrNull() ?: ""}${user.surname.firstOrNull() ?: ""}"
 
-    // 异步获取 Firebase Storage URL
+    // Asynchronous acquisition Firebase Storage URL
     LaunchedEffect(user.profilePictureUrl) {
+        // If the user has a profile picture URL, try to load it
         if (!user.profilePictureUrl.isNullOrEmpty()) {
             try {
-                profileImageUrl.value = user.getProfilePhoto() // 使用 .value
+                // Use Firebase Storage to get the profile photo URL
+                profileImageUrl.value = user.getProfilePhoto()
             } catch (e: Exception) {
+                // Log the error if the profile photo fails to load
                 Log.e("ProfilePhoto", "Failed to load profile photo", e)
+                // Reset the profile image URL to null if loading fails
                 profileImageUrl.value = null
             }
         }
     }
 
+    // Determine the size of the profile photo based on the small parameter
     val size = if (small) 50.dp else 120.dp
 
+    // Create a Box to center the content and apply a circular background
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
@@ -1327,8 +1550,9 @@ fun ProfilePhoto(
             .background(Color.Blue, shape = CircleShape)
     ) {
         when {
-            // 如果有 Firebase Storage URL，使用 GlideImage
-            profileImageUrl.value != null -> { // 使用 .value
+            // If you have a Firebase Storage URL，use GlideImage
+            profileImageUrl.value != null -> {
+                // Use GlideImage to load the profile picture from the URL
                 GlideImage(
                     model = profileImageUrl.value,
                     contentDescription = "Profile Picture",
@@ -1340,8 +1564,8 @@ fun ProfilePhoto(
                 )
             }
 
-            // 其他情况保持不变...
             else -> {
+                // If no profile picture is available, display the initials
                 Text(
                     text = initials,
                     color = Color.White,
@@ -1353,61 +1577,91 @@ fun ProfilePhoto(
     }
 }
 
+// Camera screen composable function, used to capture images using the device's camera.
 @SuppressLint("ObsoleteSdkInt")
 @Composable
 fun CameraScreen(context: Context, onImageCaptured: (Uri?) -> Unit) {
+    // LocalLifecycleOwner provides the current lifecycle owner for the camera
     val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
+    // Create a PreviewView to display the camera preview
     val previewView = remember { PreviewView(context) }
+    // Create an ImageCapture use case to capture images
     val imageCapture = remember { ImageCapture.Builder().build() }
 
+    // Use LaunchedEffect to set up the camera when the composable is first composed
     LaunchedEffect(Unit) {
+        // ProcessCameraProvider is used to bind the camera lifecycle to the composable
         val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
-        cameraProviderFuture.addListener({
-            val cameraProvider = cameraProviderFuture.get()
-            val preview = Preview.Builder().build().also {
-                it.setSurfaceProvider(previewView.surfaceProvider)
-            }
-            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-            try {
-                cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(
-                    lifecycleOwner, cameraSelector, preview, imageCapture
-                )
-            } catch (exc: Exception) {
-                Log.e("Camera", "Use case binding failed", exc)
-            }
-        }, ContextCompat.getMainExecutor(context))
+        // Add a listener to the camera provider future to set up the camera
+        cameraProviderFuture.addListener(
+            {
+                // Get the camera provider instance
+                val cameraProvider = cameraProviderFuture.get()
+                // Set up the preview and bind it to the lifecycle
+                val preview = Preview.Builder().build().also {
+                    it.setSurfaceProvider(previewView.surfaceProvider)
+                }
+                // Use the default back camera for the preview
+                val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+                // Bind the use cases to the lifecycle
+                try {
+                    // Unbind all use cases before binding new ones
+                    cameraProvider.unbindAll()
+                    // Bind the preview and image capture use cases to the lifecycle
+                    cameraProvider.bindToLifecycle(
+                        lifecycleOwner, cameraSelector, preview, imageCapture
+                    )
+                } catch (exc: Exception) {
+                    // Log an error if the use case binding fails
+                    Log.e("Camera", "Use case binding failed", exc)
+                }
+            },
+            // Use the main executor to run the listener on the main thread
+            ContextCompat.getMainExecutor(context)
+        )
     }
 
+    // Create a Box to hold the camera preview and capture button
     Box(Modifier.fillMaxSize()) {
+        // Display the camera preview using AndroidView
         AndroidView({ previewView }, modifier = Modifier.fillMaxSize())
+        // Create a button to capture images
         IconButton(
+            // Capture an image when the button is clicked
             onClick = {
+                // Create a name for the captured image using the current timestamp
                 val name = SimpleDateFormat(
                     "yyyy-MM-dd-HH-mm-ss-SSS",
                     Locale.US
                 ).format(System.currentTimeMillis())
+                // Create content values for the captured image
                 val contentValues = ContentValues().apply {
                     put(MediaStore.MediaColumns.DISPLAY_NAME, name)
                     put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+                    // Set the relative path for Android Q and above
                     if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
                         put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX-Image")
                     }
                 }
+                // Create output options for the image capture
                 val outputOptions = ImageCapture.OutputFileOptions.Builder(
                     context.contentResolver,
                     MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                     contentValues
                 ).build()
 
+                // Capture the image using the image capture use case
                 imageCapture.takePicture(
                     outputOptions,
                     ContextCompat.getMainExecutor(context),
+                    // Handle the result of the image capture
                     object : ImageCapture.OnImageSavedCallback {
+                        // Handle the error during image capture
                         override fun onError(exc: ImageCaptureException) {
                             Log.e("Camera", "Photo capture failed: ${exc.message}", exc)
                         }
 
+                        // Handle the successful image capture
                         override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                             Log.d("Camera", "Photo capture succeeded: ${output.savedUri}")
                             onImageCaptured(output.savedUri)
@@ -1415,6 +1669,7 @@ fun CameraScreen(context: Context, onImageCaptured: (Uri?) -> Unit) {
                     }
                 )
             },
+            // Style the capture button
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(16.dp)
@@ -1423,6 +1678,7 @@ fun CameraScreen(context: Context, onImageCaptured: (Uri?) -> Unit) {
                 .background(Color.White)
                 .border(2.dp, Color.Gray, CircleShape)
         ) {
+            // Display a camera icon inside the capture button
             Icon(
                 imageVector = Icons.Default.Camera,
                 contentDescription = "Capture",
