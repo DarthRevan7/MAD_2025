@@ -56,7 +56,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.voyago.model.TypeTravel
 import com.example.voyago.model.User
-import com.example.voyago.model.stringToCalendar
+import com.example.voyago.toCalendar
 import com.example.voyago.viewmodel.UserViewModel
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -405,7 +405,7 @@ fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
                             email = fields.email,
                             password = fields.password,
                             userDescription = "",
-                            dateOfBirth = Timestamp(stringToCalendar(fields.dateOfBirth).time),
+                            dateOfBirth = Timestamp(fields.dateOfBirth.toCalendar().time),
                             profilePictureUrl = null,
                             typeTravel = selectedTravelTypes.map { TypeTravel.valueOf(it) },
                             desiredDestination = selectedDestinations.toList(),

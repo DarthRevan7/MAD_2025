@@ -19,18 +19,17 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
-import java.util.Locale
-
+import com.example.voyago.toCalendar
+import com.example.voyago.toStringDate
 
 //Function that converts a Long in a Calendar
-fun toCalendar(timeDate: Timestamp): Calendar {
-    var calendarDate = Calendar.getInstance()
-    calendarDate.time = timeDate.toDate()
-    return calendarDate
-}
+//fun toCalendar(timeDate: Timestamp): Calendar {
+//    var calendarDate = Calendar.getInstance()
+//    calendarDate.time = timeDate.toDate()
+//    return calendarDate
+//}
 
 //Trip data structure
 data class Trip(
@@ -276,9 +275,8 @@ data class Trip(
                         Calendar.DAY_OF_YEAR
                     )
                 } else {
-                    // Otherwise, assume it's a String format date and compare
-                    stringToCalendar(activityDate).get(Calendar.YEAR) == current.get(Calendar.YEAR) &&
-                            stringToCalendar(activityDate).get(Calendar.DAY_OF_YEAR) == current.get(
+                    activityDate.toCalendar().get(Calendar.YEAR) == current.get(Calendar.YEAR) &&
+                            activityDate.toCalendar().get(Calendar.DAY_OF_YEAR) == current.get(
                         Calendar.DAY_OF_YEAR
                     )
 
@@ -316,19 +314,6 @@ data class Trip(
     }
 }
 
-fun stringToCalendar(string: String): Calendar {
-    val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.US)   // Define the date format and locale
-    val date =
-        formatter.parse(string)                          // Parse the string into a Date object
-    return Calendar.getInstance().apply {
-        if (date != null) {
-            time =
-                date                                 // Set the Calendar's time to the parsed Date
-        }
-    }
-}
-
-// Checks if the input string can be safely converted to a Long
 fun isTimestampLong(input: String): Boolean {
     return input.toLongOrNull() != null
 }
@@ -1036,8 +1021,7 @@ class TripModel {
                 }
 
                 // Add updated activity to its new date
-                val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-                val newDateKey: String = dateFormat.format(updatedActivity.dateAsCalendar().time)
+                val newDateKey: String = updatedActivity.dateAsCalendar().toStringDate()//dateFormat.format(updatedActivity.dateAsCalendar().time)
                 val updatedList = originalActivities.getOrDefault(
                     newDateKey,
                     emptyList<Activity>()
@@ -1246,8 +1230,7 @@ class TripModel {
         Log.d("TripModel", "Current trip: ${currentTrip.id}")
 
         val updatedActivities = currentTrip.activities.toMutableMap().apply {
-            val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-            val dateKey: String = dateFormat.format(activity.date.toDate())
+            val dateKey: String = activity.dateAsCalendar().toStringDate()//dateFormat.format(activity.date.toDate())
             Log.d("TripModel", "Date key: $dateKey")
 
             val existingActivities = getOrDefault(dateKey, emptyList())

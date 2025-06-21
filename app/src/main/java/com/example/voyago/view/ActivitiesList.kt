@@ -42,12 +42,10 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.clickable
 import com.example.voyago.model.deepCopy
-import com.example.voyago.model.isTimestampLong
-import com.example.voyago.model.stringToCalendar
-import com.example.voyago.model.timestampToCalendar
+import com.example.voyago.toCalendar
+import com.example.voyago.toStringDate
 import com.example.voyago.viewmodel.TripViewModel
 import com.google.firebase.Timestamp
-import java.text.SimpleDateFormat
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
@@ -252,11 +250,16 @@ fun ActivitiesListContent(trip: Trip?, vm: TripViewModel, navController: NavCont
         return
     }
 
-        val dateFormat = SimpleDateFormat(KEY_DATE_FORMAT, Locale.US)
        val sortedDays = trip.activities.keys.sortedBy { key ->
-               if (isTimestampLong(key)) key.toLong()
-                else parseActivityDate(key, dateFormat).timeInMillis
-            }
+           val calendar = key.toCalendar()
+           // Zeroing hours
+           calendar.set(Calendar.HOUR_OF_DAY, 0)
+           calendar.set(Calendar.MINUTE, 0)
+           calendar.set(Calendar.SECOND, 0)
+           calendar.set(Calendar.MILLISECOND, 0)
+           //return calendar for sorting
+           calendar
+       }
     val hasNoActivities = trip.activities.values.all { it.isEmpty() }
     var activityToDelete by rememberSaveable { mutableStateOf<Trip.Activity?>(null) }
 
@@ -292,16 +295,9 @@ fun ActivitiesListContent(trip: Trip?, vm: TripViewModel, navController: NavCont
             )
         } else {
             sortedDays.forEach { day ->
-                Log.d("L1", "Activity List")
 
                 // 修复后的日期计算逻辑
-                val activityCalendar = if (isTimestampLong(day)) {
-                    Log.d("L1", "Day is a timestamp: $day")
-                    timestampToCalendar(day)
-                } else {
-                    Log.d("L1", "Day is a string: $day")
-                    stringToCalendar(day)
-                }
+                val activityCalendar = day.toCalendar()
 
                 Log.d("L1", "Activity calendar: $activityCalendar")
                 Log.d("L1", "Trip start calendar: ${trip.startDateAsCalendar()}")
@@ -412,8 +408,7 @@ private fun reallocateWithShorterInterval(
     oldStartCal: Calendar,
     newStartCal: Calendar,
     newEndCal: Calendar,
-    updatedActivities: MutableMap<String, List<Trip.Activity>>,
-    dateFormat: SimpleDateFormat
+    updatedActivities: MutableMap<String, List<Trip.Activity>>
 ) {
     val newStartDate = Calendar.getInstance().apply {
         timeInMillis = newStartCal.timeInMillis
@@ -431,12 +426,12 @@ private fun reallocateWithShorterInterval(
         set(Calendar.MILLISECOND, 999)
     }
 
-    val lastDayKey = dateFormat.format(newEndDate.time)
+    val lastDayKey = newEndDate.toStringDate()
     val activitiesToLastDay = mutableListOf<Trip.Activity>()
 
     originalActivities.forEach { (oldDateKey, activities) ->
         try {
-            val oldActivityDate = parseActivityDate(oldDateKey, dateFormat)
+            val oldActivityDate = parseActivityDate(oldDateKey)
 
             when {
                 // 活动在新范围内 - 计算相对位置并重新分配
@@ -449,7 +444,7 @@ private fun reallocateWithShorterInterval(
                         add(Calendar.DAY_OF_MONTH, minOf(relativeDay, calculateDaysBetween(newStartCal, newEndCal) - 1))
                     }
 
-                    val newDateKey = dateFormat.format(newActivityDate.time)
+                    val newDateKey = newActivityDate.toStringDate()
                     val updatedActivityList = activities.map { activity ->
                         // 🔴 确保活动的日期也正确更新
                         activity.copy(date = Timestamp(newActivityDate.time))
