@@ -40,12 +40,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.voyago.model.Trip
-import com.example.voyago.model.toCalendar
+import com.example.voyago.parseAndSetTime
+import com.example.voyago.toCalendar
+import com.example.voyago.toStringDate
 import com.example.voyago.viewmodel.TripViewModel
 import com.google.firebase.Timestamp
-import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import java.text.SimpleDateFormat
 
 
 
@@ -92,7 +94,7 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
 
 
     var activityDate by rememberSaveable {
-        mutableStateOf(SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(toCalendar(activityToEdit.date).time))
+        mutableStateOf(toCalendar(activityToEdit.date).toStringDate())
     }
     var selectedTime by rememberSaveable { mutableStateOf(activityToEdit.time) }
 
@@ -145,7 +147,7 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                 val year = toCalendar(calendar).get(Calendar.YEAR)
                 val month = toCalendar(calendar).get(Calendar.MONTH)
                 val day = toCalendar(calendar).get(Calendar.DAY_OF_MONTH)
-                val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                //val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 
                 val startDatePickerDialog = remember {
                     DatePickerDialog(
@@ -186,7 +188,7 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                             } else {
                                 // 日期无效时不更新 activityDate，保持原值
                                 showDateError = true
-                                dateErrorMessage = "Activity date must be within the trip period \n(${dateFormat.format(tripStartCal.time)} - ${dateFormat.format(tripEndCal.time)})"
+                                dateErrorMessage = "Activity date must be within the trip period \n(${tripStartCal.toStringDate()} - ${tripEndCal.toStringDate()})"
                             }
                         }, year, month, day
                     ).apply {
@@ -239,8 +241,7 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                 val calendar = remember {
                     val cal = Calendar.getInstance()
                     try {
-                        val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault())
-                        cal.time = sdf.parse(selectedTime) ?: cal.time
+                        cal.time = parseAndSetTime(cal, selectedTime).time
                     } catch (e: Exception) {
                         // Fallback to default time
                     }
@@ -323,9 +324,8 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                     //Add Button
                     Button(
                         onClick = {
-                            val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
                             val parsedDate = try {
-                                dateFormat.parse(activityDate)
+                                activityDate.toCalendar()
                             } catch (e: Exception) {
                                 null
                             }
@@ -336,13 +336,14 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                                 return@Button // 提前返回，不继续执行
                             }
 
-                            val activityCalendar = Calendar.getInstance().apply {
-                                time = parsedDate
-                                set(Calendar.HOUR_OF_DAY, 0)
-                                set(Calendar.MINUTE, 0)
-                                set(Calendar.SECOND, 0)
-                                set(Calendar.MILLISECOND, 0)
-                            }
+                            val activityCalendar = parsedDate
+//                            Calendar.getInstance().apply {
+//                                time = parsedDate
+//                                set(Calendar.HOUR_OF_DAY, 0)
+//                                set(Calendar.MINUTE, 0)
+//                                set(Calendar.SECOND, 0)
+//                                set(Calendar.MILLISECOND, 0)
+//                            }
 
                             // 再次验证日期范围（双重保险）
                             val tripStartCal = toCalendar(currentTrip.startDate).apply {
@@ -370,6 +371,7 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                             descriptionTouched.value = true
 
                             if (!showDateError && !descriptionHasErrors) {
+
                                 val updatedActivity = Trip.Activity(
                                     id = activityId,
                                     date = Timestamp(activityCalendar.time),
@@ -377,6 +379,8 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                                     isGroupActivity = isGroupActivityChecked,
                                     description = activityDescription
                                 )
+
+                                Log.d("A1", "${updatedActivity.id} - ${updatedActivity.date} - ${updatedActivity.time}")
 
                                 vm.editActivity(activityId, updatedActivity)
                                 navController.popBackStack()

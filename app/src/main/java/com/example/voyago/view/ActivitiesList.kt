@@ -254,8 +254,15 @@ fun ActivitiesListContent(trip: Trip?, vm: TripViewModel, navController: NavCont
 
        val dateFormat = SimpleDateFormat(KEY_DATE_FORMAT, Locale.US)
        val sortedDays = trip.activities.keys.sortedBy { key ->
-               parseActivityDate(key).timeInMillis
-            }
+           val calendar = key.toCalendar()
+           // Zeroing hours
+           calendar.set(Calendar.HOUR_OF_DAY, 0)
+           calendar.set(Calendar.MINUTE, 0)
+           calendar.set(Calendar.SECOND, 0)
+           calendar.set(Calendar.MILLISECOND, 0)
+           //return calendar for sorting
+           calendar
+       }
     val hasNoActivities = trip.activities.values.all { it.isEmpty() }
     var activityToDelete by rememberSaveable { mutableStateOf<Trip.Activity?>(null) }
 
@@ -291,16 +298,9 @@ fun ActivitiesListContent(trip: Trip?, vm: TripViewModel, navController: NavCont
             )
         } else {
             sortedDays.forEach { day ->
-                Log.d("L1", "Activity List")
 
                 // 修复后的日期计算逻辑
-                val activityCalendar = if (isTimestampLong(day)) {
-                    Log.d("L1", "Day is a timestamp: $day")
-                    timestampToCalendar(day)
-                } else {
-                    Log.d("L1", "Day is a string: $day")
-                    day.toCalendar()
-                }
+                val activityCalendar = day.toCalendar()
 
                 Log.d("L1", "Activity calendar: $activityCalendar")
                 Log.d("L1", "Trip start calendar: ${trip.startDateAsCalendar()}")

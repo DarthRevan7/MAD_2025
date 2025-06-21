@@ -1,9 +1,55 @@
 package com.example.voyago
 
 
+import com.google.firebase.Timestamp
 import java.util.Calendar
 import java.util.Locale
 
+
+fun toCalendar(timeDate: Timestamp): Calendar {
+    var calendarDate = Calendar.getInstance()
+    calendarDate.time = timeDate.toDate()
+    return calendarDate
+}
+
+fun parseAndSetTime(calendar: Calendar, timeString: String): Calendar {
+    val parts = timeString.split(" ", ":")
+    var calendarToReturn = calendar
+
+    if (parts.size != 3) {
+        throw IllegalArgumentException("Formato orario non valido: $timeString. Deve essere 'HH:mm AM/PM'.")
+    }
+
+    var ore = parts[0].toIntOrNull() ?: throw IllegalArgumentException("Ore non valide: ${parts[0]}")
+    val minuti = parts[1].toIntOrNull() ?: throw IllegalArgumentException("Minuti non validi: ${parts[1]}")
+    val amPmIndicator = parts[2].uppercase()
+
+    if (ore !in 1..12 || minuti !in 0..59) {
+        throw IllegalArgumentException("Ora o minuti fuori intervallo valido: $timeString")
+    }
+
+    when (amPmIndicator) {
+        "PM" -> {
+            if (ore != 12) {
+                ore += 12
+            }
+        }
+        "AM" -> {
+            if (ore == 12) {
+                ore = 0
+            }
+        }
+        else -> throw IllegalArgumentException("Indicatore AM/PM non valido: ${parts[2]}")
+    }
+
+    calendar.set(Calendar.HOUR_OF_DAY, ore)
+    calendar.set(Calendar.MINUTE, minuti)
+    calendar.set(Calendar.SECOND, 0)
+    calendar.set(Calendar.MILLISECOND, 0)
+
+    calendarToReturn = calendar
+    return calendarToReturn
+}
 
 fun Calendar.toStringDate(): String {
 

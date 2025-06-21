@@ -2,6 +2,7 @@ package com.example.voyago.model
 
 import android.util.Log
 import com.example.voyago.Collections
+import com.example.voyago.toCalendar
 import com.example.voyago.view.isUriString
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp

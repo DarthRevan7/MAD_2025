@@ -43,7 +43,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.voyago.model.Trip
-import com.example.voyago.model.toCalendar
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
