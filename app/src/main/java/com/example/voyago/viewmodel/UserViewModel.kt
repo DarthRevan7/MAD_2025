@@ -236,6 +236,23 @@ class UserViewModel(val model: UserModel) : ViewModel() {
         model.updateUserReliability(userId, delta) { success ->
             onResult(success)
         }
+
+    fun getAllOtherUserIds(loggedUserId: Int, onResult: (List<String>) -> Unit) {
+        Collections.users.get()
+            .addOnSuccessListener { snapshot ->
+                val allUsers = snapshot.toObjects(User::class.java)
+                val otherUserIds = allUsers
+                    .filter { it.id != loggedUserId }
+                    .map { it.id.toString() }
+
+                onResult(otherUserIds)
+            }
+            .addOnFailureListener { error ->
+                Log.e("getAllOtherUserIds", "Error fetching users: ${error.message}")
+                onResult(emptyList())
+            }
+    }
+
 }
 
 object UserFactory : ViewModelProvider.Factory {

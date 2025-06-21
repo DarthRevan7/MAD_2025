@@ -38,6 +38,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.core.text.isDigitsOnly
 import coil3.compose.AsyncImage
+import com.example.voyago.viewmodel.NotificationViewModel
 
 // 在 NewArticle.kt 中的修改部分
 
@@ -46,7 +47,8 @@ import coil3.compose.AsyncImage
 fun CreateArticleScreen(
     navController: NavController,
     articleViewModel: ArticleViewModel,
-    userViewModel: UserViewModel
+    userViewModel: UserViewModel,
+    nvm: NotificationViewModel
 ) {
     var articleTitle by remember { mutableStateOf("") }
     var articleContent by remember { mutableStateOf("") }
@@ -292,9 +294,26 @@ fun CreateArticleScreen(
 
                                 Log.d("CreateArticle", "Publishing article: $newArticle")
 
-                                articleViewModel.publishArticle(newArticle)
+                                val publishedArticle = articleViewModel.publishArticle(newArticle)
 
                                 Log.d("CreateArticle", "Article published successfully")
+
+                                val title = "${newArticle.title}"
+                                val body = "New article!"
+                                val notificationType = "ARTICLE"
+                                val idLink = publishedArticle.id!!
+
+                                userViewModel.getAllOtherUserIds(currentUser.id) { otherUsers ->
+                                    otherUsers.forEach { userId ->
+                                        nvm.sendNotificationToUser(
+                                            userId,
+                                            title,
+                                            body,
+                                            notificationType,
+                                            idLink
+                                        )
+                                    }
+                                }
 
                                 navController.popBackStack()
 

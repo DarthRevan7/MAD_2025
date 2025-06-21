@@ -535,11 +535,13 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
             RequireAuth(navController) {
                 val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
                 val userViewModel: UserViewModel = viewModel(factory = UserFactory)
+                val notificationViewModel: NotificationViewModel = viewModel(factory = NotificationFactory)
 
                 CreateArticleScreen(
                     navController = navController,
                     articleViewModel = articleViewModel,
-                    userViewModel = userViewModel
+                    userViewModel = userViewModel,
+                    nvm = notificationViewModel
                 )
             }
         }
@@ -581,9 +583,9 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
                 viewModel(viewModelStoreOwner = parentEntry, factory = NotificationFactory)
             val uvm: UserViewModel = viewModel(viewModelStoreOwner = parentEntry, factory = Factory)
             val vm: TripViewModel = viewModel(viewModelStoreOwner = parentEntry, factory = Factory)
+            val avm: ArticleViewModel = viewModel(viewModelStoreOwner = parentEntry, factory = ArticleFactory)
 
-
-            NotificationView(navController, nvm, uvm, vm)
+            NotificationView(navController, nvm, uvm, vm, avm)
         }
     }
 }

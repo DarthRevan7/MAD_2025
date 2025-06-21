@@ -70,6 +70,10 @@ class ArticleViewModel(private val model: TheArticlesModel) : ViewModel() {
         }
     }
 
+    fun getArticleById(articleId: Int): Article? {
+        return articleList.value.firstOrNull { it.id == articleId }
+    }
+
     // 更新搜索关键词
     fun updateSearchQuery(query: String) {
         _searchQuery.value = query
@@ -134,7 +138,7 @@ class ArticleViewModel(private val model: TheArticlesModel) : ViewModel() {
     }
 
     // 🔥 按顺序添加文章：使用连续的数字 ID
-    suspend fun publishArticle(article: Article) {
+    suspend fun publishArticle(article: Article):Article {
         try {
             val db = FirebaseFirestore.getInstance()
             val articlesCollection = db.collection("articles")
@@ -156,6 +160,8 @@ class ArticleViewModel(private val model: TheArticlesModel) : ViewModel() {
                     // 忽略刷新错误
                 }
             }
+
+            return articleWithId
 
         } catch (e: Exception) {
             throw e

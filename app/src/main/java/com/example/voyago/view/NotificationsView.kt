@@ -27,6 +27,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.voyago.model.Article
+import com.example.voyago.viewmodel.ArticleViewModel
 import com.example.voyago.viewmodel.NotificationViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
@@ -36,7 +38,8 @@ fun NotificationView(
     navController: NavController,
     nvm: NotificationViewModel,
     uvm: UserViewModel,
-    vm: TripViewModel
+    vm: TripViewModel,
+    avm: ArticleViewModel
 ) {
 
     val user by uvm.loggedUser.collectAsState()
@@ -231,6 +234,17 @@ fun NotificationView(
                                             Log.e("Notification", "Trip not found for ID: $tripId")
                                         }
                                     }
+                                } else if (notification.type == "ARTICLE") {
+                                    val articleId = notification.idLink
+                                    val article = avm.getArticleById(articleId)
+                                    if (article != null) {
+
+                                        navController.navigate("article_detail/${article.id}")
+
+                                    } else {
+                                        Log.e("Notification", "Article not found")
+                                    }
+
                                 }
                             }
                             .padding(8.dp)
