@@ -258,6 +258,49 @@ class ChatViewModel : ViewModel() {
             }
     }
 
+    fun createOrGetPrivateChatRoom(
+        currentUserId: Int,
+        otherUserId: Int,
+        onRoomReady: (roomId: String) -> Unit
+    ) {
+        db.collection("chatRooms")
+            .whereEqualTo("type", "private")
+            .get()
+            .addOnSuccessListener { result ->
+                val existingRoom = result.documents.firstOrNull { doc ->
+                    val participants = (doc["participants"] as? List<*>)?.mapNotNull {
+                        when (it) {
+                            is Number -> it.toInt()
+                            is String -> it.toIntOrNull()
+                            else -> null
+                        }
+                    } ?: emptyList()
+
+                    participants.contains(currentUserId) && participants.contains(otherUserId)
+                }
+
+                if (existingRoom != null) {
+                    onRoomReady(existingRoom.id)
+                } else {
+                    // Create a new private room
+                    val newRoom = hashMapOf(
+                        "type" to "private",
+                        "participants" to listOf(currentUserId, otherUserId),
+                        "name" to "", // optional
+                        "lastMessage" to "",
+                        "usersNotRead" to listOf<String>()
+                    )
+
+                    db.collection("chatRooms")
+                        .add(newRoom)
+                        .addOnSuccessListener { docRef ->
+                            onRoomReady(docRef.id)
+                        }
+                }
+            }
+    }
+
+
 
 }
 

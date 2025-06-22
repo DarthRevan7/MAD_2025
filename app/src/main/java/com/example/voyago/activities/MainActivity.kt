@@ -824,6 +824,13 @@ fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = ArticleFactory
             )
+
+            // Create an instance of the ChatViewModel using the ChatFactory
+            val chatViewModel: ChatViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = ChatFactory
+            )
+
             // Get the userId from the arguments, defaulting to -1 if not provided
             val userId = entry.arguments?.getInt("userId") ?: -1
             // Pass the NavController, ViewModels, userId to the UserProfileScreen composable
@@ -833,7 +840,8 @@ fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
                 vm2 = vm2,
                 userId = userId,
                 uvm = userViewModel,
-                rvm = reviewViewModel
+                rvm = reviewViewModel,
+                chatViewModel = chatViewModel
             )
         }
 
@@ -1121,6 +1129,11 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
                 viewModelStoreOwner = myTripGraphEntry,
                 factory = ArticleFactory
             )
+            // Create an instance of the ChatViewModel using the ChatFactory
+            val chatViewModel: ChatViewModel = viewModel(
+                viewModelStoreOwner = myTripGraphEntry,
+                factory = ChatFactory
+            )
             // Get the userId from the arguments, defaulting to -1 if not provided
             val userId = entry.arguments?.getInt("userId") ?: -1
             // Pass the NavController, ViewModels, userId to the UserProfileScreen composable
@@ -1130,7 +1143,8 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
                 vm2 = articleViewModel,
                 userId = userId,
                 uvm = userViewModel,
-                rvm = reviewViewModel
+                rvm = reviewViewModel,
+                chatViewModel = chatViewModel
             )
         }
     }
@@ -1238,6 +1252,11 @@ fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
                 viewModelStoreOwner = homeGraphEntry,
                 factory = ArticleFactory
             )
+            // Create an instance of the ChatViewModel using the ChatFactory
+            val chatViewModel: ChatViewModel = viewModel(
+                viewModelStoreOwner = homeGraphEntry,
+                factory = ChatFactory
+            )
             // Get the userId from the arguments, defaulting to -1 if not provided
             val userId = entry.arguments?.getInt("userId") ?: -1
             // Pass the NavController, ViewModels, userId to the UserProfileScreen composable
@@ -1247,7 +1266,8 @@ fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
                 vm2 = articleViewModel,
                 userId = userId,
                 uvm = userViewModel,
-                rvm = reviewViewModel
+                rvm = reviewViewModel,
+                chatViewModel = chatViewModel
             )
         }
     }
@@ -1462,6 +1482,11 @@ fun NavGraphBuilder.profileNavGraph(navController: NavHostController) {
                 viewModelStoreOwner = profileGraphEntry,
                 factory = ArticleFactory
             )
+            // Create an instance of the ChatViewModel using the ChatFactory
+            val chatViewModel: ChatViewModel = viewModel(
+                viewModelStoreOwner = profileGraphEntry,
+                factory = ChatFactory
+            )
             // Get the userId from the arguments, defaulting to -1 if not provided
             val userId = entry.arguments?.getInt("userId") ?: -1
             // Pass the NavController, ViewModels, userId to the UserProfileScreen composable
@@ -1471,7 +1496,8 @@ fun NavGraphBuilder.profileNavGraph(navController: NavHostController) {
                 vm2 = articleViewModel,
                 userId = userId,
                 uvm = userViewModel,
-                rvm = reviewViewModel
+                rvm = reviewViewModel,
+                chatViewModel = chatViewModel
             )
         }
 
@@ -1548,6 +1574,38 @@ fun NavGraphBuilder.profileNavGraph(navController: NavHostController) {
                 uvm = userViewModel,
                 rvm = reviewViewModel,
                 nvm = notificationViewModel
+            )
+        }
+
+        composable(
+            "chat/{roomId}",
+            arguments = listOf(navArgument("roomId") { type = NavType.StringType })
+        ) { entry ->
+
+            val roomId = entry.arguments?.getString("roomId") ?: return@composable
+
+            // Get the back stack entry for the profile graph
+            val profileGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Profile.route)
+            }
+
+            // Create an instance of the UserViewModel using the Factory
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = profileGraphEntry,
+                factory = Factory
+            )
+
+            // Create an instance of the ChatViewModel using the ChatFactory
+            val chatViewModel: ChatViewModel = viewModel(
+                viewModelStoreOwner = profileGraphEntry,
+                factory = ChatFactory
+            )
+
+            SingleChatScreen(
+                chatViewModel = chatViewModel,
+                roomId = roomId,
+                uvm = userViewModel,
+                onBack = { navController.popBackStack() }
             )
         }
     }
