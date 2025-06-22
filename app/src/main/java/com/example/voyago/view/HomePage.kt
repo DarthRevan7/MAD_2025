@@ -1,7 +1,6 @@
 package com.example.voyago.view
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -56,39 +55,35 @@ import com.example.voyago.model.Article
 import com.example.voyago.model.Trip
 import com.example.voyago.viewmodel.ArticleViewModel
 import com.example.voyago.viewmodel.TripViewModel
-import java.util.Calendar
 
 @Composable
 fun HomePageScreen(
-    navController: NavHostController,   // 如果你需要从首页再导航出去
-    vm1: TripViewModel,                  // 或者别的 ViewModel
-    onTripClick: (Trip) -> Unit = {},
+    navController: NavHostController,
+    vm1: TripViewModel,
     vm2: ArticleViewModel,
 ) {
 
-
-//    val tripLists by vm1.tripList.collectAsState()
-
+    // Collect the latest list of articles from the article view model as state
     val articles by vm2.articleList.collectAsState()
-    LaunchedEffect(articles) {
-        Log.d("HomePage", "🔥 Articles in HomePage: ${articles.size}")
-        articles.forEachIndexed { index, article ->
-            Log.d("HomePage", "🔥 HomePage Article $index: ${article.title}")
-        }
-    }
+
+    // Number of articles currently visible on the screen (starts at 5)
     var displayCount by remember { mutableIntStateOf(5) }
+
+    // Keeps track of the scroll position for the entire page
     val scrollState = rememberScrollState()
-    // 1. 先拿到"现在"的时间点
-    val now = remember { Calendar.getInstance() }
-    // 2. 按条件分组
+
+    // Reset any filters applied to trip data
     vm1.resetFilters()
 
+    // Get list of completed trips (from a Flow), and filter to only published ones
     val completedTrips = vm1.getCompletedTripsList()
         .collectAsState(initial = emptyList()).value.filter { trip -> trip.published }
 
+    // Get list of upcoming trips (from a Flow), and filter to only published ones
     val upcomingTrips = vm1.getUpcomingTripsList()
         .collectAsState(initial = emptyList()).value.filter { trip -> trip.published }
 
+    // Column is the root container for the homepage; vertical layout with padding and scroll
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -99,9 +94,10 @@ fun HomePageScreen(
                 end = 24.dp,
                 bottom = 12.dp
             ),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+        verticalArrangement = Arrangement.spacedBy(24.dp)   // Spacing between child elements
     ) {
 
+        // Section upcoming trips
         SectionTag(
             text = "Popular Trips", modifier = Modifier
                 .width(117.dp)
@@ -109,6 +105,7 @@ fun HomePageScreen(
 
         )
 
+        // Horizontally scrollable list of popular upcoming trips
         PopularTravel(
             popularTrips = upcomingTrips,
             modifier = Modifier
@@ -116,11 +113,13 @@ fun HomePageScreen(
                 .height(180.dp),
 
             onTripClick = { trip ->
-                vm1.setSelectedTrip(trip)
-                vm1.userAction = TripViewModel.UserAction.VIEW_TRIP
-                navController.navigate("trip_details")
+                vm1.setSelectedTrip(trip)   // Store selected trip in ViewModel
+                vm1.userAction = TripViewModel.UserAction.VIEW_TRIP     // Set action type
+                navController.navigate("trip_details")      // Navigate to trip details screen
             }
         )
+
+        //Completed trips section
         SectionTag(
             text = "Popular Completed Trips", modifier = Modifier
                 .width(190.dp)
@@ -128,6 +127,7 @@ fun HomePageScreen(
 
         )
 
+        // Horizontally scrollable list of popular completed trips
         PopularTravel(
             popularTrips = completedTrips,
             modifier = Modifier
@@ -135,35 +135,38 @@ fun HomePageScreen(
                 .height(180.dp),
 
             onTripClick = { trip ->
-                vm1.setSelectedTrip(trip)
-                navController.navigate("trip_details")
+                vm1.setSelectedTrip(trip)   // Store selected trip
+                navController.navigate("trip_details")  // Navigate to trip detail page
             }
         )
-        // 在 Column 中的 Article 部分，替换为：
+
+        //Article section
         SectionTag(
             text = "Article", modifier = Modifier
                 .width(82.dp)
                 .height(32.dp)
         )
 
+        // Determine which articles to show (based on display count)
         val toDisplay = articles.take(displayCount)
 
-
-        // 🔥 显示每篇文章
+        // Loop through and show each article using the ArticleShow composable
         toDisplay.forEach { article ->
-            Log.d("HomePage", "🔥 Displaying article: ${article.title}")
             ArticleShow(
                 article = article,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
                     .clickable {
+                        // Navigate to article detail page when clicked
                         navController.navigate("article_detail/${article.id}")
                     }
             )
         }
 
+        //Load More Button for Articles
         if (displayCount < articles.size) {
+            // Show a clickable "Show more…" if there are more articles to display
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
@@ -174,15 +177,13 @@ fun HomePageScreen(
                     style = MaterialTheme.typography.labelLarge,
                     modifier = Modifier
                         .clickable {
-                            // 每次增加5条，最多到文章总数
+                            // Load 5 more articles, but not more than available
                             displayCount = (displayCount + 5).coerceAtMost(articles.size)
                         }
                         .padding(4.dp)
                 )
             }
         }
-
-
     }
 }
 
@@ -192,8 +193,7 @@ fun SectionTag(
     text: String,
     modifier: Modifier = Modifier,
     backgroundColor: Color = Color(0xFFCCC2DC),
-    contentAlignment: Alignment = Alignment.Center,    // 直接全中
-    paddingValues: PaddingValues = PaddingValues(horizontal = 22.dp, vertical = 0.dp),
+    contentAlignment: Alignment = Alignment.Center,
     shape: RoundedCornerShape = RoundedCornerShape(8.dp),
     borderColor: Color = Color.Black,
     borderWidth: Dp = 1.dp,
@@ -201,21 +201,23 @@ fun SectionTag(
     fontSize: TextUnit = 14.sp,
     fontWeight: FontWeight = FontWeight.Black,
     fontFamily: FontFamily = FontFamily.SansSerif,
-    textAlign: TextAlign = TextAlign.Center          // 新增：文字对齐
+    textAlign: TextAlign = TextAlign.Center
 ) {
+    // A Box layout is used here to encapsulate the styling and alignment logic
     Box(
         modifier = modifier
-            .fillMaxWidth()                            // 宽度撑满
+            .fillMaxWidth()
             .clip(shape)
             .border(borderWidth, borderColor, shape)
             .background(backgroundColor, shape),
-        contentAlignment = contentAlignment            // Box 居中子元素
+        contentAlignment = contentAlignment
     ) {
+        // The actual Text displayed in the tag
         Text(
             text = text,
             color = textColor,
-            textAlign = textAlign,                     // 应用对齐
-            modifier = Modifier.fillMaxWidth(),        // 让 Text 自身也撑满，这样 textAlign 生效
+            textAlign = textAlign,
+            modifier = Modifier.fillMaxWidth(),
             style = TextStyle(
                 fontSize = fontSize,
                 fontWeight = fontWeight,
@@ -231,31 +233,37 @@ fun PopularTravel(
     modifier: Modifier = Modifier,
     onTripClick: (Trip) -> Unit
 ) {
-    val context = LocalContext.current
+
+    // Create and remember the pager state for the horizontal pager
+    // The pager will have as many pages as there are trips
     val pagerState = rememberPagerState { popularTrips.size }
+
+    // HorizontalPager is used to create a horizontally scrolling carousel of trip cards
     HorizontalPager(
-        state = pagerState,
+        state = pagerState,     // Connects the pager state to control and observe scrolling
         modifier = modifier
             .fillMaxWidth()
             .height(180.dp),
         contentPadding = PaddingValues(
             start = 0.dp,
             end = 64.dp
-        ), // 左右各留 32dp
-        pageSpacing = 8.dp                                   // 卡片间距
+        ),
+        pageSpacing = 8.dp      // Space between each card (visually separates items)
     ) { page ->
+        // Get the corresponding trip for this page index
         val proposal = popularTrips[page]
+
+        // Each page displays a Box that holds a clickable TripCard
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .clip(MaterialTheme.shapes.medium)
+                .clip(MaterialTheme.shapes.medium)      // Applies medium shape clipping
                 .clickable { onTripClick(proposal) }
 
         ) {
-            // 你自己的卡片实现，比如：
+            // Custom composable that displays the trip's information
             TripCard(
-                proposal = proposal,
-                modifier = Modifier.matchParentSize(),
+                proposal = proposal
             )
         }
     }
@@ -266,46 +274,61 @@ fun PopularTravel(
 @SuppressLint("DiscouragedApi")
 @Composable
 private fun TripCard(
-    proposal: Trip,
-    modifier: Modifier = Modifier,
+    proposal: Trip      // Represents a single trip proposal containing destination, title, and photo info
 ) {
-    val context = LocalContext.current
+    // Mutable state to hold the URL of the image to be displayed
     var imageUrl by remember { mutableStateOf<String?>(null) }
+
+    // Side effect to load the image URL when the composable enters the composition or the photo changes
     LaunchedEffect(proposal.photo) {
+        // Suspends if needed and fetches the image URL from the Trip model
         imageUrl = proposal.getPhoto()
     }
+
+    // Root container for the trip card
     Box(
         modifier = Modifier
             .size(width = 280.dp, height = 160.dp)
             .clip(RoundedCornerShape(16.dp))
     ) {
+        // Loads and displays the trip image using Glide
         GlideImage(
             model = imageUrl,
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.matchParentSize()
         )
+
+        // Overlay with vertical gradient to improve text readability over the image
         Box(
             modifier = Modifier
                 .matchParentSize()
                 .background(
                     Brush.verticalGradient(
-                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.6f)),
-                        startY = 80f
+                        colors = listOf(
+                            Color.Transparent, // Transparent at the top
+                            Color.Black.copy(alpha = 0.6f)  // Dark fade at the bottom
+                        ),
+                        startY = 80f        // Start the gradient fade from halfway down
                     )
                 )
         )
+
+        // Text content shown at the bottom-left of the card
         Column(
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .padding(12.dp)
         ) {
+            // Destination name
             Text(
                 text = proposal.destination,
                 style = MaterialTheme.typography.titleLarge.copy(color = Color.White),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
+
+            // Short trip title
             Text(
                 text = proposal.title,
                 style = MaterialTheme.typography.bodySmall.copy(color = Color.White),
@@ -315,39 +338,42 @@ private fun TripCard(
     }
 }
 
-
-// 修改 HomePage.kt 中的 ArticleShow 组件：
-
+// Display an article
+@SuppressLint("DiscouragedApi")
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun ArticleShow(
-    article: Article,  // 🔄 改为接收整个 Article 对象而不是单独的字段
+    article: Article,
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null
 ) {
+    // A state variable to store the image URL from Firebase or any remote source
     var imageUrl by remember { mutableStateOf<String?>(null) }
 
-    // 🔄 使用 LaunchedEffect 异步获取 Firebase Storage URL
+    // Launch side-effect to asynchronously fetch the image URL whenever the article's photo field changes
     LaunchedEffect(article.photo) {
+        // Fetch image
         imageUrl = article.getPhoto()
     }
 
+    // Main container laid out horizontally: image on the left, text on the right
     Row(
         modifier = modifier
             .fillMaxWidth()
             .padding(4.dp)
-        .then(
-            if (onClick != null) {
-                Modifier.clickable { onClick() }
-            } else {
-                Modifier
-            }
+            .then(
+                if (onClick != null) {
+                    Modifier.clickable { onClick() }    // Add clickable modifier if an onClick is provided
+                } else {
+                    Modifier    // Otherwise, do nothing
+                }
             ),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 🔄 使用 GlideImage 和 Firebase Storage URL
+        // IMAGE DISPLAY SECTION
         when {
             imageUrl != null -> {
+                // If image URL was successfully fetched, load it using GlideImage
                 GlideImage(
                     model = imageUrl,
                     contentDescription = article.title,
@@ -357,14 +383,20 @@ fun ArticleShow(
                         .clip(RoundedCornerShape(8.dp))
                 )
             }
-            // 备用方案：如果 imageUrl 为空，尝试本地资源
-            !article.photo.isNullOrEmpty() -> {
+
+            article.photo.isNotEmpty() -> {
+                // If imageUrl is null but article.photo has a local image name, try loading from drawable
                 val context = LocalContext.current
                 val resId = remember(article.photo) {
-                    context.resources.getIdentifier(article.photo.toString(), "drawable", context.packageName)
+                    context.resources.getIdentifier(
+                        article.photo.toString(),   // Name of the local drawable resource
+                        "drawable",
+                        context.packageName
+                    )
                 }
 
                 if (resId != 0) {
+                    // If valid resource ID is found, load it using AsyncImage
                     AsyncImage(
                         model = resId,
                         contentDescription = article.title,
@@ -374,7 +406,7 @@ fun ArticleShow(
                             .clip(RoundedCornerShape(8.dp))
                     )
                 } else {
-                    // 占位图
+                    // If the drawable resource does not exist, show a placeholder
                     Box(
                         modifier = Modifier
                             .size(100.dp)
@@ -386,8 +418,9 @@ fun ArticleShow(
                     }
                 }
             }
-            // 默认占位图
+
             else -> {
+                // Fallback if no image URL or local photo is available
                 Box(
                     modifier = Modifier
                         .size(100.dp)
@@ -400,21 +433,27 @@ fun ArticleShow(
             }
         }
 
+        // Spacing between image and text
         Spacer(modifier = Modifier.width(16.dp))
 
+        // TEXT CONTENT SECTION
         Column(modifier = Modifier.weight(1f)) {
+            // Article title
             Text(
-                text = article.title ?: "No Title",
+                text = article.title ?: "No Title", // Fallback if title is null
                 style = MaterialTheme.typography.titleMedium,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
+                maxLines = 2,   // Limit to 2 lines
+                overflow = TextOverflow.Ellipsis    // Truncate with ellipsis if too long
             )
+
             Spacer(Modifier.height(4.dp))
+
+            // Article body preview/description
             Text(
-                text = article.text ?: "No Description",
+                text = article.text ?: "No Description",    // Fallback if body text is null
                 style = MaterialTheme.typography.bodyMedium,
-                maxLines = 5,
-                overflow = TextOverflow.Ellipsis
+                maxLines = 5,   // Show only the first 5 lines
+                overflow = TextOverflow.Ellipsis    // Ellipsis for overflow
             )
         }
     }
