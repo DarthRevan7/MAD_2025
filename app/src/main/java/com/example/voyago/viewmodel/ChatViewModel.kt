@@ -134,21 +134,99 @@ class ChatViewModel : ViewModel() {
             "imageUrl" to message.imageUrl
         )
 
-        db.collection("chatRooms")
-            .document(roomId)
+        val chatRoomRef = db.collection("chatRooms").document(roomId)
+
+        // Add the message to the messages subcollection
+        chatRoomRef
             .collection("messages")
             .add(messageMap)
+            .addOnSuccessListener {
+                // Once message is successfully added, update lastMessage field
+                chatRoomRef.update(
+                    mapOf(
+                        "lastMessage" to message.content,
+                        "lastMessageTimestamp" to message.timestamp,
+
+                    )
+                )
+            }
     }
 
-    private val _chatRoomName = MutableStateFlow("")
-    val chatRoomName: StateFlow<String> = _chatRoomName
+    private val _chatRoomNames = MutableStateFlow<Map<String, String>>(emptyMap())
+    val chatRoomNames: StateFlow<Map<String, String>> = _chatRoomNames
 
-    fun fetchChatRoomName(roomId: String) {
+    fun fetchChatRoomName(roomId: String, currentUserId: Int) {
+        // If already fetched, don't fetch again
+        if (_chatRoomNames.value.containsKey(roomId)) return
+
         db.collection("chatRooms")
             .document(roomId)
             .get()
             .addOnSuccessListener { doc ->
-                _chatRoomName.value = doc.getString("name") ?: "Chat"
+                val data = doc.data
+                val type = data?.get("type") as? String ?: "private"
+                val nameFromRoom = data?.get("name") as? String ?: "Chat"
+
+                val participantsRaw = data?.get("participants")
+                val participants: List<Int> = when (participantsRaw) {
+                    is List<*> -> participantsRaw.mapNotNull {
+                        when (it) {
+                            is Number -> it.toInt()
+                            is String -> it.toIntOrNull()
+                            else -> null
+                        }
+                    }
+                    is Map<*, *> -> participantsRaw.values.mapNotNull { inner ->
+                        when (inner) {
+                            is Map<*, *> -> inner.values.firstOrNull()?.let {
+                                when (it) {
+                                    is Number -> it.toInt()
+                                    is String -> it.toIntOrNull()
+                                    else -> null
+                                }
+                            }
+                            else -> null
+                        }
+                    }
+                    else -> emptyList()
+                }
+
+                if (type == "private" && participants.size == 2) {
+                    val otherParticipantId = participants.firstOrNull { it != currentUserId }
+                    if (otherParticipantId != null) {
+                        db.collection("users")
+                            .whereEqualTo("id", otherParticipantId)
+                            .get()
+                            .addOnSuccessListener { userSnapshot ->
+                                val userDoc = userSnapshot.documents.firstOrNull()
+                                val displayName = if (userDoc != null) {
+                                    val firstname = userDoc.getString("firstname") ?: ""
+                                    val surname = userDoc.getString("surname") ?: ""
+                                    "$firstname $surname"
+                                } else {
+                                    "Unknown User"
+                                }
+
+                                _chatRoomNames.value = _chatRoomNames.value.toMutableMap().apply {
+                                    put(roomId, displayName)
+                                }
+                            }
+                            .addOnFailureListener {
+                                _chatRoomNames.value = _chatRoomNames.value.toMutableMap().apply {
+                                    put(roomId, "Unknown User")
+                                }
+                            }
+                    }
+                } else {
+                    _chatRoomNames.value = _chatRoomNames.value.toMutableMap().apply {
+                        put(roomId, nameFromRoom)
+                    }
+                }
+            }
+            .addOnFailureListener {
+                _chatRoomNames.value = _chatRoomNames.value.toMutableMap().apply {
+                    put(roomId, "Unknown Chat")
+                }
             }
     }
 
