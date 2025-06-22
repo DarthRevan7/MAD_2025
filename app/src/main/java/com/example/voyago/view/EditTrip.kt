@@ -949,15 +949,28 @@ private fun updateTripAndNavigate(
     imageUri: Uri?
 ) {
     // Update the editable trip object with the latest user input
-    vm.editTrip = vm.editTrip.copy(
-        typeTravel = selected.toList(),
-        title = title,
-        destination = destination,
-        groupSize = groupSize,
-        photo = imageUri?.toString() ?: vm.editTrip.photo,
-        startDate = Timestamp(startCalendar.time),
-        endDate = Timestamp(endCalendar.time)
-    )
+    if(imageUri != null) {
+        vm.editTrip = vm.editTrip.copy(
+            typeTravel = selected.toList(),
+            title = title,
+            destination = destination,
+            groupSize = groupSize,
+            photo = imageUri.toString(),
+            startDate = Timestamp(startCalendar.time),
+            endDate = Timestamp(endCalendar.time)
+        )
+    }
+    else {
+        vm.editTrip = vm.editTrip.copy(
+            typeTravel = selected.toList(),
+            title = title,
+            destination = destination,
+            groupSize = groupSize,
+            photo = vm.editTrip.photo,
+            startDate = Timestamp(startCalendar.time),
+            endDate = Timestamp(endCalendar.time)
+        )
+    }
 
     // Update selectedTrip to reflect changes made in editTrip
     vm.setSelectedTrip(vm.editTrip)
