@@ -1,9 +1,7 @@
 package com.example.voyago.view
 
-
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
-import android.util.Log
 import android.widget.DatePicker
 import android.widget.TimePicker
 import androidx.compose.foundation.background
@@ -48,57 +46,60 @@ import com.google.firebase.Timestamp
 import java.util.Calendar
 import java.util.Locale
 
-
+// Function that permits the user to edit an activity
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditActivity(navController: NavController, vm: TripViewModel, activityId: Int) {
 
-    //  修复：使用更可靠的方式获取当前行程
+    // Determine which trip to use based on the user's current action (editing or creating a trip)
     val currentTrip = when (vm.userAction) {
         TripViewModel.UserAction.EDIT_ACTIVITY -> {
 
             if (vm.editTrip.isValid()) vm.editTrip else vm.selectedTrip.value
         }
+
         TripViewModel.UserAction.CREATE_TRIP -> {
 
             if (vm.newTrip.isValid()) vm.newTrip else vm.selectedTrip.value
         }
+
         else -> vm.selectedTrip.value
     }
 
-    //  添加调试日志
-    Log.d("EditActivity", "=== Debug Info ===")
-    Log.d("EditActivity", "User Action: ${vm.userAction}")
-    Log.d("EditActivity", "Activity ID to find: $activityId")
-    Log.d("EditActivity", "Current trip ID: ${currentTrip.id}")
-    Log.d("EditActivity", "Current trip title: ${currentTrip.title}")
-    Log.d("EditActivity", "Activities count: ${currentTrip.activities.values.flatten().size}")
+    // Find the activity the user wants to edit using the provided activityId
     val activityToEdit = currentTrip.activities.values.flatten().find { it.id == activityId }
 
+    // If the activity does not exist, display an error and exit the function early
     if (activityToEdit == null) {
         Text("Activity not found.")
         return
     }
 
+    // State variables for form fields initialized with existing activity values.
     var isGroupActivityChecked by rememberSaveable { mutableStateOf(activityToEdit.isGroupActivity) }
-
     var activityDescription by rememberSaveable { mutableStateOf(activityToEdit.description) }
-    var descriptionTouched = remember {mutableStateOf(false)}
+
+    // Tracks whether the description input field has been interacted with.
+    var descriptionTouched = remember { mutableStateOf(false) }
+
+    // Validation: Check if the description is not empty and contains at least one letter.
     val descriptionHasErrors by remember {
         derivedStateOf {
             descriptionTouched.value && (activityDescription.isBlank() || !activityDescription.any { it.isLetter() })
         }
     }
 
-
+    // State for storing the selected date and time
     var activityDate by rememberSaveable {
         mutableStateOf(toCalendar(activityToEdit.date).toStringDate())
     }
     var selectedTime by rememberSaveable { mutableStateOf(activityToEdit.time) }
 
+    // State for managing date validation errors
     var showDateError by rememberSaveable { mutableStateOf(false) }
     var dateErrorMessage by rememberSaveable { mutableStateOf("") }
 
+    // Main layout container
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -106,6 +107,7 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
     ) {
         val listState = rememberLazyListState()
 
+        // Scrollable vertical list of form fields and buttons
         LazyColumn(
             state = listState,
             modifier = Modifier
@@ -120,7 +122,7 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            //Group Activity selection
+            // Checkbox for group activity
             item {
                 Row(
                     modifier = Modifier
@@ -138,15 +140,15 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                 }
             }
 
-            //Select Date Button
+            // Date picker for selecting the activity date
             item {
                 val context = LocalContext.current
                 val calendar = activityToEdit.date
                 val year = toCalendar(calendar).get(Calendar.YEAR)
                 val month = toCalendar(calendar).get(Calendar.MONTH)
                 val day = toCalendar(calendar).get(Calendar.DAY_OF_MONTH)
-                //val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 
+                // Create and configure a DatePickerDialog
                 val startDatePickerDialog = remember {
                     DatePickerDialog(
                         context,
@@ -161,7 +163,7 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                                 set(Calendar.MILLISECOND, 0)
                             }
 
-                            // 检查选择的日期是否在行程日期范围内
+                            // Convert trip start and end dates to Calendar for comparison
                             val tripStartCal = toCalendar(currentTrip.startDate).apply {
                                 set(Calendar.HOUR_OF_DAY, 0)
                                 set(Calendar.MINUTE, 0)
@@ -176,21 +178,24 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                                 set(Calendar.MILLISECOND, 999)
                             }
 
-                            val isValid = !pickedCalendar.before(tripStartCal) && !pickedCalendar.after(tripEndCal)
+                            // Validate that selected date is within trip range
+                            val isValid =
+                                !pickedCalendar.before(tripStartCal) && !pickedCalendar.after(
+                                    tripEndCal
+                                )
 
                             if (isValid) {
-                                // 只有在日期有效时才更新 activityDate
                                 activityDate = "$d/${m + 1}/$y"
                                 showDateError = false
                                 dateErrorMessage = ""
                             } else {
-                                // 日期无效时不更新 activityDate，保持原值
                                 showDateError = true
-                                dateErrorMessage = "Activity date must be within the trip period \n(${tripStartCal.toStringDate()} - ${tripEndCal.toStringDate()})"
+                                dateErrorMessage =
+                                    "Activity date must be within the trip period \n(${tripStartCal.toStringDate()} - ${tripEndCal.toStringDate()})"
                             }
                         }, year, month, day
                     ).apply {
-                        // 设置日期选择器的最小和最大日期限制
+                        // Restrict date picker to the trip period only
                         val tripStartCal = toCalendar(currentTrip.startDate).apply {
                             set(Calendar.HOUR_OF_DAY, 0)
                             set(Calendar.MINUTE, 0)
@@ -210,6 +215,7 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                     }
                 }
 
+                // Button to launch date picker dialog
                 Button(
                     onClick = { startDatePickerDialog.show() },
                     modifier = Modifier
@@ -223,6 +229,7 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                     Text(if (activityDate.isNotEmpty()) "Selected Date: $activityDate" else "Select date")
                 }
 
+                // Display error message if the selected date is invalid
                 if (showDateError) {
                     Text(
                         text = dateErrorMessage,
@@ -233,20 +240,21 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                 }
             }
 
-            //Select Time Button
+            // Time Picker for selecting the activity time
             item {
                 val context = LocalContext.current
                 val calendar = remember {
                     val cal = Calendar.getInstance()
                     try {
                         cal.time = parseAndSetTime(cal, selectedTime).time
-                    } catch (e: Exception) {
-                        // Fallback to default time
+                    } catch (_: Exception) {
+                        cal
                     }
                     cal
                 }
                 val showTimePicker = remember { mutableStateOf(false) }
 
+                // If true, show a TimePickerDialog
                 if (showTimePicker.value) {
                     TimePickerDialog(
                         context,
@@ -272,6 +280,7 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                     ).show()
                 }
 
+                // Button to show time picker dialog
                 Button(
                     onClick = { showTimePicker.value = true },
                     modifier = Modifier
@@ -286,7 +295,7 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                 }
             }
 
-            //Activity Description
+            // Input field for activity description with real-time validation
             item {
                 ValidatingInputTextField(
                     activityDescription,
@@ -299,7 +308,7 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                 )
             }
 
-            //Cancel Button and Add Button
+            // Buttons: Cancel and Update
             item {
                 Row(
                     modifier = Modifier
@@ -307,7 +316,7 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                         .padding(vertical = 24.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    //Cancel Button
+                    // Cancel button: navigate back without saving
                     Button(
                         onClick = { navController.popBackStack() },
                         modifier = Modifier
@@ -319,31 +328,24 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
 
                     Spacer(modifier = Modifier.width(16.dp))
 
-                    //Add Button
+                    // Update button: validate inputs and submit the updated activity
                     Button(
                         onClick = {
                             val parsedDate = try {
                                 activityDate.toCalendar()
-                            } catch (e: Exception) {
+                            } catch (_: Exception) {
                                 null
                             }
 
+                            // If date is invalid, show error
                             if (parsedDate == null) {
                                 showDateError = true
                                 dateErrorMessage = "Invalid date format. Please select a date."
-                                return@Button // 提前返回，不继续执行
+                                return@Button
                             }
 
+                            // Validate that date is within the trip duration
                             val activityCalendar = parsedDate
-//                            Calendar.getInstance().apply {
-//                                time = parsedDate
-//                                set(Calendar.HOUR_OF_DAY, 0)
-//                                set(Calendar.MINUTE, 0)
-//                                set(Calendar.SECOND, 0)
-//                                set(Calendar.MILLISECOND, 0)
-//                            }
-
-                            // 再次验证日期范围（双重保险）
                             val tripStartCal = toCalendar(currentTrip.startDate).apply {
                                 set(Calendar.HOUR_OF_DAY, 0)
                                 set(Calendar.MINUTE, 0)
@@ -358,7 +360,10 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                                 set(Calendar.MILLISECOND, 999)
                             }
 
-                            val isDateValid = !activityCalendar.before(tripStartCal) && !activityCalendar.after(tripEndCal)
+                            val isDateValid =
+                                !activityCalendar.before(tripStartCal) && !activityCalendar.after(
+                                    tripEndCal
+                                )
 
                             if (!isDateValid) {
                                 showDateError = true
@@ -366,10 +371,12 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                                 return@Button
                             }
 
+                            // Trigger description validation
                             descriptionTouched.value = true
 
+                            // Only proceed if all fields are valid
                             if (!showDateError && !descriptionHasErrors) {
-
+                                // Create updated activity object
                                 val updatedActivity = Trip.Activity(
                                     id = activityId,
                                     date = Timestamp(activityCalendar.time),
@@ -378,9 +385,10 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                                     description = activityDescription
                                 )
 
-                                Log.d("A1", "${updatedActivity.id} - ${updatedActivity.date} - ${updatedActivity.time}")
-
+                                //Update the activity through the ViewModel
                                 vm.editActivity(activityId, updatedActivity)
+                                
+                                // Navigate back after updating
                                 navController.popBackStack()
                             }
                         },
@@ -390,14 +398,8 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                     ) {
                         Text("Update")
                     }
+                }
             }
         }
     }
 }
-}
-
-
-
-
-
-
