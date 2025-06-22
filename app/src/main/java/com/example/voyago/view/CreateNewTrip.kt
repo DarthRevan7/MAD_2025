@@ -75,24 +75,26 @@ fun CreateNewTrip(
     uvm: UserViewModel
 ) {
 
+    // Set the current user action to CREATE_TRIP
     vm.userAction = TripViewModel.UserAction.CREATE_TRIP
 
-    // 获取当前用户ID
+    // Observe the currently logged-in user from the UserViewModel
     val currentUser by uvm.loggedUser.collectAsState()
 
-
-    vm.userAction = TripViewModel.UserAction.CREATE_TRIP
-
-    val loggedUser by uvm.loggedUser.collectAsState()
-
+    // State to hold the selected trip image URI
     var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
+
+    // Flag to indicate if the photo input has been interacted with
     var photoTouched = remember { mutableStateOf(false) }
+
+    // Flag to show image upload error if no image is selected
     var tripImageError by rememberSaveable { mutableStateOf(false) }
 
-    // 添加上传状态
+    // Flags for image upload status
     var isUploadingImage by remember { mutableStateOf(false) }
     var uploadError by remember { mutableStateOf<String?>(null) }
 
+    // Holds values for the text fields: title, destination, price, group size
     val fieldValues = rememberSaveable(
         saver = listSaver(
             save = { it.toList() },
@@ -105,12 +107,20 @@ fun CreateNewTrip(
             "",
         )
     }
+
+    // Names of each field for reference and labels
     val fieldNames = listOf("Title", "Destination", "Price Estimated", "Group Size")
+
+    // Flags to track if each field has been touched
     val fieldTouched = remember { mutableStateListOf(false, false, false, false) }
+
+    // Array to hold error status for each field
     var fieldErrors = arrayOf(false, false, false, false)
 
-
+    // Available trip types to choose from
     val typeTravel = listOf("Party", "Adventure", "Culture", "Relax")
+
+    // Stores selected trip types
     val selected = rememberSaveable(
         saver = listSaver(
             save = { it.toList() },
@@ -119,23 +129,30 @@ fun CreateNewTrip(
     ) {
         mutableStateListOf<String>()
     }
+
+    // Flag for type selection error
     var typeTravelError by rememberSaveable { mutableStateOf(false) }
 
+    // States for start and end date pickers
     var startDate by rememberSaveable { mutableStateOf("") }
     var startCalendar by rememberSaveable { mutableStateOf<Calendar?>(null) }
 
     var endDate by rememberSaveable { mutableStateOf("") }
     var endCalendar by rememberSaveable { mutableStateOf<Calendar?>(null) }
 
+    // Holds error message for date validation
     var dateError by rememberSaveable { mutableStateOf("") }
 
+    // Outer container for the entire screen
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF3EDF7))
+            .background(Color(0xFFF3EDF7))  // Light background color
     ) {
+        // Scroll state for the LazyColumn
         val listState = rememberLazyListState()
 
+        // Scrollable vertical list containing all form elements
         LazyColumn(
             state = listState,
             modifier = Modifier
@@ -144,7 +161,7 @@ fun CreateNewTrip(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            //Image Trip with Error check
+            // Image selector component with validation
             item {
                 TripImage(
                     imageUri = imageUri,
@@ -153,6 +170,7 @@ fun CreateNewTrip(
                 )
             }
 
+            // Error message if no image is uploaded
             if (tripImageError && !photoTouched.value) {
                 item {
                     Text(
@@ -168,7 +186,7 @@ fun CreateNewTrip(
                 Spacer(modifier = Modifier.height(40.dp))
             }
 
-            //Title, Destination, Price Estimated, Group Size Fields with Check Errors
+            // Input fields for title, destination, price, and group size
             item {
                 Column(
                     modifier = Modifier
@@ -177,7 +195,7 @@ fun CreateNewTrip(
                     //TextFields with various info
                     fieldValues.forEachIndexed { index, item ->
                         val fieldIsBeenTouched = fieldTouched[index]
-                        //Title and Destination Fields
+                        // Title and Destination require letters and cannot be blank
                         if (index == 0 || index == 1) {
                             val textHasErrors = fieldIsBeenTouched && (item.toString().isBlank() ||
                                     !item.toString().any { it.isLetter() })
@@ -194,7 +212,8 @@ fun CreateNewTrip(
                                 textHasErrors,
                                 fieldNames[index]
                             )
-                        } else if (index == 2) { //Price Estimated Field
+                            // Price must be a valid positive decimal number
+                        } else if (index == 2) {
                             val floatHasErrors = fieldIsBeenTouched && (item.toString().isBlank() ||
                                     item.toString().toDoubleOrNull()?.let { it <= 0.0 } != false ||
                                     !item.toString().matches(Regex("^\\d+(\\.\\d+)?$")))
@@ -212,7 +231,8 @@ fun CreateNewTrip(
                                 floatHasErrors,
                                 fieldNames[index]
                             )
-                        } else { //Group Size Field
+                            // Group size must be an integer greater than 1
+                        } else {
                             val intHasErrors = fieldIsBeenTouched &&
                                     (item.isBlank() || item.toIntOrNull()?.let { it <= 1 } != false)
 
@@ -234,7 +254,7 @@ fun CreateNewTrip(
                 }
             }
 
-            //Trip Type with Error Check
+            // Section title for trip type
             item {
                 Box(
                     modifier = Modifier
@@ -249,6 +269,7 @@ fun CreateNewTrip(
                 }
             }
 
+            // Subtitle for trip type instructions
             item {
                 Box(
                     modifier = Modifier
@@ -265,6 +286,7 @@ fun CreateNewTrip(
                     )
                 }
 
+                // Error message if no type selected
                 if (typeTravelError && selected.isEmpty()) {
                     Text(
                         text = "Select at least one travel type",
@@ -276,6 +298,7 @@ fun CreateNewTrip(
 
             }
 
+            // Type selection chips (selectable buttons)
             item {
                 Row(
                     horizontalArrangement = Arrangement.Center,
@@ -303,7 +326,7 @@ fun CreateNewTrip(
                 Spacer(modifier = Modifier.height(10.dp))
             }
 
-            //Data Selection with Error Check
+            // Date pickers for start and end date
             item {
                 val context = LocalContext.current
                 val calendar = Calendar.getInstance()
@@ -311,6 +334,7 @@ fun CreateNewTrip(
                 val month = calendar.get(Calendar.MONTH)
                 val day = calendar.get(Calendar.DAY_OF_MONTH)
 
+                // Dialog for selecting start date
                 val startDatePickerDialog = remember {
                     DatePickerDialog(
                         context,
@@ -324,6 +348,7 @@ fun CreateNewTrip(
                     )
                 }
 
+                // Dialog for selecting end date
                 val endDatePickerDialog = remember {
                     DatePickerDialog(
                         context,
@@ -337,6 +362,7 @@ fun CreateNewTrip(
                     )
                 }
 
+                // Row containing date selection buttons
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -374,6 +400,7 @@ fun CreateNewTrip(
                     }
                 }
 
+                // Show error if dates are missing or invalid
                 if (dateError.isNotEmpty() && !validateDateOrder(startCalendar, endCalendar)) {
                     Text(
                         text = dateError,
@@ -395,7 +422,7 @@ fun CreateNewTrip(
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp),
                 ) {
-                    //Cancel Button
+                    // Cancel Button resets action and returns to previous screen
                     Button(
                         onClick = {
                             vm.userAction = TripViewModel.UserAction.NOTHING
@@ -411,10 +438,9 @@ fun CreateNewTrip(
 
                     Spacer(modifier = Modifier.weight(1f))
 
-                    //Next Button
+                    // Next Button validates inputs and initiates trip creation
                     Button(
                         onClick = {
-                            // 验证所有字段
                             tripImageError = !imageUri.toString().isUriString()
 
                             fieldTouched.forEachIndexed { index, _ ->
@@ -429,24 +455,6 @@ fun CreateNewTrip(
                                 ""
                             }
 
-                            /*
-                            if (!tripImageError && !fieldErrors.any { it } && !typeTravelError && validateDateOrder(
-                                    startCalendar,
-                                    endCalendar
-                                )) {
-                                val creatorId = loggedUser.id
-                                val creatorUser = loggedUser
-
-                                var participants = mutableMapOf<String, Trip.JoinRequest>()
-                                val joinRequestCreator = Trip.JoinRequest(
-                                    creatorId,
-                                    1,
-                                    emptyList(),
-                                    emptyList()
-                                )
-                                participants.put(creatorId.toString(), joinRequestCreator)
-                                Log.d("Participants", participants.toString())
-                            */
                             if (!tripImageError && !fieldErrors.any { it } && !typeTravelError &&
                                 validateDateOrder(
                                     startCalendar,
@@ -456,7 +464,7 @@ fun CreateNewTrip(
                                 isUploadingImage = true
                                 uploadError = null
 
-                                // 使用协程来处理异步操作
+                                // Launch async image upload + trip creation
                                 vm.createTripWithImageUpload(
                                     imageUri = imageUri,
                                     title = fieldValues[0],
@@ -465,26 +473,6 @@ fun CreateNewTrip(
                                     endDate = endCalendar!!,
                                     estimatedPrice = fieldValues[2].toDouble(),
                                     groupSize = fieldValues[3].toInt(),
-                                    //activities = activities,
-                                    /*
-                                    activities = activities,
-                                    typeTravel = selected.map {
-                                        TypeTravel.valueOf(it.uppercase()).toString()
-                                    },
-                                    creatorId = creatorId,
-                                    published = false,
-                                    id = -1,
-                                    participants = participants,
-                                    status = Trip.TripStatus.NOT_STARTED.toString(),
-                                    appliedUsers = emptyMap(),
-                                    rejectedUsers = emptyMap()
-                                )
-
-                                vm.newTrip = newTrip
-                                vm.setSelectedTrip(newTrip)
-                                vm.userAction = TripViewModel.UserAction.CREATE_TRIP
-                                navController.navigate("activities_list")
-                                */
                                     typeTravel = selected.map {
                                         TypeTravel.valueOf(it.uppercase()).toString()
                                     },
@@ -517,6 +505,8 @@ fun CreateNewTrip(
                             Text("Next")
                         }
                     }
+
+                    // Show upload error message if any
                     uploadError?.let { error ->
                         Text(
                             text = error,
@@ -537,75 +527,90 @@ fun CreateNewTrip(
 
 @Composable
 fun TripImage(imageUri: Uri?, onUriSelected: (Uri?) -> Unit, photoTouched: MutableState<Boolean>) {
+    // Get the current context for image loading
     val context = LocalContext.current
 
+    // This is a launcher that lets the user pick an image from the gallery
     val pickMedia = rememberLauncherForActivityResult(
+        // Uses system's visual media picker for images
         contract = PickVisualMedia()
     ) { uri ->
+        // Updates the selected image URI when user picks an image
         onUriSelected(uri)
     }
 
+    // Container box for the image or placeholder
     Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(250.dp),
-        contentAlignment = Alignment.Center
+            .fillMaxWidth()     // Full screen width
+            .height(250.dp),    // Fixed height for the image area
+        contentAlignment = Alignment.Center     // Center content within the box
     ) {
 
         if (imageUri != null) {
+            // If an image has been selected, load and display it asynchronously
             AsyncImage(
                 model = ImageRequest.Builder(context)
-                    .data(imageUri)
-                    .crossfade(true)
+                    .data(imageUri)     // Load the image from URI
+                    .crossfade(true)    // Enable crossfade animation
                     .build(),
-                contentDescription = "Selected Trip Photo",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
+                contentDescription = "Selected Trip Photo",     // Accessibility description
+                contentScale = ContentScale.Crop,               // Crop the image to fill the box
+                modifier = Modifier.fillMaxSize()               // Fill the entire Box space
             )
+            // Mark that user has touched the image area
             photoTouched.value = true
         } else {
+            // If no image is selected, show a placeholder UI with an icon and text
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxSize()
             ) {
                 Icon(
-                    imageVector = Icons.Default.AddPhotoAlternate,
+                    imageVector = Icons.Default.AddPhotoAlternate,      // Icon for photo upload
                     contentDescription = "Placeholder Add Photo Icon",
-                    modifier = Modifier.size(80.dp),
-                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                    modifier = Modifier.size(80.dp),     // Size of the icon
+                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)   // Faded color
                 )
+
+                // Space between icon and text
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Tap icon to add photo",
+                    text = "Tap icon to add photo",     // Instructional text
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)  // Faded color
                 )
             }
+            // Mark that image area hasn't been touched yet
             photoTouched.value = false
         }
 
+        // Floating action button at the bottom-right to open the image picker
         IconButton(
             onClick = {
+                // Launch the media picker, restricting it to image files only
                 pickMedia.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
             },
             modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp)
+                .align(Alignment.BottomEnd)     // Position the button in bottom-right
+                .padding(16.dp)                 // Add some spacing from the edges
                 .background(
-                    color = Color.Black.copy(alpha = 0.3f),
-                    shape = CircleShape
+                    color = Color.Black.copy(alpha = 0.3f),     // Semi-transparent background
+                    shape = CircleShape     // Circular shape for the button
                 )
         ) {
             Icon(
-                imageVector = Icons.Default.AddPhotoAlternate,
-                contentDescription = "Select photo from gallery",
-                tint = Color.White,
-                modifier = Modifier.padding(4.dp)
+                imageVector = Icons.Default.AddPhotoAlternate,      // Icon shown inside the FAB
+                contentDescription = "Select photo from gallery",   // Accessibility description
+                tint = Color.White,                                 // White icon color
+                modifier = Modifier.padding(4.dp)                   // Inner padding
             )
         }
     }
 }
+
+// FUNCTIONS THAT VALIDATES DIFFERENT KINDS OF INPUT FIELDS
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -613,30 +618,37 @@ fun ValidatingInputTextField(
     text: String, updateState: (String) -> Unit,
     validatorHasErrors: Boolean, label: String
 ) {
+    // Allows control of the on-screen keyboard
     val keyboardController = LocalSoftwareKeyboardController.current
 
+    // Use a Column to hold the text field and potentially validation text
     Column(
         modifier = Modifier
-            .wrapContentSize()
+            .wrapContentSize()      // Take only as much size as needed
             .pointerInput(Unit) {
+                // Detect tap gestures inside this Column
                 detectTapGestures(onTap = {
+                    // Hide the keyboard when the Column is tapped anywhere
                     keyboardController?.hide()
                 })
             }
     ) {
+        // Text input field with validation feedback
         OutlinedTextField(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp),
-            value = text,
-            onValueChange = updateState,
-            label = { Text(label) },
-            isError = validatorHasErrors,
+                .fillMaxWidth()     // Make the field stretch full width of parent
+                .padding(10.dp),    // Outer spacing around the field
+            value = text,           // The current text value
+            onValueChange = updateState,    // Update the state when the user types
+            label = { Text(label) },        // Label shown inside the text field
+            isError = validatorHasErrors,   // Red border and error state if true
             supportingText = {
+                // Optional helper/error text shown below the field
                 if (validatorHasErrors) {
                     Text("This field cannot be empty and cannot contains only numbers")
                 }
             },
+            // Set input type as plain text
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
         )
     }
@@ -649,30 +661,37 @@ fun ValidatingInputFloatField(
     validatorHasErrors: Boolean,
     label: String
 ) {
+    // Access to the keyboard controller for showing/hiding the on-screen keyboard
     val keyboardController = LocalSoftwareKeyboardController.current
 
+    // Layout container for the input field and optional error message
     Column(
         modifier = Modifier
-            .wrapContentSize()
+            .wrapContentSize()      // Makes the component only as big as needed
             .pointerInput(Unit) {
+                // Detect touch input on the whole column
                 detectTapGestures(onTap = {
+                    // Hides the keyboard when user taps outside the field
                     keyboardController?.hide()
                 })
             }
     ) {
+        // Main input field for float (decimal) values
         OutlinedTextField(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp),
-            value = text,
-            onValueChange = updateState,
-            label = { Text(label) },
-            isError = validatorHasErrors,
+                .fillMaxWidth()     // Takes the full width of the parent
+                .padding(10.dp),    // Adds padding around the field
+            value = text,           // Binds the current value to the field
+            onValueChange = updateState,    // Updates state on input change
+            label = { Text(label) },        // Displays label inside the outlined field
+            isError = validatorHasErrors,   // Visually indicates error if true
             supportingText = {
+                // Shows error message below the field if validation fails
                 if (validatorHasErrors) {
                     Text("This field cannot be empty and must be a number greater that 0.0")
                 }
             },
+            // Restricts input to numeric values
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
         )
     }
@@ -685,30 +704,37 @@ fun ValidatingInputIntField(
     validatorHasErrors: Boolean,
     label: String
 ) {
+    // Access to the keyboard controller for showing/hiding the on-screen keyboard
     val keyboardController = LocalSoftwareKeyboardController.current
 
+    // Layout container for the input field and optional error message
     Column(
         modifier = Modifier
-            .wrapContentSize()
+            .wrapContentSize()      // Makes the component only as big as needed
             .pointerInput(Unit) {
+                // Detect touch input on the whole column
                 detectTapGestures(onTap = {
+                    // Hides the keyboard when user taps outside the field
                     keyboardController?.hide()
                 })
             }
     ) {
+        // Main input field for integer values
         OutlinedTextField(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp),
-            value = text,
-            onValueChange = updateState,
-            label = { Text(label) },
-            isError = validatorHasErrors,
+                .fillMaxWidth()      // Takes the full width of the parent
+                .padding(10.dp),     // Adds padding around the field
+            value = text,            // Binds the current value to the field
+            onValueChange = updateState,    // Updates state on input change
+            label = { Text(label) },        // Displays label inside the outlined field
+            isError = validatorHasErrors,   // Visually indicates error if true
             supportingText = {
+                // Shows error message below the field if validation fails
                 if (validatorHasErrors) {
                     Text("This field cannot be empty and must be an integer number greater than 1")
                 }
             },
+            // Restricts input to numeric values
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
         )
     }

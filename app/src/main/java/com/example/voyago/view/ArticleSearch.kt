@@ -59,29 +59,28 @@ import com.example.voyago.activities.ProfilePhoto
 import com.example.voyago.model.Article
 import com.example.voyago.model.User
 import com.example.voyago.viewmodel.ArticleViewModel
-import com.example.voyago.viewmodel.UserViewModel
 
 @Composable
 fun ArticleSearchScreen(
     navController: NavController,
-    articleViewModel: ArticleViewModel,
-    userViewModel: UserViewModel
+    articleViewModel: ArticleViewModel
 ) {
-    // 获取搜索相关的状态
+    // Observe the current search query and search results from the ViewModel
     val searchQuery by articleViewModel.searchQuery.collectAsState()
     val searchResults by articleViewModel.searchResults.collectAsState(initial = emptyList())
 
-    // 🔥 获取所有文章来进行分类
+    // Get the full list of articles to be used for categorization
     val allArticles by articleViewModel.articleList.collectAsState()
 
-    // 🔥 分类文章：最热门的3篇 vs 其余文章
+    // Determine the 3 most popular articles by views (then fallback to recent ones)
     val mostPopularArticles = allArticles
         .sortedWith(
             compareByDescending<Article> { it.viewCount }
                 .thenByDescending { it.date }
         )
-        .take(3) // 🔥 取前3篇最热门的文章
+        .take(3)
 
+    // Remaining articles to recommend after removing the top 3
     val recommendedArticles = allArticles
         .sortedWith(
             compareByDescending<Article> { it.viewCount }
@@ -89,20 +88,22 @@ fun ArticleSearchScreen(
         )
         .drop(3) // 🔥 跳过最热门的前3篇，显示其余文章
 
-    // 🔥 推荐文章的显示状态
+    // Track whether to show all recommended articles or just a subset
     var showAllRecommended by remember { mutableStateOf(false) }
 
-    // 决定显示哪些文章
+    // Decide what articles to display based on search state and toggle
     val articlesToShow = when {
-        searchQuery.isNotEmpty() -> searchResults
-        showAllRecommended -> recommendedArticles
-        else -> recommendedArticles.take(5) // 默认显示前5篇
+        searchQuery.isNotEmpty() -> searchResults   // Show search results
+        showAllRecommended -> recommendedArticles   // Show all recommendations
+        else -> recommendedArticles.take(5)         // Default: show top 5
     }
 
+    // Screen layout with floating action button to create new article
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
+                    // Navigate to create screen
                     navController.navigate("create_article")
                 },
                 containerColor = Color(0xFF2E2E2E),
@@ -124,18 +125,18 @@ fun ArticleSearchScreen(
                 .verticalScroll(rememberScrollState())
                 .background(Color(0xFFF5F5F5))
         ) {
-            // Search Section
+            // Search bar UI
             SearchSection(
                 searchQuery = searchQuery,
                 onSearchQueryChange = { articleViewModel.updateSearchQuery(it) },
                 onClearSearch = {
                     articleViewModel.clearSearch()
-                    showAllRecommended = false // 重置显示状态
+                    showAllRecommended = false // Reset recommended toggle
                 }
             )
 
             if (searchQuery.isNotEmpty() && searchResults.isEmpty()) {
-                // 显示无结果提示
+                // No results message when search yields nothing
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -149,19 +150,18 @@ fun ArticleSearchScreen(
                     )
                 }
             } else {
-                // 🔥 Most Popular Articles Section - 显示3篇最热门的
+                // Show "Most Popular" section only if there's no active search
                 if (mostPopularArticles.isNotEmpty() && searchQuery.isEmpty()) {
                     MostPopularSection(
                         articles = mostPopularArticles, // 传递3篇文章
                         onArticleClick = { selectedArticle ->
                             navController.navigate("article_detail/${selectedArticle.id}")
                         },
-                        userViewModel = userViewModel,
                         searchQuery = searchQuery
                     )
                 }
 
-                // 🔥 Recommended Section - 显示其余文章
+                // Show either search results or recommended articles
                 if (articlesToShow.isNotEmpty()) {
                     val sectionTitle = if (searchQuery.isNotEmpty()) {
                         "Search Results (${searchResults.size})"
@@ -176,13 +176,12 @@ fun ArticleSearchScreen(
                             navController.navigate("article_detail/${selectedArticle.id}")
                         },
                         onViewAllClick = {
-                            // 🔥 切换显示全部推荐文章
+                            // Reveal full recommended list when "View All" is clicked
                             if (!showAllRecommended) {
                                 showAllRecommended = true
                             }
                         },
                         showViewAll = searchQuery.isEmpty() && !showAllRecommended && recommendedArticles.size > 5,
-                        userViewModel = userViewModel,
                         searchQuery = searchQuery
                     )
                 }
@@ -192,43 +191,48 @@ fun ArticleSearchScreen(
 }
 
 
-// 高亮文本组件
+// HighlightedText composable: highlights matching query text inside a larger string
 @Composable
 fun HighlightedText(
-    text: String,
-    searchQuery: String,
-    fontSize: TextUnit,
-    fontWeight: FontWeight? = null,
-    color: Color = Color.Black,
-    maxLines: Int = Int.MAX_VALUE
+    text: String,                       // Full text to display
+    searchQuery: String,                // Substring to highlight within the text
+    fontSize: TextUnit,                 // Size of the displayed text
+    fontWeight: FontWeight? = null,     // Optional font weight for non-highlighted text
+    color: Color = Color.Black,         // Color for non-highlighted text
+    maxLines: Int = Int.MAX_VALUE       // Max lines to display before truncating
 ) {
+    // Build styled text that includes highlights for matching query
     val annotatedString = buildAnnotatedString {
         var currentIndex = 0
         val lowerText = text.lowercase()
         val lowerQuery = searchQuery.lowercase()
 
         while (currentIndex < text.length) {
+            // Find next match of the search query in the text
             val index = lowerText.indexOf(lowerQuery, currentIndex)
+
             if (index >= currentIndex) {
-                // 添加匹配前的文本
+                // Add the text before the match in normal style
                 if (index > currentIndex) {
                     withStyle(SpanStyle(color = color, fontWeight = fontWeight)) {
                         append(text.substring(currentIndex, index))
                     }
                 }
-                // 添加高亮的匹配文本
+
+                // Add the matched substring with highlight (blue color, bold, background)
                 withStyle(
                     SpanStyle(
-                        color = Color(0xFF2196F3), // 蓝色
-                        fontWeight = FontWeight.Bold,
-                        background = Color(0x332196F3) // 淡蓝色背景
+                        color = Color(0xFF2196F3),      // Blue text
+                        fontWeight = FontWeight.Bold,   // Bold
+                        background = Color(0x332196F3)  // Light blue background
                     )
                 ) {
                     append(text.substring(index, index + searchQuery.length))
                 }
+                // Continue searching after this match
                 currentIndex = index + searchQuery.length
             } else {
-                // 添加剩余的文本
+                // Append the remaining text if no more matches are found
                 withStyle(SpanStyle(color = color, fontWeight = fontWeight)) {
                     append(text.substring(currentIndex))
                 }
@@ -237,52 +241,57 @@ fun HighlightedText(
         }
     }
 
+    // Render the final styled text in a Text composable
     Text(
         text = annotatedString,
         fontSize = fontSize,
         maxLines = maxLines,
-        overflow = TextOverflow.Ellipsis
+        overflow = TextOverflow.Ellipsis    // Use ellipsis if content overflows
     )
 }
 
+// SearchSection composable: displays a search bar that can toggle between inactive and active states
 @Composable
 fun SearchSection(
-    searchQuery: String,
-    onSearchQueryChange: (String) -> Unit,
-    onClearSearch: () -> Unit
+    searchQuery: String,                    // Current search input value
+    onSearchQueryChange: (String) -> Unit,  // Callback when user types in the search bar
+    onClearSearch: () -> Unit               // Callback when the search is cleared
 ) {
+    // Local state to track if search input is active
     var isSearchActive by remember { mutableStateOf(false) }
 
+    // Background container for the search section
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xFFD8C7E8))
-            .padding(20.dp)
+            .clip(RoundedCornerShape(16.dp))    // Rounded corners
+            .background(Color(0xFFD8C7E8))      // Light purple background
+            .padding(20.dp)                     // Inner padding
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Section title
             Text(
                 text = "Article Research",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f)  // Takes up equal space with the search field
             )
 
-            // Search Field
+            // Search Field (Takes more space than the title)
             Surface(
                 modifier = Modifier
                     .weight(1.5f)
                     .height(48.dp),
                 shape = RoundedCornerShape(24.dp),
-                color = Color.White
+                color = Color.White                 // White background for the search bar
             ) {
                 if (isSearchActive) {
-                    // 激活状态 - 显示输入框
+                    // Active state: show editable text field with icons
                     TextField(
                         value = searchQuery,
                         onValueChange = onSearchQueryChange,
@@ -297,10 +306,11 @@ fun SearchSection(
                             )
                         },
                         trailingIcon = {
+                            // Show clear icon when query is not empty
                             if (searchQuery.isNotEmpty()) {
                                 IconButton(onClick = {
                                     onClearSearch()
-                                    isSearchActive = false
+                                    isSearchActive = false  // Reset active state
                                 }) {
                                     Icon(
                                         imageVector = Icons.Default.Clear,
@@ -320,11 +330,11 @@ fun SearchSection(
                         singleLine = true
                     )
                 } else {
-                    // 非激活状态 - 显示占位符
+                    // Inactive state: show placeholder-style row
                     Row(
                         modifier = Modifier
                             .fillMaxSize()
-                            .clickable { isSearchActive = true }
+                            .clickable { isSearchActive = true }    // Activate on click
                             .padding(horizontal = 16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -347,17 +357,18 @@ fun SearchSection(
     }
 }
 
+// Displays a styled card containing a list of the top 3 most popular articles
 @Composable
 fun MostPopularSection(
-    articles: List<Article>, // 🔥 改为接收文章列表（3篇）
-    onArticleClick: (Article) -> Unit,
-    userViewModel: UserViewModel,
-    searchQuery: String = ""
+    articles: List<Article>,            // List of top articles to display (ideally 3)
+    onArticleClick: (Article) -> Unit,  // Callback when an article is clicked
+    searchQuery: String = ""            // Optional query for highlighting matches
 ) {
+    // Container Card
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp),  // Outer padding
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -365,29 +376,31 @@ fun MostPopularSection(
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-            // 🔥 标题改为复数形式
+            // Section Title
             Text(
-                text = "Most Popular Articles", // 🔥 复数形式
+                text = "Most Popular Articles",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
 
+            // Space below title
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 🔥 显示3篇热门文章
+            // Display each article in the list
             articles.forEachIndexed { index, article ->
                 if (index > 0) {
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(16.dp))   // Space between items
                 }
+
+                // Individual article item with click and optional highlighting
                 ArticleSearchItem(
                     article = article,
                     onClick = { onArticleClick(article) },
-                    userViewModel = userViewModel,
                     searchQuery = searchQuery
                 )
             }
 
-            // 🔥 如果文章不足3篇，显示提示
+            // Show fallback message if no articles are available
             if (articles.isEmpty()) {
                 Box(
                     modifier = Modifier
@@ -406,16 +419,18 @@ fun MostPopularSection(
     }
 }
 
+// Displays a section of recommended articles, optionally with a "View All" button and search highlights
 @Composable
 fun RecommendedSection(
-    title: String = "Recommended For You",
-    articles: List<Article>,
-    onArticleClick: (Article) -> Unit,
-    onViewAllClick: () -> Unit,
-    showViewAll: Boolean = true, // 🔥 控制是否显示 View All 按钮
-    userViewModel: UserViewModel,
-    searchQuery: String = ""
+    title: String = "Recommended For You",  // Section header text
+    articles: List<Article>,                // List of articles to display
+    onArticleClick: (Article) -> Unit,      // Callback when an article is clicked
+    onViewAllClick: () -> Unit,             // Callback when "View All" is clicked
+    showViewAll: Boolean = true,            // Controls visibility of the "View All" button
+    searchQuery: String = ""                // Used for keyword highlighting
 ) {
+
+    // Card container for visual grouping
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -425,6 +440,7 @@ fun RecommendedSection(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
+            // Title row with optional "View All" button
             modifier = Modifier.padding(16.dp)
         ) {
             Row(
@@ -432,37 +448,37 @@ fun RecommendedSection(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Section title
                 Text(
                     text = title,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
 
-                // 🔥 只在特定条件下显示 View All 按钮
+                // Show "View All" button if enabled
                 if (showViewAll) {
                     TextButton(onClick = onViewAllClick) {
                         Text(
                             text = "View All",
-                            color = Color(0xFF6B5B95)
+                            color = Color(0xFF6B5B95)   // Soft purple tone
                         )
                     }
                 }
             }
 
-            // 🔥 显示文章列表
+            // Display each article with optional highlighting
             articles.forEachIndexed { index, article ->
                 if (index > 0) {
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(16.dp))    // Spacing between items
                 }
                 ArticleSearchItem(
                     article = article,
                     onClick = { onArticleClick(article) },
-                    userViewModel = userViewModel,
                     searchQuery = searchQuery
                 )
             }
 
-            // 🔥 如果没有文章，显示占位文本
+            // Fallback message if article list is empty
             if (articles.isEmpty()) {
                 Box(
                     modifier = Modifier
@@ -485,33 +501,33 @@ fun RecommendedSection(
     }
 }
 
+// Displays a single article row with optional highlighting for search terms, author info, and tags.
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun ArticleSearchItem(
     article: Article,
     onClick: () -> Unit,
-    userViewModel: UserViewModel,  // 添加 UserViewModel 参数
-    searchQuery: String = ""  // 添加搜索关键词参数
+    searchQuery: String = ""  // Optional keyword for highlighting
 ) {
     var imageUrl by remember { mutableStateOf<String?>(null) }
     var author by remember { mutableStateOf<User?>(null) }
 
-    // 异步获取图片 URL 和作者信息
+    // Load image and author data asynchronously
     LaunchedEffect(article.photo, article.authorId) {
         imageUrl = article.getPhoto()
 
-        // 获取作者信息
+        // Load author data from Firestore if available
         article.authorId?.let { authorId ->
             author = getUserFromFirestore(authorId)
         }
     }
 
+    // Layout: Horizontal row with image and content
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }
     ) {
-        // Image
+        // Article Image Section
         when {
             imageUrl != null -> {
                 GlideImage(
@@ -525,6 +541,7 @@ fun ArticleSearchItem(
             }
 
             else -> {
+                // Placeholder for missing image
                 Box(
                     modifier = Modifier
                         .size(120.dp)
@@ -539,15 +556,15 @@ fun ArticleSearchItem(
 
         Spacer(modifier = Modifier.width(12.dp))
 
-        // Content
+        // Textual Content
         Column(
             modifier = Modifier.weight(1f)
         ) {
-            // Author info
+            // Author info row
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Author avatar with ProfilePhoto
+                // Author avatar
                 author?.let { user ->
                     ProfilePhoto(
                         user = user,
@@ -571,6 +588,7 @@ fun ArticleSearchItem(
 
                 Spacer(modifier = Modifier.width(8.dp))
 
+                // Author name and role
                 Column {
                     Text(
                         text = author?.let { "${it.firstname} ${it.surname}" } ?: "Loading...",
@@ -578,7 +596,7 @@ fun ArticleSearchItem(
                         fontWeight = FontWeight.Medium
                     )
                     Text(
-                        text = "Travel Writer", // 简化为固定文本
+                        text = "Travel Writer", // Static subtitle for simplicity
                         fontSize = 12.sp,
                         color = Color.Gray
                     )
@@ -587,7 +605,7 @@ fun ArticleSearchItem(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Title with highlighted search text
+            // Title (highlighted if searchQuery matches)
             if (searchQuery.isNotEmpty() && (article.title?.contains(
                     searchQuery,
                     ignoreCase = true
@@ -612,7 +630,7 @@ fun ArticleSearchItem(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Description with highlighted search text
+            // Article Summary (with optional highlighting)
             if (searchQuery.isNotEmpty() && (article.text?.contains(
                     searchQuery,
                     ignoreCase = true
@@ -636,7 +654,7 @@ fun ArticleSearchItem(
                 )
             }
 
-            // Tags
+            // Tags (up to 3 shown)
             if (article.tags.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
