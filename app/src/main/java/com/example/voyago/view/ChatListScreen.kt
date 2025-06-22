@@ -68,6 +68,7 @@ fun ChatListScreen(
         LazyColumn {
             items(chatRooms) { chatRoom ->
                 ChatRoomItem(
+                    chatViewModel = chatViewModel,
                     chatRoom = chatRoom,
                     currentUserId = user.id,
                     onClick = {
@@ -81,10 +82,19 @@ fun ChatListScreen(
 
 @Composable
 fun ChatRoomItem(
+    chatViewModel: ChatViewModel,
     chatRoom: ChatRoom,
     currentUserId: Int,
     onClick: () -> Unit
 ) {
+
+    LaunchedEffect(chatRoom.id) {
+        chatViewModel.fetchChatRoomName(chatRoom.id, currentUserId)
+    }
+
+    val chatRoomNames by chatViewModel.chatRoomNames.collectAsState()
+    val chatRoomName = chatRoomNames[chatRoom.id] ?: "Chat"
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -97,7 +107,6 @@ fun ChatRoomItem(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Circle icon
             Box(
                 modifier = Modifier
                     .size(48.dp)
@@ -115,14 +124,7 @@ fun ChatRoomItem(
             Spacer(modifier = Modifier.width(12.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                val chatName = if (chatRoom.type == "private") {
-                    // Show the other participant's name (we'll assume it's embedded for now)
-                    chatRoom.name ?: "Private Chat"
-                } else {
-                    chatRoom.name ?: "Group Chat"
-                }
-
-                Text(text = chatName, fontWeight = FontWeight.Bold)
+                Text(text = chatRoomName, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = chatRoom.lastMessage.ifEmpty { "No messages yet" },
