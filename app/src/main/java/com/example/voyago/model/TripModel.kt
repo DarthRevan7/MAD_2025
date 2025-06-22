@@ -922,23 +922,26 @@ class TripModel {
     //EDIT TRIP
 
     //Functions that edits the information of a specific Trip
-    fun editTrip(updatedTrip: Trip, onResult: (Boolean) -> Unit) {
+    fun editTrip(updatedTrip: Trip,
+                 viewModelScope: CoroutineScope,
+                 onResult: (Boolean) -> Unit) {
         // Convert the trip ID to a string to match the Firestore document ID format
         val docId = updatedTrip.id.toString()
 
-        // Access the "trips" collection and update the document with the given ID
-        Collections.trips
-            .document(docId)
-            .set(updatedTrip)           // Overwrites the document with the new trip data
-            .addOnSuccessListener {
-                // If successful, return true through the callback
+        val tripDocRef = Collections.trips.document(docId)
+
+        viewModelScope.launch {
+            // Access the "trips" collection and update the document with the given ID
+
+            try {
+                tripDocRef.set(updatedTrip).await()           // Overwrites the document with the new trip data
                 onResult(true)
+            } catch( e: Exception)
+            {
+                e.printStackTrace()
             }
-            .addOnFailureListener { e ->
-                // If there's an error, log it and return false through the callback
-                Log.e("Firestore", "Failed to update trip", e)
-                onResult(false)
-            }
+
+        }
     }
 
     //Function that changes the Published status of a specific Trip
