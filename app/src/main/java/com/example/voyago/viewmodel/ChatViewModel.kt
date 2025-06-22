@@ -300,6 +300,38 @@ class ChatViewModel : ViewModel() {
             }
     }
 
+    fun createGroupIfNotExists(groupName: String, creatorId: Int, onComplete: (created: Boolean) -> Unit) {
+        db.collection("chatRooms")
+            .whereEqualTo("type", "group")
+            .whereEqualTo("name", groupName)
+            .get()
+            .addOnSuccessListener { result ->
+                if (result.isEmpty) {
+                    // Group doesn't exist, create it
+                    val newGroup = hashMapOf(
+                        "type" to "group",
+                        "name" to groupName,
+                        "participants" to listOf(creatorId),
+                        "lastMessage" to "",
+                        "usersNotRead" to emptyList<String>()
+                    )
+                    db.collection("chatRooms")
+                        .add(newGroup)
+                        .addOnSuccessListener {
+                            onComplete(true)
+                        }
+                        .addOnFailureListener {
+                            onComplete(false)
+                        }
+                } else {
+                    // Group exists, do nothing
+                    onComplete(false)
+                }
+            }
+            .addOnFailureListener {
+                onComplete(false)
+            }
+    }
 
 
 }

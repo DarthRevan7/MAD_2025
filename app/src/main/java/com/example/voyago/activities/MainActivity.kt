@@ -762,6 +762,11 @@ fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = NotificationFactory
             )
+            // Create an instance of the ChatViewModel using the ChatFactory
+            val chatViewModel: ChatViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = ChatFactory
+            )
             // Pass the NavController and ViewModels to the TripDetails composable
             TripDetails(
                 navController = navController,
@@ -769,7 +774,8 @@ fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
                 owner = false,
                 uvm = userViewModel,
                 rvm = reviewViewModel,
-                nvm = notificationViewModel
+                nvm = notificationViewModel,
+                chatViewModel = chatViewModel
             )
         }
 
@@ -929,6 +935,11 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
                 viewModelStoreOwner = myTripGraphEntry,
                 factory = NotificationFactory
             )
+            // Create an instance of the ChatViewModel using the ChatFactory
+            val chatViewModel: ChatViewModel = viewModel(
+                viewModelStoreOwner = myTripGraphEntry,
+                factory = ChatFactory
+            )
             // Get the owner parameter from the arguments, defaulting to false if not provided
             // Pass the NavController, ViewModels, and owner parameter to the TripDetails composable
             TripDetails(
@@ -937,7 +948,8 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
                 owner = true,
                 uvm = userViewModel,
                 rvm = reviewViewModel,
-                nvm = notificationViewModel
+                nvm = notificationViewModel,
+                chatViewModel = chatViewModel
             )
         }
 
@@ -1209,6 +1221,11 @@ fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
                 viewModelStoreOwner = homeGraphEntry,
                 factory = NotificationFactory
             )
+            // Create an instance of the ChatViewModel using the ChatFactory
+            val chatViewModel: ChatViewModel = viewModel(
+                viewModelStoreOwner = homeGraphEntry,
+                factory = ChatFactory
+            )
             // Pass the NavController and ViewModels to the TripDetails composable
             TripDetails(
                 navController = navController,
@@ -1216,7 +1233,8 @@ fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
                 owner = false,
                 uvm = userViewModel,
                 rvm = reviewViewModel,
-                nvm = notificationViewModel
+                nvm = notificationViewModel,
+                chatViewModel = chatViewModel
             )
         }
 
@@ -1566,6 +1584,11 @@ fun NavGraphBuilder.profileNavGraph(navController: NavHostController) {
                 viewModelStoreOwner = profileGraphEntry,
                 factory = NotificationFactory
             )
+            // Create an instance of the ChatViewModel using the ChatFactory
+            val chatViewModel: ChatViewModel = viewModel(
+                viewModelStoreOwner = profileGraphEntry,
+                factory = ChatFactory
+            )
             // Pass the NavController and ViewModels to the TripDetails composable
             TripDetails(
                 navController = navController,
@@ -1573,7 +1596,8 @@ fun NavGraphBuilder.profileNavGraph(navController: NavHostController) {
                 owner = false,
                 uvm = userViewModel,
                 rvm = reviewViewModel,
-                nvm = notificationViewModel
+                nvm = notificationViewModel,
+                chatViewModel = chatViewModel
             )
         }
 

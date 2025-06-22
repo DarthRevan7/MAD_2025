@@ -89,6 +89,7 @@ import com.example.voyago.model.isTimestampLong
 import com.example.voyago.model.timestampToCalendar
 import com.example.voyago.toCalendar
 import com.example.voyago.toStringDate
+import com.example.voyago.viewmodel.ChatViewModel
 import com.example.voyago.viewmodel.NotificationViewModel
 import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.TripViewModel
@@ -130,7 +131,8 @@ fun TripDetails(
     owner: Boolean,
     uvm: UserViewModel,
     rvm: ReviewViewModel,
-    nvm: NotificationViewModel
+    nvm: NotificationViewModel,
+    chatViewModel: ChatViewModel
 ) {
     // The logged in user
 
@@ -471,6 +473,15 @@ fun TripDetails(
                                         if (isAfterToday) {
                                             vm.changePublishedStatus(trip.id)
                                             vm.updatePublishedTrip(uvm.loggedUser.value.id)
+
+                                            // Create group if not exists
+                                            chatViewModel.createGroupIfNotExists(trip.title, uvm.loggedUser.value.id) { created ->
+                                                if (created) {
+                                                    Log.d("ChatDebug", "Group created: ${trip.title}")
+                                                } else {
+                                                    Log.d("ChatDebug", "Group already exists or error creating it.")
+                                                }
+                                            }
 
                                             //Send notifications
                                             val title = "Check this out!"
