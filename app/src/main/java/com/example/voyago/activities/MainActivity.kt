@@ -1009,12 +1009,18 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
                 viewModelStoreOwner = myTripGraphEntry,
                 factory = NotificationFactory
             )
+            // Create an instance of the ChatViewModel using the ChatFactory
+            val chatViewModel: ChatViewModel = viewModel(
+                viewModelStoreOwner = myTripGraphEntry,
+                factory = ChatFactory
+            )
             // Pass the NavController and ViewModels to the TripApplications composable
             TripApplications(
                 vm = tripViewModel,
                 uvm = userViewModel,
                 navController = navController,
-                nvm = notificationViewModel
+                nvm = notificationViewModel,
+                chatViewModel = chatViewModel
             )
         }
 

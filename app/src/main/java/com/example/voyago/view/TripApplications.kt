@@ -45,6 +45,7 @@ import androidx.navigation.NavController
 import com.example.voyago.activities.ProfilePhoto
 import com.example.voyago.model.Trip
 import com.example.voyago.model.User
+import com.example.voyago.viewmodel.ChatViewModel
 import com.example.voyago.viewmodel.NotificationViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
@@ -54,7 +55,8 @@ fun TripApplications(
     vm: TripViewModel,
     uvm: UserViewModel,
     navController: NavController,
-    nvm: NotificationViewModel
+    nvm: NotificationViewModel,
+    chatViewModel: ChatViewModel
 ) {
     val trip = vm.selectedTrip.value
     val loggedUser by uvm.loggedUser.collectAsState()
@@ -165,7 +167,7 @@ fun TripApplications(
             items(applicantsMap.entries.toList()) { entry ->
                 val user = entry.key
                 val joinRequest = entry.value
-                ShowApplications(user, joinRequest, vm, uvm, navController, nvm)
+                ShowApplications(user, joinRequest, vm, uvm, navController, nvm, trip, chatViewModel)
             }
         } else {
             item {
@@ -356,7 +358,9 @@ fun ShowApplications(
     vm: TripViewModel,
     uvm: UserViewModel,
     navController: NavController,
-    nvm: NotificationViewModel
+    nvm: NotificationViewModel,
+    trip: Trip,
+    chatViewModel: ChatViewModel
 ) {
     var showDialog by remember { mutableStateOf(false) }
     var isAcceptAction by remember { mutableStateOf(true) }
@@ -446,6 +450,7 @@ fun ShowApplications(
                     .clickable {
                         isAcceptAction = true
                         showDialog = true
+                        chatViewModel.addParticipantToGroup(user.id, trip.title)
                     }
             )
             Spacer(modifier = Modifier.padding(5.dp))
