@@ -1,6 +1,8 @@
 package com.example.voyago.model
 
+import android.net.Uri
 import android.util.Log
+import androidx.core.net.toUri
 import com.example.voyago.Collections
 import com.example.voyago.model.Trip.Activity
 import com.example.voyago.model.Trip.Participant
@@ -12,6 +14,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
+import com.google.firebase.storage.storage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.onFailure
@@ -918,25 +921,90 @@ class TripModel {
 
     //EDIT TRIP
 
-    //Functions that edits the information of a specific Trip
-    fun editTrip(updatedTrip: Trip, viewModelScope: CoroutineScope, onResult: (Boolean) -> Unit) {
-        // Convert the trip ID to a string to match the Firestore document ID format
+    suspend fun uploadPhotoAndGetUrl(photoUri: Uri, tripId: String): String {
+        return try {
+            val storageUrl = "trips/${tripId}/${System.currentTimeMillis()}"
+            val storageRef = Firebase.storage.reference.child(storageUrl)
+            storageRef.putFile(photoUri).await()
+            return storageUrl // Get download URL
+        } catch (e: Exception) {
+            Log.e("Firebase", "Error uploading photo", e)
+            throw e // Re-throw the exception for handling in editTrip
+        }
+    }
+
+
+    fun editTrip(updatedTrip: Trip,
+                 originalTrip: Trip,
+                 viewModelScope: CoroutineScope,
+                 onResult: (Boolean) -> Unit) {
         val docId = updatedTrip.id.toString()
 
-        // Reference the specific trip document
-        val tripDocRef = Collections.trips.document(docId)
-
         viewModelScope.launch {
-            // Access the "trips" collection and update the document with the given ID
+            val tripDocRef = Collections.trips.document(docId)
+
             try {
-                // Overwrites the document with the new trip data
-                tripDocRef.set(updatedTrip).await()
-                onResult(true)
+                var tripToUpdate = updatedTrip // Start with the updated trip
+
+                // If a new photo is provided, upload it and get the URL
+                if (updatedTrip.photo != null) {
+                    if(updatedTrip.photo != originalTrip.photo)
+                    {
+                        Log.d("T2", "updatedTrip.photo=${updatedTrip.photo}")
+                        val photoUrl = uploadPhotoAndGetUrl(updatedTrip.photo!!.toUri(), updatedTrip.id.toString())
+                        tripToUpdate = tripToUpdate.copy(photo = photoUrl) // Update the trip with the new URL
+                        Log.d("T2", "Photo update success: URL = $photoUrl")
+                    }
+                }
+
+
+                // Overwrite the document with the (possibly) updated trip data
+                tripDocRef.set(tripToUpdate).await() // await() here!
+                Log.d("DB1", "Trip ${updatedTrip.id} updated successfully.")
+                tripDocRef.update("draft", false).await()
+                onResult(true) // Notify success
+
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e("DB1", "Error editing trip ${updatedTrip.id}: ${e.message}", e)
+                onResult(false) // Notify failure
             }
         }
     }
+
+    //Functions that edits the information of a specific Trip
+//    fun editTrip(updatedTrip: Trip, viewModelScope: CoroutineScope, onResult: (Boolean) -> Unit) {
+//        // Convert the trip ID to a string to match the Firestore document ID format
+//        val docId = updatedTrip.id.toString()
+//
+//        // Reference the specific trip document
+//        val tripDocRef = Collections.trips.document(docId)
+//
+//        viewModelScope.launch {
+//            // Access the "trips" collection and update the document with the given ID
+//            try {
+//                var updateTrip: Trip? = null
+//                var successPhoto: Boolean? = false
+//                tripDocRef.get().addOnSuccessListener { result ->
+//                    updateTrip = result.toObject(Trip::class.java)
+//                }
+//                if(updatedTrip.photo != null && updateTrip != null)
+//                {
+//                    Log.d("T2", "updatedTrip.photo.toUri=${updatedTrip.photo!!.toUri()}")
+//                    successPhoto = updateTrip!!.setPhoto(updatedTrip.photo!!.toUri())
+//                    Log.d("T2", "Photo update success")
+//                }
+//
+//                // Overwrites the document with the new trip data
+//                if(updateTrip != null)
+//                {
+//                    tripDocRef.set(updateTrip!!).await()
+//                    onResult(true)
+//                }
+//            } catch (e: Exception) {
+//                e.printStackTrace()
+//            }
+//        }
+//    }
 
     //Function that changes the Published status of a specific Trip
     fun changePublishedStatus(id: Int, onResult: (Boolean) -> Unit) {
