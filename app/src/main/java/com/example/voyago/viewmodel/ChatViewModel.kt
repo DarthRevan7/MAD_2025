@@ -122,6 +122,11 @@ class ChatViewModel : ViewModel() {
                     )
                 }
                 _messages.value = msgs
+                msgs.forEach { message ->
+                    if (message.senderId != "") {
+                        fetchSenderName(message.senderId)
+                    }
+                }
             }
     }
 
@@ -149,6 +154,29 @@ class ChatViewModel : ViewModel() {
 
                     )
                 )
+            }
+    }
+
+    private val _senderNames = MutableStateFlow<Map<String, String>>(emptyMap())
+    val senderNames: StateFlow<Map<String, String>> = _senderNames
+
+    fun fetchSenderName(senderId: String) {
+        if (_senderNames.value.containsKey(senderId)) return // Already fetched
+
+        FirebaseFirestore.getInstance().collection("users")
+            .whereEqualTo("id", senderId.toIntOrNull())
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val userDoc = snapshot.documents.firstOrNull()
+                val displayName = if (userDoc != null) {
+                    val firstname = userDoc.getString("firstname") ?: ""
+                    val surname = userDoc.getString("surname") ?: ""
+                    "$firstname $surname".trim()
+                } else "Unknown User"
+
+                _senderNames.value = _senderNames.value.toMutableMap().apply {
+                    put(senderId, displayName)
+                }
             }
     }
 

@@ -53,6 +53,7 @@ fun SingleChatScreen(
 ) {
     val messages by chatViewModel.messages.collectAsState()
     val user by uvm.loggedUser.collectAsState()
+    val senderNames by chatViewModel.senderNames.collectAsState()
 
 
     // Fetch messages and room name when screen shows
@@ -99,12 +100,24 @@ fun SingleChatScreen(
         ) {
             items(messages) { message ->
                 val isOwnMessage = message.senderId == user.id.toString()
-                Box(
+                val senderName = senderNames[message.senderId] ?: "..."
+
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 4.dp),
-                    contentAlignment = if (isOwnMessage) Alignment.CenterEnd else Alignment.CenterStart
+                    horizontalAlignment = if (isOwnMessage) Alignment.End else Alignment.Start
                 ) {
+                    // Show sender name only if it's NOT from the logged-in user
+                    if (!isOwnMessage) {
+                        Text(
+                            text = senderName,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.Gray,
+                            modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)
+                        )
+                    }
+
                     Text(
                         text = message.content,
                         modifier = Modifier
