@@ -333,6 +333,53 @@ class ChatViewModel : ViewModel() {
             }
     }
 
+    fun addParticipantToGroup(participantId: Int, groupName: String) {
+        db.collection("chatRooms")
+            .whereEqualTo("type", "group")
+            .whereEqualTo("name", groupName)
+            .get()
+            .addOnSuccessListener { result ->
+                val groupDoc = result.documents.firstOrNull()
+                if (groupDoc == null) {
+                    Log.w("ChatDebug", "Group $groupName not found")
+
+                    return@addOnSuccessListener
+                }
+
+                val groupRef = db.collection("chatRooms").document(groupDoc.id)
+                val currentParticipants = (groupDoc["participants"] as? List<*>)?.mapNotNull {
+                    when (it) {
+                        is Number -> it.toInt()
+                        is String -> it.toIntOrNull()
+                        else -> null
+                    }
+                } ?: emptyList()
+
+                if (currentParticipants.contains(participantId)) {
+                    Log.d("ChatDebug", "Participant $participantId is already in group $groupName")
+
+                    return@addOnSuccessListener
+                }
+
+                val updatedParticipants = currentParticipants + participantId
+
+                groupRef.update("participants", updatedParticipants)
+                    .addOnSuccessListener {
+                        Log.d("ChatDebug", "Added participant $participantId to group $groupName")
+
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("ChatDebug", "Failed to add participant: ${e.message}")
+
+                    }
+            }
+            .addOnFailureListener { e ->
+                Log.e("ChatDebug", "Failed to query group $groupName: ${e.message}")
+
+            }
+    }
+
+
 
 }
 

@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.example.voyago.view
 
 import android.app.Activity
@@ -50,7 +52,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.voyago.R
-import com.example.voyago.viewmodel.UserViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
@@ -64,43 +65,52 @@ import com.google.firebase.messaging.FirebaseMessaging
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    navController: NavHostController, auth: FirebaseAuth,
-    uvm: UserViewModel
+    navController: NavHostController, auth: FirebaseAuth
 ) {
+
+    // Email input field state
     var email by remember { mutableStateOf("") }
+
+    // Password input field state
     var password by remember { mutableStateOf("") }
+
+    // Current context, used for Google Sign-In
     val context = LocalContext.current
+
+    // Error message state
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
+    // Track whether fields were touched (for validation)
     var emailTouched by remember { mutableStateOf(false) }
     var passwordTouched by remember { mutableStateOf(false) }
 
-    // Google Sign-In state
+    // Track Google Sign-In loading state
     var isGoogleLoading by remember { mutableStateOf(false) }
 
-    // Configure Google Sign-In
+    // Google Sign-In Configuration
     val gso = remember {
         GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(context.getString(R.string.default_web_client_id))
-            .requestEmail()
+            .requestIdToken(context.getString(R.string.default_web_client_id))  // For Firebase Auth
+            .requestEmail()     // Ask for user’s email
             .build()
     }
     val googleSignInClient = remember { GoogleSignIn.getClient(context, gso) }
 
-    // Launcher for Google Sign-In
+    // Google Sign-In Launcher
     val googleSignInLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
+        // Handle result from Google Sign-In activity
         handleGoogleSignInResult(
             result = result,
             auth = auth,
             navController = navController,
             setError = { errorMessage = it },
-            setLoading = { isGoogleLoading = it },
-            uvm = uvm
+            setLoading = { isGoogleLoading = it }
         )
     }
 
+    // Main Layout Using LazyColumn
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -117,7 +127,7 @@ fun LoginScreen(
             ) {
                 Spacer(modifier = Modifier.height(60.dp))
 
-                // Profile Icon
+                // User Icon
                 Box(
                     modifier = Modifier
                         .size(80.dp)
@@ -171,7 +181,7 @@ fun LoginScreen(
                     },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    isError = emailTouched && email.isBlank(),
+                    isError = emailTouched && email.isBlank(),      // Validate only after touched
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     shape = RoundedCornerShape(12.dp),
                     supportingText = {
@@ -232,7 +242,7 @@ fun LoginScreen(
                                     if (task.isSuccessful) {
                                         val userId = auth.currentUser?.uid
                                         userId?.let { saveFcmTokenToFirestore(it) }
-
+                                        // Navigate to home and remove login from back stack
                                         navController.navigate("home_main") {
                                             popUpTo("login") { inclusive = true }
                                         }
@@ -274,7 +284,7 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Error Message
+                // Error Message Card
                 errorMessage?.let { message ->
                     Card(
                         modifier = Modifier
@@ -306,7 +316,7 @@ fun LoginScreen(
                     }
                 }
 
-                // Or text
+                // "or" separator
                 Text(
                     text = "or",
                     color = Color.Gray,
@@ -315,7 +325,7 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Sign In Button
+                // Sign-Up Navigation
                 Button(
                     onClick = {
                         navController.navigate("register")
@@ -384,58 +394,92 @@ fun LoginScreen(
     }
 }
 
+// Handles the result returned from the Google Sign-In intent
 fun handleGoogleSignInResult(
     result: androidx.activity.result.ActivityResult,
     auth: FirebaseAuth,
     navController: NavHostController,
     setError: (String?) -> Unit,
-    setLoading: (Boolean) -> Unit,
-    uvm: UserViewModel
+    setLoading: (Boolean) -> Unit
 ) {
+    // Immediately stop any loading indicator as result has arrived
     setLoading(false)
+
+    // Check if the result indicates success (user completed Google sign-in)
     if (result.resultCode == Activity.RESULT_OK) {
+        // Retrieve the Intent data from the result, containing Google sign-in info
         val data = result.data
+
+        // Defensive check: if data is null, Google sign-in failed unexpectedly
         if (data == null) {
             setError("Google sign-in failed: No intent data.")
-            return
+            return  // Exit early, nothing more to do
         }
 
+        // Extract the GoogleSignInAccount task from the intent data
         val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+
+
         try {
+            // Try to get the GoogleSignInAccount object from the task result
             val account = task.getResult(ApiException::class.java)
+            // Extract the ID token from the Google account, required for Firebase auth
             val idToken = account.idToken
+
+            // Validate the token; if missing or empty, cannot proceed with Firebase auth
             if (idToken.isNullOrEmpty()) {
                 setError("Google sign-in failed: Missing ID token.")
-                return
+                return      // Exit early due to critical missing token
             }
 
+            // Create a Firebase credential using the Google ID token
             val credential = GoogleAuthProvider.getCredential(idToken, null)
+
+            // Sign in to Firebase with the Google credential asynchronously
             auth.signInWithCredential(credential)
                 .addOnCompleteListener { authResult ->
                     if (authResult.isSuccessful) {
+                        // On successful Firebase sign-in:
+                        // Get the authenticated user's UID
                         val userId = auth.currentUser?.uid
+
+                        // If UID exists, save the FCM token to Firestore for push notifications
                         userId?.let { saveFcmTokenToFirestore(it) }
 
+                        // Navigate to the main/home screen
                         navController.navigate("home_main") {
+                            // Clear the back stack so user cannot return to login
                             popUpTo("login") { inclusive = true }
                         }
                     } else {
+                        // If Firebase sign-in failed, report the specific error or fallback message
                         setError("Google sign-in failed: ${authResult.exception?.localizedMessage ?: "Unknown error"}")
                     }
                 }
         } catch (e: Exception) {
+            // Catch any exceptions thrown during getting Google account or Firebase sign-in
             setError("Google sign-in failed: ${e.localizedMessage ?: "Unknown error"}")
         }
     } else {
+        // If result code is not OK, user likely canceled the Google sign-in flow
         setError("Google sign-in canceled.")
     }
 }
 
+//Retrieves the device's current Firebase Cloud Messaging (FCM) token
+//and saves it to the Firestore database under the specified user's document.
 fun saveFcmTokenToFirestore(userId: String) {
+    // Request the current FCM token asynchronously
     FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+        // Check if the token retrieval was successful
         if (task.isSuccessful) {
+            // Extract the token string from the task result
             val token = task.result
+
+            // Get a reference to the Firestore document for this user
             val userRef = Firebase.firestore.collection("users").document(userId)
+
+            // Update the "fcmToken" field in the user's document with the new token
             userRef.update("fcmToken", token)
                 .addOnSuccessListener {
                     Log.d("FCM", "Token saved successfully.")
@@ -444,42 +488,8 @@ fun saveFcmTokenToFirestore(userId: String) {
                     Log.e("FCM", "Failed to save token: ${e.localizedMessage}")
                 }
         } else {
+            // If retrieving the token failed, log the error message
             Log.e("FCM", "Fetching FCM token failed: ${task.exception?.localizedMessage}")
         }
     }
 }
-
-
-fun checkUserExistsByEmail(email: String, callback: (Boolean) -> Unit) {
-    Firebase.firestore.collection("users")
-        .whereEqualTo("email", email)
-        .limit(1)
-        .get()
-        .addOnSuccessListener { documents ->
-            callback(!documents.isEmpty)
-        }
-        .addOnFailureListener {
-            callback(false) // Or handle error more explicitly
-        }
-}
-
-
-/*
-@Preview(showBackground = true, device = "spec:width=412dp,height=892dp")
-@Composable
-fun VoyagoLoginScreenPreview() {
-    MaterialTheme {
-        LoginScreen(
-        )
-    }
-}
-
-@Preview(showBackground = true, device = "spec:width=412dp,height=892dp")
-@Composable
-fun VoyagoLoginScreenWithErrorPreview() {
-    MaterialTheme {
-        LoginScreen(
-            errorMessage = "Wrong email or password"
-        )
-    }
-}*/
