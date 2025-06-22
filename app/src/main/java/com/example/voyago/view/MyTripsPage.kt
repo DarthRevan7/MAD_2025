@@ -42,39 +42,41 @@ import com.example.voyago.viewmodel.UserViewModel
 @Composable
 fun MyTripsPage(navController: NavController, vm: TripViewModel, uvm: UserViewModel) {
 
-    //Get the logged in user
+    // Get the currently logged-in user from the UserViewModel
     val loggedUser by uvm.loggedUser.collectAsState()
-    //List of trip created and published by the logged in user
+
+    //Trips created and published by the user
     val publishedTrips by vm.publishedTrips.collectAsState()
-    //List of trip created, but not published by the logged in user
+    //Trips created but not published (private/draft trips)
     val privateTrips by vm.privateTrips.collectAsState()
-    //List of trip the logged in user joined
+    //Trips that the user has joined
     val joinedTrips by vm.joinedTrips.collectAsState()
-    //List of trip cancelled by the logged in user
+    //Trips that the user created but canceled
     val canceledTrips by vm.canceledTrips.collectAsState()
 
+    // When the logged-in user changes, fetch all trip-related data
     LaunchedEffect(loggedUser.id) {
         if (loggedUser.id != 0) {
-            vm.creatorPublicFilter(loggedUser.id)
-            vm.creatorPrivateFilter(loggedUser.id)
-            vm.tripUserJoined(loggedUser.id)
-            vm.loadCanceledTrips(loggedUser.id.toString())
+            vm.creatorPublicFilter(loggedUser.id)           // Load user's published trips
+            vm.creatorPrivateFilter(loggedUser.id)          // Load user's private trips
+            vm.tripUserJoined(loggedUser.id)                // Load trips user joined
+            vm.loadCanceledTrips(loggedUser.id.toString())  // Load canceled trips by user
         }
     }
 
-
+    // Scaffold provides layout structure with a floating action button
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(onClick = {
-                vm.newTrip = Trip()
-                navController.navigate("create_new_trip")
+                vm.newTrip = Trip()                         // Reset the trip creation form
+                navController.navigate("create_new_trip")   // Navigate to trip creation screen
             }) {
-                Icon(Icons.Default.Add, "Add")
+                Icon(Icons.Default.Add, "Add")      // Plus icon for FAB
             }
         }
     ) { innerPadding ->
 
-        val listState = rememberLazyListState()
+        val listState = rememberLazyListState()      // For maintaining scroll position
 
         LazyColumn(
             state = listState,
@@ -84,7 +86,8 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel, uvm: UserViewMo
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start
         ) {
-            //List of published trips created by the logged in user
+
+            //PUBLISHED TRIPS SECTION
             item {
                 Text(
                     text = "Published Trips:",
@@ -94,6 +97,7 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel, uvm: UserViewMo
             }
 
             if (publishedTrips.isNotEmpty()) {
+                // Filter out canceled trips from published list
                 val visiblePublishedTrips = publishedTrips.filter { trip ->
                     !canceledTrips.contains(trip.id.toString())
                 }
@@ -108,6 +112,7 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel, uvm: UserViewMo
                     )
                 }
             } else {
+                // Show fallback message if no published trips
                 item {
                     Row(
                         modifier = Modifier
@@ -120,7 +125,7 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel, uvm: UserViewMo
                 }
             }
 
-            //List of private trips created by the logged in user
+            //PRIVATE TRIPS SECTION
             item {
                 Text(
                     text = "Private Trips:",
@@ -141,6 +146,7 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel, uvm: UserViewMo
                     )
                 }
             } else {
+                // Show fallback message if no private trips
                 item {
                     Row(
                         modifier = Modifier
@@ -153,7 +159,7 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel, uvm: UserViewMo
                 }
             }
 
-            //List of trips the logged in user (id=1) joined
+            //JOINED TRIPS SECTION
             item {
                 Text(
                     text = "Trips I joined:",
@@ -163,6 +169,7 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel, uvm: UserViewMo
             }
 
             if (joinedTrips.isNotEmpty()) {
+                // Exclude any canceled trips from the joined list
                 val visibleJoinedTrips = joinedTrips.filter { trip ->
                     !canceledTrips.contains(trip.id.toString())
                 }
@@ -171,6 +178,7 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel, uvm: UserViewMo
                     TripCard(trip, navController, vm, false)
                 }
             } else {
+                // Show fallback message if no joined trips
                 item {
                     Row(
                         modifier = Modifier
@@ -189,7 +197,9 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel, uvm: UserViewMo
 //Return true is the string is a Uri
 fun String.isUriString(): Boolean {
     return try {
+        // Attempt to convert the string into a URI object
         val uri = this.toUri()
+        // Check if the URI has a non-null scheme
         uri.scheme != null
 
     } catch (e: Exception) {
@@ -198,6 +208,7 @@ fun String.isUriString(): Boolean {
     }
 }
 
+// A composable that displays a banner indicating a completed state
 @Composable
 fun CompletedBanner(modifier: Modifier) {
     Box(
@@ -209,16 +220,22 @@ fun CompletedBanner(modifier: Modifier) {
                 color = Color(0x32, 0xad, 0xe6, 255)
             ),
     ) {
+        // Horizontal row to align the icon and text side by side
         Row(
             modifier = Modifier.padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Task checkmark icon indicating success/completion
             Icon(
                 imageVector = Icons.Default.TaskAlt,
                 contentDescription = "completed",
                 tint = Color.White
             )
+
+            // Small space between icon and text
             Spacer(Modifier.padding(3.dp))
+
+            // The "Completed" label text
             Text(
                 text = "Completed",
                 color = Color.White
@@ -238,16 +255,23 @@ fun BookedBanner(modifier: Modifier) {
                 color = Color(0xfa, 0xa2, 0x61, 255)
             ),
     ) {
+        // Row to place the icon and text horizontally
         Row(
             modifier = Modifier.padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+
+            // Row to place the icon and text horizontally
             Icon(
                 imageVector = Icons.Default.TaskAlt,
                 contentDescription = "booked",
                 tint = Color.White
             )
+
+            // Space between the icon and the label
             Spacer(Modifier.padding(3.dp))
+
+            // The "Fully booked" text message
             Text(
                 text = "Fully booked",
                 color = Color.White
