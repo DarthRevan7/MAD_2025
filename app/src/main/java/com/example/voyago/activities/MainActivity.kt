@@ -91,7 +91,7 @@ import com.example.voyago.model.UserModel
 import com.example.voyago.view.ActivitiesList
 import com.example.voyago.view.ArticleDetailScreen
 import com.example.voyago.view.ArticleSearchScreen
-import com.example.voyago.view.ChatScreen
+import com.example.voyago.view.ChatListScreen
 import com.example.voyago.view.CompleteAccount
 import com.example.voyago.view.CreateAccount2Screen
 import com.example.voyago.view.CreateAccountScreen
@@ -102,7 +102,6 @@ import com.example.voyago.view.EditProfileScreen
 import com.example.voyago.view.EditTrip
 import com.example.voyago.view.ExplorePage
 import com.example.voyago.view.FiltersSelection
-import com.example.voyago.view.FirebaseChatRoomScreen
 import com.example.voyago.view.HomePageScreen
 import com.example.voyago.view.LoginScreen
 import com.example.voyago.view.MyProfileScreen
@@ -112,6 +111,7 @@ import com.example.voyago.view.NewActivity
 import com.example.voyago.view.NotificationView
 import com.example.voyago.view.RegistrationVerificationCodeScreen
 import com.example.voyago.view.RetrievePassword
+import com.example.voyago.view.SingleChatScreen
 import com.example.voyago.view.TripApplications
 import com.example.voyago.view.TripDetails
 import com.example.voyago.view.UserProfileScreen
@@ -241,14 +241,14 @@ class MainActivity : ComponentActivity() {
         cameraExecutor = Executors.newSingleThreadExecutor()
 
         // Subscribe to the "all" topic for Firebase Cloud Messaging
-        FirebaseMessaging.getInstance().subscribeToTopic("all")
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    Log.d("FCM", "Subscribed to 'all' topic")
-                } else {
-                    Log.e("FCM", "Failed to subscribe to 'all' topic", task.exception)
-                }
-            }
+//        FirebaseMessaging.getInstance().subscribeToTopic("all")
+//            .addOnCompleteListener { task ->
+//                if (task.isSuccessful) {
+//                    Log.d("FCM", "Subscribed to 'all' topic")
+//                } else {
+//                    Log.e("FCM", "Failed to subscribe to 'all' topic", task.exception)
+//                }
+//            }
 
         // Check for camera permissions
         if (!allPermissionsGranted()) {
@@ -1265,56 +1265,114 @@ fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
                 val chatGraphEntry = remember(entry) {
                     navController.getBackStackEntry(Screen.Chats.route)
                 }
+
+                // Create an instance of the UserViewModel using the Factory
+                val userViewModel: UserViewModel = viewModel(
+                    viewModelStoreOwner = chatGraphEntry,
+                    factory = Factory
+                )
+
                 // Create an instance of the ChatViewModel using the ChatFactory
                 val chatViewModel: ChatViewModel = viewModel(
                     viewModelStoreOwner = chatGraphEntry,
                     factory = ChatFactory
                 )
-                // Pass the NavController and ChatViewModel to the ChatScreen composable
-                ChatScreen(chatViewModel, navController, Modifier)
 
-                // 获取用户信息
-                val chatsGraphEntry = remember(entry) {
-                    navController.getBackStackEntry(Screen.Chats.route)
-                }
-                val userViewModel: UserViewModel = viewModel(
-                    viewModelStoreOwner = chatsGraphEntry,
-                    factory = Factory
-                )
-                val currentUser by userViewModel.loggedUser.collectAsState()
+                ChatListScreen(chatViewModel, userViewModel, navController, Modifier)
 
-                // 使用 Firebase 实时聊天室
-                FirebaseChatRoomScreen(
-                    currentUser = currentUser,
-                    onBackClick = null // 主聊天界面不需要返回按钮
-                )
             }
+
         }
 
-        // Define the composable for the chat detail screen
-        composable("chat_detail/{chatId}") { backStackEntry ->
-            // Require authentication before accessing the chat detail
-            RequireAuth(navController) {
-                // Get the back stack entry for the chats graph
-                val chatsGraphEntry = remember(backStackEntry) {
-                    navController.getBackStackEntry(Screen.Chats.route)
-                }
-                // Create an instance of the ChatViewModel using the ChatFactory
-                val userViewModel: UserViewModel = viewModel(
-                    viewModelStoreOwner = chatsGraphEntry,
-                    factory = Factory
-                )
-                // Get the currentUser from the UserViewModel
-                val currentUser by userViewModel.loggedUser.collectAsState()
+        composable(
+            "chat/{roomId}",
+            arguments = listOf(navArgument("roomId") { type = NavType.StringType })
+        ) { entry ->
 
-                // Pass the chatId from the arguments
-                FirebaseChatRoomScreen(
-                    currentUser = currentUser,
-                    onBackClick = { navController.popBackStack() }
-                )
+            val roomId = entry.arguments?.getString("roomId") ?: return@composable
+
+            // Get the back stack entry for the chats graph
+            val chatGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Chats.route)
             }
+
+            // Create an instance of the UserViewModel using the Factory
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = Factory
+            )
+
+            // Create an instance of the ChatViewModel using the ChatFactory
+            val chatViewModel: ChatViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = ChatFactory
+            )
+
+            SingleChatScreen(
+                chatViewModel = chatViewModel,
+                roomId = roomId,
+                uvm = userViewModel,
+                onBack = { navController.popBackStack() }
+            )
+
         }
     }
+
+
+
+
+
+                //FirebaseChatRoomFactory.user = currentUser // You must pass currentUser properly
+//                val firebaseChatViewModel: FirebaseChatRoomViewModel = viewModel(
+//                    viewModelStoreOwner = chatGraphEntry,
+//                    factory = FirebaseChatRoomFactory
+//                )
+
+
+                // Pass the NavController and ChatViewModel to the ChatScreen composable
+//                ChatScreen(chatViewModel, firebaseChatViewModel, navController, Modifier)
+
+                // 获取用户信息
+//                val chatsGraphEntry = remember(entry) {
+//                    navController.getBackStackEntry(Screen.Chats.route)
+//                }
+//                val userViewModel: UserViewModel = viewModel(
+//                    viewModelStoreOwner = chatsGraphEntry,
+//                    factory = Factory
+//                )
+//                val currentUser by userViewModel.loggedUser.collectAsState()
+//
+//                // 使用 Firebase 实时聊天室
+//                FirebaseChatRoomScreen(
+//                    currentUser = currentUser,
+//                    onBackClick = null // 主聊天界面不需要返回按钮
+//                )
+//            }
+//        }
+
+        // Define the composable for the chat detail screen
+//        composable("chat_detail/{chatId}") { backStackEntry ->
+//            // Require authentication before accessing the chat detail
+//            RequireAuth(navController) {
+//                // Get the back stack entry for the chats graph
+//                val chatsGraphEntry = remember(backStackEntry) {
+//                    navController.getBackStackEntry(Screen.Chats.route)
+//                }
+//                // Create an instance of the ChatViewModel using the ChatFactory
+//                val userViewModel: UserViewModel = viewModel(
+//                    viewModelStoreOwner = chatsGraphEntry,
+//                    factory = Factory
+//                )
+//                // Get the currentUser from the UserViewModel
+//                val currentUser by userViewModel.loggedUser.collectAsState()
+
+                // Pass the chatId from the arguments
+//                FirebaseChatRoomScreen(
+//                    currentUser = currentUser,
+//                    onBackClick = { navController.popBackStack() }
+//                )
+
+
 }
 
 
