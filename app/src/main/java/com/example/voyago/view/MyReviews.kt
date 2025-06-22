@@ -66,13 +66,19 @@ fun MyReviews(
     rvm: ReviewViewModel, nvm: NotificationViewModel
 ) {
 
+    // Observe the currently selected trip
     val trip by vm.selectedTrip
+
+    // Collect the trip review from state flow
     val tripReview by rvm.tripReview.collectAsState()
 
+    // Live reference to user-specific reviews
     val usersReviews = remember { rvm.usersReviews }
 
+    // Whether the user has already submitted reviews
     val hasReviews by rvm.isReviewed.collectAsState()
 
+    // Run when trip ID changes: load participants and reviews
     LaunchedEffect(trip.id) {
         vm.getTripParticipants(trip)
         rvm.getTripReview(tripId = trip.id, userId = uvm.loggedUser.value.id)
@@ -80,16 +86,13 @@ fun MyReviews(
         rvm.isReviewed(uvm.loggedUser.value.id, trip.id)
     }
 
+    // State for trip participants mapped by user
     val participantsMap by vm.tripParticipants.collectAsState()
-    participantsMap.entries.forEach { item -> Log.d("P1", "User = ${item.key.id}") }
 
-
+    // Scroll state for the lazy column
     val listState = rememberLazyListState()
-    LaunchedEffect(Unit) {
-        Log.d("L3", "rvm.getTripReview = ${rvm.tripReview.value}")
-    }
 
-
+    // Form state for title, comment, rating and tracking touched fields
     val titleMap = remember { mutableStateMapOf<String, String>() }
     val reviewMap = remember { mutableStateMapOf<String, String>() }
     val ratingMap = remember { mutableStateMapOf<String, Float>() }
@@ -98,9 +101,10 @@ fun MyReviews(
     val reviewTouchedMap = remember { mutableStateMapOf<String, Boolean>() }
     val ratingTouchedMap = remember { mutableStateMapOf<String, Boolean>() }
 
-    // Photo selection for review
+    // State to track selected photo URIs
     val selectedUris by rvm.selectedUris.collectAsState()
 
+    // Image picker launcher for adding photos to trip review
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia()
     ) { uris ->
@@ -109,9 +113,11 @@ fun MyReviews(
         }
     }
 
+    // Coroutine scope for launching suspend operations from composables
     val composableScope = rememberCoroutineScope()
 
 
+    // Validation functions
     fun isTitleInvalid(key: String): Boolean {
         val title = titleMap[key].orEmpty()
         return (titleTouchedMap[key] == true) &&
@@ -129,16 +135,17 @@ fun MyReviews(
         return (ratingTouchedMap[key] == true) && rating < 0.5f
     }
 
+    // Observing others' reviews for the current trip
     val othersReviews = usersReviews.collectAsState()
 
-    //Start composable environment
+    // MAIN UI START
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             state = listState,
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            //Trip image
+            // Header image of the trip
             item {
                 Hero(trip, vm, User())
             }
@@ -147,7 +154,7 @@ fun MyReviews(
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            //Trip information
+            // Basic trip details: date, group size, and price
             item {
                 Row(
                     modifier = Modifier
@@ -177,9 +184,7 @@ fun MyReviews(
                 Spacer(Modifier.padding(5.dp))
             }
 
-            //Inside Lazy Column
-
-            //Trip Review
+            // Trip review section
             item {
                 TitleBox("Trip Review")
             }
@@ -190,6 +195,7 @@ fun MyReviews(
 
             if (hasReviews) {
                 if (tripReview.isValidReview()) {
+                    // Show existing trip review
                     item {
                         ShowReview(tripReview, vm, true, uvm, navController)
                     }
@@ -200,6 +206,7 @@ fun MyReviews(
                 }
             } else {
                 item {
+                    // Show form to submit a trip review
                     val key = "trip"
                     val rating = ratingMap.getOrElse(key) { 0f }
 
@@ -209,8 +216,9 @@ fun MyReviews(
                             .padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        //Star Rating
+                        // Rating bar
                         Text("Rate your experience:", fontSize = 20.sp)
+
                         Spacer(modifier = Modifier.height(16.dp))
 
                         RatingBar(
@@ -222,6 +230,7 @@ fun MyReviews(
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
+
                         Text("Your rating: $rating")
 
                         if (isRatingInvalid(key)) {
@@ -232,6 +241,7 @@ fun MyReviews(
                             )
                         }
 
+                        // Title and review inputs
                         val title = titleMap.getOrElse(key) { "" }
                         ValidatingInputTextField(
                             title,
@@ -254,6 +264,7 @@ fun MyReviews(
                             "Review"
                         )
 
+                        // Button to pick images
                         Button(
                             onClick = {
                                 imagePickerLauncher.launch(
@@ -266,6 +277,7 @@ fun MyReviews(
                             Text("Select Photos")
                         }
 
+                        // Display selected images
                         if (selectedUris.isNotEmpty()) {
                             LazyRow(
                                 modifier = Modifier
@@ -290,7 +302,7 @@ fun MyReviews(
                 }
             }
 
-            //Users reviews
+            // User Reviews Section
             item {
                 TitleBox("Users Review")
             }
@@ -301,8 +313,7 @@ fun MyReviews(
 
 
             if (hasReviews) {
-                //Review of the users made by the logged in user
-
+                // If reviews have been made, show existing ones
                 if (othersReviews.value.isNotEmpty()) {
                     items(othersReviews.value) { review ->
                         ShowReview(review, vm, true, uvm, navController)
@@ -313,17 +324,19 @@ fun MyReviews(
                     }
                 }
             } else {
+                // Form for reviewing other participants
                 items(participantsMap.entries.toList()) { entry ->
                     val user = entry.key
                     val loggedUser by uvm.loggedUser.collectAsState()
+
                     if (user.id != loggedUser.id) {
+                        // Display user info and link to profile
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(8.dp)
                         ) {
-                            //Profile photo of the reviewer
                             Box(
                                 contentAlignment = Alignment.CenterStart,
                                 modifier = Modifier
@@ -343,6 +356,7 @@ fun MyReviews(
 
                             )
                         }
+
                         val key = user.id
                         val rating = ratingMap.getOrElse(key.toString()) { 0f }
 
@@ -399,7 +413,8 @@ fun MyReviews(
                         }
                     }
                 }
-                //Publish button
+
+                // Publish button: submits all reviews
                 item {
                     Column(
                         modifier = Modifier
@@ -461,6 +476,7 @@ fun MyReviews(
                                         reviewsToSubmit.add(review)
                                     }
 
+                                    // Submit reviews asynchronously
                                     composableScope.launch {
                                         rvm.addAllTripReviews(reviewsToSubmit) { success, reviews ->
                                             if (success) {
@@ -469,7 +485,7 @@ fun MyReviews(
                                                         rvm.calculateRatingById(review.reviewedUserId)
                                                     }
                                                 }
-                                                // Notification for users
+                                                // Notify users reviewed
                                                 val title =
                                                     "New review from ${uvm.loggedUser.value.username}!"
                                                 val body = "Check you profile for more information!"
@@ -477,7 +493,7 @@ fun MyReviews(
                                                 val idLink = uvm.loggedUser.value.id
 
                                                 participantsMap.entries.toList()
-                                                    .forEach() { entry ->
+                                                    .forEach { entry ->
                                                         val user = entry.key
                                                         if (user.id != uvm.loggedUser.value.id) {
                                                             val userId = user.id.toString()
@@ -496,6 +512,8 @@ fun MyReviews(
                                     }
 
                                 }
+
+                                // Update user reliability score
                                 uvm.updateUserReliability(
                                     uvm.loggedUser.value.id,
                                     +2
@@ -527,8 +545,14 @@ fun RatingBar(
     rating: Float,
     onRatingChanged: (Float) -> Unit
 ) {
-    val starCount = 5
+    val starCount = 5       // Total number of stars in the rating bar
+
+    // Layout a horizontal row of stars
     Row(modifier = modifier) {
+        // Determine which icon to use based on the rating:
+        // - Full star if index is less than or equal to the rating
+        // - Half star if rating is between (i - 0.5) and i
+        // - Empty (bordered) star otherwise
         for (i in 1..starCount) {
             val icon = when {
                 i <= rating -> Icons.Default.Star
@@ -536,19 +560,24 @@ fun RatingBar(
                 else -> Icons.Default.StarBorder
             }
 
+            // Display the star icon
             Icon(
                 imageVector = icon,
                 contentDescription = "Star $i",
                 modifier = Modifier
-                    .size(32.dp)
+                    .size(32.dp)    // Set a fixed size for each star
                     .pointerInput(Unit) {
+                        // Detect taps on each star
                         detectTapGestures { offset ->
+                            // If the tap occurred on the left half of the star, assign a half-star value
                             val tappedHalf = offset.x < size.width / 2
                             val newRating = if (tappedHalf) i - 0.5f else i.toFloat()
+
+                            // Notify parent about the updated rating
                             onRatingChanged(newRating)
                         }
                     },
-                tint = Color(0xFFFFD700)
+                tint = Color(0xFFFFD700)    // Set star color
             )
         }
     }
