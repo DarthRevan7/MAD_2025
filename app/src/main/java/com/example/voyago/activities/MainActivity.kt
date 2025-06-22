@@ -595,13 +595,11 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
         ) { backStackEntry ->
             val articleId = backStackEntry.arguments?.getInt("articleId") ?: 0
             val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
-            val userViewModel: UserViewModel = viewModel(factory = UserFactory)
 
             ArticleDetailScreen(
                 navController = navController,
                 articleId = articleId,
-                articleViewModel = articleViewModel,
-                userViewModel = userViewModel
+                articleViewModel = articleViewModel
             )
         }
 
