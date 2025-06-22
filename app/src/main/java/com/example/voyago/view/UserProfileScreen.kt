@@ -34,6 +34,7 @@ import androidx.navigation.NavController
 import com.example.voyago.R
 import com.example.voyago.activities.ProfilePhoto
 import com.example.voyago.viewmodel.ArticleViewModel
+import com.example.voyago.viewmodel.ChatViewModel
 import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
@@ -47,7 +48,8 @@ fun UserProfileScreen(
     vm2: ArticleViewModel,
     userId: Int,
     uvm: UserViewModel,
-    rvm: ReviewViewModel
+    rvm: ReviewViewModel,
+    chatViewModel: ChatViewModel
 ) {
     // Collect user data as state
     val user by uvm.getUserData(userId).collectAsState(initial = null)
@@ -55,6 +57,8 @@ fun UserProfileScreen(
     val publishedTrips by vm.publishedTrips.collectAsState()
     //List of trip the logged in user (id=1) joined
     val joinedTrips by vm.joinedTrips.collectAsState()
+    // Logged user
+    val loggedUser by uvm.loggedUser.collectAsState()
 
 
     if (user == null) {
@@ -95,7 +99,12 @@ fun UserProfileScreen(
                         .align(alignment = Alignment.TopEnd)
                         .padding(16.dp)
                         .clickable {
-
+                            chatViewModel.createOrGetPrivateChatRoom(
+                                currentUserId = loggedUser.id,
+                                otherUserId = user!!.id
+                            ) { roomId ->
+                                navController.navigate("chat/$roomId") // Assuming you have a route like this
+                            }
                         }
                 )
 
