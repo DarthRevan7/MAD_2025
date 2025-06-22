@@ -131,7 +131,6 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.firestore
-import com.google.firebase.messaging.FirebaseMessaging
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.ExecutorService
@@ -1357,20 +1356,17 @@ fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
     }
 
 
-
-
-
-                //FirebaseChatRoomFactory.user = currentUser // You must pass currentUser properly
+    //FirebaseChatRoomFactory.user = currentUser // You must pass currentUser properly
 //                val firebaseChatViewModel: FirebaseChatRoomViewModel = viewModel(
 //                    viewModelStoreOwner = chatGraphEntry,
 //                    factory = FirebaseChatRoomFactory
 //                )
 
 
-                // Pass the NavController and ChatViewModel to the ChatScreen composable
+    // Pass the NavController and ChatViewModel to the ChatScreen composable
 //                ChatScreen(chatViewModel, firebaseChatViewModel, navController, Modifier)
 
-                // 获取用户信息
+    // 获取用户信息
 //                val chatsGraphEntry = remember(entry) {
 //                    navController.getBackStackEntry(Screen.Chats.route)
 //                }
@@ -1388,7 +1384,7 @@ fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
 //            }
 //        }
 
-        // Define the composable for the chat detail screen
+    // Define the composable for the chat detail screen
 //        composable("chat_detail/{chatId}") { backStackEntry ->
 //            // Require authentication before accessing the chat detail
 //            RequireAuth(navController) {
@@ -1404,7 +1400,7 @@ fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
 //                // Get the currentUser from the UserViewModel
 //                val currentUser by userViewModel.loggedUser.collectAsState()
 
-                // Pass the chatId from the arguments
+    // Pass the chatId from the arguments
 //                FirebaseChatRoomScreen(
 //                    currentUser = currentUser,
 //                    onBackClick = { navController.popBackStack() }

@@ -117,9 +117,6 @@ data class Trip(
     // Function that translate the endDate in a Calendar
     fun endDateAsCalendar(): Calendar = toCalendar(endDate)
 
-    // Function that translate the startDate in a Long
-    fun startDateAsLong(): Long = startDate.toDate().time
-
     //Activity data structure
     data class Activity(
         val id: Int = 0,
@@ -922,25 +919,22 @@ class TripModel {
     //EDIT TRIP
 
     //Functions that edits the information of a specific Trip
-    fun editTrip(updatedTrip: Trip,
-                 viewModelScope: CoroutineScope,
-                 onResult: (Boolean) -> Unit) {
+    fun editTrip(updatedTrip: Trip, viewModelScope: CoroutineScope, onResult: (Boolean) -> Unit) {
         // Convert the trip ID to a string to match the Firestore document ID format
         val docId = updatedTrip.id.toString()
 
+        // Reference the specific trip document
         val tripDocRef = Collections.trips.document(docId)
 
         viewModelScope.launch {
             // Access the "trips" collection and update the document with the given ID
-
             try {
-                tripDocRef.set(updatedTrip).await()           // Overwrites the document with the new trip data
+                // Overwrites the document with the new trip data
+                tripDocRef.set(updatedTrip).await()
                 onResult(true)
-            } catch( e: Exception)
-            {
+            } catch (e: Exception) {
                 e.printStackTrace()
             }
-
         }
     }
 

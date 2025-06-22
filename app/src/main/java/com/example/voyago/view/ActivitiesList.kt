@@ -1,6 +1,5 @@
 package com.example.voyago.view
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -234,18 +233,6 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
                                         ||
                                         vm.userAction == TripViewModel.UserAction.EDIT_ACTIVITY
                                     ) {
-                                        // Prepare an updated copy of the edited trip marking draft as false
-                                        val updatedTrip = vm.editTrip.copy(
-                                            activities = vm.editTrip.activities,
-                                            isDraft = false
-                                        )
-
-                                        Log.d("T1","updatedTrip in ActList = ${updatedTrip.activities.values}")
-                                        Log.d("T1","selectedTrip in ActList = ${vm.selectedTrip.value.activities.values}")
-                                        Log.d("T1","editTrip in ActList = ${vm.editTrip.activities.values}")
-                                        Log.d("T1","newTrip in ActList = ${vm.newTrip.activities.values}")
-
-                                        //Correction here: I have passed the selectedTrip.value for update the DB
                                         // Call the ViewModel method to update the trip and navigate on success
                                         vm.editTrip(vm.selectedTrip.value) { success ->
                                             if (success) {
