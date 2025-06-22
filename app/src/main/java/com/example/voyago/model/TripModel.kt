@@ -934,7 +934,10 @@ class TripModel {
     }
 
 
-    fun editTrip(updatedTrip: Trip, viewModelScope: CoroutineScope, onResult: (Boolean) -> Unit) {
+    fun editTrip(updatedTrip: Trip,
+                 originalTrip: Trip,
+                 viewModelScope: CoroutineScope,
+                 onResult: (Boolean) -> Unit) {
         val docId = updatedTrip.id.toString()
 
         viewModelScope.launch {
@@ -945,16 +948,20 @@ class TripModel {
 
                 // If a new photo is provided, upload it and get the URL
                 if (updatedTrip.photo != null) {
-                    Log.d("T2", "updatedTrip.photo=${updatedTrip.photo}")
-                    val photoUrl = uploadPhotoAndGetUrl(updatedTrip.photo!!.toUri(), updatedTrip.id.toString()) // await() here!
-                    tripToUpdate = tripToUpdate.copy(photo = photoUrl) // Update the trip with the new URL
-                    Log.d("T2", "Photo update success: URL = $photoUrl")
+                    if(updatedTrip.photo != originalTrip.photo)
+                    {
+                        Log.d("T2", "updatedTrip.photo=${updatedTrip.photo}")
+                        val photoUrl = uploadPhotoAndGetUrl(updatedTrip.photo!!.toUri(), updatedTrip.id.toString())
+                        tripToUpdate = tripToUpdate.copy(photo = photoUrl) // Update the trip with the new URL
+                        Log.d("T2", "Photo update success: URL = $photoUrl")
+                    }
                 }
 
 
                 // Overwrite the document with the (possibly) updated trip data
                 tripDocRef.set(tripToUpdate).await() // await() here!
                 Log.d("DB1", "Trip ${updatedTrip.id} updated successfully.")
+                tripDocRef.update("draft", false).await()
                 onResult(true) // Notify success
 
             } catch (e: Exception) {

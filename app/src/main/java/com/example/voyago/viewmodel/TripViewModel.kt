@@ -559,7 +559,7 @@ class TripViewModel(
     fun editExistingTrip(trip: Trip, onResult: (Boolean) -> Unit) {
         Log.d("T1", "vm.editTrip.act=${editTrip.activities.values}")
         Log.d("T1", "updatedTrip.act=${trip.activities.values}")
-        tripModel.editTrip(trip, viewModelScope) { success ->
+        tripModel.editTrip(trip,selectedTrip.value, viewModelScope) { success ->
             if (success) {
                 _selectedTrip.value = trip
             }
@@ -715,7 +715,7 @@ class TripViewModel(
                                 val uploadSuccess = createdTrip.setPhoto(imageUri)
                                 if (uploadSuccess) {
                                     // 图片上传成功，更新Trip
-                                    tripModel.editTrip(createdTrip, viewModelScope) { updateSuccess ->
+                                    tripModel.editTrip(createdTrip,createdTrip, viewModelScope) { updateSuccess ->
                                         if (updateSuccess) {
                                             onResult(true, createdTrip, null)
                                         } else {
