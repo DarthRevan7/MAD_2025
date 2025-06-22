@@ -432,8 +432,6 @@ fun EditProfileScreen(
 
 }
 
-// 在 EditProfile.kt 中修改 ProfilePhotoEditing 组件：
-
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun ProfilePhotoEditing(
@@ -443,49 +441,56 @@ fun ProfilePhotoEditing(
     onCameraIconClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+
+    // Combine first letters of first name and surname for fallback initials display
     val initials = "${firstname.firstOrNull() ?: ""}${surname.firstOrNull() ?: ""}"
+
+    // Mutable state to hold the actual Firebase Storage image download URL if applicable
     var firebaseImageUrl by remember { mutableStateOf<String?>(null) }
 
-    // 如果 profileImageUri 是 Firebase Storage 路径，获取实际 URL
+    // Launch side-effect to resolve Firebase Storage URL if profileImageUri is not a local content URI
     LaunchedEffect(profileImageUri) {
         if (profileImageUri != null && !profileImageUri.toString().startsWith("content://")) {
             try {
-                // 如果是 Firebase Storage 路径，获取下载 URL
+                // Check if it's a Firebase path and not an already downloaded HTTP URL
                 val path = profileImageUri.toString()
                 if (path.contains("/") && !path.startsWith("http")) {
                     val storageRef = com.google.firebase.Firebase.storage.reference.child(path)
+                    // Asynchronously fetch the download URL using Kotlin coroutines
                     firebaseImageUrl = storageRef.downloadUrl.await().toString()
                 }
             } catch (e: Exception) {
+                // Log any failure during download URL resolution
                 Log.e("ProfilePhotoEditing", "Failed to get Firebase URL", e)
             }
         }
     }
 
+    // Outer circular container for the profile picture or initials
     Box(
-        contentAlignment = Alignment.Center,
+        contentAlignment = Alignment.Center,    // Center all content inside the Box
         modifier = modifier
-            .size(130.dp)
-            .background(Color.Blue, shape = CircleShape)
+            .size(130.dp)   // Fixed size for profile photo box
+            .background(Color.Blue, shape = CircleShape)    // Blue background in a circular shape
     ) {
         when {
-            // 优先显示本地选择的图片（编辑状态）
+            // Case 1: Display a local image selected from the device (typically content:// URI)
             profileImageUri != null && profileImageUri.toString().startsWith("content://") -> {
                 AsyncImage(
-                    model = profileImageUri,
+                    model = profileImageUri,    // Local URI to load
                     contentDescription = "Profile Picture",
                     modifier = Modifier
                         .fillMaxSize()
-                        .clip(CircleShape)
-                        .border(0.dp, Color.White, CircleShape),
-                    contentScale = ContentScale.Crop
+                        .clip(CircleShape)      // Make sure image stays in circular bounds
+                        .border(0.dp, Color.White, CircleShape),    // White border
+                    contentScale = ContentScale.Crop    // Crop image to fill the circle
                 )
             }
 
-            // 显示 Firebase Storage 中的图片
+            // Case 2: Display image from Firebase Storage using resolved HTTP URL
             firebaseImageUrl != null -> {
                 GlideImage(
-                    model = firebaseImageUrl,
+                    model = firebaseImageUrl,   // Firebase image URL to load
                     contentDescription = "Profile Picture",
                     modifier = Modifier
                         .fillMaxSize()
@@ -495,7 +500,7 @@ fun ProfilePhotoEditing(
                 )
             }
 
-            // 显示首字母
+            // Case 3: If no image available, show the user's initials
             else -> {
                 Text(
                     text = initials,
@@ -506,31 +511,38 @@ fun ProfilePhotoEditing(
             }
         }
 
+        // Always show the camera icon in the bottom-right for editing the profile image
         Icon(
             Icons.Default.CameraAlt,
-            "camera",
+            "camera",                                   // Accessibility description
             modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .clickable { onCameraIconClick() }
+                .align(Alignment.BottomEnd)             // Align to bottom-end corner
+                .clickable { onCameraIconClick() }      // Trigger passed-in lambda on click
         )
     }
 }
 
 @Composable
 fun CameraPopup(
-    onDismissRequest: () -> Unit, onImageSelectedFromGallery: (Uri) -> Unit,
-    onTakePhotoClick: () -> Unit
+    onDismissRequest: () -> Unit,                   // Callback to handle dismissal of the popup
+    onImageSelectedFromGallery: (Uri) -> Unit,      // Callback when an image is picked from the gallery
+    onTakePhotoClick: () -> Unit                    // Callback to trigger taking a photo with the camera
 ) {
 
+    // ActivityResultLauncher to launch the system picker for selecting an image
     val pickMedia = rememberLauncherForActivityResult(
+        // Defines contract to pick visual media (images/videos)
         contract = PickVisualMedia()
-    ) { uri ->
+    ) { uri ->  // This lambda gets called once an image is selected
         if (uri != null) {
+            // Send the selected URI back to the caller
             onImageSelectedFromGallery(uri)
         }
     }
 
+    // Material Dialog used to show the popup UI on top of other content
     Dialog(onDismissRequest = onDismissRequest) {
+        // Card container for the two selection buttons
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -538,9 +550,11 @@ fun CameraPopup(
                 .padding(16.dp),
             shape = RoundedCornerShape(16.dp),
         ) {
+            // Button to take a new picture using the device's camera
             Button(
                 onClick = {
-                    onTakePhotoClick() // Call the lambda to launch camera
+                    // Trigger external function to navigate to camera screen
+                    onTakePhotoClick()
                 },
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
@@ -550,8 +564,10 @@ fun CameraPopup(
                 Text("Picture from Camera")
             }
 
+            // Button to pick an existing picture from the gallery
             Button(
                 onClick = {
+                    // Launch system picker limited to image files
                     pickMedia.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
                 },
                 modifier = Modifier
@@ -566,23 +582,25 @@ fun CameraPopup(
 
 @Composable
 fun ValidatingInputEmailField(
-    email: String,
-    updateState: (String) -> Unit,
-    validatorHasErrors: Boolean
+    email: String,                      // Current value of the email input
+    updateState: (String) -> Unit,      // Callback to update the email state when user types
+    validatorHasErrors: Boolean         // Flag indicating if the current input is invalid
 ) {
     OutlinedTextField(
         modifier = Modifier
             .fillMaxWidth()
             .padding(10.dp),
-        value = email,
-        onValueChange = updateState,
-        label = { Text("Email") },
-        isError = validatorHasErrors,
+        value = email,                     // Binds the current email value to the text field
+        onValueChange = updateState,       // Updates the state on text change via provided callback
+        label = { Text("Email") },         // Displays "Email" as the label inside the field
+        isError = validatorHasErrors,      // Highlights the field in red if input is invalid
         supportingText = {
+            // If there is a validation error, show helper text below the input
             if (validatorHasErrors) {
-                Text("Incorrect email format")
+                Text("Incorrect email format")  // Error message shown when email is not valid
             }
         },
+        // Shows an email-optimized keyboard on mobile
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
     )
 }
