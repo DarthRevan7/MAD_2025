@@ -1,6 +1,5 @@
 package com.example.voyago.view
 
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -32,10 +31,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -61,47 +60,48 @@ import com.example.voyago.viewmodel.UserViewModel
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 
+// Ask the missing information to users that to the registration with google
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CompleteAccount(
     navController: NavController,
-    onGoogleSignUpClick: () -> Unit = {},
     uvm: UserViewModel
 ) {
 
+    // Form states
     var dateOfBirth by remember { mutableStateOf("") }
     var country by remember { mutableStateOf("") }
-
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
+    // Field interaction flags for validation
     var dateOfBirthTouched by remember { mutableStateOf(false) }
     var countryTouched by remember { mutableStateOf(false) }
+    var usernameTouched by remember { mutableStateOf(false) }
 
+    // Additional user data
     var username by remember { mutableStateOf("") }
     var selectedTravelTypes by remember { mutableStateOf(setOf<String>()) }
     var selectedDestinations by remember { mutableStateOf(setOf<String>()) }
-    var message by remember { mutableStateOf("") }
-
     var searchQuery by remember { mutableStateOf("") }
 
-    var usernameTouched by remember { mutableStateOf(false) }
-
+    // Static list of options
     val travelTypes = listOf("ADVENTURE", "PARTY", "CULTURE", "RELAX")
     val allDestinations = isCountryList
 
+    // Filtered destinations based on search
     val filteredDestinations = if (searchQuery.isEmpty()) {
         allDestinations
     } else {
         allDestinations.filter { it.contains(searchQuery, ignoreCase = true) }
     }
 
+    // Outer container
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF5F5F5))
     ) {
-
-        // Main Content
+        // Scrollable content
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -111,7 +111,7 @@ fun CompleteAccount(
         ) {
             Spacer(modifier = Modifier.height(40.dp))
 
-            // Profile Icon
+            // Placeholder profile icon
             Box(
                 modifier = Modifier
                     .size(80.dp)
@@ -131,7 +131,7 @@ fun CompleteAccount(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Title
+            // Page title
             Text(
                 text = "Complete your account",
                 fontSize = 24.sp,
@@ -142,7 +142,7 @@ fun CompleteAccount(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Subtitle
+            // Page subtitle
             Text(
                 text = "Enter your data to sign up for this app",
                 fontSize = 16.sp,
@@ -153,7 +153,7 @@ fun CompleteAccount(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Date of Birth TextField
+            // DATE OF BIRTH INPUT
             OutlinedTextField(
                 value = dateOfBirth,
                 onValueChange = { dateOfBirth = it; dateOfBirthTouched = true },
@@ -185,7 +185,7 @@ fun CompleteAccount(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Country TextField
+            // COUNTRY INPUT
             OutlinedTextField(
                 value = country,
                 onValueChange = { country = it; countryTouched = true },
@@ -217,7 +217,7 @@ fun CompleteAccount(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Username TextField
+            // USERNAME INPUT
             OutlinedTextField(
                 value = username,
                 onValueChange = { username = it; usernameTouched = true },
@@ -249,7 +249,7 @@ fun CompleteAccount(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Travel Preferences Section
+            // TRAVEL TYPE PREFERENCES
             Text(
                 text = "Preferences about the type of travel",
                 fontSize = 18.sp,
@@ -260,7 +260,7 @@ fun CompleteAccount(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Travel Type Chips
+            // Travel type filter chips
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -309,7 +309,7 @@ fun CompleteAccount(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Destinations Section
+            // DESTINATIONS SECTION
             Text(
                 text = "Most desired destinations",
                 fontSize = 18.sp,
@@ -320,7 +320,7 @@ fun CompleteAccount(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Selected Destinations Chips
+            // Selected destinations shown as chips with removal option
             if (selectedDestinations.isNotEmpty()) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -349,7 +349,7 @@ fun CompleteAccount(
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            // Destination Search/Selection
+            // Scrollable card containing destination selection list
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -393,7 +393,10 @@ fun CompleteAccount(
                             }
                         }
                         if (destination != filteredDestinations.last()) {
-                            Divider(color = Color.LightGray, thickness = 0.5.dp)
+                            HorizontalDivider(
+                                thickness = 0.5.dp,
+                                color = Color.LightGray
+                            )
                         }
                     }
                 }
@@ -401,6 +404,7 @@ fun CompleteAccount(
 
             Spacer(modifier = Modifier.height(32.dp))
 
+            // Error message display (if any)
             errorMessage?.let { message ->
                 Card(
                     modifier = Modifier
@@ -434,9 +438,10 @@ fun CompleteAccount(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Continue Button
+            // SUBMIT BUTTON
             Button(
                 onClick = {
+                    // Validations before submission
                     if (!isValidUsername(username)) {
                         usernameTouched = true
                         return@Button
@@ -454,6 +459,7 @@ fun CompleteAccount(
                         return@Button
                     }
 
+                    // Build user object
                     val fireUserUid = FirebaseAuth.getInstance().currentUser?.uid
 
                     var user = User(
@@ -473,8 +479,8 @@ fun CompleteAccount(
                         reliability = 100
                     )
 
+                    // Set UID if available
                     if (fireUserUid != null) {
-                        Log.d("R1", "Obtained fireUserUid: $fireUserUid")
                         user = User(
                             id = -1,
                             uid = fireUserUid,
@@ -494,13 +500,16 @@ fun CompleteAccount(
                         )
                     }
 
-
+                    // Store user
                     uvm.createUser(user)
-                    
+
+                    // Navigate to profile screen
                     navController.navigate("profile_overview") {
                         popUpTo("home_main") {
+                            // Keep the "home_main" destination in the back stack (do not remove it)
                             inclusive = false
                         }
+                        // Avoid multiple instances of the same destination on the back stack
                         launchSingleTop = true
                     }
                 },

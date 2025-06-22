@@ -559,12 +559,10 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
         // 添加全局的 article_search 路由，这样从任何地方都可以访问
         composable("article_search") {
             val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
-            val userViewModel: UserViewModel = viewModel(factory = UserFactory)
 
             ArticleSearchScreen(
                 navController = navController,
-                articleViewModel = articleViewModel,
-                userViewModel = userViewModel
+                articleViewModel = articleViewModel
             )
         }
         // 添加 create_article 路由
@@ -786,16 +784,10 @@ fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = ArticleFactory
             )
-            // Create an instance of the UserViewModel using the UserFactory
-            val userViewModel: UserViewModel = viewModel(
-                viewModelStoreOwner = exploreGraphEntry,
-                factory = UserFactory
-            )
             // Pass the NavController, ArticleViewModel, and UserViewModel to the ArticleSearchScreen composable
             ArticleSearchScreen(
                 navController = navController,
-                articleViewModel = articleViewModel,
-                userViewModel = userViewModel
+                articleViewModel = articleViewModel
             )
         }
 
