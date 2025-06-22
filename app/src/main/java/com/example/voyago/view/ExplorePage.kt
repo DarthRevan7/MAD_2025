@@ -38,18 +38,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
-import androidx.compose.ui.unit.sp
-import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
-import coil3.request.crossfade
 import com.example.voyago.R
 import com.example.voyago.model.Trip
 import com.example.voyago.viewmodel.Factory
@@ -57,15 +53,18 @@ import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
 
 
+// ExplorePage is the main screen to browse and filter published trips.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExplorePage(navController: NavController,
-                vm: TripViewModel = viewModel(factory = Factory),
-                uvm: UserViewModel
+fun ExplorePage(
+    navController: NavController, vm: TripViewModel = viewModel(factory = Factory),
+    uvm: UserViewModel
 ) {
 
+    // Observe filtered trip list from the ViewModel
     val filteredTrips by vm.filteredList.collectAsState()
 
+    // Side-effect to update and apply filters when any filter input changes
     LaunchedEffect(
         vm.filterDestination,
         vm.filterMinPrice,
@@ -76,20 +75,26 @@ fun ExplorePage(navController: NavController,
         vm.filterCompletedTrips,
         vm.filterBySeats
     ) {
+        // Fetch the latest published trips and reset price bounds
         vm.updatePublishedTrip(uvm.loggedUser.value.id)
         vm.setMaxMinPrice()
 
+        // Reset filters only if not coming from a search or view action
         if (vm.userAction != TripViewModel.UserAction.SEARCHING && vm.userAction != TripViewModel.UserAction.VIEW_TRIP) {
             vm.resetFilters()
         }
+
+        // Re-apply the current filters
         vm.applyFilters(uvm.loggedUser.value.id)
     }
 
+    // Grid layout to display trips
     LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
+        columns = GridCells.Fixed(2),   // 2 columns per row
         modifier = Modifier
             .fillMaxSize()
     ) {
+        // Top item: Filters button spans full width
         item(span = { GridItemSpan(maxLineSpan) }) {
             Row(
                 modifier = Modifier
@@ -98,7 +103,7 @@ fun ExplorePage(navController: NavController,
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.Start
             ) {
-                //Filters Button
+                // Button to navigate to filter selection screen
                 Button(
                     onClick = {
                         vm.userAction = TripViewModel.UserAction.FILTER_SELECTION
@@ -116,7 +121,7 @@ fun ExplorePage(navController: NavController,
             }
         }
 
-        //List of trips
+        // Display message if no trips match the selected filters
         if (filteredTrips.isEmpty()) {
             item {
                 Box(
@@ -129,13 +134,15 @@ fun ExplorePage(navController: NavController,
                 }
             }
         } else {
+            // Show each trip using TripCard
             items(filteredTrips) { trip ->
-                TripCard(trip, navController, vm, false,false)
+                TripCard(trip, navController, vm, false, false)
             }
         }
     }
 }
 
+// Displays a single trip card with image, title, destination, and status indicators.
 @SuppressLint("DiscouragedApi")
 @Composable
 fun TripCard(
@@ -143,133 +150,140 @@ fun TripCard(
     navController: NavController,
     vm: TripViewModel,
     edit: Boolean,
-    isDraft: Boolean = false // 新增参数：是否为草稿状态，默认为 false
+    isDraft: Boolean = false // Whether it is in draft state, the default value is false
 ) {
 
     //Clicking on the card the user goes to the page that show the details of the trip
-    // 点击卡片，用户进入显示行程详情的页面
     Card(
         modifier = Modifier
-            .padding(start = 16.dp, end = 16.dp, top = 10.dp) // 设置卡片内边距
-            .fillMaxWidth() // 填满可用宽度
-            .height(200.dp), // 设置卡片高度为200dp
-        shape = CardDefaults.elevatedShape, // 使用默认的凸起形状
-        onClick = { // 设置点击事件
-            vm.setSelectedTrip(trip) // 设置选中的行程
-            vm.userAction = TripViewModel.UserAction.VIEW_TRIP // 设置用户操作为查看行程
-            navController.navigate("trip_details") // 导航到行程详情页面
+            .padding(start = 16.dp, end = 16.dp, top = 10.dp)
+            .fillMaxWidth()
+            .height(200.dp),
+        shape = CardDefaults.elevatedShape,
+        onClick = {
+            vm.setSelectedTrip(trip) // Set the trip as Selected Trip
+            vm.userAction = TripViewModel.UserAction.VIEW_TRIP // Set the user action to VIEW_TRIP
+            navController.navigate("trip_details") // Navigate to trip details
         }
     ) {
+        // Trip cover image
         Box {
             TripImageExplore(trip)
 
-            // 草稿状态指示器
+            // Show DRAFT label if the trip is a draft
             if (isDraft) {
                 Box(
                     modifier = Modifier
-                        .align(Alignment.TopStart) // 对齐到左上角
-                        .padding(8.dp) // 设置外边距
+                        .align(Alignment.TopStart)
+                        .padding(8.dp)
                         .background(
-                            color = Color(0xFFFF9800).copy(alpha = 0.9f), // 橙色半透明背景
-                            shape = RoundedCornerShape(12.dp) // 圆角矩形形状
+                            color = Color(0xFFFF9800).copy(alpha = 0.9f),
+                            shape = RoundedCornerShape(12.dp)
                         )
-                        .padding(horizontal = 8.dp, vertical = 4.dp) // 设置内边距
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = "DRAFT", // 显示"草稿"标识
-                        color = Color.White, // 白色文字
-                        fontWeight = FontWeight.Bold, // 粗体字
-                        fontSize = 16.sp // 字体大小
+                        text = "DRAFT",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
                     )
                 }
             }
 
-            //Destination and Title information 目的地和标题信息
+            // Trip destination and title overlay at bottom-left
             Box(
                 modifier = Modifier
-                    .align(Alignment.BottomStart) // 对齐到左下角
-                    .padding(vertical = 10.dp, horizontal = 10.dp) // 设置外边距
+                    .align(Alignment.BottomStart)
+                    .padding(vertical = 10.dp, horizontal = 10.dp)
                     .background(
                         color = if (isDraft) {
-                            Color(0xAA666666) // 草稿状态：使用更深的灰色背景
+                            Color(0xAA666666)
                         } else {
-                            Color(0xAA444444) // 正常状态：使用深灰色背景
+                            Color(0xAA444444)
                         },
-                        shape = MaterialTheme.shapes.small // 小圆角形状
+                        shape = MaterialTheme.shapes.small
                     )
             ) {
                 Column(
-                    modifier = Modifier.padding(10.dp), // 设置内边距
-                    horizontalAlignment = Alignment.Start // 水平左对齐
+                    modifier = Modifier.padding(10.dp),
+                    horizontalAlignment = Alignment.Start
                 ) {
+                    // Destination name (append "(Copy)" if draft)
                     Text(
-                        text = if (isDraft) "${trip.destination} (Copy)" else trip.destination, // 草稿状态添加"(Copy)"后缀
-                        color = Color.White, // 白色文字
-                        fontWeight = FontWeight.Bold // 粗体字
+                        text = if (isDraft) "${trip.destination} (Copy)" else trip.destination,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
                     )
+                    // Trip title
                     Text(
-                        text = trip.title, // 显示行程标题
-                        color = Color.White // 白色文字
+                        text = trip.title,
+                        color = Color.White
                     )
                 }
             }
 
-            //If the trip can be edit 如果行程可以编辑
+            // Show edit button if the trip can be edited
             if (edit) {
-                //Edit button that send the user to the edit page 编辑按钮，点击跳转到编辑页面
                 Box(
                     modifier = Modifier
-                        .padding(vertical = 10.dp, horizontal = 10.dp) // 设置外边距
-                        .align(alignment = Alignment.TopEnd) // 对齐到右上角
-                        .wrapContentSize() // 包裹内容大小
+                        .padding(vertical = 10.dp, horizontal = 10.dp)
+                        .align(alignment = Alignment.TopEnd)
+                        .wrapContentSize()
                         .background(
                             color = if (isDraft) {
-                                Color(0xe6, 0xe0, 0xe9, 200) // 草稿状态：更透明的背景
+                                Color(0xe6, 0xe0, 0xe9, 200)
                             } else {
-                                Color(0xe6, 0xe0, 0xe9, 255) // 正常状态：不透明背景
+                                Color(0xe6, 0xe0, 0xe9, 255)
                             },
-                            shape = MaterialTheme.shapes.small // 小圆角形状
+                            shape = MaterialTheme.shapes.small
                         )
                 ) {
-                    val painterEdit = painterResource(R.drawable.edit) // 获取编辑图标资源
+                    val painterEdit = painterResource(R.drawable.edit)
                     Image(
-                        painter = painterEdit, // 设置图标画笔
-                        contentDescription = "edit", // 图标内容描述
+                        painter = painterEdit,
+                        contentDescription = "edit",
                         modifier = Modifier
-                            .size(35.dp) // 设置图标大小
-                            .clickable { // 设置点击事件
-                                vm.editTrip = trip // 设置要编辑的行程
-                                vm.userAction = TripViewModel.UserAction.EDIT_TRIP // 设置用户操作为编辑行程
-                                navController.navigate("edit_trip") // 导航到编辑行程页面
+                            .size(35.dp)
+                            .clickable {
+                                vm.editTrip = trip // Set the trip as the EditTrip in the vm
+                                vm.userAction =
+                                    TripViewModel.UserAction.EDIT_TRIP // Set the user action as EDIT_TRIP
+                                navController.navigate("edit_trip") // Navigate to edit trip page
                             },
                         colorFilter = if (isDraft) {
-                            androidx.compose.ui.graphics.ColorFilter.tint(Color.Gray) // 草稿状态：图标变灰色
-                        } else null // 正常状态：保持原色
+                            androidx.compose.ui.graphics.ColorFilter.tint(Color.Gray) // If is a draft the icon turns grey
+                        } else null // Otherwise keep the original color
                     )
                 }
             }
 
-            //If the trip has the max number of participants or it's already started
-            // 如果行程已达到最大参与人数或已经开始
+            //If the trip has already happened
             if (trip.status == Trip.TripStatus.COMPLETED.toString()) {
-                //Banner that indicated that the trip has already happened 显示行程已完成的横幅
-                CompletedBanner(Modifier.align(Alignment.TopEnd)) // 对齐到右上角
-            } else if (!trip.canJoin() && !isDraft) { // 非草稿状态且无法加入时显示横幅
-                //Banner that shows that nobody can join the trip anymore 显示无法加入行程的横幅
-                BookedBanner(Modifier.align(Alignment.TopEnd)) // 对齐到右上角
+                //Banner that indicated that the trip has already happened
+                CompletedBanner(Modifier.align(Alignment.TopEnd)) // Align to the top right corner
+            } else if (!trip.canJoin() && !isDraft) { // If the trip it is not is a draft state and cannot be joined
+                //Banner that shows that nobody can join the trip anymore
+                BookedBanner(Modifier.align(Alignment.TopEnd)) // Align to top right corner
             }
         }
     }
 }
 
+// Displays the main photo of a trip using Glide for image loading
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun TripImageExplore(trip: Trip) {
-    val context = LocalContext.current
+    // Mutable state to hold the image URL once it's loaded
     var imageUrl by remember { mutableStateOf<String?>(null) }
+
+    // When the trip.photo value changes, launch a coroutine to fetch the photo URL
     LaunchedEffect(trip.photo) {
+        // Asynchronously load image URL
         imageUrl = trip.getPhoto()
     }
+
+    // Only display the image if the URL is valid and non-blank
     if (imageUrl != null && imageUrl!!.isNotBlank()) {
         GlideImage(
             model = imageUrl,
