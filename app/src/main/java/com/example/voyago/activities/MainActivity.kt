@@ -143,7 +143,8 @@ sealed class Screen(val route: String) {
     object Home : Screen("home_root")
     object Chats : Screen("chats_root")
     object Profile : Screen("profile_root")
-    object Notifications : Screen("notifications")
+    object Notifications : Screen("notifications_root")
+    object Articles : Screen("articles_root")
     object Login : Screen("login_root")
 }
 
@@ -472,7 +473,7 @@ fun TopBar(nvm: NotificationViewModel, navController: NavController, uvm: UserVi
                     // Mark notifications as read
                     nvm.markNotificationsRead(userId)
                     // Navigate to the Notifications screen
-                    navController.navigate(Screen.Notifications.route) {
+                    navController.navigate("notifications") {
                         // Launch the Notifications screen as a single top instance
                         launchSingleTop = true
                     }
@@ -551,6 +552,7 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
         chatsNavGraph(navController)
         profileNavGraph(navController)
         loginNavGraph(navController, auth)
+        notificationNavGraph(navController, auth)
 
         // WE NEED TO ADD THE FOLLOWING ROUTES AND NAVIGATION'S GRAPH: NOTIFICATIONS, ARTICLE
         // FROM THIS POINT, WE NEED TO RELOCATE STUFF
@@ -611,19 +613,148 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
             )
         }
 
-        composable(Screen.Notifications.route) { entry ->
-            val parentEntry = remember(entry) {
-                navController.getBackStackEntry(startDest)
+//        composable(Screen.Notifications.route) { entry ->
+//            val parentEntry = remember(entry) {
+//                navController.getBackStackEntry(startDest)
+//            }
+//
+//            val nvm: NotificationViewModel =
+//                viewModel(viewModelStoreOwner = parentEntry, factory = NotificationFactory)
+//            val uvm: UserViewModel = viewModel(viewModelStoreOwner = parentEntry, factory = Factory)
+//            val vm: TripViewModel = viewModel(viewModelStoreOwner = parentEntry, factory = Factory)
+//            val avm: ArticleViewModel =
+//                viewModel(viewModelStoreOwner = parentEntry, factory = ArticleFactory)
+//
+//            NotificationView(navController, nvm, uvm, vm, avm)
+//        }
+    }
+}
+
+//Composable function to set up the navigation graph for the "Notification" section
+fun NavGraphBuilder.notificationNavGraph(navController: NavHostController, auth: FirebaseAuth) {
+    //Define the start destination for the notification navigation graph
+    navigation(startDestination = "notifications", route = Screen.Notifications.route)
+    {
+        //Graph Entry
+        composable("notifications") { entry ->
+
+            val notificationGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Notifications.route)
             }
 
-            val nvm: NotificationViewModel =
-                viewModel(viewModelStoreOwner = parentEntry, factory = NotificationFactory)
-            val uvm: UserViewModel = viewModel(viewModelStoreOwner = parentEntry, factory = Factory)
-            val vm: TripViewModel = viewModel(viewModelStoreOwner = parentEntry, factory = Factory)
-            val avm: ArticleViewModel =
-                viewModel(viewModelStoreOwner = parentEntry, factory = ArticleFactory)
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = notificationGraphEntry,
+                factory = Factory
+            )
 
-            NotificationView(navController, nvm, uvm, vm, avm)
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = notificationGraphEntry,
+                factory = Factory
+            )
+
+            val notificationViewModel: NotificationViewModel = viewModel(
+                viewModelStoreOwner = notificationGraphEntry,
+                factory = NotificationFactory
+            )
+
+            val articlesViewModel: ArticleViewModel = viewModel(
+                viewModelStoreOwner = notificationGraphEntry,
+                factory = ArticleFactory
+            )
+
+            if(auth.currentUser != null) {
+                NotificationView(navController = navController,
+                    nvm =  notificationViewModel,
+                    uvm = userViewModel,
+                    vm = tripViewModel,
+                    avm = articlesViewModel)
+            }
+        }
+
+        //Trip Details with ownership as a parameter
+        composable(
+            route = "trip_details?owner={owner}",
+            arguments = listOf(
+                navArgument("owner") {
+                    type = NavType.BoolType
+                    defaultValue = false
+                }
+            )) { entry ->
+            val notificationGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Notifications.route)
+            }
+
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = notificationGraphEntry,
+                factory = Factory
+            )
+
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = notificationGraphEntry,
+                factory = Factory
+            )
+
+            val notificationViewModel: NotificationViewModel = viewModel(
+                viewModelStoreOwner = notificationGraphEntry,
+                factory = NotificationFactory
+            )
+
+            val reviewViewModel: ReviewViewModel = viewModel(
+                viewModelStoreOwner = notificationGraphEntry,
+                factory = Factory
+            )
+
+            val chatViewModel: ChatViewModel = viewModel(
+                viewModelStoreOwner = notificationGraphEntry,
+                factory = ChatFactory
+            )
+
+            if(auth.currentUser != null) {
+                TripDetails(navController = navController,
+                    nvm =  notificationViewModel,
+                    uvm = userViewModel,
+                    vm = tripViewModel,
+                    rvm = reviewViewModel,
+                    chatViewModel = chatViewModel,
+                    owner = true
+                    )
+            }
+        }
+
+
+        composable("trip_applications") { entry ->
+            // Get the back stack entry for the My Trips graph
+            val notificationGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Notifications.route)
+            }
+            // Create instances of the TripViewModel using the Factory
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = notificationGraphEntry,
+                factory = Factory
+            )
+            // Create an instance of the UserViewModel using the Factory
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = notificationGraphEntry,
+                factory = Factory
+            )
+            // Create an instance of the NotificationViewModel using the NotificationFactory
+            val notificationViewModel: NotificationViewModel = viewModel(
+                viewModelStoreOwner = notificationGraphEntry,
+                factory = NotificationFactory
+            )
+            // Create an instance of the ChatViewModel using the ChatFactory
+            val chatViewModel: ChatViewModel = viewModel(
+                viewModelStoreOwner = notificationGraphEntry,
+                factory = ChatFactory
+            )
+            // Pass the NavController and ViewModels to the TripApplications composable
+            TripApplications(
+                vm = tripViewModel,
+                uvm = userViewModel,
+                navController = navController,
+                nvm = notificationViewModel,
+                chatViewModel = chatViewModel
+            )
         }
     }
 }
