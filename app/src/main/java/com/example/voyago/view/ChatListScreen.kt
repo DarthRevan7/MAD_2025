@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -87,13 +88,15 @@ fun ChatRoomItem(
     currentUserId: Int,
     onClick: () -> Unit
 ) {
-
     LaunchedEffect(chatRoom.id) {
         chatViewModel.fetchChatRoomName(chatRoom.id, currentUserId)
     }
 
     val chatRoomNames by chatViewModel.chatRoomNames.collectAsState()
     val chatRoomName = chatRoomNames[chatRoom.id] ?: "Chat"
+
+    // Check if user has unread messages
+    val hasUnreadMessages = chatRoom.usersNotRead.contains(currentUserId.toString())
 
     Card(
         modifier = Modifier
@@ -104,7 +107,8 @@ fun ChatRoomItem(
     ) {
         Row(
             modifier = Modifier
-                .padding(12.dp),
+                .padding(12.dp)
+                .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
@@ -133,9 +137,22 @@ fun ChatRoomItem(
                     overflow = TextOverflow.Ellipsis
                 )
             }
+
+            // 🔔 Show red dot if there are unread messages
+            if (hasUnreadMessages) {
+                Icon(
+                    imageVector = Icons.Default.Notifications,
+                    contentDescription = "New Message",
+                    tint = Color.Red,
+                    modifier = Modifier
+                        .size(30.dp)
+                        .padding(start = 8.dp)
+                )
+            }
         }
     }
 }
+
 
 
 //

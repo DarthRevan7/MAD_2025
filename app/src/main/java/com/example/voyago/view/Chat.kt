@@ -60,6 +60,7 @@ fun SingleChatScreen(
     LaunchedEffect(roomId) {
         chatViewModel.fetchMessagesForRoom(roomId)
         chatViewModel.fetchChatRoomName(roomId, user.id)
+        chatViewModel.removeUserFromUsersNotRead(roomId, user.id.toString())
     }
 
     val chatRoomNames by chatViewModel.chatRoomNames.collectAsState()

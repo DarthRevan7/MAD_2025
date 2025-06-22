@@ -141,21 +141,37 @@ class ChatViewModel : ViewModel() {
 
         val chatRoomRef = db.collection("chatRooms").document(roomId)
 
-        // Add the message to the messages subcollection
-        chatRoomRef
-            .collection("messages")
-            .add(messageMap)
-            .addOnSuccessListener {
-                // Once message is successfully added, update lastMessage field
+        // Fetch participants before sending message
+        chatRoomRef.get().addOnSuccessListener { roomSnapshot ->
+            val roomData = roomSnapshot.data
+            val participants = when (val raw = roomData?.get("participants")) {
+                is List<*> -> raw.mapNotNull {
+                    when (it) {
+                        is Number -> it.toInt().toString()
+                        is String -> it
+                        else -> null
+                    }
+                }
+                else -> emptyList()
+            }
+
+            // Filter out the sender
+            val usersNotRead = participants.filter { it != message.senderId }
+
+            // Add the message to the messages subcollection
+            chatRoomRef.collection("messages").add(messageMap).addOnSuccessListener {
+                // Update lastMessage and usersNotRead
                 chatRoomRef.update(
                     mapOf(
                         "lastMessage" to message.content,
                         "lastMessageTimestamp" to message.timestamp,
-
+                        "usersNotRead" to usersNotRead
                     )
                 )
             }
+        }
     }
+
 
     private val _senderNames = MutableStateFlow<Map<String, String>>(emptyMap())
     val senderNames: StateFlow<Map<String, String>> = _senderNames
@@ -377,6 +393,25 @@ class ChatViewModel : ViewModel() {
                 Log.e("ChatDebug", "Failed to query group $groupName: ${e.message}")
 
             }
+    }
+
+    fun removeUserFromUsersNotRead(
+        roomId: String,
+        userId: String,
+    ) {
+        val db = FirebaseFirestore.getInstance()
+        val roomRef = db.collection("chatRooms").document(roomId)
+
+        db.runTransaction { transaction ->
+            val snapshot = transaction.get(roomRef)
+            val usersNotRead = snapshot.get("usersNotRead") as? List<String> ?: emptyList()
+
+            if (userId in usersNotRead) {
+                val updatedList = usersNotRead.filter { it != userId }
+                transaction.update(roomRef, "usersNotRead", updatedList)
+            }
+
+        }
     }
 
 
