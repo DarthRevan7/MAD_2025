@@ -635,17 +635,8 @@ fun NavGraphBuilder.loginNavGraph(navController: NavHostController, auth: Fireba
     navigation(startDestination = "login", route = Screen.Login.route) {
         // Define the composable for the login screen
         composable("login") { entry ->
-            // Get the back stack entry for the login graph
-            val loginGraphEntry = remember(entry) {
-                navController.getBackStackEntry(Screen.Login.route)
-            }
-            // Create a UserViewModel instance using the Factory
-            val userViewModel: UserViewModel = viewModel(
-                viewModelStoreOwner = loginGraphEntry,
-                factory = Factory
-            )
             // Pass the UserViewModel and FirebaseAuth instance to the LoginScreen composable
-            LoginScreen(navController = navController, auth = auth, uvm = userViewModel)
+            LoginScreen(navController = navController, auth = auth)
         }
 
         // Define the composable for the retrieve password screen

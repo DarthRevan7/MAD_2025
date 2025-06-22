@@ -61,6 +61,7 @@ fun HomePageScreen(
     navController: NavHostController,
     vm1: TripViewModel,
     vm2: ArticleViewModel,
+    onTripClick: (Trip) -> Unit = {}
 ) {
 
     // Collect the latest list of articles from the article view model as state
