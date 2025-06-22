@@ -105,6 +105,7 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
             .fillMaxSize()
             .background(Color(0xFFF3EDF7))
     ) {
+        // State object to control the scroll position of the LazyColumn
         val listState = rememberLazyListState()
 
         // Scrollable vertical list of form fields and buttons
@@ -387,7 +388,7 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
 
                                 //Update the activity through the ViewModel
                                 vm.editActivity(activityId, updatedActivity)
-                                
+
                                 // Navigate back after updating
                                 navController.popBackStack()
                             }

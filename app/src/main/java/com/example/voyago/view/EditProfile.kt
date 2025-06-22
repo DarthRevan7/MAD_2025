@@ -1,12 +1,10 @@
 package com.example.voyago.view
 
-import android.app.Activity.RESULT_OK
-import android.content.Context
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -58,6 +56,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -70,40 +69,30 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.example.voyago.model.TypeTravel
 import com.example.voyago.model.User
-import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
 import com.google.firebase.storage.storage
 import kotlinx.coroutines.tasks.await
 
+// Screen that permits to edit the profile
 @Composable
 fun EditProfileScreen(
     navController: NavController,
-    context: Context,
-    vm: TripViewModel,
     uvm: UserViewModel
 ) {
+    // Obtain the current Android context
+    val context = LocalContext.current
 
+    // Observe the current logged-in user from the ViewModel
     val user by uvm.loggedUser.collectAsState()
 
+    // Store the current URI of the profile image (nullable)
     var profileImageUri = uvm.profileImageUri.value
 
-    // Use rememberSaveable for dialog visibility
+    // State variable to control the visibility of the image source selection popup
     var showPopup by rememberSaveable { mutableStateOf(false) }
 
-    // Launcher for taking photo with camera
-    val takePhotoLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == RESULT_OK) {
-            val uri = result.data?.data // Get the URI from the result Intent
-            if (uri != null) {
-                profileImageUri = uri // Update the rememberSaveable state
-                user.profilePictureUrl = uri.toString() // Also update the user object
-                showPopup = false // Dismiss the popup
-            }
-        }
-    }
-
+    // List of editable text field values (first name, surname, etc.)
+    // These are initialized from the user object and preserved across recompositions
     val fieldValues = rememberSaveable(
         saver = listSaver(
             save = { it.toList() },
@@ -119,16 +108,21 @@ fun EditProfileScreen(
         )
     }
 
+    // Labels for the input fields, used for UI descriptions
     val fieldNames = listOf(
         "First Name", "Surname",
         "Username", "Email address", "Country",
         "User Description"
     )
 
-    var errors =
-        remember { mutableStateListOf<Boolean>().apply { addAll(List(fieldValues.size) { false }) } }
+    // Stores validation states (true if a field has an error) for each input field
+    var errors = remember {
+        mutableStateListOf<Boolean>().apply {
+            addAll(List(fieldValues.size) { false })
+        }
+    }
 
-
+    // Stores selected travel types
     val selected = rememberSaveable(
         saver = listSaver(
             save = { it.toList() },
@@ -138,7 +132,7 @@ fun EditProfileScreen(
     }
 
 
-    //TODO: temporary, to be changed once database is fully implemented
+    //List of available destinations
     val availableDestinations = listOf(
         "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan",
         "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus",
@@ -167,6 +161,7 @@ fun EditProfileScreen(
         "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Vietnam"
     )
 
+    // Stores the user's selected desired destinations
     val selectedDestinations = rememberSaveable(
         saver = listSaver(
             save = { it.toList() },
@@ -176,6 +171,7 @@ fun EditProfileScreen(
         mutableStateListOf<String>().apply { addAll(user.desiredDestination) }
     }
 
+    // State object to control the scroll position of the LazyColumn
     val listState = rememberLazyListState()
 
     LazyColumn(
@@ -186,7 +182,7 @@ fun EditProfileScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         item {
-            //Box with profile image and initials
+            // Profile photo and camera icon, centered inside a box
             Box(
                 modifier =
                     Modifier
@@ -198,14 +194,14 @@ fun EditProfileScreen(
                     firstname = user.firstname,
                     surname = user.surname,
                     profileImageUri = profileImageUri,
-                    onCameraIconClick = { showPopup = true },
+                    onCameraIconClick = { showPopup = true },   // Open camera/gallery popup
                     modifier = Modifier.align(Alignment.Center)
                 )
             }
         }
 
         item {
-            //Text with Edit Profile
+            //Title Text
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -224,7 +220,7 @@ fun EditProfileScreen(
         }
 
         item {
-            //Editing Fields
+            // Column containing all editable fields and preferences
             Column(
                 verticalArrangement = Arrangement.spacedBy(5.dp),
                 modifier = Modifier
@@ -232,9 +228,9 @@ fun EditProfileScreen(
                     .fillMaxWidth()
             ) {
 
-                //TextFields with various info
+                // Input Fields
                 fieldValues.forEachIndexed { index, item ->
-                    //This is TextField with email
+                    // Email field has specific validation pattern
                     if (index == 3) {
                         val emailHasErrors by derivedStateOf {
                             if (item.isNotEmpty()) {
@@ -247,9 +243,8 @@ fun EditProfileScreen(
                         errors[index] = emailHasErrors
 
                         ValidatingInputEmailField(item, { fieldValues[index] = it }, emailHasErrors)
-                    }
-                    //These are other text fields
-                    else {
+                    } else {
+                        // General validation for other fields: must not be blank
                         val validatorHasErrors by derivedStateOf {
                             item.isBlank()
                         }
@@ -265,6 +260,7 @@ fun EditProfileScreen(
                     }
                 }
 
+                // Travel Type Preferences (Filter Chips)
                 Text(
                     text = "Preferences about the type of travel",
                     fontWeight = FontWeight.Bold,
@@ -296,6 +292,7 @@ fun EditProfileScreen(
                     }
                 }
 
+                // Desired Destination Section
                 Text(
                     text = "Most Desired destination",
                     fontWeight = FontWeight.Bold,
@@ -319,6 +316,7 @@ fun EditProfileScreen(
                             .fillMaxWidth(0.8f)
                             .padding(horizontal = 16.dp)
                     ) {
+                        // Checkboxes for selecting destinations
                         availableDestinations.forEach { destination ->
                             val isChecked = destination in selectedDestinations
                             Row(
@@ -348,17 +346,17 @@ fun EditProfileScreen(
                     }
                 }
 
-                // 在 EditProfileScreen 中修改更新按钮的逻辑：
-
-                //Update datas
+                // Button to update the user's profile
                 Button(
                     onClick = {
+                        // Only proceed if all inputs are valid
                         if (!errors.any { it }) {
-
+                            // Use current profile picture if new one isn't selected
                             if (profileImageUri == null) {
                                 profileImageUri = user.profilePictureUrl?.toUri()
                             }
 
+                            // Create a new updated User object
                             val updatedUser = User(
                                 id = user.id,
                                 uid = user.uid,
@@ -376,51 +374,32 @@ fun EditProfileScreen(
                                 rating = user.rating,
                                 reliability = user.reliability
                             )
-
-
-                            /*
-                                                        uvm.editUserData(updatedUser)
-
-                                                        navController.navigate("profile_overview") {
-                                                            popUpTo("edit_profile") {
-                                                                inclusive = true
-                                                            } // Removes edit from back stack
-                                                            launchSingleTop = true
-                                                        }
-                            */
+                            // Save user changes via ViewModel
                             uvm.editUserData(updatedUser)
+
+                            // Also update the profile image
                             uvm.updateUserWithProfileImage(
                                 updatedUser = updatedUser,
                                 newImageUri = profileImageUri
                             ) { success ->
                                 if (success) {
+                                    // Navigate to the profile overview and clear back stack
                                     navController.navigate("profile_overview") {
                                         popUpTo("edit_profile") {
                                             inclusive = true
-                                        } // Removes edit from back stack
+                                        }
                                         launchSingleTop = true
                                     }
                                 } else {
-                                    // 处理错误，可以显示 Toast 或错误消息
-                                    Log.e("EditProfile", "Failed to update profile")
+                                    // Show error toast
+                                    Toast.makeText(
+                                        context,
+                                        "Failed to update profile. Please try again.",
+                                        Toast.LENGTH_LONG
+                                    ).show()
                                 }
                             }
-                            /*
 
-                                                        // 🔄 使用 UserViewModel 的新方法
-                                                        uvm.updateUserWithProfileImage(
-                                                            updatedUser = updatedUser,
-                                                            newImageUri = profileImageUri
-                                                        ) { success ->
-                                                            if (success) {
-                                                                navController.navigate("profile_overview")
-                                                            } else {
-                                                                // 处理错误，可以显示 Toast 或错误消息
-                                                                Log.e("EditProfile", "Failed to update profile")
-                                                            }
-                                                        }
-                            */
-//End of XI Part
                         }
                     },
                     modifier = Modifier
@@ -434,23 +413,18 @@ fun EditProfileScreen(
     }
 
 
-// Show the popup when showPopup is true
+    // Show camera/gallery selection popup if toggled
     if (showPopup) {
         CameraPopup(
             onDismissRequest = { showPopup = false },
             onImageSelectedFromGallery = { uri ->
                 profileImageUri = uri
                 uvm.setProfileImageUri(uri)
-                //user.profilePicture = uri
                 showPopup = false
             },
             onTakePhotoClick = {
-                // Launch the camera activity
                 showPopup = false
                 navController.navigate("camera")
-                //profileImageUri = vm.profileImageUri.value
-                //val intent = Intent(context, MainActivity::class.java)
-                //takePhotoLauncher.launch(intent)
             }
         )
     }

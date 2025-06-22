@@ -1423,11 +1423,6 @@ fun NavGraphBuilder.profileNavGraph(navController: NavHostController) {
             val profileGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.Profile.route)
             }
-            // Create instances of the ViewModels using the Factory
-            val tripViewModel: TripViewModel = viewModel(
-                viewModelStoreOwner = profileGraphEntry,
-                factory = Factory
-            )
             // Create an instance of the UserViewModel using the Factory
             val userViewModel: UserViewModel = viewModel(
                 viewModelStoreOwner = profileGraphEntry,
@@ -1436,8 +1431,6 @@ fun NavGraphBuilder.profileNavGraph(navController: NavHostController) {
             // Pass the NavController and ViewModels to the EditProfileScreen composable
             EditProfileScreen(
                 navController = navController,
-                context = LocalContext.current,
-                vm = tripViewModel,
                 uvm = userViewModel
             )
         }
