@@ -1548,12 +1548,20 @@ fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
                 factory = Factory
             )
 
+            // Create an instance of the ChatViewModel using the ChatFactory
+            val chatViewModel: ChatViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = ChatFactory
+            )
+
             if (tripId != null){
                 ChatDetails(
                     navController = navController,
                     tripId = tripId,
                     tripViewModel = tripViewModel,
-                    uvm = userViewModel)
+                    uvm = userViewModel,
+                    chatViewModel = chatViewModel,
+                    navController = navController)
             }
         }
 
