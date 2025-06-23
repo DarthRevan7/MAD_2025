@@ -199,8 +199,11 @@ class ChatViewModel : ViewModel() {
     private val _chatRoomNames = MutableStateFlow<Map<String, String>>(emptyMap())
     val chatRoomNames: StateFlow<Map<String, String>> = _chatRoomNames
 
+    private val _chatRoomTypes = MutableStateFlow<Map<String, String>>(emptyMap())
+    val chatRoomTypes: StateFlow<Map<String, String>> = _chatRoomTypes
+
+
     fun fetchChatRoomName(roomId: String, currentUserId: Int) {
-        // If already fetched, don't fetch again
         if (_chatRoomNames.value.containsKey(roomId)) return
 
         db.collection("chatRooms")
@@ -210,6 +213,11 @@ class ChatViewModel : ViewModel() {
                 val data = doc.data
                 val type = data?.get("type") as? String ?: "private"
                 val nameFromRoom = data?.get("name") as? String ?: "Chat"
+
+                // Track type regardless of private/group
+                _chatRoomTypes.value = _chatRoomTypes.value.toMutableMap().apply {
+                    put(roomId, type)
+                }
 
                 val participantsRaw = data?.get("participants")
                 val participants: List<Int> = when (participantsRaw) {
@@ -273,6 +281,7 @@ class ChatViewModel : ViewModel() {
                 }
             }
     }
+
 
     fun createOrGetPrivateChatRoom(
         currentUserId: Int,

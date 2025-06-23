@@ -1382,6 +1382,26 @@ class TripModel {
             }
     }
 
+    // Get trip by title
+    suspend fun getTripByTitle(title: String): Trip? {
+        val db = Firebase.firestore
+        return try {
+            val snapshot = db.collection("trips")
+                .whereEqualTo("title", title)
+                .limit(1)
+                .get()
+                .await()
+
+            if (!snapshot.isEmpty) {
+                snapshot.documents.first().toObject(Trip::class.java)
+            } else null
+        } catch (e: Exception) {
+            Log.e("TripModel", "Error fetching trip by title", e)
+            null
+        }
+    }
+
+
 
 }
 

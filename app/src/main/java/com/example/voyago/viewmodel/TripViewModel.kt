@@ -796,6 +796,12 @@ class TripViewModel(
         }
     }
 
+    // Get trip by title
+    suspend fun getTripByTitle(title: String): Trip? {
+        return tripModel.getTripByTitle(title)
+    }
+
+
     //INITIALIZE VIEWMODEL
     init {
         viewModelScope.launch {
