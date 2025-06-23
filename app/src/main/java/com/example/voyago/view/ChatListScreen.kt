@@ -51,7 +51,10 @@ fun ChatListScreen(
 
     val user by uvm.loggedUser.collectAsState()
 
-    chatViewModel.fetchChatRoomsForUser(user.id)
+    LaunchedEffect(user.id) {
+        chatViewModel.fetchChatRoomsForUser(user.id)
+    }
+
 
     val chatRooms by chatViewModel.chatRooms.collectAsState()
 

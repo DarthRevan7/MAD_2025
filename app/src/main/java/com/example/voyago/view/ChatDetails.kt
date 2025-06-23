@@ -153,6 +153,7 @@ fun ChatDetails(navController: NavController,
 
                                 tripViewModel.deleteTrip(trip.id)
                                 tripViewModel.updatePublishedTrip(loggedUser.id)
+                                chatViewModel.removeParticipantFromRoom(trip.title, loggedUser.id)
                             } else if (trip.participants.size > 1) {
                                 // Transfer ownership to another participant
                                 val newOwner = trip.participants.entries.firstOrNull { it.key.toIntOrNull() != trip.creatorId }
@@ -163,7 +164,7 @@ fun ChatDetails(navController: NavController,
                                         trip.creatorId
                                     )
                                 }
-
+                                chatViewModel.removeParticipantFromRoom(trip.title, loggedUser.id)
                                 uvm.updateUserReliability(loggedUser.id, -10) { success ->
                                     if (success) {
                                         Log.d("TripDetails", "Reliability updated")
