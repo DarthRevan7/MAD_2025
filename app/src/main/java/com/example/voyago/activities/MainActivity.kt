@@ -53,7 +53,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -87,7 +86,6 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.example.voyago.R
 import com.example.voyago.model.NavItem
-import com.example.voyago.model.Trip
 import com.example.voyago.model.User
 import com.example.voyago.model.UserModel
 import com.example.voyago.view.ActivitiesList
@@ -112,7 +110,7 @@ import com.example.voyago.view.MyReviews
 import com.example.voyago.view.MyTripsPage
 import com.example.voyago.view.NewActivity
 import com.example.voyago.view.NotificationView
-import com.example.voyago.view.RegistrationVerificationCodeScreen
+import com.example.voyago.view.RegistrationVerificationScreen
 import com.example.voyago.view.RetrievePassword
 import com.example.voyago.view.SingleChatScreen
 import com.example.voyago.view.TripApplications
@@ -242,16 +240,6 @@ class MainActivity : ComponentActivity() {
         context = this
         // Initialize the camera executor for handling camera operations
         cameraExecutor = Executors.newSingleThreadExecutor()
-
-        // Subscribe to the "all" topic for Firebase Cloud Messaging
-//        FirebaseMessaging.getInstance().subscribeToTopic("all")
-//            .addOnCompleteListener { task ->
-//                if (task.isSuccessful) {
-//                    Log.d("FCM", "Subscribed to 'all' topic")
-//                } else {
-//                    Log.e("FCM", "Failed to subscribe to 'all' topic", task.exception)
-//                }
-//            }
 
         // Check for camera permissions
         if (!allPermissionsGranted()) {
@@ -556,20 +544,91 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
         profileNavGraph(navController)
         loginNavGraph(navController, auth)
         notificationNavGraph(navController, auth)
+        articleNavGraph(navController, auth)
 
         // WE NEED TO ADD THE FOLLOWING ROUTES AND NAVIGATION'S GRAPH: NOTIFICATIONS, ARTICLE
         // FROM THIS POINT, WE NEED TO RELOCATE STUFF
 
-        // 添加全局的 article_search 路由，这样从任何地方都可以访问
-        composable("article_search") {
-            val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
+//        // 添加全局的 article_search 路由，这样从任何地方都可以访问
+//        composable("article_search") {
+//            val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
+//
+//            ArticleSearchScreen(
+//                navController = navController,
+//                articleViewModel = articleViewModel
+//            )
+//        }
+//        // 添加 create_article 路由
+//        composable("create_article") {
+//            RequireAuth(navController) {
+//                val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
+//                val userViewModel: UserViewModel = viewModel(factory = UserFactory)
+//                val notificationViewModel: NotificationViewModel =
+//                    viewModel(factory = NotificationFactory)
+//
+//                CreateArticleScreen(
+//                    navController = navController,
+//                    articleViewModel = articleViewModel,
+//                    userViewModel = userViewModel,
+//                    nvm = notificationViewModel
+//                )
+//            }
+//        }
+//
+//        // 添加 article_detail 路由
+//        composable(
+//            route = "article_detail/{articleId}",
+//            arguments = listOf(
+//                navArgument("articleId") {
+//                    type = NavType.IntType
+//                }
+//            )
+//        ) { backStackEntry ->
+//            val articleId = backStackEntry.arguments?.getInt("articleId") ?: 0
+//            val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
+//
+//            ArticleDetailScreen(
+//                navController = navController,
+//                articleId = articleId,
+//                articleViewModel = articleViewModel
+//            )
+//        }
 
-            ArticleSearchScreen(
-                navController = navController,
-                articleViewModel = articleViewModel
+        composable("camera") {
+            val context = LocalContext.current
+            CameraScreen(
+                context = context,
+                onImageCaptured = { uri ->
+                    Toast.makeText(context, "Saved to: $uri", Toast.LENGTH_SHORT).show()
+                    navController.popBackStack()
+                }
             )
         }
-        // 添加 create_article 路由
+    }
+}
+
+//Composable function to set up the navigation graph for the "Article" section
+fun NavGraphBuilder.articleNavGraph(navController: NavHostController, auth: FirebaseAuth) {
+    //Define the start destination for the article navigation graph
+    navigation(startDestination = "articles", route = Screen.Articles.route)
+    {
+        //graph entry
+        composable("articles") { entry ->
+
+            val articleGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Articles.route)
+            }
+
+            val articleViewModel: ArticleViewModel = viewModel(
+                viewModelStoreOwner = articleGraphEntry,
+                factory = ArticleFactory
+            )
+
+            ArticleSearchScreen(navController = navController,
+                articleViewModel = articleViewModel)
+
+        }
+
         composable("create_article") {
             RequireAuth(navController) {
                 val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
@@ -586,7 +645,6 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
             }
         }
 
-        // 添加 article_detail 路由
         composable(
             route = "article_detail/{articleId}",
             arguments = listOf(
@@ -604,32 +662,6 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
                 articleViewModel = articleViewModel
             )
         }
-
-        composable("camera") {
-            val context = LocalContext.current
-            CameraScreen(
-                context = context,
-                onImageCaptured = { uri ->
-                    Toast.makeText(context, "Saved to: $uri", Toast.LENGTH_SHORT).show()
-                    navController.popBackStack()
-                }
-            )
-        }
-
-//        composable(Screen.Notifications.route) { entry ->
-//            val parentEntry = remember(entry) {
-//                navController.getBackStackEntry(startDest)
-//            }
-//
-//            val nvm: NotificationViewModel =
-//                viewModel(viewModelStoreOwner = parentEntry, factory = NotificationFactory)
-//            val uvm: UserViewModel = viewModel(viewModelStoreOwner = parentEntry, factory = Factory)
-//            val vm: TripViewModel = viewModel(viewModelStoreOwner = parentEntry, factory = Factory)
-//            val avm: ArticleViewModel =
-//                viewModel(viewModelStoreOwner = parentEntry, factory = ArticleFactory)
-//
-//            NotificationView(navController, nvm, uvm, vm, avm)
-//        }
     }
 }
 
@@ -665,12 +697,14 @@ fun NavGraphBuilder.notificationNavGraph(navController: NavHostController, auth:
                 factory = ArticleFactory
             )
 
-            if(auth.currentUser != null) {
-                NotificationView(navController = navController,
-                    nvm =  notificationViewModel,
+            if (auth.currentUser != null) {
+                NotificationView(
+                    navController = navController,
+                    nvm = notificationViewModel,
                     uvm = userViewModel,
                     vm = tripViewModel,
-                    avm = articlesViewModel)
+                    avm = articlesViewModel
+                )
             }
         }
 
@@ -712,15 +746,16 @@ fun NavGraphBuilder.notificationNavGraph(navController: NavHostController, auth:
                 factory = ChatFactory
             )
 
-            if(auth.currentUser != null) {
-                TripDetails(navController = navController,
-                    nvm =  notificationViewModel,
+            if (auth.currentUser != null) {
+                TripDetails(
+                    navController = navController,
+                    nvm = notificationViewModel,
                     uvm = userViewModel,
                     vm = tripViewModel,
                     rvm = reviewViewModel,
                     chatViewModel = chatViewModel,
                     owner = true
-                    )
+                )
             }
         }
 
@@ -799,7 +834,7 @@ fun NavGraphBuilder.loginNavGraph(navController: NavHostController, auth: Fireba
         }
 
         // Define the composable for the registration verification email screen
-        composable("register_verification_code") { entry ->
+        composable("register_verification") { entry ->
             // Get the back stack entry for the login graph
             val loginGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.Login.route)
@@ -810,7 +845,7 @@ fun NavGraphBuilder.loginNavGraph(navController: NavHostController, auth: Fireba
                 factory = Factory
             )
             // Pass the NavController and UserViewModel to the RegistrationVerificationCodeScreen composable
-            RegistrationVerificationCodeScreen(navController, userViewModel)
+            RegistrationVerificationScreen(navController, userViewModel)
         }
 
         // Define the composable for the completion of profile for new users that did the sign in with google

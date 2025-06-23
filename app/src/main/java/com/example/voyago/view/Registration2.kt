@@ -1,6 +1,5 @@
 package com.example.voyago.view
 
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -32,10 +31,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -62,6 +61,7 @@ import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import java.io.Serializable
 
+// Data structure to pass registration data between screens
 data class RegistrationFormValues(
     val name: String,
     val surname: String,
@@ -74,27 +74,38 @@ data class RegistrationFormValues(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
+    // Retrieve previously saved registration form values from the navigation back stack
     val fields =
         navController.previousBackStackEntry?.savedStateHandle?.get<RegistrationFormValues>("registrationFormValues")
 
+    // State variables to manage user input
     var username by remember { mutableStateOf("") }
     var selectedTravelTypes by remember { mutableStateOf(setOf<String>()) }
     var selectedDestinations by remember { mutableStateOf(setOf<String>()) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var message by remember { mutableStateOf("") }
 
+    // Variable that manages query
     var searchQuery by remember { mutableStateOf("") }
 
+    // Variable that track if the user interacted with the username field
     var usernameTouched by remember { mutableStateOf(false) }
 
+    // Boolean that tells if the username already exists
     var alreadyExists by remember { mutableStateOf(false) }
 
+    // Travel type options
     val travelTypes = listOf("ADVENTURE", "PARTY", "CULTURE", "RELAX")
+
+    // List of available destinations
     val allDestinations = isCountryList
 
+    // Filter destinations by search query
     val filteredDestinations = if (searchQuery.isEmpty()) {
+        // If the query is empty return all destinations
         allDestinations
     } else {
+        // Otherwise filter destinations by query
         allDestinations.filter { it.contains(searchQuery, ignoreCase = true) }
     }
 
@@ -103,7 +114,7 @@ fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
             .fillMaxSize()
             .background(Color(0xFFF5F5F5))
     ) {
-        // Main Content
+        // Scrollable content area
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -113,7 +124,7 @@ fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
         ) {
             Spacer(modifier = Modifier.height(40.dp))
 
-            // Profile Icon
+            // User profile icon placeholder
             Box(
                 modifier = Modifier
                     .size(80.dp)
@@ -133,7 +144,7 @@ fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Title
+            // Main title
             Text(
                 text = "Create an account",
                 fontSize = 24.sp,
@@ -155,12 +166,16 @@ fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Username TextField
+            // Username input field
             OutlinedTextField(
                 value = username,
-                onValueChange = { username = it; usernameTouched = true;
-                    uvm.checkUserExistsAsync(username,
-                        { exists, _ -> alreadyExists = exists; }) },
+                onValueChange = {
+                    username = it; usernameTouched = true
+                    // Check if username already exists
+                    uvm.checkUserExistsAsync(
+                        username
+                    ) { exists, _ -> alreadyExists = exists; }
+                },
                 placeholder = {
                     Text(
                         text = "username",
@@ -171,12 +186,14 @@ fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
                 singleLine = true,
                 isError = usernameTouched && (!isValidUsername(username) || alreadyExists),
                 supportingText = {
+                    // If the username is empty
                     if (usernameTouched && username.isEmpty()) {
                         Text("This field cannot be empty.", color = Color.Red)
+                        // If the username is not valid
                     } else if (usernameTouched && !isValidUsername(username)) {
                         Text("Username must start with a letter and be 3-20 characters long.")
-                    }
-                    else if (usernameTouched && alreadyExists) {
+                        // If the username already exists
+                    } else if (usernameTouched && alreadyExists) {
                         Text("Username already exists!")
                     }
                 },
@@ -203,19 +220,23 @@ fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Travel Type Chips
+            // Travel Type Filter Chips
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                // Split the list of travelTypes into sublists of 2 items each
                 travelTypes.chunked(2).forEach { rowItems ->
+                    // Create a column for each chunk
                     Column(
                         modifier = Modifier.weight(1f),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         rowItems.forEach { type ->
+                            // Iterate through the travel types in this chunk
                             FilterChip(
                                 onClick = {
+                                    // Toggle selection state: add or remove the type from the selected set
                                     selectedTravelTypes = if (selectedTravelTypes.contains(type)) {
                                         selectedTravelTypes - type
                                     } else {
@@ -223,6 +244,7 @@ fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
                                     }
                                 },
                                 label = {
+                                    // Display the travel type name inside the chip
                                     Text(
                                         text = type,
                                         fontSize = 14.sp,
@@ -230,12 +252,13 @@ fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
                                         textAlign = TextAlign.Center
                                     )
                                 },
-                                selected = selectedTravelTypes.contains(type),
+                                selected = selectedTravelTypes.contains(type),      // Highlight if selected
                                 modifier = Modifier.fillMaxWidth(),
+                                // Define visual styling for chip colors
                                 colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = Color(0xFF6B46C1),
+                                    selectedContainerColor = Color(0xFF6B46C1),     // Purple when selected
                                     selectedLabelColor = Color.White,
-                                    containerColor = Color.White,
+                                    containerColor = Color.White,   // White background when not selected
                                     labelColor = Color.Gray
                                 ),
                                 border = FilterChipDefaults.filterChipBorder(
@@ -269,13 +292,21 @@ fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    // Display up to 3 selected destinations as AssistChips
                     selectedDestinations.take(3).forEach { destination ->
                         AssistChip(
                             onClick = {
+                                // Remove the destination from the selected list when clicked
                                 selectedDestinations = selectedDestinations - destination
                             },
-                            label = { Text(destination, fontSize = 14.sp) },
+                            label = {
+                                Text(
+                                    destination,
+                                    fontSize = 14.sp
+                                )
+                            },    // Destination name on the chip
                             trailingIcon = {
+                                // Display a close icon to indicate removal
                                 Icon(
                                     Icons.Default.Close,
                                     contentDescription = "Remove",
@@ -289,10 +320,12 @@ fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
                         )
                     }
                 }
+
+                // Add vertical spacing below the chips
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            // Destination Search/Selection
+            // Card for displaying a scrollable list of all destinations
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -305,11 +338,13 @@ fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(16.dp)
                 ) {
+                    // Display each filtered destination as a selectable row
                     items(filteredDestinations) { destination ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
+                                    // Toggle selection: add or remove destination
                                     selectedDestinations =
                                         if (selectedDestinations.contains(destination)) {
                                             selectedDestinations - destination
@@ -318,14 +353,17 @@ fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
                                         }
                                 }
                                 .padding(vertical = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
+                            horizontalArrangement = Arrangement.SpaceBetween,   // Space between text and icon
                             verticalAlignment = Alignment.CenterVertically
                         ) {
+                            // Destination name
                             Text(
                                 text = destination,
                                 fontSize = 16.sp,
                                 color = Color.Black
                             )
+
+                            // Show a green checkmark if the destination is selected
                             if (selectedDestinations.contains(destination)) {
                                 Icon(
                                     Icons.Default.Check,
@@ -335,8 +373,13 @@ fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
                                 )
                             }
                         }
+
+                        // Add a divider between items (except after the last one)
                         if (destination != filteredDestinations.last()) {
-                            Divider(color = Color.LightGray, thickness = 0.5.dp)
+                            HorizontalDivider(
+                                thickness = 0.5.dp,
+                                color = Color.LightGray
+                            )
                         }
                     }
                 }
@@ -344,6 +387,7 @@ fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
 
             Spacer(modifier = Modifier.height(32.dp))
 
+            // If the error message is not empty display it in a card
             errorMessage?.let { message ->
                 Card(
                     modifier = Modifier
@@ -380,24 +424,36 @@ fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
             // Create Account Button
             Button(
                 onClick = {
+                    // Input Validation Section
+
+                    // If the username is invalid or already taken, show error and prevent submission
                     if (!isValidUsername(username) || alreadyExists) {
                         usernameTouched = true
                         return@Button
                     }
+
+                    // Ensure the user has selected at least one travel type
                     if (selectedTravelTypes.isEmpty()) {
                         errorMessage = "Please select at least one travel type"
                         return@Button
                     }
+
+                    // Ensure the user has selected at least one desired destination
                     if (selectedDestinations.isEmpty()) {
                         errorMessage = "Please select at least one destination"
                         return@Button
                     }
 
+                    // User Object Creation and Registration
+
+                    // Placeholder user object in case 'fields' is null
                     var user = User()
+
+                    // If previous form data exists, build a complete User object
                     if (fields != null) {
                         user = User(
-                            id = -1,
-                            uid = "",
+                            id = -1,    // Temporary placeholder ID
+                            uid = "",   // Firebase UID will be set after registration
                             firstname = fields.name,
                             surname = fields.surname,
                             username = username,
@@ -407,16 +463,20 @@ fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
                             userDescription = "",
                             dateOfBirth = Timestamp(fields.dateOfBirth.toCalendar().time),
                             profilePictureUrl = null,
-                            typeTravel = selectedTravelTypes.map { TypeTravel.valueOf(it) },
+                            typeTravel = selectedTravelTypes.map { TypeTravel.valueOf(it) },    // Convert travel types from String to Enum
                             desiredDestination = selectedDestinations.toList(),
-                            rating = 5f,
-                            reliability = 100
+                            rating = 5f,    // Default rating
+                            reliability = 100   // Default reliability
                         )
-                        val auth = FirebaseAuth.getInstance()
+
+                        // Store user data locally in the ViewModel
                         uvm.storeUser(user)
-                        Log.d("L7", "User stored: $user")
+
+                        // Register user with Firebase Authentication
+                        val auth = FirebaseAuth.getInstance()
                         auth.createUserWithEmailAndPassword(user.email, fields.password)
                             .addOnSuccessListener { result ->
+                                // If registration succeeds, send a verification email
                                 result.user?.sendEmailVerification()
                                     ?.addOnSuccessListener {
                                         message =
@@ -427,20 +487,27 @@ fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
                                     }
                             }
                             .addOnFailureListener {
+                                // Handle registration failure
                                 message = "Registration failed: ${it.message}"
                             }
                     }
 
+                    // Trigger user creation logic in ViewModel
                     uvm.createUser(user)
 
+                    // Pass the pending user to the next screen using saved state handle
                     navController.currentBackStackEntry?.savedStateHandle?.set(
                         "userValues",
                         uvm.pendingUser
                     )
-                    navController.navigate("register_verification_code") {
+
+                    // Navigate to verification code screen and remove registration screen from back stack
+                    navController.navigate("register_verification") {
                         popUpTo("register") {
+                            // Remove previous screen to prevent back navigation
                             inclusive = true
-                        } // Removes edit from back stack
+                        }
+                        // Prevent duplicate destinations on the stack
                         launchSingleTop = true
                     }
 
@@ -453,6 +520,7 @@ fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
                     containerColor = Color(0xFF6B46C1)
                 )
             ) {
+                // Button label
                 Text(
                     text = "Create account",
                     fontSize = 16.sp,
@@ -461,18 +529,26 @@ fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
                 )
             }
 
+            // Spacer below the button
             Spacer(modifier = Modifier.height(32.dp))
 
+            // Display message text
             Text(text = message)
         }
     }
 }
 
+// Function used to validate the Username
 fun isValidUsername(username: String): Boolean {
+    // Remove leading/trailing whitespace from input
     val trimmed = username.trim()
 
+    // Regex pattern:
+    // ^[a-zA-Z] -> Must start with a letter
+    // [a-zA-Z0-9_]{2,19} -> Followed by 2 to 19 characters that are letters, digits, or underscores
     // Username must start with a letter, and contain only letters, digits, or underscores
     val regex = Regex("^[a-zA-Z][a-zA-Z0-9_]{2,19}$")
 
+    // Check if the trimmed username matches the pattern
     return regex.matches(trimmed)
 }
