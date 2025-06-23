@@ -556,54 +556,55 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
         profileNavGraph(navController)
         loginNavGraph(navController, auth)
         notificationNavGraph(navController, auth)
+        articleNavGraph(navController, auth)
 
         // WE NEED TO ADD THE FOLLOWING ROUTES AND NAVIGATION'S GRAPH: NOTIFICATIONS, ARTICLE
         // FROM THIS POINT, WE NEED TO RELOCATE STUFF
 
-        // 添加全局的 article_search 路由，这样从任何地方都可以访问
-        composable("article_search") {
-            val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
-
-            ArticleSearchScreen(
-                navController = navController,
-                articleViewModel = articleViewModel
-            )
-        }
-        // 添加 create_article 路由
-        composable("create_article") {
-            RequireAuth(navController) {
-                val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
-                val userViewModel: UserViewModel = viewModel(factory = UserFactory)
-                val notificationViewModel: NotificationViewModel =
-                    viewModel(factory = NotificationFactory)
-
-                CreateArticleScreen(
-                    navController = navController,
-                    articleViewModel = articleViewModel,
-                    userViewModel = userViewModel,
-                    nvm = notificationViewModel
-                )
-            }
-        }
-
-        // 添加 article_detail 路由
-        composable(
-            route = "article_detail/{articleId}",
-            arguments = listOf(
-                navArgument("articleId") {
-                    type = NavType.IntType
-                }
-            )
-        ) { backStackEntry ->
-            val articleId = backStackEntry.arguments?.getInt("articleId") ?: 0
-            val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
-
-            ArticleDetailScreen(
-                navController = navController,
-                articleId = articleId,
-                articleViewModel = articleViewModel
-            )
-        }
+//        // 添加全局的 article_search 路由，这样从任何地方都可以访问
+//        composable("article_search") {
+//            val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
+//
+//            ArticleSearchScreen(
+//                navController = navController,
+//                articleViewModel = articleViewModel
+//            )
+//        }
+//        // 添加 create_article 路由
+//        composable("create_article") {
+//            RequireAuth(navController) {
+//                val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
+//                val userViewModel: UserViewModel = viewModel(factory = UserFactory)
+//                val notificationViewModel: NotificationViewModel =
+//                    viewModel(factory = NotificationFactory)
+//
+//                CreateArticleScreen(
+//                    navController = navController,
+//                    articleViewModel = articleViewModel,
+//                    userViewModel = userViewModel,
+//                    nvm = notificationViewModel
+//                )
+//            }
+//        }
+//
+//        // 添加 article_detail 路由
+//        composable(
+//            route = "article_detail/{articleId}",
+//            arguments = listOf(
+//                navArgument("articleId") {
+//                    type = NavType.IntType
+//                }
+//            )
+//        ) { backStackEntry ->
+//            val articleId = backStackEntry.arguments?.getInt("articleId") ?: 0
+//            val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
+//
+//            ArticleDetailScreen(
+//                navController = navController,
+//                articleId = articleId,
+//                articleViewModel = articleViewModel
+//            )
+//        }
 
         composable("camera") {
             val context = LocalContext.current
@@ -630,6 +631,64 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
 //
 //            NotificationView(navController, nvm, uvm, vm, avm)
 //        }
+    }
+}
+
+//Composable function to set up the navigation graph for the "Article" section
+fun NavGraphBuilder.articleNavGraph(navController: NavHostController, auth: FirebaseAuth) {
+    //Define the start destination for the article navigation graph
+    navigation(startDestination = "articles", route = Screen.Articles.route)
+    {
+        //graph entry
+        composable("articles") { entry ->
+
+            val articleGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Articles.route)
+            }
+
+            val articleViewModel: ArticleViewModel = viewModel(
+                viewModelStoreOwner = articleGraphEntry,
+                factory = ArticleFactory
+            )
+
+            ArticleSearchScreen(navController = navController,
+                articleViewModel = articleViewModel)
+
+        }
+
+        composable("create_article") {
+            RequireAuth(navController) {
+                val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
+                val userViewModel: UserViewModel = viewModel(factory = UserFactory)
+                val notificationViewModel: NotificationViewModel =
+                    viewModel(factory = NotificationFactory)
+
+                CreateArticleScreen(
+                    navController = navController,
+                    articleViewModel = articleViewModel,
+                    userViewModel = userViewModel,
+                    nvm = notificationViewModel
+                )
+            }
+        }
+
+        composable(
+            route = "article_detail/{articleId}",
+            arguments = listOf(
+                navArgument("articleId") {
+                    type = NavType.IntType
+                }
+            )
+        ) { backStackEntry ->
+            val articleId = backStackEntry.arguments?.getInt("articleId") ?: 0
+            val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
+
+            ArticleDetailScreen(
+                navController = navController,
+                articleId = articleId,
+                articleViewModel = articleViewModel
+            )
+        }
     }
 }
 
