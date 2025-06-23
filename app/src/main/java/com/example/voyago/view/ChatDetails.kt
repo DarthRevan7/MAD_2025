@@ -1,6 +1,8 @@
 package com.example.voyago.view
 
+import android.R
 import android.util.Log
+import android.view.View
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,12 +16,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -28,13 +34,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -43,6 +52,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import com.example.voyago.model.Trip
 import com.example.voyago.model.User
 import com.example.voyago.viewmodel.ChatViewModel
@@ -55,6 +66,8 @@ fun ChatDetails(navController: NavController,
                  tripViewModel: TripViewModel, 
                  uvm: UserViewModel,
                  chatViewModel: ChatViewModel,) {
+
+
     val tripState = produceState<Trip?>(initialValue = null, tripId) {
         tripViewModel.fetchTripById(tripId) { trip -> value = trip }
     }
@@ -68,70 +81,69 @@ fun ChatDetails(navController: NavController,
         return
     }
 
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text("Trip: ${trip.title}", style = MaterialTheme.typography.titleLarge)
 
-        Spacer(modifier = Modifier.height(16.dp))
 
-        // See Trip Details Button
-        Button(onClick = {
+    Column(modifier = Modifier.verticalScroll(rememberScrollState()))
+    {
+        ChatHero(trip, onClickTripDetails = {
             tripViewModel.setSelectedTrip(trip)
             navController.navigate("trip_details")
-        }) {
-            Text("See trip details")
-        }
+        })
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Column(modifier = Modifier.padding(16.dp)) {
 
-        Text("Participants:", style = MaterialTheme.typography.titleMedium)
+            Spacer(modifier = Modifier.height(16.dp))
 
-        val participantIds = trip.participants.keys
-        participantIds.forEach { userIdString ->
-            val userId = userIdString.toIntOrNull()
-            if (userId != null) {
-                val userState = produceState<User?>(initialValue = null, userId) {
-                    uvm.getUserData(userId).collect { user -> value = user }
-                }
+            Text("Participants:", style = MaterialTheme.typography.titleMedium)
 
-                val user = userState.value
-                if (user != null) {
-                    MemberItem(
-                        navController,
-                        loggedUserId = uvm.loggedUser.value.id,
-                        userId = user.id,
-                        name = "${user.firstname} ${user.surname}",
-                        rating = String.format("%.1f", user.rating),
-                        isCreator = user.id == trip.creatorId,
-                        isDarkBackground = false,
-                        avatarUrl = user.profilePictureUrl
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
+            val participantIds = trip.participants.keys
+            participantIds.forEach { userIdString ->
+                val userId = userIdString.toIntOrNull()
+                if (userId != null) {
+                    val userState = produceState<User?>(initialValue = null, userId) {
+                        uvm.getUserData(userId).collect { user -> value = user }
+                    }
+
+                    val user = userState.value
+                    if (user != null) {
+                        MemberItem(
+                            navController,
+                            loggedUserId = uvm.loggedUser.value.id,
+                            userId = user.id,
+                            name = "${user.firstname} ${user.surname}",
+                            rating = String.format("%.1f", user.rating),
+                            isCreator = user.id == trip.creatorId,
+                            isDarkBackground = false,
+                            avatarUrl = user.profilePictureUrl
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    } else {
+                        Text("- Loading user $userId...")
+                    }
                 } else {
-                    Text("- Loading user $userId...")
+                    Text("- Invalid user ID: $userIdString")
                 }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (trip.status == Trip.TripStatus.COMPLETED.toString()) {
+                Text(
+                    text = "Trip completed!",
+                    color = Color.Gray,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(top = 16.dp)
+                )
             } else {
-                Text("- Invalid user ID: $userIdString")
+                Button(
+                    onClick = { showDialog.value = true },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                ) {
+                    Text("Leave trip", color = Color.White)
+                }
             }
+
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        if (trip.status == Trip.TripStatus.COMPLETED.toString()) {
-            Text(
-                text = "Trip completed!",
-                color = Color.Gray,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(top = 16.dp)
-            )
-        } else {
-            Button(
-                onClick = { showDialog.value = true },
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
-            ) {
-                Text("Leave trip", color = Color.White)
-            }
-        }
-
     }
 
     if (showDialog.value) {
@@ -294,6 +306,90 @@ fun MemberItem(
                 }
             }
         }
+    }
+}
+
+@OptIn(ExperimentalGlideComposeApi::class)
+@Composable
+fun ChatHero(trip: Trip, onClickTripDetails: () -> Unit ) {
+
+    // Holds the URL of the image for the trip
+    var imageUrl by remember { mutableStateOf<String?>(null) }
+
+    // Trigger side-effect when trip ID changes
+    // This retrieves the photo URL asynchronously
+    LaunchedEffect(trip.id) {
+        imageUrl = trip.getPhoto()
+    }
+
+    // Main container box for the hero section
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(300.dp)
+    ) {
+        when {
+            imageUrl != null -> {
+                GlideImage(
+                    model = imageUrl,
+                    contentDescription = "Trip Photo",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+            // If image URL is still null or failed to load — show placeholder
+            else -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.LightGray),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AddPhotoAlternate,
+                        contentDescription = "Placeholder",
+                        tint = Color.White,
+                        modifier = Modifier.size(64.dp)
+                    )
+                }
+            }
+        }
+
+        //Title and Destination of the trip
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(vertical = 30.dp, horizontal = 10.dp)
+                .background(
+                    color = Color(0xAA444444),
+                    shape = MaterialTheme.shapes.small
+                )
+
+        ) {
+            Text(
+                text = trip.destination +
+                        "\n" +
+                        trip.title,
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(16.dp)
+            )
+        }
+
+        val colorButton = ButtonDefaults.buttonColors().containerColor
+        val colorInsert =
+        ButtonDefaults.buttonColors(containerColor = colorButton.copy(alpha = 0.85f),
+            contentColor = Color.White)
+
+        Button(modifier = Modifier.align(Alignment.BottomEnd)
+            .padding(4.dp),
+            colors = colorInsert,
+            onClick = onClickTripDetails) {
+            Text("See trip details")
+        }
+
     }
 }
 
