@@ -58,39 +58,48 @@ fun TripApplications(
     nvm: NotificationViewModel,
     chatViewModel: ChatViewModel
 ) {
+    // Get the currently selected trip from the TripViewModel
     val trip = vm.selectedTrip.value
+
+    // Collect the currently logged-in user as Compose State
     val loggedUser by uvm.loggedUser.collectAsState()
 
-    // Trigger data loading once when trip changes
+    // Side effect to load trip-related data when the selected trip changes
     LaunchedEffect(trip.id) {
+        // Fetch the list of approved participants for the trip
         vm.getTripParticipants(trip)
+        // Fetch the list of users who have applied but not yet approved (pending)
         vm.getTripApplicants(trip)
+        // Fetch the list of users who have been rejected from the trip
         vm.getTripRejectedUsers(trip)
     }
 
-    // Collect StateFlows as Compose state
+    // Collect the Flow data from ViewModel as Compose State to reflect UI updates automatically
     val participantsMap by vm.tripParticipants.collectAsState()
     val applicantsMap by vm.tripApplicants.collectAsState()
     val rejectedUsersMap by vm.tripRejectedUsers.collectAsState()
 
+    // Remember the scroll state for the LazyColumn to preserve scroll position on recompositions
     val listState = rememberLazyListState()
 
+    // Main scrollable list container
     LazyColumn(
         state = listState,
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.Start
     ) {
-        // Trip photo
+        // Display the hero/trip photo section at the top
         item {
             Hero(trip, vm, User())
         }
 
+        // Small vertical space below hero image
         item {
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        // Group size and available spots
+        // Display basic trip info: group size and available spots left (if any)
         item {
             Row(
                 modifier = Modifier
@@ -103,18 +112,19 @@ fun TripApplications(
                             if (trip.availableSpots() > 0) {
                                 " (${trip.availableSpots()} spots left)"
                             } else {
-                                ""
+                                ""  // No spots left, omit extra text
                             },
                     modifier = Modifier.align(Alignment.CenterVertically)
                 )
             }
         }
 
+        // Section title for applications
         item {
             TitleBox("Applications")
         }
 
-        // Approved users section title
+        // Section title for approved participants
         item {
             Text(
                 text = "Approved Applications:",
@@ -128,15 +138,17 @@ fun TripApplications(
             )
         }
 
-        if (participantsMap.size > 1) { // Assuming you want to skip the logged-in user
+        // Show list of approved participants, excluding the logged-in user
+        if (participantsMap.size > 1) { // If more than just the logged-in user
             items(participantsMap.entries.toList()) { entry ->
                 val user = entry.key
                 val joinRequest = entry.value
-                if (user.id != loggedUser.id) {  // Assuming you want to skip logged-in user
+                if (user.id != loggedUser.id) {  // Skip the logged-in user in the list
                     ShowParticipants(user, joinRequest, uvm, navController)
                 }
             }
         } else {
+            // Show message if no participants other than logged-in user are found
             item {
                 Row(
                     modifier = Modifier
@@ -149,7 +161,7 @@ fun TripApplications(
             }
         }
 
-        // Pending applications section title
+        // Section title for pending applications
         item {
             Text(
                 text = "Pending Applications:",
@@ -163,13 +175,25 @@ fun TripApplications(
             )
         }
 
+        // Show pending applications if any
         if (applicantsMap.isNotEmpty()) {
             items(applicantsMap.entries.toList()) { entry ->
                 val user = entry.key
                 val joinRequest = entry.value
-                ShowApplications(user, joinRequest, vm, uvm, navController, nvm, trip, chatViewModel)
+                // Display each application with options (approve/reject) and relevant info
+                ShowApplications(
+                    user,
+                    joinRequest,
+                    vm,
+                    uvm,
+                    navController,
+                    nvm,
+                    trip,
+                    chatViewModel
+                )
             }
         } else {
+            // Show message when no new applications are present
             item {
                 Row(
                     modifier = Modifier
@@ -180,13 +204,14 @@ fun TripApplications(
                     if (trip.hasAvailableSpots()) {
                         Text("There aren't any new applications for this trip.")
                     } else {
+                        // If group is full, explain that no new applications will be accepted
                         Text("The group for the trip is completed. There won't be any new applications.")
                     }
                 }
             }
         }
 
-        // Rejected applications section title
+        // Section title for rejected applications
         item {
             Text(
                 text = "Rejected Applications:",
@@ -200,15 +225,16 @@ fun TripApplications(
             )
         }
 
+        // Show rejected applications, if any
         if (rejectedUsersMap.isNotEmpty()) {
             items(rejectedUsersMap.entries.toList()) { entry ->
                 val user = entry.key
                 val joinRequest = entry.value
-                if (user.id != 1) {
-                    ShowParticipants(user, joinRequest, uvm, navController)
-                }
+                // Show each rejected participant
+                ShowParticipants(user, joinRequest, uvm, navController)
             }
         } else {
+            // Show message when no rejected applications exist
             item {
                 Row(
                     modifier = Modifier
@@ -231,8 +257,10 @@ fun ShowParticipants(
     uvm: UserViewModel,
     navController: NavController
 ) {
+    // Local state to control visibility of the participant info popup
     var showPart by remember { mutableStateOf(false) }
 
+    // Main container showing a row with participant details
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -241,13 +269,14 @@ fun ShowParticipants(
             .border(1.dp, Color.Gray, RoundedCornerShape(12.dp))
             .padding(12.dp)
     ) {
-        // Profile image of the participant
+        // Profile picture or avatar for the participant
         Box(
             contentAlignment = Alignment.CenterStart,
             modifier = Modifier
-                .size(30.dp)
-                .background(Color.Gray, shape = CircleShape)
+                .size(30.dp)    // Fixed circular size
+                .background(Color.Gray, shape = CircleShape)    // Placeholder background color
         ) {
+            // Display profile photo
             ProfilePhoto(Modifier, user, true)
         }
 
@@ -258,33 +287,41 @@ fun ShowParticipants(
                 .padding(start = 16.dp),
 
             ) {
-            // User information
+            // Display full name of the participant
             Text(
                 modifier = Modifier
                     .clickable {
-
+                        // Navigates to user profile on click
                         navController.navigate("user_profile/${user.id}")
                     },
                 text = "${user.firstname} ${user.surname}"
             )
 
+            // If the user requested more than one spot
             if (joinRequest.requestedSpots > 1) {
+
                 Spacer(modifier = Modifier.width(8.dp))
+
+                // Visual indicator showing number of people requested
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .background(Color(0xFF9C4DFF), shape = RoundedCornerShape(12.dp))
                         .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
+                    // People icon indicating group request
                     Icon(
                         imageVector = Icons.Default.People,
                         contentDescription = "Multiple spots",
                         modifier = Modifier
                             .size(14.dp)
-                            .clickable { showPart = true },
+                            .clickable { showPart = true },     // Show detailed info on click
                         tint = Color.White
                     )
+
                     Spacer(modifier = Modifier.width(4.dp))
+
+                    // Show total requested spots (includes user + guests)
                     Text(
                         text = "${joinRequest.requestedSpots}",
                         fontSize = 12.sp,
@@ -294,29 +331,35 @@ fun ShowParticipants(
             }
         }
 
-        // Participant's rating
+        // Show participant rating on the right side
         Row(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f),     // Pushes rating to the far end
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(Icons.Default.StarBorder, "star")
+            Icon(Icons.Default.StarBorder, "star")      // Star icon
             Spacer(modifier = Modifier.width(5.dp))
-            Text(user.rating.toString())
+            Text(user.rating.toString())                // Numerical rating
         }
     }
 
+    // Dialog that shows additional participant info (for multi-spot requests)
     if (showPart) {
         AlertDialog(
-            onDismissRequest = { showPart = false },
+            onDismissRequest = {
+                showPart = false
+            },    // Close when background or "Close" is clicked
             title = { Text("Participants Info") },
             text = {
                 Column {
+                    // Show each unregistered guest's name and email
                     joinRequest.unregisteredParticipants.forEach { participant ->
                         Text("Name: ${participant.name} ${participant.surname}")
                         Text("Email: ${participant.email}")
                         Spacer(modifier = Modifier.height(8.dp))
                     }
+
+                    // Show each registered guest's username (resolved by ID)
                     joinRequest.registeredParticipants.forEach { userid ->
                         ParticipantUsername(userid, uvm, navController)
                     }
@@ -337,16 +380,20 @@ fun ParticipantUsername(
     uvm: UserViewModel,
     navController: NavController
 ) {
+    // Collect user data from the ViewModel
     val user by uvm.getUserData(userId)
-        .collectAsState(initial = User()) // or initial = null if you prefer
+        .collectAsState(initial = User()) // We provide a default (empty) User instance as the initial value to prevent crashes during recomposition
 
-    if (user!!.id != 0) { // Assuming 0 means default empty user
+    // If the user has been successfully loaded (ID is not default 0),
+    // display the username with a clickable modifier to navigate to their profile.
+    if (user!!.id != 0) { // Assuming ID 0 means data hasn't loaded or it's a placeholder user
         Text(
-            "Username: ${user!!.username}",
-            Modifier.clickable { navController.navigate("user_profile/${userId}") }
+            "Username: ${user!!.username}",     // Display the username
+            Modifier.clickable { navController.navigate("user_profile/${userId}") }     // Navigate to profile on tap
         )
     } else {
-        Text("Loading...") // or empty
+        // If the user is still loading, show a loading placeholder
+        Text("Loading...")
     }
 }
 
@@ -362,10 +409,17 @@ fun ShowApplications(
     trip: Trip,
     chatViewModel: ChatViewModel
 ) {
+
+    // State for controlling the confirmation dialog
     var showDialog by remember { mutableStateOf(false) }
+
+    // State to track whether the dialog is for accepting or rejecting the application
     var isAcceptAction by remember { mutableStateOf(true) }
+
+    // State to control visibility of participant info dialog (for group applications)
     var showPart by remember { mutableStateOf(false) }
 
+    // UI layout: Card-style row showing applicant info and options
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -374,7 +428,7 @@ fun ShowApplications(
             .border(1.dp, Color.Gray, RoundedCornerShape(12.dp))
             .padding(12.dp)
     ) {
-        // Profile image of the applicant
+        // Applicant's profile photo
         Box(
             contentAlignment = Alignment.CenterStart,
             modifier = Modifier
@@ -383,20 +437,21 @@ fun ShowApplications(
         ) {
             ProfilePhoto(Modifier, user, true)
         }
-        // User information
+        // Main user name and group size indicator (if more than 1 spot was requested)
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(start = 16.dp)
         ) {
+            // Full name with clickable navigation to profile
             Text(
                 modifier = Modifier
                     .clickable {
-
                         navController.navigate("user_profile/${user.id}")
                     },
                 text = "${user.firstname} ${user.surname}"
             )
 
+            // Show participant count if more than one spot was requested
             if (joinRequest.requestedSpots > 1) {
                 Spacer(modifier = Modifier.width(8.dp))
                 Row(
@@ -410,10 +465,14 @@ fun ShowApplications(
                         contentDescription = "Multiple spots",
                         modifier = Modifier
                             .size(14.dp)
-                            .clickable { showPart = true },
+                            .clickable {
+                                showPart = true
+                            },     // Show dialog with more participant info
                         tint = Color.White
                     )
+
                     Spacer(modifier = Modifier.width(4.dp))
+
                     Text(
                         text = "${joinRequest.requestedSpots}",
                         fontSize = 12.sp,
@@ -423,7 +482,7 @@ fun ShowApplications(
             }
         }
 
-        // Applicant's rating
+        // Show applicant’s rating on the right side
         Row(
             modifier = Modifier
                 .weight(1f),
@@ -435,13 +494,14 @@ fun ShowApplications(
             Text(user.rating.toString())
         }
 
-        // Accept and Reject Icons
+        // Accept and Reject action icons
         Row(
             modifier = Modifier
                 .weight(1f),
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Accept icon (green)
             Icon(
                 imageVector = Icons.Default.Check,
                 contentDescription = "approve",
@@ -450,10 +510,14 @@ fun ShowApplications(
                     .clickable {
                         isAcceptAction = true
                         showDialog = true
+                        // Add user to trip chat group preemptively
                         chatViewModel.addParticipantToGroup(user.id, trip.title)
                     }
             )
+
             Spacer(modifier = Modifier.padding(5.dp))
+
+            // Reject icon (red)
             Icon(
                 imageVector = Icons.Default.Close,
                 contentDescription = "reject",
@@ -467,6 +531,7 @@ fun ShowApplications(
         }
     }
 
+    // Confirm accept/reject dialog
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
@@ -477,9 +542,10 @@ fun ShowApplications(
             confirmButton = {
                 TextButton(onClick = {
                     if (isAcceptAction) {
+                        // Accept application in backend
                         vm.acceptApplication(vm.selectedTrip.value, user.id)
 
-                        // Notification
+                        // Send approval notification
                         val title = "Application approved!"
                         val body = "Time to pack your bags to ${vm.selectedTrip.value.destination}!"
                         val notificationType = "APPROVED"
@@ -490,9 +556,10 @@ fun ShowApplications(
 
 
                     } else {
+                        // Reject application in backend
                         vm.rejectApplication(vm.selectedTrip.value, user.id)
 
-                        // Notification
+                        // Send rejection notification
                         val title = "Application rejected"
                         val body =
                             "Your application for the trip to ${vm.selectedTrip.value.destination} was rejected"
@@ -502,6 +569,8 @@ fun ShowApplications(
                         val userId = user.id.toString()
                         nvm.sendNotificationToUser(userId, title, body, notificationType, idLink)
                     }
+
+                    // Refresh UI data after action
                     val trip = vm.selectedTrip.value
                     vm.getTripParticipants(trip)
                     vm.getTripApplicants(trip)
@@ -519,6 +588,7 @@ fun ShowApplications(
         )
     }
 
+    // Dialog showing extra participant info for group applications
     if (showPart) {
         AlertDialog(
             onDismissRequest = { showPart = false },
@@ -527,11 +597,14 @@ fun ShowApplications(
             },
             text = {
                 Column {
+                    // Unregistered group members
                     joinRequest.unregisteredParticipants.forEach { participant ->
                         Text("Name: ${participant.name} ${participant.surname}")
                         Text("Email: ${participant.email}")
                         Spacer(modifier = Modifier.height(8.dp))
                     }
+
+                    // Registered group members (render username from their IDs)
                     joinRequest.registeredParticipants.forEach { userid ->
                         ParticipantUsername(userid, uvm, navController)
                     }
