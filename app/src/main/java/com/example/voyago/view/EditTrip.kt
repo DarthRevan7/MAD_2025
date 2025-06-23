@@ -68,6 +68,7 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
     // Set the current user action in the ViewModel to editing mode
     vm.userAction = TripViewModel.UserAction.EDIT_TRIP
 
+
     // Remember a deep copy of the original trip for rollback/cancel purposes
     val originalTripState = remember {
         vm.editTrip.copy(
@@ -527,7 +528,8 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                             vm.editTrip = originalTripState
                             vm.setSelectedTrip(originalTripState)
                             navController.popBackStack()
-                        },
+
+                                  },
                         modifier = Modifier
                             .width(160.dp)
                             .height(60.dp)
@@ -571,20 +573,28 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                                 if (hasDateChanged && startCalendar != null && endCalendar != null) {
 
                                     //Automatically reallocate activities without asking
-                                    smartReallocateActivitiesDirectly(
+                                    smartReallocateActivitiesWithUserChoice(
                                         vm = vm,
                                         oldStartCal = originalStartCal,
                                         oldEndCal = originalEndCal,
                                         newStartCal = startCalendar!!,
-                                        newEndCal = endCalendar!!
+                                        newEndCal = endCalendar!!,
+                                        onShowDialog = { message, onConfirm, onCancel ->
+                                            dialogMessage = message
+                                            onConfirmReallocation = onConfirm
+                                            onCancelReallocation = onCancel
+                                            showReallocationDialog = true
+                                        }
                                     )
 
                                     // Update trip and navigate forward
-                                    updateTripAndNavigate(
-                                        vm, startCalendar!!, endCalendar!!, navController,
-                                        selected, fieldValues[0], fieldValues[1],
-                                        fieldValues[3].toIntOrNull() ?: 2, imageUri
-                                    )
+                                    if(!showReallocationDialog) {
+                                        updateTripAndNavigate(
+                                            vm, startCalendar!!, endCalendar!!, navController,
+                                            selected, fieldValues[0], fieldValues[1],
+                                            fieldValues[3].toIntOrNull() ?: 2, imageUri
+                                        )
+                                    }
                                 } else {
                                     // No date changes – just update trip directly
                                     updateTripAndNavigate(
@@ -608,19 +618,31 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
     }
 
     // Reassign confirmation dialog
+    // 重新分配确认对话框
     if (showReallocationDialog) {
         AlertDialog(
-            onDismissRequest = { showReallocationDialog = false },
-            title = { Text("Activity Reallocation") },
+            onDismissRequest = {
+                showReallocationDialog = false
+                // 重置对话框状态
+                onConfirmReallocation = null
+                onCancelReallocation = null
+            },
+            title = { Text("活动重新分配") },
             text = { Text(dialogMessage) },
             confirmButton = {
                 TextButton(
                     onClick = {
                         showReallocationDialog = false
                         onConfirmReallocation?.invoke()
+                        // 执行完重新分配后，继续更新行程并导航
+                        updateTripAndNavigate(
+                            vm, startCalendar!!, endCalendar!!, navController,
+                            selected, fieldValues[0], fieldValues[1],
+                            fieldValues[3].toIntOrNull() ?: 2, imageUri
+                        )
                     }
                 ) {
-                    Text("Move to Last Day")
+                    Text("移动到最后一天")
                 }
             },
             dismissButton = {
@@ -628,9 +650,15 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                     onClick = {
                         showReallocationDialog = false
                         onCancelReallocation?.invoke()
+                        // 执行完删除后，继续更新行程并导航
+                        updateTripAndNavigate(
+                            vm, startCalendar!!, endCalendar!!, navController,
+                            selected, fieldValues[0], fieldValues[1],
+                            fieldValues[3].toIntOrNull() ?: 2, imageUri
+                        )
                     }
                 ) {
-                    Text("Delete Activities")
+                    Text("删除超出的活动")
                 }
             }
         )
@@ -721,69 +749,6 @@ fun TripImageEdit(trip: Trip, imageUri: Uri?, onUriSelected: (Uri?) -> Unit) {
 }
 
 // Function: Smartly reallocates activities in a trip when the date range changes
-fun smartReallocateActivities(
-    vm: TripViewModel,
-    oldStartCal: Calendar,
-    oldEndCal: Calendar,
-    newStartCal: Calendar,
-    newEndCal: Calendar
-) {
-    // Get the trip currently being edited from the ViewModel
-    val currentTrip = vm.editTrip
-
-
-    // Calculate the number of days in the old and new date ranges
-    val oldIntervalDays = calculateDaysBetween(oldStartCal, oldEndCal)
-    val newIntervalDays = calculateDaysBetween(newStartCal, newEndCal)
-
-    // This will hold the reallocated activities after processing
-    val updatedActivities = mutableMapOf<String, List<Trip.Activity>>()
-
-    // Decide what kind of reallocation logic to apply based on interval change
-    when {
-        // Case 1: Same duration — activities can be shifted directly to match the new date range
-        oldIntervalDays == newIntervalDays -> {
-            reallocateWithSameInterval(
-                currentTrip.activities,     // Original activity map: date -> list of activities
-                oldStartCal,                // Original start date
-                newStartCal,                // New start date to shift from
-                updatedActivities           // Output: shifted activities in new date range
-            )
-        }
-
-        // Case 2: New duration is longer — distribute activities into new range,
-        // and leave extra new days empty (activities won't be moved arbitrarily)
-        newIntervalDays > oldIntervalDays -> {
-            reallocateWithLongerInterval(
-                currentTrip.activities,     // Original activities
-                oldStartCal,                // Reference original start date
-                newStartCal,                // New base date for offset
-                updatedActivities           // Output: moved activities
-            )
-        }
-
-        // Case 3: New duration is shorter — need to resolve activities that don't fit
-        newIntervalDays < oldIntervalDays -> {
-            reallocateWithShorterInterval(
-                currentTrip.activities,     // All original activities
-                oldStartCal,                // Original start
-                newStartCal,                // New start
-                newEndCal,                  // New end to limit allocation within range
-                updatedActivities           // Output
-            )
-        }
-    }
-
-    // Apply the updated activities and new date range to the trip
-    vm.editTrip = currentTrip.copy(
-        activities = updatedActivities,
-        startDate = Timestamp(newStartCal.time),
-        endDate = Timestamp(newEndCal.time)
-    )
-
-    //Update ViewModel state to reflect new trip data
-    vm.setSelectedTrip(vm.editTrip)
-}
 
 // Calculates the number of days between two Calendar dates
 fun calculateDaysBetween(startCal: Calendar, endCal: Calendar): Int {
@@ -993,10 +958,80 @@ fun smartReallocateActivitiesDirectly(
     oldStartCal: Calendar,
     oldEndCal: Calendar,
     newStartCal: Calendar,
-    newEndCal: Calendar
+    newEndCal: Calendar,
+    onShowDialog: ((String, () -> Unit, () -> Unit) -> Unit)? = null
 ) {
-    // Apply reallocation immediately based on date changes
-    smartReallocateActivities(vm, oldStartCal, oldEndCal, newStartCal, newEndCal)
+    val currentTrip = vm.editTrip
+    val oldIntervalDays = calculateDaysBetween(oldStartCal, oldEndCal)
+    val newIntervalDays = calculateDaysBetween(newStartCal, newEndCal)
+
+    val updatedActivities = mutableMapOf<String, List<Trip.Activity>>()
+
+    when {
+        // Case 1: Same interval - directly move all activities
+        oldIntervalDays == newIntervalDays -> {
+            reallocateWithSameInterval(
+                currentTrip.activities,
+                oldStartCal,
+                newStartCal,
+                updatedActivities
+            )
+            applyActivityUpdate(vm, currentTrip, updatedActivities, newStartCal, newEndCal)
+        }
+
+        // Case 2: Longer interval - keep activities at same relative positions, leave other dates empty
+        newIntervalDays > oldIntervalDays -> {
+            reallocateWithLongerInterval(
+                currentTrip.activities,
+                oldStartCal,
+                newStartCal,
+                updatedActivities
+            )
+            applyActivityUpdate(vm, currentTrip, updatedActivities, newStartCal, newEndCal)
+        }
+
+        // Case 3: Shorter interval - handle based on whether dialog callback is provided
+        newIntervalDays < oldIntervalDays -> {
+            if (onShowDialog != null) {
+                // Show user choice dialog if callback is provided
+                val dialogMessage = "The new trip duration is shorter, some activities will exceed the trip period. Please choose how to handle them:"
+
+                val onMoveToLastDay = {
+                    reallocateWithShorterInterval(
+                        currentTrip.activities,
+                        oldStartCal,
+                        newStartCal,
+                        newEndCal,
+                        updatedActivities
+                    )
+                    applyActivityUpdate(vm, currentTrip, updatedActivities, newStartCal, newEndCal)
+                }
+
+                val onDeleteExcess = {
+                    reallocateWithShorterIntervalDeleteExcess(
+                        currentTrip.activities,
+                        oldStartCal,
+                        newStartCal,
+                        newEndCal,
+                        updatedActivities
+                    )
+                    applyActivityUpdate(vm, currentTrip, updatedActivities, newStartCal, newEndCal)
+                }
+
+                onShowDialog(dialogMessage, onMoveToLastDay, onDeleteExcess)
+            } else {
+                // Default behavior: move excess activities to last day (original behavior)
+                reallocateWithShorterInterval(
+                    currentTrip.activities,
+                    oldStartCal,
+                    newStartCal,
+                    newEndCal,
+                    updatedActivities
+                )
+                applyActivityUpdate(vm, currentTrip, updatedActivities, newStartCal, newEndCal)
+            }
+        }
+    }
 }
 
 // Parses a given dateKey string into a Calendar object
@@ -1183,4 +1218,163 @@ private fun reallocateWithShorterInterval(
         updatedActivities[lastDayKey] =
             (updatedActivities[lastDayKey] ?: emptyList()) + overflowWithNewDate
     }
+}
+
+
+
+fun smartReallocateActivitiesWithUserChoice(
+    vm: TripViewModel,
+    oldStartCal: Calendar,
+    oldEndCal: Calendar,
+    newStartCal: Calendar,
+    newEndCal: Calendar,
+    onShowDialog: (String, () -> Unit, () -> Unit) -> Unit
+) {
+    val currentTrip = vm.editTrip
+    val oldIntervalDays = calculateDaysBetween(oldStartCal, oldEndCal)
+    val newIntervalDays = calculateDaysBetween(newStartCal, newEndCal)
+
+    val updatedActivities = mutableMapOf<String, List<Trip.Activity>>()
+
+    when {
+        // 情况1：相同间隔 - 直接移动所有活动
+        oldIntervalDays == newIntervalDays -> {
+            reallocateWithSameInterval(
+                currentTrip.activities,
+                oldStartCal,
+                newStartCal,
+                updatedActivities
+            )
+            // 直接应用更新
+            applyActivityUpdate(vm, currentTrip, updatedActivities, newStartCal, newEndCal)
+        }
+
+        // 情况2：新间隔更长 - 保持活动在相同相对位置，其他日期留空
+        newIntervalDays > oldIntervalDays -> {
+            reallocateWithLongerInterval(
+                currentTrip.activities,
+                oldStartCal,
+                newStartCal,
+                updatedActivities
+            )
+            // 直接应用更新
+            applyActivityUpdate(vm, currentTrip, updatedActivities, newStartCal, newEndCal)
+        }
+
+        // 情况3：新间隔更短 - 显示用户选择对话框
+        newIntervalDays < oldIntervalDays -> {
+            val dialogMessage = "新的旅行时间更短，一些活动将超出旅行期间。请选择处理方式："
+
+            val onMoveToLastDay = {
+                reallocateWithShorterInterval(
+                    currentTrip.activities,
+                    oldStartCal,
+                    newStartCal,
+                    newEndCal,
+                    updatedActivities
+                )
+                applyActivityUpdate(vm, currentTrip, updatedActivities, newStartCal, newEndCal)
+            }
+
+            val onDeleteExcess = {
+                reallocateWithShorterIntervalDeleteExcess(
+                    currentTrip.activities,
+                    oldStartCal,
+                    newStartCal,
+                    newEndCal,
+                    updatedActivities
+                )
+                applyActivityUpdate(vm, currentTrip, updatedActivities, newStartCal, newEndCal)
+            }
+
+            // 显示用户选择对话框
+            onShowDialog(dialogMessage, onMoveToLastDay, onDeleteExcess)
+        }
+    }
+}
+
+private fun reallocateWithShorterIntervalDeleteExcess(
+    originalActivities: Map<String, List<Trip.Activity>>,
+    oldStartCal: Calendar,
+    newStartCal: Calendar,
+    newEndCal: Calendar,
+    updatedActivities: MutableMap<String, List<Trip.Activity>>
+) {
+    val oldStart = Calendar.getInstance().apply {
+        timeInMillis = oldStartCal.timeInMillis
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }
+
+    val newStart = Calendar.getInstance().apply {
+        timeInMillis = newStartCal.timeInMillis
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }
+
+    val newEnd = Calendar.getInstance().apply {
+        timeInMillis = newEndCal.timeInMillis
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }
+
+    val newTripDays = calculateDaysBetween(newStart, newEnd)
+
+    originalActivities.forEach { (oldDateKey, activities) ->
+        try {
+            val activityDate = parseActivityDate(oldDateKey)
+            val normalizedActivityDate = Calendar.getInstance().apply {
+                timeInMillis = activityDate.timeInMillis
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+
+            val dayNumber = calculateDaysBetween(oldStart, normalizedActivityDate)
+
+            // 只保留在新旅行期间内的活动，超出的直接删除
+            if (dayNumber <= newTripDays) {
+                val newDate = Calendar.getInstance().apply {
+                    timeInMillis = newStart.timeInMillis
+                    add(Calendar.DAY_OF_MONTH, dayNumber - 1)
+                    set(Calendar.HOUR_OF_DAY, 0)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }
+
+                val newDateKey = newDate.toStringDate()
+                val updatedActivityList = activities.map { activity ->
+                    activity.copy(date = Timestamp(newDate.time))
+                }
+
+                updatedActivities[newDateKey] = updatedActivityList
+            }
+            // 超出的活动不添加到 updatedActivities，相当于被删除
+
+        } catch (e: Exception) {
+            Log.e("SmartReallocation", "Error processing date $oldDateKey: ${e.message}")
+        }
+    }
+}
+private fun applyActivityUpdate(
+    vm: TripViewModel,
+    currentTrip: Trip,
+    updatedActivities: MutableMap<String, List<Trip.Activity>>,
+    newStartCal: Calendar,
+    newEndCal: Calendar
+) {
+    vm.editTrip = currentTrip.copy(
+        activities = updatedActivities,
+        startDate = Timestamp(newStartCal.time),
+        endDate = Timestamp(newEndCal.time)
+    )
+    vm.setSelectedTrip(vm.editTrip)
 }
