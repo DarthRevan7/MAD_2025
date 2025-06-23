@@ -11,6 +11,7 @@ import com.example.voyago.toCalendar
 import com.example.voyago.toStringDate
 import com.example.voyago.view.SelectableItem
 import com.example.voyago.view.isUriString
+import com.example.voyago.view.parseActivityDate
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
@@ -25,8 +26,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
+import java.util.Locale
 
 //Function that converts a Long in a Calendar
 //fun toCalendar(timeDate: Timestamp): Calendar {
@@ -1048,33 +1052,41 @@ class TripModel {
 
     //Function that add an Activity to a specific Trip
     fun addActivityToTrip(activity: Activity, trip: Trip?): Trip {
-        // Use the provided trip or create a new default Trip if null
         val currentTrip = trip ?: Trip()
 
-        // Create a mutable copy of the existing activities map
-        val updatedActivities = currentTrip.activities.toMutableMap().apply {
-            // Use the activity's date as a string key
-            val dateKey: String = activity.dateAsCalendar().toStringDate()
+        // 创建活动的可变副本
+        val updatedActivities = currentTrip.activities.toMutableMap()
 
-            // Retrieve existing activities for the given date or an empty list
-            val existingActivities = getOrDefault(dateKey, emptyList())
+        // 使用活动日期作为字符串键
+        val dateKey: String = activity.dateAsCalendar().toStringDate()
 
-            // Add the new activity to the existing list
-            val updatedList: List<Activity> = existingActivities + activity
+        // 获取该日期现有的活动列表
+        val existingActivities = updatedActivities.getOrDefault(dateKey, emptyList()).toMutableList()
 
-            // Put the updated list back into the map
-            put(dateKey, updatedList)
+        // 添加新活动
+        existingActivities.add(activity)
+
+        // 按时间排序活动
+        val sortedActivities = existingActivities.sortedBy { act ->
+            try {
+                LocalTime.parse(act.time, DateTimeFormatter.ofPattern("hh:mm a", Locale.US))
+            } catch (e: Exception) {
+                LocalTime.MIN // 如果解析失败，放在最前面
+            }
         }
 
-        // Create a new Trip object with the updated activities
+        // 更新活动映射
+        updatedActivities[dateKey] = sortedActivities
+
+        // 创建更新后的行程对象
         val updatedTrip = currentTrip.copy(activities = updatedActivities)
 
-        // If the trip already exists in Firestore (has a valid ID), persist the update
+        // 如果行程已存在于 Firestore 中，保存更新
         if (currentTrip.id > 0) {
             FirebaseFirestore.getInstance()
                 .collection("trips")
-                .document(updatedTrip.id.toString())    // Use trip ID as document ID
-                .set(updatedTrip)           // Overwrite the document with the updated trip
+                .document(updatedTrip.id.toString())
+                .set(updatedTrip)
                 .addOnSuccessListener {
                     Log.d("TripModel", "Activity saved to Firestore successfully")
                 }
@@ -1083,92 +1095,144 @@ class TripModel {
                 }
         }
 
-        // Return the updated Trip object (whether persisted or just updated locally)
         return updatedTrip
     }
 
 
     //Function that edits an Activity
     fun editActivityInSelectedTrip(
-        activityId: Int, updatedActivity: Activity, trip: Trip,
+        activityId: Int,
+        updatedActivity: Activity,
+        trip: Trip,
         onResult: (Boolean, Trip?) -> Unit
     ) {
-        // Get Firestore document ID from trip ID
         val docId = trip.id.toString()
-        // Reference to the trip document
         val tripRef = Collections.trips.document(docId)
 
-        // Fetch the current trip document from Firestore
         tripRef.get()
             .addOnSuccessListener { snapshot ->
-                // Convert snapshot to Trip object
                 val currentTrip = snapshot.toObject(Trip::class.java)
                 if (currentTrip == null) {
-                    // Trip not found, return failure
                     onResult(false, null)
                     return@addOnSuccessListener
                 }
 
-                // Make a mutable copy of activities
+                // 创建活动的可变副本
                 val originalActivities = currentTrip.activities.toMutableMap()
-                // Flag to track if the activity to edit is found
                 var found = false
 
-                // Iterate over each date and its activity list to find the target activity
-                for ((date, activities) in originalActivities) {
+                // 第一步：从原位置移除活动
+                for ((dateKey, activities) in originalActivities.toMap()) {
                     if (activities.any { it.id == activityId }) {
-                        // Remove the activity with the matching ID from the list
                         val newList = activities.filter { it.id != activityId }
-                        // If no activities remain for the date, remove the date key from map
+
                         if (newList.isEmpty()) {
-                            originalActivities.remove(date)
+                            // 如果该日期没有其他活动了，移除整个日期键
+                            originalActivities.remove(dateKey)
                         } else {
-                            // Otherwise, update the list with the filtered activities
-                            originalActivities[date] = newList
+                            // 否则更新活动列表
+                            originalActivities[dateKey] = newList
                         }
-                        // Mark as found
                         found = true
-                        // Exit loop since the activity was found
                         break
                     }
                 }
 
                 if (!found) {
-                    // Activity ID not found in any date, return failure
                     onResult(false, trip)
                     return@addOnSuccessListener
                 }
 
-                // Add the updated activity to its (possibly new) date key
-                val newDateKey: String = updatedActivity.dateAsCalendar()
-                    .toStringDate()//dateFormat.format(updatedActivity.dateAsCalendar().time)
-                val updatedList = originalActivities.getOrDefault(
-                    newDateKey,
-                    emptyList<Activity>()
-                ) + updatedActivity
-                // Update the activities map
-                originalActivities[newDateKey] = updatedList
+                // 第二步：根据新的活动日期，找到正确的日期键来放置活动
+                val newActivityDate = updatedActivity.dateAsCalendar()
+                val newDateKey = findCorrectDateKeyForActivity(newActivityDate, originalActivities, currentTrip)
 
-                // Create a new Trip object with the updated activities map
+                // 将活动添加到正确的日期键下
+                if (originalActivities.containsKey(newDateKey)) {
+                    // 如果该日期已存在活动，添加到现有列表
+                    val existingActivities = originalActivities[newDateKey]!!.toMutableList()
+                    existingActivities.add(updatedActivity)
+
+                    // 按时间排序
+                    val sortedActivities = existingActivities.sortedBy { activity ->
+                        parseTimeToMinutes(activity.time)
+                    }
+
+                    originalActivities[newDateKey] = sortedActivities
+                } else {
+                    // 如果该日期不存在活动，创建新列表
+                    originalActivities[newDateKey] = listOf(updatedActivity)
+                }
+
+                // 创建更新后的行程对象
                 val updatedTrip = currentTrip.copy(activities = originalActivities)
 
-                // Save the updated trip back to Firestore
+                // 保存到 Firestore
                 tripRef.set(updatedTrip)
                     .addOnSuccessListener {
-                        // Report success with updated trip
                         onResult(true, updatedTrip)
                     }
                     .addOnFailureListener { e ->
-                        // Report failure
                         Log.e("Firestore", "Failed to update activity", e)
                         onResult(false, null)
                     }
             }
             .addOnFailureListener { e ->
-                // Report failure fetching the trip document
                 Log.e("Firestore", "Failed to fetch trip", e)
                 onResult(false, null)
             }
+    }
+
+    // 新增函数：根据活动日期找到正确的日期键
+    private fun findCorrectDateKeyForActivity(
+        activityDate: Calendar,
+        existingActivities: Map<String, List<Trip.Activity>>,
+        trip: Trip
+    ): String {
+        // 标准化活动日期（只保留年月日，去掉时间）
+        val normalizedActivityDate = Calendar.getInstance().apply {
+            timeInMillis = activityDate.timeInMillis
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+
+        // 首先检查是否与现有的日期键匹配
+        for (dateKey in existingActivities.keys) {
+            try {
+                val existingDate = parseActivityDate(dateKey)
+                val normalizedExistingDate = Calendar.getInstance().apply {
+                    timeInMillis = existingDate.timeInMillis
+                    set(Calendar.HOUR_OF_DAY, 0)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }
+
+                // 如果日期匹配，使用现有的日期键
+                if (normalizedActivityDate.timeInMillis == normalizedExistingDate.timeInMillis) {
+                    return dateKey
+                }
+            } catch (e: Exception) {
+                Log.e("DateMatching", "Error parsing existing date key: $dateKey", e)
+            }
+        }
+
+        // 如果没有匹配的现有日期键，创建新的日期键
+        return normalizedActivityDate.toStringDate()
+    }
+
+    private fun parseTimeToMinutes(timeString: String): Int {
+        return try {
+            val formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.US)
+            val time = LocalTime.parse(timeString, formatter)
+            time.hour * 60 + time.minute
+        } catch (e: Exception) {
+            // 如果解析失败，返回一个默认值
+            Log.e("TimeParsing", "Error parsing time: $timeString", e)
+            0
+        }
     }
 
     //Delete an activity from a trip
