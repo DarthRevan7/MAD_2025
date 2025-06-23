@@ -978,6 +978,11 @@ private fun updateTripAndNavigate(
     // Explicitly mark this as an EDIT_TRIP action
     vm.userAction = TripViewModel.UserAction.EDIT_TRIP
 
+    // Update the DB with the new trip
+    if(vm.selectedTrip.value.isDraft) {
+        vm.editTrip(vm.selectedTrip.value) { success -> Log.d("DB2", "$success") }
+    }
+
 
     // Navigate to the activities list screen where the trip details will be shown
     navController.navigate("activities_list")
