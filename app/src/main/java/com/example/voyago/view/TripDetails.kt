@@ -366,6 +366,8 @@ fun TripDetails(
                                     //Applications Button
                                     Button(
                                         onClick = {
+                                            //Assign the trip for navigation
+                                            vm.setSelectedTrip(trip)
                                             navController.navigate("trip_applications")
                                         },
                                         colors = ButtonDefaults.buttonColors(
