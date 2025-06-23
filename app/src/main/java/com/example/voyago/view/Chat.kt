@@ -32,8 +32,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.voyago.formatMessageTimestamp
 import com.example.voyago.model.FirebaseChatMessage
 import com.example.voyago.model.User
+import com.example.voyago.toCalendar
 import com.example.voyago.viewmodel.ChatViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
@@ -114,7 +116,7 @@ fun SingleChatScreen(
                         else if(chatRoomType == "private")
                         {
                             var userId = 0
-                                chatRoom?.participants?.forEach{
+                            chatRoom?.participants?.forEach{
                                     if(it != user.id){
                                     userId = it
                                 }
@@ -165,6 +167,10 @@ fun SingleChatScreen(
                             )
                             .padding(12.dp),
                         color = Color.White
+                    )
+
+                    Text(
+                        text = formatMessageTimestamp(message.timestamp)
                     )
                 }
             }
