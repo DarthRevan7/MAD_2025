@@ -144,27 +144,54 @@ fun ChatDetails(navController: NavController,
             confirmButton = {
                 Button(onClick = {
                     if (trip.status != Trip.TripStatus.COMPLETED.toString()) {
-                        // Remove user from trip
-                        tripViewModel.updateTripParticipants(trip.id, loggedUser.id)
+                        if (loggedUser.id == trip.creatorId) {
+                            if (!trip.published || trip.participants.size == 1) {
+                                // Reject all pending applications
+                                trip.appliedUsers.forEach { userId, _ ->
+                                    tripViewModel.rejectApplication(trip, userId.toInt())
+                                }
 
-                        // Remove user from chat participants
-                        chatViewModel.removeParticipantFromRoom(trip.title, loggedUser.id)
+                                tripViewModel.deleteTrip(trip.id)
+                                tripViewModel.updatePublishedTrip(loggedUser.id)
+                            } else if (trip.participants.size > 1) {
+                                // Transfer ownership to another participant
+                                val newOwner = trip.participants.entries.firstOrNull { it.key.toIntOrNull() != trip.creatorId }
+                                newOwner?.let {
+                                    tripViewModel.updateTripCreator(
+                                        trip.id,
+                                        it.key.toInt(),
+                                        trip.creatorId
+                                    )
+                                }
 
-                        // Penalize reliability
-                        uvm.updateUserReliability(loggedUser.id, -5) { success ->
-                            if (success) {
-                                Log.d("TripDetails", "Reliability updated")
-                            } else {
-                                Log.e("TripDetails", "Reliability update failed")
+                                uvm.updateUserReliability(loggedUser.id, -10) { success ->
+                                    if (success) {
+                                        Log.d("TripDetails", "Reliability updated")
+                                    } else {
+                                        Log.e("TripDetails", "Reliability update failed")
+                                    }
+                                }
+                            }
+                        } else {
+                            // Regular user leaves the trip
+                            tripViewModel.updateTripParticipants(trip.id, loggedUser.id)
+                            chatViewModel.removeParticipantFromRoom(trip.title, loggedUser.id)
+                            uvm.updateUserReliability(loggedUser.id, -5) { success ->
+                                if (success) {
+                                    Log.d("TripDetails", "Reliability updated")
+                                } else {
+                                    Log.e("TripDetails", "Reliability update failed")
+                                }
                             }
                         }
                     } else {
-                        // Just cancel the trip if completed
+                        // Trip completed — cancel only
                         tripViewModel.cancelTrip(trip.creatorId.toString(), trip.id.toString())
                     }
 
+
                     showDialog.value = false
-                    navController.popBackStack()
+                    navController.navigate("chats_list")
                 }) {
                     Text("Confirm")
                 }
