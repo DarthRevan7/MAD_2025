@@ -421,7 +421,6 @@ class ChatViewModel : ViewModel() {
                 val updatedList = usersNotRead.filter { it != userId }
                 transaction.update(roomRef, "usersNotRead", updatedList)
             }
-
         }
     }
 

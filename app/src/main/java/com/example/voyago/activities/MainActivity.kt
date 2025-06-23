@@ -1550,6 +1550,7 @@ fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
 
             if (tripId != null){
                 ChatDetails(
+                    navController = navController,
                     tripId = tripId,
                     tripViewModel = tripViewModel,
                     uvm = userViewModel)
@@ -1604,6 +1605,48 @@ fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
                 userId = userId,
                 uvm = userViewModel,
                 rvm = reviewViewModel,
+                chatViewModel = chatViewModel
+            )
+        }
+
+        composable("trip_details") { entry ->
+            // Get the back stack entry for the profile graph
+            val chatGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Chats.route)
+            }
+            // Create an instance of the TripViewModel using the Factory
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = Factory
+            )
+            // Create an instance of the UserViewModel using the Factory
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = Factory
+            )
+            // Create an instance of the ReviewViewModel using the Factory
+            val reviewViewModel: ReviewViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = Factory
+            )
+            // Create an instance of the NotificationViewModel using the NotificationFactory
+            val notificationViewModel: NotificationViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = NotificationFactory
+            )
+            // Create an instance of the ChatViewModel using the ChatFactory
+            val chatViewModel: ChatViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = ChatFactory
+            )
+            // Pass the NavController and ViewModels to the TripDetails composable
+            TripDetails(
+                navController = navController,
+                vm = tripViewModel,
+                owner = false,
+                uvm = userViewModel,
+                rvm = reviewViewModel,
+                nvm = notificationViewModel,
                 chatViewModel = chatViewModel
             )
         }

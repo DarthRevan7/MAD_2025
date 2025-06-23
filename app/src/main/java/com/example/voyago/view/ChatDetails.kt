@@ -34,6 +34,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.example.voyago.model.Trip
 import com.example.voyago.model.User
@@ -41,7 +42,7 @@ import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
 
 @Composable
-fun ChatDetails(tripId: String, tripViewModel: TripViewModel, uvm: UserViewModel) {
+fun ChatDetails(navController: NavController, tripId: String, tripViewModel: TripViewModel, uvm: UserViewModel) {
     val tripState = produceState<Trip?>(initialValue = null, tripId) {
         tripViewModel.fetchTripById(tripId) { trip ->
             value = trip
@@ -63,7 +64,11 @@ fun ChatDetails(tripId: String, tripViewModel: TripViewModel, uvm: UserViewModel
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(onClick = { /* TODO */ }) {
+        // See Trip Details Button
+        Button(onClick = {
+            tripViewModel.setSelectedTrip(trip)
+            navController.navigate("trip_details")
+        }) {
             Text("See trip details")
         }
 
