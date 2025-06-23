@@ -604,21 +604,6 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
                 }
             )
         }
-
-//        composable(Screen.Notifications.route) { entry ->
-//            val parentEntry = remember(entry) {
-//                navController.getBackStackEntry(startDest)
-//            }
-//
-//            val nvm: NotificationViewModel =
-//                viewModel(viewModelStoreOwner = parentEntry, factory = NotificationFactory)
-//            val uvm: UserViewModel = viewModel(viewModelStoreOwner = parentEntry, factory = Factory)
-//            val vm: TripViewModel = viewModel(viewModelStoreOwner = parentEntry, factory = Factory)
-//            val avm: ArticleViewModel =
-//                viewModel(viewModelStoreOwner = parentEntry, factory = ArticleFactory)
-//
-//            NotificationView(navController, nvm, uvm, vm, avm)
-//        }
     }
 }
 
