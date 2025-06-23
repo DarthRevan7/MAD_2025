@@ -461,12 +461,20 @@ fun TopBar(nvm: NotificationViewModel, navController: NavController, uvm: UserVi
             // Notification Icon - Click to mark notifications as read and navigate to Notifications screen
             IconButton(
                 onClick = {
-                    // Mark notifications as read
-                    nvm.markNotificationsRead(userId)
-                    // Navigate to the Notifications screen
-                    navController.navigate("notifications") {
-                        // Launch the Notifications screen as a single top instance
-                        launchSingleTop = true
+                    // Get the current route
+                    val currentDestination = navController.currentBackStackEntry?.destination?.route
+
+                    // If already on the Notifications screen, pop it off the back stack
+                    if (currentDestination == "notifications") {
+                        navController.popBackStack()
+                    } else {
+                        // Mark notifications as read
+                        nvm.markNotificationsRead(userId)
+                        // Navigate to the Notifications screen
+                        navController.navigate("notifications") {
+                            // Launch the Notifications screen as a single top instance
+                            launchSingleTop = true
+                        }
                     }
                 }
             ) {
@@ -544,55 +552,7 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
         profileNavGraph(navController)
         loginNavGraph(navController, auth)
         notificationNavGraph(navController, auth)
-        articleNavGraph(navController, auth)
-
-        // WE NEED TO ADD THE FOLLOWING ROUTES AND NAVIGATION'S GRAPH: NOTIFICATIONS, ARTICLE
-        // FROM THIS POINT, WE NEED TO RELOCATE STUFF
-
-//        // 添加全局的 article_search 路由，这样从任何地方都可以访问
-//        composable("article_search") {
-//            val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
-//
-//            ArticleSearchScreen(
-//                navController = navController,
-//                articleViewModel = articleViewModel
-//            )
-//        }
-//        // 添加 create_article 路由
-//        composable("create_article") {
-//            RequireAuth(navController) {
-//                val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
-//                val userViewModel: UserViewModel = viewModel(factory = UserFactory)
-//                val notificationViewModel: NotificationViewModel =
-//                    viewModel(factory = NotificationFactory)
-//
-//                CreateArticleScreen(
-//                    navController = navController,
-//                    articleViewModel = articleViewModel,
-//                    userViewModel = userViewModel,
-//                    nvm = notificationViewModel
-//                )
-//            }
-//        }
-//
-//        // 添加 article_detail 路由
-//        composable(
-//            route = "article_detail/{articleId}",
-//            arguments = listOf(
-//                navArgument("articleId") {
-//                    type = NavType.IntType
-//                }
-//            )
-//        ) { backStackEntry ->
-//            val articleId = backStackEntry.arguments?.getInt("articleId") ?: 0
-//            val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
-//
-//            ArticleDetailScreen(
-//                navController = navController,
-//                articleId = articleId,
-//                articleViewModel = articleViewModel
-//            )
-//        }
+        articleNavGraph(navController)
 
         composable("camera") {
             val context = LocalContext.current
@@ -604,26 +564,11 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
                 }
             )
         }
-
-//        composable(Screen.Notifications.route) { entry ->
-//            val parentEntry = remember(entry) {
-//                navController.getBackStackEntry(startDest)
-//            }
-//
-//            val nvm: NotificationViewModel =
-//                viewModel(viewModelStoreOwner = parentEntry, factory = NotificationFactory)
-//            val uvm: UserViewModel = viewModel(viewModelStoreOwner = parentEntry, factory = Factory)
-//            val vm: TripViewModel = viewModel(viewModelStoreOwner = parentEntry, factory = Factory)
-//            val avm: ArticleViewModel =
-//                viewModel(viewModelStoreOwner = parentEntry, factory = ArticleFactory)
-//
-//            NotificationView(navController, nvm, uvm, vm, avm)
-//        }
     }
 }
 
 //Composable function to set up the navigation graph for the "Article" section
-fun NavGraphBuilder.articleNavGraph(navController: NavHostController, auth: FirebaseAuth) {
+fun NavGraphBuilder.articleNavGraph(navController: NavHostController) {
     //Define the start destination for the article navigation graph
     navigation(startDestination = "articles", route = Screen.Articles.route)
     {
@@ -639,8 +584,10 @@ fun NavGraphBuilder.articleNavGraph(navController: NavHostController, auth: Fire
                 factory = ArticleFactory
             )
 
-            ArticleSearchScreen(navController = navController,
-                articleViewModel = articleViewModel)
+            ArticleSearchScreen(
+                navController = navController,
+                articleViewModel = articleViewModel
+            )
 
         }
 
@@ -1558,14 +1505,169 @@ fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
                 factory = Factory
             )
 
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = Factory
+            )
+
+            // Create an instance of the ChatViewModel using the ChatFactory
+            val chatViewModel: ChatViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = ChatFactory
+            )
+
             if (tripId != null) {
                 ChatDetails(
+                    navController = navController,
                     tripId = tripId,
-                    tripViewModel = tripViewModel
+                    tripViewModel = tripViewModel,
+                    uvm = userViewModel,
+                    chatViewModel = chatViewModel
                 )
             }
+        }
 
 
+        composable(
+            route = "user_profile/{userId}",
+            arguments = listOf(
+                navArgument("userId") {
+                    type = NavType.IntType
+                }
+            )
+        ) { entry ->
+            // Get the back stack entry for the profile graph
+            val chatGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Chats.route)
+            }
+            // Create an instance of the TripViewModel using the Factory
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = Factory
+            )
+            // Create an instance of the UserViewModel using the Factory
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = Factory
+            )
+            // Create an instance of the ReviewViewModel using the Factory
+            val reviewViewModel: ReviewViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = Factory
+            )
+            // Create an instance of the ArticleViewModel using the ArticleFactory
+            val articleViewModel: ArticleViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = ArticleFactory
+            )
+            // Create an instance of the ChatViewModel using the ChatFactory
+            val chatViewModel: ChatViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = ChatFactory
+            )
+            // Get the userId from the arguments, defaulting to -1 if not provided
+            val userId = entry.arguments?.getInt("userId") ?: -1
+            // Pass the NavController, ViewModels, userId to the UserProfileScreen composable
+            UserProfileScreen(
+                navController = navController,
+                vm = tripViewModel,
+                vm2 = articleViewModel,
+                userId = userId,
+                uvm = userViewModel,
+                rvm = reviewViewModel,
+                chatViewModel = chatViewModel
+            )
+        }
+
+        composable("trip_details") { entry ->
+            // Get the back stack entry for the profile graph
+            val chatGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Chats.route)
+            }
+            // Create an instance of the TripViewModel using the Factory
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = Factory
+            )
+            // Create an instance of the UserViewModel using the Factory
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = Factory
+            )
+            // Create an instance of the ReviewViewModel using the Factory
+            val reviewViewModel: ReviewViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = Factory
+            )
+            // Create an instance of the NotificationViewModel using the NotificationFactory
+            val notificationViewModel: NotificationViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = NotificationFactory
+            )
+            // Create an instance of the ChatViewModel using the ChatFactory
+            val chatViewModel: ChatViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = ChatFactory
+            )
+            // Pass the NavController and ViewModels to the TripDetails composable
+            TripDetails(
+                navController = navController,
+                vm = tripViewModel,
+                owner = false,
+                uvm = userViewModel,
+                rvm = reviewViewModel,
+                nvm = notificationViewModel,
+                chatViewModel = chatViewModel
+            )
+        }
+
+        composable(
+            route = "profile_overview?tabIndex={tabIndex}",
+            arguments = listOf(
+                navArgument("tabIndex") {
+                    type = NavType.IntType
+                    defaultValue = 0 // fallback to "About" tab
+                }
+            )
+        ) { entry ->
+            // Require authentication before accessing the profile overview
+            RequireAuth(navController) {
+                // Get the back stack entry for the profile graph
+                val chatGraphEntry = remember(entry) {
+                    navController.getBackStackEntry(Screen.Chats.route)
+                }
+                // Create instances of the ViewModels using the Factory
+                val tripViewModel: TripViewModel = viewModel(
+                    viewModelStoreOwner = chatGraphEntry,
+                    factory = Factory
+                )
+                // Create an instance of the UserViewModel using the Factory
+                val userViewModel: UserViewModel = viewModel(
+                    viewModelStoreOwner = chatGraphEntry,
+                    factory = Factory
+                )
+                // Create an instance of the ReviewViewModel using the Factory
+                val reviewViewModel: ReviewViewModel = viewModel(
+                    viewModelStoreOwner = chatGraphEntry,
+                    factory = Factory
+                )
+                // Create an instance of the ArticleViewModel using the ArticleFactory
+                val articleViewModel: ArticleViewModel = viewModel(
+                    viewModelStoreOwner = chatGraphEntry,
+                    factory = ArticleFactory
+                )
+                // Gat tab index from the arguments, defaulting to 0 if not provided
+                val tabIndex = entry.arguments?.getInt("tabIndex") ?: 0
+                // Pass the NavController and ViewModels to the MyProfileScreen composable
+                MyProfileScreen(
+                    navController = navController,
+                    vm = tripViewModel,
+                    vm2 = articleViewModel,
+                    uvm = userViewModel,
+                    rvm = reviewViewModel,
+                    defaultTabIndex = tabIndex
+                )
+            }
         }
 
     }

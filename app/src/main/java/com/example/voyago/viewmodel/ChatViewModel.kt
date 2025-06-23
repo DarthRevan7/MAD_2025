@@ -5,15 +5,18 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.voyago.Collections
 import com.example.voyago.model.ChatRoom
 import com.example.voyago.model.FirebaseChatMessage
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.toObject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class ChatViewModel : ViewModel() {
 
@@ -419,9 +422,125 @@ class ChatViewModel : ViewModel() {
                 val updatedList = usersNotRead.filter { it != userId }
                 transaction.update(roomRef, "usersNotRead", updatedList)
             }
-
         }
     }
+
+    private val _chatRoom = MutableStateFlow<ChatRoom?>(null)
+    val chatRoom: StateFlow<ChatRoom?> = _chatRoom
+
+    fun getChatRoomFromId(chatId: String) {
+        // Start a Coroutine
+        viewModelScope.launch {
+            try {
+                // Wait for Firebase operation result
+                val snapshot = Collections.chatRooms.document(chatId).get().await()
+
+                if (snapshot.exists()) {
+                    val loadedChatRoom = snapshot.toObject(ChatRoom::class.java)
+                    //Update stateflow and UI
+                    _chatRoom.value = loadedChatRoom
+                    Log.d("CH1", "ChatRoom caricata e stato aggiornato: $loadedChatRoom")
+                } else {
+                    // If the chatroom is not found then set to null
+                    _chatRoom.value = null
+                    Log.d("CH1", "ChatRoom con ID '$chatId' non trovata.")
+                }
+            } catch (e: Exception) {
+                _chatRoom.value = null
+                Log.e("CH1", "Errore nel recupero della ChatRoom con ID '$chatId': ${e.message}", e)
+            }
+        }
+    }
+
+    fun fetchChatRoomIdByName(
+        roomName: String,
+        onResult: (roomId: String?) -> Unit
+    ) {
+        db.collection("chatRooms")
+            .whereEqualTo("name", roomName)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val doc = querySnapshot.documents.firstOrNull()
+                if (doc != null) {
+                    onResult(doc.id)
+                } else {
+                    onResult(null)
+                }
+            }
+            .addOnFailureListener {
+                onResult(null)
+            }
+    }
+
+//    fun removeUserFromChatByName(roomName: String, userId: Int) {
+//        fetchChatRoomIdByName(roomName) { roomId ->
+//            if (roomId != null) {
+//                removeUserFromChat(roomId, userId)
+//            } else {
+//                Log.e("ChatVM", "Chat room with name '$roomName' not found.")
+//            }
+//        }
+//    }
+//
+//    fun removeUserFromChat(roomId: String, userId: Int) {
+//        val roomRef = db.collection("chatRooms").document(roomId)
+//
+//        roomRef.update("participants.$userId", FieldValue.delete())
+//            .addOnSuccessListener {
+//                Log.d("ChatVM", "User $userId removed from chat room $roomId")
+//            }
+//            .addOnFailureListener {
+//                Log.e("ChatVM", "Failed to remove user $userId from chat room $roomId", it)
+//            }
+//    }
+
+    fun removeParticipantFromRoom(roomName: String, userIdToRemove: Int) {
+        fetchChatRoomIdByName(roomName) { roomId ->
+            if (roomId == null) {
+                Log.w("ChatDebug", "No chat room found with name $roomName")
+                return@fetchChatRoomIdByName
+            }
+
+            val roomRef = db.collection("chatRooms").document(roomId)
+
+            roomRef.get()
+                .addOnSuccessListener { snapshot ->
+                    if (!snapshot.exists()) {
+                        Log.w("ChatDebug", "Room $roomId does not exist")
+                        return@addOnSuccessListener
+                    }
+
+                    val currentParticipants = (snapshot.get("participants") as? List<*>)?.mapNotNull {
+                        when (it) {
+                            is Number -> it.toInt()
+                            is String -> it.toIntOrNull()
+                            else -> null
+                        }
+                    } ?: emptyList()
+
+                    if (!currentParticipants.contains(userIdToRemove)) {
+                        Log.d("ChatDebug", "User $userIdToRemove is not a participant in room $roomId")
+                        return@addOnSuccessListener
+                    }
+
+                    val updatedParticipants = currentParticipants.filter { it != userIdToRemove }
+
+                    roomRef.update("participants", updatedParticipants)
+                        .addOnSuccessListener {
+                            Log.d("ChatDebug", "User $userIdToRemove removed from room $roomId")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("ChatDebug", "Failed to remove user: ${e.message}")
+                        }
+                }
+                .addOnFailureListener { e ->
+                    Log.e("ChatDebug", "Failed to fetch chat room: ${e.message}")
+                }
+        }
+    }
+
+
+
 
 
 
@@ -436,6 +555,8 @@ object ChatFactory : ViewModelProvider.Factory {
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
+
+
 
 
 

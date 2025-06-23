@@ -1,6 +1,5 @@
 package com.example.voyago.view
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -53,39 +52,47 @@ fun UserProfileScreen(
 ) {
     // Collect user data as state
     val user by uvm.getUserData(userId).collectAsState(initial = null)
-    //List of trip created and published by the logged in user (id=1)
+
+    //Get the list of trips published by the user
     val publishedTrips by vm.publishedTrips.collectAsState()
-    //List of trip the logged in user (id=1) joined
+
+    //Get the list of trips the user has joined (not created)
     val joinedTrips by vm.joinedTrips.collectAsState()
-    // Logged user
+
+    // Get the currently logged in user
     val loggedUser by uvm.loggedUser.collectAsState()
 
-
+    // Handle null case
     if (user == null) {
-        Log.d("UserProfileScreen", "User data is null")
         return
     }
 
+    // When user ID changes (or screen recomposes), trigger trip data filters for that user
     LaunchedEffect(user?.id) {
         if (user?.id != 0) {
-            Log.d("Trips", "my trips id: ${user?.id}")
-            vm.creatorPublicFilter(user!!.id)
-            vm.creatorPrivateFilter(user!!.id)
-            vm.tripUserJoined(user!!.id)
+
+            vm.creatorPublicFilter(user!!.id)       // Get public trips created by this user
+            vm.creatorPrivateFilter(user!!.id)      // Get private trips created by this user
+            vm.tripUserJoined(user!!.id)            // Get trips this user has joined
         }
     }
 
+    // Keeps track of scroll position for the LazyColumn
     val listState = rememberLazyListState()
 
+    // Painter for the "start chat" icon
     val painterChat = painterResource(R.drawable.start_chat)
-    //Rating updated real time
+
+    // Real-time user rating (from reviews)
     val rating = rvm.calculateRatingById(user!!.id).collectAsState(0.0f)
 
+    // Main vertical scrollable layout
     LazyColumn(
         state = listState,
         modifier = Modifier.fillMaxSize()
     ) {
 
+        // Profile Header Section
         item {
             Box(
                 modifier = Modifier
@@ -93,21 +100,25 @@ fun UserProfileScreen(
                     .height(300.dp)
                     .background(Color(0xdf, 0xd1, 0xe0, 255), shape = RectangleShape)
             ) {
+                // Chat icon in the top right corner to start a private chat
                 Image(
                     painter = painterChat, "userChat", modifier = Modifier
                         .size(60.dp)
                         .align(alignment = Alignment.TopEnd)
                         .padding(16.dp)
                         .clickable {
+                            // Create or fetch chat room between logged user and viewed user
                             chatViewModel.createOrGetPrivateChatRoom(
                                 currentUserId = loggedUser.id,
                                 otherUserId = user!!.id
                             ) { roomId ->
+                                // Navigate to chat screen using the generated room ID
                                 navController.navigate("chat/$roomId") // Assuming you have a route like this
                             }
                         }
                 )
 
+                // User profile photo positioned in the center
                 ProfilePhoto(
                     Modifier
                         .align(Alignment.Center)
@@ -115,6 +126,8 @@ fun UserProfileScreen(
                     user!!,
                     false
                 )
+
+                // Username below photo
                 Text(
                     text = user!!.username,
                     style = MaterialTheme.typography.headlineLarge,
@@ -124,6 +137,8 @@ fun UserProfileScreen(
                         .padding(bottom = 10.dp)
                         .offset(y = 40.dp)
                 )
+
+                // Full name (first and last)
                 Text(
                     text = "${user!!.firstname} ${user!!.surname}",
                     style = MaterialTheme.typography.headlineSmall,
@@ -133,7 +148,10 @@ fun UserProfileScreen(
                         .padding(bottom = 10.dp)
                         .offset(y = (-50).dp)
                 )
+
                 Spacer(Modifier.height(20.dp))
+
+                // User’s country
                 Text(
                     text = user!!.country,
                     style = MaterialTheme.typography.headlineSmall,
@@ -146,6 +164,7 @@ fun UserProfileScreen(
             }
         }
 
+        // Ratings & Reliability section (just below header)
         item {
             Row(
                 modifier = Modifier.offset(y = (-25).dp),
@@ -156,6 +175,7 @@ fun UserProfileScreen(
             }
         }
 
+        // Tabs section (About, Trips, Reviews)
         item {
             TabAboutTripsReview(
                 user!!,

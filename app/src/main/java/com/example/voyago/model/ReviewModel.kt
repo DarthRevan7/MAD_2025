@@ -3,7 +3,6 @@ package com.example.voyago.model
 import android.annotation.SuppressLint
 import android.util.Log
 import com.example.voyago.Collections
-import com.example.voyago.toCalendar
 import com.example.voyago.view.isUriString
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
@@ -19,6 +18,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.Date
+import java.util.Locale
 
 // Review data structure
 data class Review(
@@ -114,7 +114,7 @@ class ReviewModel {
             val rating = if (reviews.isNotEmpty()) {
                 val avg = reviews.map { it.score }.average().toFloat()
                 // Format to one decimal place and normalize to a 5-star scale
-                String.format("%.1f", avg / 2f).toFloat()
+                String.format(Locale.US, "%.1f", avg / 2f).toFloat()
             } else {
                 // Default to 5.0f if there are no reviews
                 5.0f

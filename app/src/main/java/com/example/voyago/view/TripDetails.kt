@@ -88,7 +88,6 @@ import com.example.voyago.model.User
 import com.example.voyago.model.isTimestampLong
 import com.example.voyago.model.timestampToCalendar
 import com.example.voyago.toCalendar
-import com.example.voyago.toStringDate
 import com.example.voyago.viewmodel.ChatViewModel
 import com.example.voyago.viewmodel.NotificationViewModel
 import com.example.voyago.viewmodel.ReviewViewModel
@@ -99,10 +98,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.Serializable
 import java.time.LocalTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
 import java.util.Calendar
 import java.util.Locale
 
+// Notification data structure to pass data between screen
 data class TripNotification(
     val id: Int,
     var photo: String? = null,
@@ -134,20 +136,17 @@ fun TripDetails(
     nvm: NotificationViewModel,
     chatViewModel: ChatViewModel
 ) {
-    // The logged in user
-
+    // The currently logged-in user
     val loggedUser by uvm.loggedUser.collectAsState()
-    // 添加登录状态检查
 
-
-    //  修复：更准确的登录状态检查
+    // Determine if the user is logged in (basic check using essential user fields)
     val isUserLoggedIn = remember(loggedUser) {
         loggedUser.id != 0 &&
                 loggedUser.username.isNotEmpty() &&
                 loggedUser.email.isNotEmpty()
     }
 
-
+    // Determine which trip to display based on the user's current view state
     var trip = when (vm.userAction) {
         TripViewModel.UserAction.VIEW_TRIP -> vm.selectedTrip.value
         TripViewModel.UserAction.VIEW_OTHER_TRIP -> vm.otherTrip.value
@@ -155,9 +154,11 @@ fun TripDetails(
 
     }
 
+    // If the user arrived here via a notification, extract the trip from savedStateHandle
     val fields =
         navController.previousBackStackEntry?.savedStateHandle?.get<TripNotification>("notificationValues")
 
+    // If data exists from notification, construct the trip object from it
     if (fields != null) {
         trip = Trip(
             fields.id,
@@ -181,51 +182,62 @@ fun TripDetails(
     }
 
 
-    //Trip participants map
+    // Reactive map of trip participants
     val participantsMap by vm.tripParticipants.collectAsState()
-    // The logged in user
 
-
+    // Reset the user action after viewing the trip
     DisposableEffect(Unit) {
         onDispose {
             vm.userAction = TripViewModel.UserAction.VIEW_TRIP
         }
     }
 
+    // If trip is not valid yet, show a temporary message
     if (!trip.isValid()) {
         Text("Trip ${vm.otherTrip.value.id} ${vm.userAction} Loading trip details...")
         return
     }
 
-    //The user joined the trip but didn't created
+    // Determine if the user joined the trip but is not the creator
     val joined =
         trip.participants.containsKey(loggedUser.id.toString()) && trip.creatorId != loggedUser.id
 
     //Manage join request
+
+    // Map of trips the user has applied to (trip ID -> requested spots)
     val askedTrips: Map<String, Int> by vm.askedTrips.collectAsState()
+
+    // Sync user's asked trips (on initial load)
     vm.syncAskedTrips(loggedUser.id) {}
+
+    // Retrieve how many spots the user requested for this trip
     val requestedSpots = trip.id.let { askedTrips[it.toString()] } ?: 0
     val hasAsked = requestedSpots > 0
 
+    // UI and state for join request dialog
     var showDialog by remember { mutableStateOf(false) }
     var selectedSpots by remember { mutableIntStateOf(1) }
 
-    //To manage phase of the dialog
+    // Dialog phase: used to track which step in the join dialog is shown
     var dialogPhase by remember { mutableIntStateOf(0) }
 
-    //Data of other participants
+    // Information for group participants (non-logged-in)
     var unregisteredParticipants by remember { mutableStateOf(listOf<Participant>()) }
+
+    // Usernames of registered participants being added (if any)
     var registeredUsernames by remember { mutableStateOf(listOf<String>()) }
     var isRegisteredList by remember { mutableStateOf(listOf<Boolean>()) }
 
+    // Field "touched" states used for validation feedback
     var usernameTouchedList by remember { mutableStateOf(listOf<Boolean>()) }
     var nameTouchedList by remember { mutableStateOf(listOf<Boolean>()) }
     var surnameTouchedList by remember { mutableStateOf(listOf<Boolean>()) }
     var emailTouchedList by remember { mutableStateOf(listOf<Boolean>()) }
 
+    // Holds user objects of registered users being added to the group
     var registeredUserList: MutableList<User> = mutableListOf()
 
-    //Initialization of the list of other participants
+    // Dynamically (re)initialize participant input lists when phase or selectedSpots changes
     LaunchedEffect(dialogPhase, selectedSpots) {
         if (dialogPhase == 1) {
             isRegisteredList =
@@ -241,6 +253,7 @@ fun TripDetails(
             }
         }
 
+        // Sync touched and registered state lists to match expected size
         isRegisteredList = List(selectedSpots - 1) { index ->
             isRegisteredList.getOrNull(index) == true
         }
@@ -259,14 +272,17 @@ fun TripDetails(
         emailTouchedList = List(selectedSpots - 1) { i ->
             emailTouchedList.getOrNull(i) == true
         }
-
     }
 
-    //Get reviews of the trip
+    // Review Logic
+
+    // All reviews for this trip
     val reviews by rvm.tripReviews.collectAsState()
+
+    // Whether current user reviewed this trip
     val isReviewed by rvm.isReviewed.collectAsState()
 
-    //Manage reviews
+    // Load reviews and participants for trip on initial load
     LaunchedEffect(trip.id, loggedUser.id) {
         if (trip.id != 0) {
             rvm.getTripReviews(trip.id)
@@ -276,8 +292,10 @@ fun TripDetails(
 
     }
 
+    // Scroll state for the LazyColumn
     val listState = rememberLazyListState()
 
+    // Get today’s date with time reset (for comparing with trip date)
     val today = Calendar.getInstance().apply {
         set(Calendar.HOUR_OF_DAY, 0)
         set(Calendar.MINUTE, 0)
@@ -285,9 +303,13 @@ fun TripDetails(
         set(Calendar.MILLISECOND, 0)
     }
 
+    // Check if the trip starts after today
     val isAfterToday = trip.startDateAsCalendar().after(today)
+
+    // Error state for trying to publish without meeting requirements
     var publishError by rememberSaveable { mutableStateOf(false) }
 
+    // Main UI Container
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             state = listState,
@@ -296,6 +318,7 @@ fun TripDetails(
         ) {
             //Trip image
             item {
+                // Displays trip banner with image and title
                 Hero(trip, vm, loggedUser, true)
             }
 
@@ -303,7 +326,7 @@ fun TripDetails(
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            //Trip information
+            //Trip information (Date, Group Size, Price)
             item {
                 Row(
                     modifier = Modifier
@@ -312,7 +335,7 @@ fun TripDetails(
                 ) {
                     Text(
                         text = formatTripDate(trip.startDateAsCalendar()) + " - " +
-                                formatTripDate(trip.endDateAsCalendar()) + "\n " +
+                                formatTripDate(trip.endDateAsCalendar()) + "\n" +
                                 "${trip.groupSize} people" +
                                 if (trip.availableSpots() > 0) {
                                     " (${trip.availableSpots()} spots left)"
@@ -331,8 +354,9 @@ fun TripDetails(
 
             //The logged in user see a trip created by them in the "My Trip" section
             if (owner) {
-                //The trip created by the logged in user is published
+                // If the trip is published and the current user is indeed the creator
                 if (trip.published && trip.creatorId == loggedUser.id) {
+                    // UI block with buttons for trip management
                     item {
                         Row(
                             modifier = Modifier
@@ -341,7 +365,9 @@ fun TripDetails(
                             horizontalArrangement = Arrangement.End
                         ) {
                             Box {
+                                // If the trip has been marked as COMPLETED
                                 if (trip.status == Trip.TripStatus.COMPLETED.toString()) {
+                                    // "My Reviews" button navigates to the reviews screen
                                     Box {
                                         //Applications Button
                                         Button(
@@ -353,20 +379,24 @@ fun TripDetails(
                                             Text("My Reviews")
                                         }
 
+                                        // Blue dot indicates there are reviews pending from the user
                                         if (isReviewed == false) {
                                             Box(
                                                 modifier = Modifier
                                                     .size(15.dp)
-                                                    .background(Color(0xFF448AFF), CircleShape)
+                                                    .background(
+                                                        Color(0xFF448AFF),
+                                                        CircleShape
+                                                    )      // Blue dot
                                                     .align(Alignment.TopEnd)
                                             )
                                         }
                                     }
                                 } else {
-                                    //Applications Button
+                                    // If the trip is not completed: show the "Applications" button
                                     Button(
                                         onClick = {
-                                            //Assign the trip for navigation
+                                            // Set the trip in ViewModel for reference in the applications screen
                                             vm.setSelectedTrip(trip)
                                             navController.navigate("trip_applications")
                                         },
@@ -378,6 +408,7 @@ fun TripDetails(
                                     }
                                 }
 
+                                // Red notification dot if there are any pending applications
                                 if (trip.appliedUsers.isNotEmpty()) {
                                     Box(
                                         modifier = Modifier
@@ -388,19 +419,19 @@ fun TripDetails(
                                 }
                             }
 
+                            // Spacer to push the next set of buttons further right
                             Spacer(Modifier.weight(3f))
 
-                            //"Create a Copy" Button (creates a copy of the trip in the logged in user private trips)
-                            //CreateACopyButton(trip, vm, loggedUser)
-
-                            Spacer(Modifier.weight(1f))
-
-                            //Private Button (makes the trip private)
+                            // "Private" button — shown only if there are no other participants yet
+                            // This allows the trip creator to unpublish (make private) the trip
                             if (!trip.participants.any { it.key != trip.creatorId.toString() }) {
                                 Button(
                                     onClick = {
+                                        // Change published state (published -> private)
                                         vm.changePublishedStatus(trip.id)
+                                        // Refresh the published trips for the user
                                         vm.updatePublishedTrip(uvm.loggedUser.value.id)
+                                        // Navigate back in the stack
                                         navController.popBackStack()
                                     },
                                     colors = ButtonDefaults.buttonColors(
@@ -410,14 +441,17 @@ fun TripDetails(
                                     Text("Private")
                                 }
                             }
+
+                            // Add spacing between buttons
                             Spacer(Modifier.padding(5.dp))
 
-                            //Delete button with popup for confirmation
+                            // "Delete" button - launches confirmation dialog and deletes trip
                             DeleteMyTrip(trip, navController, vm, uvm = uvm)
                         }
                     }
                 }
 
+                // If the logged-in user has joined the trip but is NOT the creator
                 if (joined) {
                     item {
                         Row(
@@ -426,9 +460,10 @@ fun TripDetails(
                                 .fillMaxWidth(),
                             horizontalArrangement = Arrangement.End
                         ) {
+                            // If the trip is marked as COMPLETED, the user can leave a review
                             if (trip.status == Trip.TripStatus.COMPLETED.toString()) {
                                 Box {
-                                    //Applications Button
+                                    // "My Reviews" button navigates to review submission/list screen
                                     Button(
                                         onClick = { navController.navigate("my_reviews") },
                                         colors = ButtonDefaults.buttonColors(
@@ -438,6 +473,7 @@ fun TripDetails(
                                         Text("My Reviews")
                                     }
 
+                                    // Blue dot as indicator that the user has not submitted a review yet
                                     if (isReviewed == false) {
                                         Box(
                                             modifier = Modifier
@@ -451,8 +487,9 @@ fun TripDetails(
 
                             Spacer(Modifier.weight(1f))
 
+                            // Show "Leave Trip" option only if the user is currently logged in
                             if (isUserLoggedIn) {
-                                //Delete button with popup for confirmation
+                                // This button triggers a confirmation dialog for leaving the trip
                                 LeaveTrip(trip, navController, vm, loggedUser, uvm)
                             }
                         }
@@ -472,16 +509,28 @@ fun TripDetails(
                                 //Publish Button
                                 Button(
                                     onClick = {
+                                        // Ensure the trip start date is in the future before allowing publishing
                                         if (isAfterToday) {
+                                            // Change trip status from private to public
                                             vm.changePublishedStatus(trip.id)
+                                            // Refresh user's published trips
                                             vm.updatePublishedTrip(uvm.loggedUser.value.id)
 
-                                            // Create group if not exists
-                                            chatViewModel.createGroupIfNotExists(trip.title, uvm.loggedUser.value.id) { created ->
+                                            // Ensure a group chat exists for this trip; create if needed
+                                            chatViewModel.createGroupIfNotExists(
+                                                trip.title,
+                                                uvm.loggedUser.value.id
+                                            ) { created ->
                                                 if (created) {
-                                                    Log.d("ChatDebug", "Group created: ${trip.title}")
+                                                    Log.d(
+                                                        "ChatDebug",
+                                                        "Group created: ${trip.title}"
+                                                    )
                                                 } else {
-                                                    Log.d("ChatDebug", "Group already exists or error creating it.")
+                                                    Log.d(
+                                                        "ChatDebug",
+                                                        "Group already exists or error creating it."
+                                                    )
                                                 }
                                             }
 
@@ -492,6 +541,7 @@ fun TripDetails(
                                             val notificationType = "TRIP"
                                             val idLink = trip.id
 
+                                            // Notify users with compatible travel preferences
                                             uvm.getMatchingUserIdsByTypeTravel(trip.typeTravel) { compatibleUsers ->
                                                 compatibleUsers.forEach { userIdInt ->
                                                     if (userIdInt != loggedUser.id) {
@@ -506,9 +556,11 @@ fun TripDetails(
                                                     }
                                                 }
 
+                                                // Navigate back after publishing and notifying
                                                 navController.popBackStack()
                                             }
                                         } else {
+                                            // Show error if trying to publish a trip that starts today or in the past
                                             publishError = true
                                         }
                                     },
@@ -522,14 +574,11 @@ fun TripDetails(
 
                             Spacer(Modifier.weight(1f))
 
-                            //CreateACopyButton(trip, vm, loggedUser)
-
-                            Spacer(Modifier.padding(5.dp))
-
-                            //Delete button with popup for confirmation
+                            // Allows the owner to delete their private trip (with confirmation)
                             DeleteMyTrip(trip, navController, vm, uvm = uvm)
                         }
 
+                        // If publishing fails due to invalid date, show a user-friendly error message
                         if (publishError) {
                             Text(
                                 text = "The Start Date of the trip must be after today for it to be published.",
@@ -545,11 +594,12 @@ fun TripDetails(
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
+                // Title for the upcoming trip itinerary section
                 item {
                     TitleBox("My Itinerary")
                 }
             }
-            //The logged in user see a published trip in the "Explore" section
+            // The logged-in user is viewing a published trip from the "Explore" section
             else {
                 item {
                     Row(
@@ -558,23 +608,17 @@ fun TripDetails(
                             .fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
                     ) {
-                        // 只有登录用户才显示 "Create a Copy" 按钮
                         if (isUserLoggedIn) {
-                            //"Create a Copy" Button (creates a copy of the trip in the logged in user private trips)
-                            //CreateACopyButton(trip, vm, loggedUser)
-
-                            Spacer(Modifier.padding(5.dp))
-                        }
-
-                        if (isUserLoggedIn) {
-                            //If the user can join the trip
+                            // If user can still join the trip, is not the creator, and hasn't joined yet
                             if (trip.canJoin() && trip.creatorId != loggedUser.id && !joined) {
                                 //Ask to Join/Asked to Join Button
                                 Button(
                                     onClick = {
                                         if (hasAsked) {
+                                            // Cancel request to join if already asked
                                             vm.cancelAskToJoin(trip, loggedUser.id)
                                         } else {
+                                            // Open the dialog to ask to join with spots selection
                                             selectedSpots = 1
                                             showDialog = true
                                         }
@@ -593,11 +637,8 @@ fun TripDetails(
                                         Text("Ask to Join")
                                     }
                                 }
-
-                            } else if (joined
-                                && trip.status != Trip.TripStatus.COMPLETED.toString()
-
-                            ) {
+                                // If user already joined the trip (but not the creator) and trip is still active
+                            } else if (joined && trip.status != Trip.TripStatus.COMPLETED.toString()) {
                                 Button(
                                     onClick = {},
                                     colors = ButtonDefaults.buttonColors(
@@ -608,11 +649,9 @@ fun TripDetails(
                                 }
                             }
                         } else {
-                            // 如果用户未登录，显示提示按钮引导用户登录
-                            // 修复：更详细的未登录状态处理
+                            // For guests (not logged in), show a login call-to-action
                             Button(
                                 onClick = {
-                                    Log.d("TripDetails", "User not logged in, navigating to login")
                                     navController.navigate("login")
                                 },
                                 colors = ButtonDefaults.buttonColors(
@@ -629,6 +668,7 @@ fun TripDetails(
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
+                // Title for the upcoming trip itinerary section
                 item {
                     TitleBox("Itinerary")
                 }
@@ -639,8 +679,7 @@ fun TripDetails(
                 ItineraryText(
                     trip,
                     modifier = Modifier
-                        .padding(start = 24.dp, top = 16.dp, end = 20.dp),
-                    vm
+                        .padding(start = 24.dp, top = 16.dp, end = 20.dp)
                 )
             }
 
@@ -653,16 +692,18 @@ fun TripDetails(
             }
 
             item {
+                // Collect the trip creator’s user data from the ViewModel
                 val user = uvm.getUserData(trip.creatorId).collectAsState(initial = User()).value
 
+                // If user exists, show the creator info block
                 if (user != null) {
                     ShowParticipants(
                         user = user,
                         joinRequest = JoinRequest(
                             user.id,
-                            1,
-                            emptyList(),
-                            emptyList()
+                            1,                  // Always 1 spot for the creator
+                            emptyList(),        // No unregistered participants
+                            emptyList()         // No emails
                         ),
                         uvm = uvm,
                         navController = navController
@@ -680,20 +721,24 @@ fun TripDetails(
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
-                //List of reviews of the trip
+                // Display each review in the reviews list
                 items(reviews) { review ->
-                    ShowReview(review, vm, false, uvm, navController)
+                    ShowReview(review, uvm, navController)
                 }
             }
 
+            // Participant section
+
+            // Only show if there are other participants besides the creator
             if (trip.participants.size > 1) {
                 item {
                     TitleBox("Participants:")
                 }
 
+                // Iterate through all participants (excluding creator) and display them
                 items(participantsMap.entries.toList()) { entry ->
-                    val user = entry.key
-                    val spots = entry.value
+                    val user = entry.key        // User who joined
+                    val spots = entry.value     // Number of spots taken by this user
                     if (trip.creatorId != user.id) {
                         ShowParticipants(user, spots, uvm, navController)
                     }
@@ -702,7 +747,7 @@ fun TripDetails(
 
         }
 
-
+        // Stores validation state for each username input
         var usernameValidationStates by remember { mutableStateOf(mutableMapOf<Int, Boolean>()) }
 
 
@@ -712,6 +757,7 @@ fun TripDetails(
 
             AlertDialog(
                 onDismissRequest = {
+                    // Reset all dialog-related states
                     showDialog = false
                     dialogPhase = 0
                     unregisteredParticipants = emptyList()
@@ -727,32 +773,41 @@ fun TripDetails(
                 },
                 text = {
                     if (dialogPhase == 0) {
+                        // Spot selector
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center,
                             modifier = Modifier.fillMaxWidth()
                         ) {
+                            // Decrease button
                             IconButton(
+                                // If the number of spots is > 1 decrease by one
                                 onClick = { if (selectedSpots > 1) selectedSpots-- },
                                 enabled = selectedSpots > 1
                             ) {
                                 Icon(Icons.Default.Remove, contentDescription = "Decrease")
                             }
 
+                            // Display number of selected spots
                             Text(
                                 "$selectedSpots",
                                 modifier = Modifier.padding(horizontal = 16.dp),
                                 style = MaterialTheme.typography.headlineMedium
                             )
 
+                            // Increase Button
                             IconButton(
-                                onClick = { if (selectedSpots < maxSpots) selectedSpots++ },
+                                onClick = {
+                                    // If the selected spots are < of the max available spots increase by 1
+                                    if (selectedSpots < maxSpots) selectedSpots++
+                                },
                                 enabled = selectedSpots < maxSpots
                             ) {
                                 Icon(Icons.Default.Add, contentDescription = "Increase")
                             }
                         }
                     } else {
+                        // Participant Information Form
                         LazyColumn {
                             items(selectedSpots - 1) { i ->
 
@@ -774,13 +829,7 @@ fun TripDetails(
                                                 isRegisteredList = isRegisteredList.toMutableList()
                                                     .also { it[i] = checked }
                                                 // Reset data
-                                                if (checked) {
-//                                                    unregisteredParticipants =
-//                                                        unregisteredParticipants.toMutableList()
-//                                                            .also {
-//                                                                it[i] = Participant("", "", "")
-//                                                            }
-                                                } else {
+                                                if (!checked) {
                                                     registeredUsernames =
                                                         registeredUsernames.toMutableList().also {
                                                             it[i] = ""
@@ -796,7 +845,10 @@ fun TripDetails(
                                     }
 
                                     // Input fields
+                                    // if the user is registered to the app add them with its username
                                     if (isRegistered) {
+                                        // Username input field
+                                        // Check if the username exists and correspond to a registered user
                                         AsyncValidatingUsernameField(
                                             text = registeredUsernames[i],
                                             updateState = { newValue ->
@@ -823,7 +875,10 @@ fun TripDetails(
                                         )
 
                                     } else {
+                                        // If the user is not registered to the app insert Name, Surname and Email
                                         if (participant != null) {
+
+                                            //Name input field with validation
                                             ValidatingInputTextField(
                                                 participant.name,
                                                 { newValue ->
@@ -844,6 +899,7 @@ fun TripDetails(
                                                 "Name"
                                             )
 
+                                            // Surname input field with validation
                                             ValidatingInputTextField(
                                                 participant.surname,
                                                 { newValue ->
@@ -865,6 +921,7 @@ fun TripDetails(
                                                 "Surname"
                                             )
 
+                                            // Email input field with validation
                                             ValidatingInputEmailField(
                                                 participant.email,
                                                 { newValue ->
@@ -895,6 +952,7 @@ fun TripDetails(
                             if (selectedSpots > 1) {
                                 dialogPhase = 1
                             } else {
+                                // No other participants; send request directly
                                 vm.askToJoin(
                                     trip,
                                     loggedUser.id,
@@ -903,7 +961,7 @@ fun TripDetails(
                                     emptyList()
                                 )
 
-                                // Notification
+                                // Notify trip creator
                                 val title = "New Application!"
                                 val body =
                                     "You have a new application for the trip to ${vm.selectedTrip.value.destination}"
@@ -922,9 +980,12 @@ fun TripDetails(
                                 showDialog = false
                             }
                         } else {
+                            //Form validation
                             var hasErrors = false
 
+                            // For every participants
                             for (i in 0 until isRegisteredList.count() - 1) {
+                                // Check if the username is valid for registered participants
                                 if (isRegisteredList[i]) {
                                     val username = registeredUsernames[i]
                                     val isUsernameValid = usernameValidationStates[i] == true
@@ -935,7 +996,7 @@ fun TripDetails(
                                             .also { it[i] = true }
                                     }
                                 } else {
-                                    // ... 未注册用户验证逻辑保持不变 ... Why Chinese comments?? D:
+                                    // Check if name, surname and email are valid for unregistered participants
                                     val participant = unregisteredParticipants[i]
 
                                     if (participant.name.isBlank() || !participant.name.any { it.isLetter() }) {
@@ -956,16 +1017,21 @@ fun TripDetails(
                                 }
                             }
 
-
+                            // If there are no errors
                             if (!hasErrors) {
+
+                                // Add the ids of registered participants to the map
                                 val idList = registeredUserList.map { it.id }.toList()
 
+                                // For each unregistered participants if name, surname or email are not valid
+                                // remove it from the map
                                 unregisteredParticipants.forEach {
                                     if (it.name.isEmpty() && it.surname.isEmpty() && it.email.isEmpty()) {
                                         unregisteredParticipants -= it
                                     }
                                 }
 
+                                // Send the request to join
                                 vm.askToJoin(
                                     trip,
                                     loggedUser.id,
@@ -980,7 +1046,7 @@ fun TripDetails(
                                 unregisteredParticipants = emptyList()
                                 registeredUsernames = emptyList()
                                 isRegisteredList = emptyList()
-                                usernameValidationStates = mutableMapOf() //  重置验证状态
+                                usernameValidationStates = mutableMapOf()
 
                                 // Reset touched lists
                                 usernameTouchedList = emptyList()
@@ -988,10 +1054,7 @@ fun TripDetails(
                                 surnameTouchedList = emptyList()
                                 emailTouchedList = emptyList()
                             }
-
-
                         }
-
                     }) {
                         Text(if (dialogPhase == 0 && selectedSpots > 1) "Next" else "Confirm")
                     }
@@ -1002,7 +1065,7 @@ fun TripDetails(
                         dialogPhase = 0
                         unregisteredParticipants = emptyList()
                         registeredUsernames = emptyList()
-                        usernameValidationStates = mutableMapOf() //  重置验证状态
+                        usernameValidationStates = mutableMapOf()
 
                     }) {
                         Text("Cancel")
@@ -1017,10 +1080,17 @@ fun TripDetails(
 @SuppressLint("DiscouragedApi")
 @Composable
 fun Hero(trip: Trip, vm: TripViewModel, loggedUser: User, import: Boolean = false) {
+
+    // Holds the URL of the image for the trip
     var imageUrl by remember { mutableStateOf<String?>(null) }
+
+    // Trigger side-effect when trip ID changes
+    // This retrieves the photo URL asynchronously
     LaunchedEffect(trip.id) {
         imageUrl = trip.getPhoto()
     }
+
+    // Main container box for the hero section
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -1035,7 +1105,7 @@ fun Hero(trip: Trip, vm: TripViewModel, loggedUser: User, import: Boolean = fals
                     modifier = Modifier.fillMaxSize()
                 )
             }
-
+            // If image URL is still null or failed to load — show placeholder
             else -> {
                 Box(
                     modifier = Modifier
@@ -1076,6 +1146,7 @@ fun Hero(trip: Trip, vm: TripViewModel, loggedUser: User, import: Boolean = fals
             )
         }
 
+        // Only show if import mode is active and user is logged in
         if (import && loggedUser != User()) {
             CreateACopyButton(
                 trip = trip,
@@ -1087,10 +1158,12 @@ fun Hero(trip: Trip, vm: TripViewModel, loggedUser: User, import: Boolean = fals
             )
         }
 
-
+        // Status Banner
+        // Show "Completed" banner if trip has already ended
         if (trip.status == Trip.TripStatus.COMPLETED.toString()) {
             //Banner that indicated that the trip has already happened
             CompletedBanner(Modifier.align(Alignment.TopEnd))
+            // If no spots left and cannot join, show "Fully Booked" banner
         } else if (!trip.canJoin()) {
             //Banner that shows that nobody can join the trip anymore
             BookedBanner(Modifier.align(Alignment.TopEnd))
@@ -1100,16 +1173,27 @@ fun Hero(trip: Trip, vm: TripViewModel, loggedUser: User, import: Boolean = fals
 
 //Function that create a good format for the dates
 fun formatTripDate(calendar: Calendar): String {
-    val day = calendar.get(Calendar.DAY_OF_MONTH)
-    val suffix = getDayOfMonthSuffix(day)
+    // Get local date
+    val localDate = calendar.toInstant()
+        .atZone(ZoneId.systemDefault())
+        .toLocalDate()
 
-    return calendar.toStringDate()
+    // Get day from local date
+    val day = localDate.dayOfMonth
+    // Get suffix for the day
+    val suffix = getDaySuffix(day)
+    // Get month from local date
+    val month = localDate.month.getDisplayName(TextStyle.SHORT, Locale.ENGLISH)
+    // Get year from local date
+    val year = localDate.year
+
+    // Return in the format "dayWithSuffix month, year"
+    return "$day$suffix $month, $year"
 }
 
-fun getDayOfMonthSuffix(day: Int): String {
-    return if (day in 11..13) {
-        "th"
-    } else when (day % 10) {
+// Function that get the right suffix for the day of the month
+fun getDaySuffix(day: Int): String {
+    return if (day in 11..13) "th" else when (day % 10) {
         1 -> "st"
         2 -> "nd"
         3 -> "rd"
@@ -1117,6 +1201,7 @@ fun getDayOfMonthSuffix(day: Int): String {
     }
 }
 
+// Composable with the box for the titles
 @Composable
 fun TitleBox(title: String) {
     Box(
@@ -1137,6 +1222,8 @@ fun TitleBox(title: String) {
     }
 }
 
+// Extension function on Calendar class to compute how many whole days remain
+// between this Calendar instance and another
 fun Calendar.daysUntil(other: Calendar): Int {
     // Normalize both calendars to midnight
     val thisMidnight = this.clone() as Calendar
@@ -1151,58 +1238,68 @@ fun Calendar.daysUntil(other: Calendar): Int {
     otherMidnight.set(Calendar.SECOND, 0)
     otherMidnight.set(Calendar.MILLISECOND, 0)
 
+    // Time difference in days
     val millisPerDay = 1000 * 60 * 60 * 24
     val diffMillis = thisMidnight.timeInMillis - otherMidnight.timeInMillis
 
+    // Convert the millisecond difference to whole days and return as Int
+    // Integer division truncates toward zero, so partial days are ignored
     return (diffMillis / millisPerDay).toInt()
 }
 
 
 @Composable
-fun ItineraryText(trip: Trip, modifier: Modifier = Modifier, vm: TripViewModel) {
+fun ItineraryText(trip: Trip, modifier: Modifier = Modifier) {
+    // Formatter to parse and format time strings
     val formatter =
-        DateTimeFormatter.ofPattern("hh:mm a", Locale.US) // Same format used in your first view
+        DateTimeFormatter.ofPattern("hh:mm a", Locale.US)
 
+    // String that represents the full itinerary, day by day
     val itineraryString = trip.activities
-        .toSortedMap(compareBy { it }) // Sort days chronologically
+        // Sort days chronologically
+        .toSortedMap(compareBy { it })
         .entries
+        // For each day and its associated list of activities, build a formatted string
         .joinToString("\n\n") { (day, activities) ->
-            Log.d("L1", "Trip Details")
+            // Determine if 'day' is a timestamp (Long) or a string and calculate the day index
             val dayIndex = if (isTimestampLong(day)) {
-                Log.d("L1", "Day is a timestamp: $day")
                 timestampToCalendar(day).daysUntil(trip.startDateAsCalendar()) + 1
             } else {
-                Log.d("L1", "Day is a string: $day")
                 day.toCalendar().daysUntil(trip.startDateAsCalendar()) + 1
             }
+
+            // Header for the day
             val dayHeader = "Day $dayIndex:\n"
 
+            // Sort the activities of the day by their start time to display in order
             val sortedActivities = activities.sortedBy { activity ->
                 try {
+                    // Parse the activity time string to a LocalTime object for sorting
                     LocalTime.parse(activity.time, formatter)
-                } catch (e: Exception) {
-                    LocalTime.MIDNIGHT // fallback if parsing fails
+                } catch (_: Exception) {
+                    // If parsing fails, default to midnight
+                    LocalTime.MIDNIGHT
                 }
             }
 
+            // For each sorted activity, create a descriptive string line
             val activityDescriptions = sortedActivities.joinToString("\n") { activity ->
+                // Append a note if it's a group activity
                 val groupActivity = if (activity.isGroupActivity) " (group activity)" else ""
                 "- ${activity.time} → ${activity.description}$groupActivity"
             }
 
+            // Return the full day's block: the day header plus all activities descriptions
             dayHeader + activityDescriptions
         }
 
+    // Finally, display the full itinerary string inside a Text composable
     Text(
         text = itineraryString,
         style = MaterialTheme.typography.bodySmall,
         fontWeight = FontWeight.Bold,
         modifier = modifier
     )
-
-    println("Trip start date (timestamp): ${trip.startDate}")
-    println("Trip start date (millis): ${trip.startDate.toDate().time}")
-    println("Trip start date (formatted): ${trip.startDate.toDate()}")
 }
 
 @Composable
@@ -1210,11 +1307,13 @@ fun DeleteMyTrip(
     trip: Trip, navController: NavController, vm: TripViewModel,
     uvm: UserViewModel
 ) {
+    // State to control the visibility of the confirmation dialog popup
     val showDialog = remember { mutableStateOf(false) }
 
-    //Delete Button
+    // The Delete Button UI component
     Button(
         onClick = {
+            // When clicked, show the confirmation dialog
             showDialog.value = true
         },
         colors = ButtonDefaults.buttonColors(
@@ -1224,39 +1323,53 @@ fun DeleteMyTrip(
         Text("Delete")
     }
 
-    //PupUp that asks for confirmation of the cancellation of the trip
+    // If the dialog visibility state is true, show the confirmation dialog popup
     if (showDialog.value) {
         AlertDialog(
+            // Callback when user dismisses the dialog (click outside or back press)
             onDismissRequest = {
                 showDialog.value = false
             },
+            // Dialog title displayed at the top
             title = {
                 Text(text = "Confirm Cancellation")
             },
+            // Dialog message text content
             text = {
+                // Conditional message based on trip status and number of participants
                 if (trip.status != Trip.TripStatus.COMPLETED.toString() && trip.participants.size > 1) {
                     Text("Are you sure you want to delete this trip? This action will affect your reliability.")
                 } else {
                     Text("Are you sure you want to delete this trip? This action cannot be undone.")
                 }
             },
+            // Confirm button shown in the dialog
             confirmButton = {
                 Button(
                     onClick = {
+                        // Logic for deleting or cancelling the trip based on status and conditions
+                        // If trip is not completed
                         if (trip.status != Trip.TripStatus.COMPLETED.toString()) {
+                            // If trip is unpublished or has only one participant
                             if (!trip.published || trip.participants.size == 1) {
+                                // Reject all pending applications if any exist
                                 if (trip.appliedUsers.isNotEmpty()) {
                                     trip.appliedUsers.forEach { userId, joinRequest ->
                                         vm.rejectApplication(trip, userId.toInt())
                                     }
                                 }
+                                // Proceed with deleting the trip
                                 vm.deleteTrip(trip.id)
+                                // Update the user's published trip
                                 vm.updatePublishedTrip(uvm.loggedUser.value.id)
                             }
 
+                            // If more than one participant is present
                             if (trip.participants.size > 1) {
+                                // Select a new owner different from the current creator
                                 val newOwner = trip.participants.entries.firstOrNull()
                                 { it.key != trip.creatorId.toString() }
+                                // Update the trip creator to the new owner if found
                                 if (newOwner?.key?.toInt() != null) {
                                     vm.updateTripCreator(
                                         trip.id,
@@ -1264,10 +1377,13 @@ fun DeleteMyTrip(
                                         trip.creatorId.toInt()
                                     )
                                 }
+
+                                // Penalize the current creator's reliability score by -10 for deleting the trip
                                 uvm.updateUserReliability(
                                     trip.creatorId,
                                     -10
                                 ) { success ->
+                                    // Log success or failure of reliability
                                     if (success) {
                                         Log.d("TripDetails", "Reliability updated successfully")
                                     } else {
@@ -1276,10 +1392,14 @@ fun DeleteMyTrip(
                                 }
                             }
                         } else {
-                            //Don't show the trip in this section anymore
+                            // If trip is completed, cancel the trip without deleting (hides it from UI)
                             vm.cancelTrip(trip.creatorId.toString(), trip.id.toString())
                         }
+
+                        // Navigate back to the previous screen after deletion/cancellation
                         navController.popBackStack()
+
+                        // Hide the confirmation dialog after operation finishes
                         showDialog.value = false
                     }
                 ) {
@@ -1289,6 +1409,7 @@ fun DeleteMyTrip(
             dismissButton = {
                 Button(
                     onClick = {
+                        // Close the dialog
                         showDialog.value = false
                     }
                 ) {
@@ -1307,11 +1428,13 @@ fun LeaveTrip(
     loggedUser: User,
     uvm: UserViewModel
 ) {
+    // State variable to control whether the confirmation dialog is visible or not
     val showDialog = remember { mutableStateOf(false) }
 
-    //Delete Button
+    // Button that initiates the "Leave Trip" action
     Button(
         onClick = {
+            // When clicked, show the confirmation dialog to prevent accidental leaving
             showDialog.value = true
         },
         colors = ButtonDefaults.buttonColors(
@@ -1324,12 +1447,14 @@ fun LeaveTrip(
     //PupUp that asks for confirmation of the cancellation of the trip
     if (showDialog.value) {
         AlertDialog(
+            // When user dismisses the dialog (clicks outside or presses back), hide the dialog
             onDismissRequest = {
                 showDialog.value = false
             },
             title = {
                 Text(text = "Confirm Leave Trip ")
             },
+            // The dialog message explaining consequences of leaving the trip
             text = {
                 if (trip.status != Trip.TripStatus.COMPLETED.toString()) {
                     Text("Are you sure you want to leave this trip? This action will affect your reliability.")
@@ -1340,8 +1465,12 @@ fun LeaveTrip(
             confirmButton = {
                 Button(
                     onClick = {
+                        // For trips that are not completed
                         if (trip.status != Trip.TripStatus.COMPLETED.toString()) {
+                            // Remove the user from the list of participants in the trip
                             vm.updateTripParticipants(trip.id, loggedUser.id)
+
+                            // Penalize the user's reliability score by -5 points for leaving early
                             uvm.updateUserReliability(
                                 loggedUser.id,
                                 -5
@@ -1353,10 +1482,15 @@ fun LeaveTrip(
                                 }
                             }
                         } else {
-                            //Don't show the trip in this section anymore
+                            // For completed trips
+                            // Hide the trip from the user's view in this section
                             vm.cancelTrip(trip.creatorId.toString(), trip.id.toString())
                         }
+
+                        // Navigate back to the previous screen after leaving the trip
                         navController.popBackStack()
+
+                        // Hide the confirmation dialog once the operation is done
                         showDialog.value = false
                     }
                 ) {
@@ -1381,75 +1515,68 @@ fun LeaveTrip(
 @Composable
 fun ShowReview(
     review: Review,
-    vm: TripViewModel,
-    myTrip: Boolean,
     uvm: UserViewModel,
     navController: NavController
 ) {
-
+    // Check if the review is about a trip or a user
     if (review.isTripReview) {
+        // Get the user data of the reviewer (the person who wrote this review)
         val reviewer by uvm.getUserData(review.reviewerId).collectAsState(initial = User())
 
-
+        // Outer Row container for the review header (reviewer info + rating)
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp)
         ) {
-
+            // Inner Row to hold profile picture, name and star rating
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp)
             ) {
-                //val reviewer = reviewer
+                // Show profile photo and name only if reviewer data is valid and available
                 if (reviewer != null && reviewer?.isValid() == true) {
+                    // Circle-shaped box containing the reviewer's profile photo
                     Box(
                         contentAlignment = Alignment.CenterStart,
                         modifier = Modifier
                             .size(30.dp)
                             .background(Color.Gray, shape = CircleShape)
                     ) {
+                        // Display the reviewer's profile photo, with a flag indicating something (true)
                         ProfilePhoto(Modifier, reviewer!!, true)
-                        Log.d("R1", "Reviewer: ${reviewer?.id}")
                     }
 
+                    // Show the reviewer's full name next to the profile photo
                     Text(
                         "${reviewer!!.firstname} ${reviewer!!.surname}",
                         modifier = Modifier
                             .padding(start = 16.dp)
                             .clickable {
+                                // Navigate to the reviewer's profile when name is clicked
                                 navController.navigate("user_profile/${review.reviewerId}")
                             }
                     )
                 }
 
+                // Spacer pushes the stars to the right end of the row
                 Spacer(modifier = Modifier.weight(1f))
 
+                // Row that holds the star rating aligned to the right
                 Row(
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // Display star icons representing the review's score
                     PrintStars(review.score)
                 }
             }
-
-
-            //Stars rating
-            Row(
-                modifier = Modifier
-                    .weight(1f),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically
-            )
-            {
-                PrintStars(review.score)
-            }
         }
 
-        //Review title
+        // Row displaying the review title with bold font, padded to align with profile photo + name
         Row {
             Text(
                 text = review.title,
@@ -1458,7 +1585,7 @@ fun ShowReview(
             )
         }
 
-        //Review content
+        // Row displaying the main review content, aligned similarly to title
         Row {
             Text(
                 text = review.comment,
@@ -1466,23 +1593,26 @@ fun ShowReview(
             )
         }
 
-        // Show photos if there are any
+        // If the review includes photos, display them
         if (review.photos.isNotEmpty()) {
             LazyRow(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 50.dp, top = 8.dp, end = 16.dp)
             ) {
+                // For each photo path in the review photos list
                 items(review.photos) { photoPath ->
+                    // State variable for the image URL, initially null
                     var imageUrl by remember(photoPath) { mutableStateOf<String?>(null) }
 
+                    // Effect to load the photo URL asynchronously
                     LaunchedEffect(photoPath) {
-                        // 获取 Firebase Storage URL
                         imageUrl = review.getPhotoUrl(photoPath)
                     }
 
+                    // Determine how to display the image based on the image URL or local resource type
                     when {
-                        // Firebase Storage 或 URI 图片
+                        // Case 1: imageUrl is an HTTP or content URI, use GlideImage to load
                         imageUrl != null && (imageUrl!!.startsWith("http") || imageUrl!!.startsWith(
                             "content://"
                         )) -> {
@@ -1496,7 +1626,7 @@ fun ShowReview(
                                     .clip(RoundedCornerShape(8.dp))
                             )
                         }
-                        // URI 图片的备用处理
+                        // Case 2: photoPath is a URI string, use Compose AsyncImage painter
                         photoPath.isUriString() -> {
                             Image(
                                 painter = rememberAsyncImagePainter(photoPath),
@@ -1508,7 +1638,7 @@ fun ShowReview(
                                     .clip(RoundedCornerShape(8.dp))
                             )
                         }
-                        // Drawable 资源
+                        // Case 3: Otherwise treat as drawable resource identifier
                         else -> {
                             val context = LocalContext.current
                             val drawableId = remember(photoPath) {
@@ -1518,6 +1648,7 @@ fun ShowReview(
                                     context.packageName
                                 )
                             }
+                            // If valid drawable resource found, display it with crossfade animation
                             if (drawableId != 0) {
                                 AsyncImage(
                                     model = ImageRequest.Builder(context)
@@ -1540,25 +1671,25 @@ fun ShowReview(
 
         Spacer(Modifier.padding(16.dp))
     }
-    //Review for other users
+    // If the review is about another user (not a trip review)
     else {
+        // Get data of the user being reviewed
         val reviewed by uvm.getUserData(review.reviewedUserId).collectAsState(initial = User())
 
-
+        // Similar layout and structure as the trip review section but for user reviews
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp)
         ) {
-
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp)
             ) {
-                //val reviewer = reviewer
+                // Show reviewed user profile photo and name if valid
                 if (reviewed != null && reviewed?.isValid() == true) {
                     Box(
                         contentAlignment = Alignment.CenterStart,
@@ -1567,7 +1698,6 @@ fun ShowReview(
                             .background(Color.Gray, shape = CircleShape)
                     ) {
                         ProfilePhoto(Modifier, reviewed!!, true)
-                        Log.d("R1", "Reviewer: ${reviewed?.id}")
                     }
 
                     Text(
@@ -1582,6 +1712,7 @@ fun ShowReview(
 
                 Spacer(modifier = Modifier.weight(1f))
 
+                // Stars Rating Row
                 Row(
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.CenterVertically
@@ -1589,21 +1720,9 @@ fun ShowReview(
                     PrintStars(review.score)
                 }
             }
-
-
-            //Stars rating
-            Row(
-                modifier = Modifier
-                    .weight(1f),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically
-            )
-            {
-                PrintStars(review.score)
-            }
         }
 
-        //Review title
+        // Review title with bold styling and padding
         Row {
             Text(
                 text = review.title,
@@ -1620,87 +1739,23 @@ fun ShowReview(
             )
         }
 
-        // Show photos if there are any
-        if (review.photos.isNotEmpty()) {
-            LazyRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 50.dp, top = 8.dp, end = 16.dp)
-            ) {
-                items(review.photos) { photoPath ->
-                    var imageUrl by remember(photoPath) { mutableStateOf<String?>(null) }
-
-                    LaunchedEffect(photoPath) {
-                        // 获取 Firebase Storage URL
-                        imageUrl = review.getPhotoUrl(photoPath)
-                    }
-
-                    when {
-                        // Firebase Storage 或 URI 图片
-                        imageUrl != null && (imageUrl!!.startsWith("http") || imageUrl!!.startsWith(
-                            "content://"
-                        )) -> {
-                            GlideImage(
-                                model = imageUrl,
-                                contentDescription = "Review photo",
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .size(100.dp)
-                                    .padding(end = 8.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                            )
-                        }
-                        // URI 图片的备用处理
-                        photoPath.isUriString() -> {
-                            Image(
-                                painter = rememberAsyncImagePainter(photoPath),
-                                contentDescription = "Review photo",
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .size(100.dp)
-                                    .padding(end = 8.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                            )
-                        }
-                        // Drawable 资源
-                        else -> {
-                            val context = LocalContext.current
-                            val drawableId = remember(photoPath) {
-                                context.resources.getIdentifier(
-                                    photoPath,
-                                    "drawable",
-                                    context.packageName
-                                )
-                            }
-                            if (drawableId != 0) {
-                                AsyncImage(
-                                    model = ImageRequest.Builder(context)
-                                        .data(drawableId)
-                                        .crossfade(true)
-                                        .build(),
-                                    contentDescription = photoPath,
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier
-                                        .size(100.dp)
-                                        .padding(end = 8.dp)
-                                        .clip(RoundedCornerShape(8.dp))
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
         Spacer(Modifier.padding(16.dp))
     }
 }
 
+// Function that prints the stars based on the score
 @Composable
 fun PrintStars(rating: Int) {
+    // Calculate how many full stars to display
     val full = rating / 2
+
+    // Calculate if there is a half star needed
     val half = rating - full * 2
+
+    // Calculate how many empty stars to display to complete the total of 5 stars
     val empty = 5 - (full + half)
+
+    // Loop through the number of full stars and display them
     for (i in 1..full) {
         Icon(
             imageVector = Icons.Default.Star,
@@ -1708,6 +1763,8 @@ fun PrintStars(rating: Int) {
             tint = Color(0xff, 0xb4, 0x00, 255)
         )
     }
+
+    // If there is a half star (half > 0), display a half star icon
     if (half > 0) {
         Icon(
             imageVector = Icons.AutoMirrored.Filled.StarHalf,
@@ -1715,6 +1772,8 @@ fun PrintStars(rating: Int) {
             tint = Color(0xff, 0xb4, 0x00, 255)
         )
     }
+
+    // If there are empty stars needed, display empty star icons for the remainder
     if (empty > 0) {
         for (i in 1..empty) {
             Icon(
@@ -1736,40 +1795,60 @@ fun AsyncValidatingUsernameField(
     validationStates: Map<Int, Boolean>,
     onValidationChange: (Int, Boolean, User) -> Unit
 ) {
+    // Controller to programmatically hide the software keyboard
     val keyboardController = LocalSoftwareKeyboardController.current
+
+    // State variable to track if username validation is currently running
     var isValidating by remember { mutableStateOf(false) }
+
+    // State variable to store the last username text that was validated
     var lastValidatedText by remember { mutableStateOf("") }
 
-    // 🔴 实时验证用户名
+    // Side-effect that triggers whenever the text changes
+    // This performs asynchronous validation of the username with debounce logic
     LaunchedEffect(text) {
+        // Only proceed if:
+        // - Text is not blank
+        // - Text is different from the last validated text (avoid redundant validation)
+        // - Text length is at least 2 characters (minimum username length)
         if (text.isNotBlank() && text != lastValidatedText && text.length >= 2) {
-            isValidating = true
-            delay(500) // 防抖动，避免过频繁的查询
+            isValidating = true     // Start showing validation progress indicator
+            delay(500) // Debounce delay to prevent validating on every keystroke
 
+            // Call ViewModel to check if user exists asynchronously
             userViewModel.checkUserExistsAsync(text) { exists, user ->
-                isValidating = false
-                lastValidatedText = text
-                onValidationChange(index, exists, user)
-
-                Log.d("UsernameValidation", "Username '$text' exists: $exists")
+                isValidating = false    // Validation completed, hide progress indicator
+                lastValidatedText = text    // Update last validated username
+                onValidationChange(
+                    index,
+                    exists,
+                    user
+                ) // Notify parent with validation result and user info
             }
         } else if (text.isBlank()) {
+            // If input is blank, notify that validation failed and reset User
             onValidationChange(index, false, User())
         }
     }
 
+    // Determine if there are validation errors for this input
     val hasErrors = text.isNotBlank() && validationStates[index] == false
+
+    // Determine if the username is valid according to the validationStates map
     val isValid = validationStates[index] == true
 
+    // Layout container for the input field and associated UI elements
     Column(
         modifier = Modifier
             .wrapContentSize()
+            // Detect tap gestures outside the text field to dismiss the keyboard
             .pointerInput(Unit) {
                 detectTapGestures(onTap = {
-                    keyboardController?.hide()
+                    keyboardController?.hide()  // Hide keyboard when tapping outside input
                 })
             }
     ) {
+        // The actual text input field with outlined styling
         OutlinedTextField(
             modifier = Modifier
                 .fillMaxWidth()
@@ -1778,6 +1857,7 @@ fun AsyncValidatingUsernameField(
             onValueChange = updateState,
             label = { Text(label) },
             isError = hasErrors,
+            // Supporting text displayed below the input field to show validation messages or prompts
             supportingText = {
                 when {
                     isValidating -> Text("Validating username...", color = Color.Black)
@@ -1787,6 +1867,7 @@ fun AsyncValidatingUsernameField(
                     else -> null
                 }
             },
+            // Trailing icon in the text field indicating validation status
             trailingIcon = {
                 when {
                     isValidating -> CircularProgressIndicator(
@@ -1807,6 +1888,7 @@ fun AsyncValidatingUsernameField(
                     )
                 }
             },
+            // Configure the keyboard type for this input to be text
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
         )
     }
@@ -1819,10 +1901,14 @@ fun CreateACopyButton(
     loggedUser: User,
     modifier: Modifier = Modifier
 ) {
+
+    // Coroutine scope for launching delayed side effects
     val coroutineScope = rememberCoroutineScope()
+
+    // State to determine whether the confirmation popup should be shown
     var showPopup by remember { mutableStateOf(false) }
 
-    // Floating "Create a Copy" IconButton with styled background
+    // UI container for the "Create a Copy" floating action button
     Box(
         modifier = modifier
             .background(
@@ -1834,8 +1920,7 @@ fun CreateACopyButton(
     ) {
         IconButton(
             onClick = {
-                Log.d("TripCopy", "Original trip photo: ${trip.photo}")
-
+                // Call ViewModel to add a new imported (copied) trip using the current trip's data
                 vm.addImportedTrip(
                     trip.photo,
                     trip.title,
@@ -1850,13 +1935,13 @@ fun CreateACopyButton(
                     false
                 ) { success, importedTrip ->
                     if (success) {
-                        Log.d(
-                            "TripCopy",
-                            "Imported trip created with photo: ${importedTrip?.photo}"
-                        )
+                        // Update the list of published trips
                         vm.updatePublishedTrip(loggedUser.id)
 
+                        // Show success popup to user
                         showPopup = true
+
+                        // Launch coroutine to hide popup after 2 seconds
                         coroutineScope.launch {
                             delay(2000)
                             showPopup = false
@@ -1876,11 +1961,11 @@ fun CreateACopyButton(
         }
     }
 
-    // Confirmation Popup
+    // Show temporary success popup if showPopup is true
     if (showPopup) {
         Popup(
             alignment = Alignment.TopCenter,
-            onDismissRequest = { showPopup = false }
+            onDismissRequest = { showPopup = false }    // Allow dismissing the popup manually
         ) {
             Box(
                 modifier = Modifier
@@ -1889,6 +1974,7 @@ fun CreateACopyButton(
                     .background(Color.White, shape = RoundedCornerShape(8.dp))
                     .padding(16.dp)
             ) {
+                // Layout for the confirmation popup content
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.CheckBox,

@@ -32,13 +32,6 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-//Function that converts a Long in a Calendar
-//fun toCalendar(timeDate: Timestamp): Calendar {
-//    var calendarDate = Calendar.getInstance()
-//    calendarDate.time = timeDate.toDate()
-//    return calendarDate
-//}
-
 //Trip data structure
 data class Trip(
     val id: Int = 0,
@@ -939,10 +932,12 @@ class TripModel {
     }
 
 
-    fun editTrip(updatedTrip: Trip,
-                 originalTrip: Trip,
-                 viewModelScope: CoroutineScope,
-                 onResult: (Boolean) -> Unit) {
+    fun editTrip(
+        updatedTrip: Trip,
+        originalTrip: Trip,
+        viewModelScope: CoroutineScope,
+        onResult: (Boolean) -> Unit
+    ) {
         val docId = updatedTrip.id.toString()
 
         viewModelScope.launch {
@@ -953,13 +948,16 @@ class TripModel {
 
                 // If a new photo is provided, upload it and get the URL
                 if (updatedTrip.photo != null) {
-                        if(updatedTrip.photo!!.isUriString())
-                        {
-                            Log.d("T2", "updatedTrip.photo=${updatedTrip.photo}")
-                            val photoUrl = uploadPhotoAndGetUrl(updatedTrip.photo!!.toUri(), updatedTrip.id.toString())
-                            tripToUpdate = tripToUpdate.copy(photo = photoUrl) // Update the trip with the new URL
-                            Log.d("T2", "Photo update success: URL = $photoUrl")
-                        }
+                    if (updatedTrip.photo!!.isUriString()) {
+                        Log.d("T2", "updatedTrip.photo=${updatedTrip.photo}")
+                        val photoUrl = uploadPhotoAndGetUrl(
+                            updatedTrip.photo!!.toUri(),
+                            updatedTrip.id.toString()
+                        )
+                        tripToUpdate =
+                            tripToUpdate.copy(photo = photoUrl) // Update the trip with the new URL
+                        Log.d("T2", "Photo update success: URL = $photoUrl")
+                    }
                 }
 
 
@@ -1465,7 +1463,6 @@ class TripModel {
             null
         }
     }
-
 
 
 }

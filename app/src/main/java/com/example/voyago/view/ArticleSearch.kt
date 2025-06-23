@@ -526,6 +526,7 @@ fun ArticleSearchItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable(onClick = onClick)
     ) {
         // Article Image Section
         when {

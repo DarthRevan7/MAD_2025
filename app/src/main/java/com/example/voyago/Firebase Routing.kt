@@ -13,6 +13,7 @@ object Collections {
     private const val C_TRIPS = "trips"
     private const val C_REVIEWS = "reviews"
     private const val C_ARTICLES = "articles"
+    private const val C_CHATROOMS = "chatRooms"
 
     private val db: FirebaseFirestore
         get() = Firebase.firestore
@@ -28,6 +29,7 @@ object Collections {
     val trips = db.collection(C_TRIPS)
     val reviews = db.collection(C_REVIEWS)
     val articles = db.collection(C_ARTICLES)
+    val chatRooms = db.collection(C_CHATROOMS)
 }
 
 object StorageHelper {
