@@ -53,7 +53,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -87,7 +86,6 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.example.voyago.R
 import com.example.voyago.model.NavItem
-import com.example.voyago.model.Trip
 import com.example.voyago.model.User
 import com.example.voyago.model.UserModel
 import com.example.voyago.view.ActivitiesList
@@ -112,7 +110,7 @@ import com.example.voyago.view.MyReviews
 import com.example.voyago.view.MyTripsPage
 import com.example.voyago.view.NewActivity
 import com.example.voyago.view.NotificationView
-import com.example.voyago.view.RegistrationVerificationCodeScreen
+import com.example.voyago.view.RegistrationVerificationScreen
 import com.example.voyago.view.RetrievePassword
 import com.example.voyago.view.SingleChatScreen
 import com.example.voyago.view.TripApplications
@@ -242,16 +240,6 @@ class MainActivity : ComponentActivity() {
         context = this
         // Initialize the camera executor for handling camera operations
         cameraExecutor = Executors.newSingleThreadExecutor()
-
-        // Subscribe to the "all" topic for Firebase Cloud Messaging
-//        FirebaseMessaging.getInstance().subscribeToTopic("all")
-//            .addOnCompleteListener { task ->
-//                if (task.isSuccessful) {
-//                    Log.d("FCM", "Subscribed to 'all' topic")
-//                } else {
-//                    Log.e("FCM", "Failed to subscribe to 'all' topic", task.exception)
-//                }
-//            }
 
         // Check for camera permissions
         if (!allPermissionsGranted()) {
@@ -724,12 +712,14 @@ fun NavGraphBuilder.notificationNavGraph(navController: NavHostController, auth:
                 factory = ArticleFactory
             )
 
-            if(auth.currentUser != null) {
-                NotificationView(navController = navController,
-                    nvm =  notificationViewModel,
+            if (auth.currentUser != null) {
+                NotificationView(
+                    navController = navController,
+                    nvm = notificationViewModel,
                     uvm = userViewModel,
                     vm = tripViewModel,
-                    avm = articlesViewModel)
+                    avm = articlesViewModel
+                )
             }
         }
 
@@ -771,15 +761,16 @@ fun NavGraphBuilder.notificationNavGraph(navController: NavHostController, auth:
                 factory = ChatFactory
             )
 
-            if(auth.currentUser != null) {
-                TripDetails(navController = navController,
-                    nvm =  notificationViewModel,
+            if (auth.currentUser != null) {
+                TripDetails(
+                    navController = navController,
+                    nvm = notificationViewModel,
                     uvm = userViewModel,
                     vm = tripViewModel,
                     rvm = reviewViewModel,
                     chatViewModel = chatViewModel,
                     owner = true
-                    )
+                )
             }
         }
 
@@ -858,7 +849,7 @@ fun NavGraphBuilder.loginNavGraph(navController: NavHostController, auth: Fireba
         }
 
         // Define the composable for the registration verification email screen
-        composable("register_verification_code") { entry ->
+        composable("register_verification") { entry ->
             // Get the back stack entry for the login graph
             val loginGraphEntry = remember(entry) {
                 navController.getBackStackEntry(Screen.Login.route)
@@ -869,7 +860,7 @@ fun NavGraphBuilder.loginNavGraph(navController: NavHostController, auth: Fireba
                 factory = Factory
             )
             // Pass the NavController and UserViewModel to the RegistrationVerificationCodeScreen composable
-            RegistrationVerificationCodeScreen(navController, userViewModel)
+            RegistrationVerificationScreen(navController, userViewModel)
         }
 
         // Define the composable for the completion of profile for new users that did the sign in with google
@@ -1567,10 +1558,11 @@ fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
                 factory = Factory
             )
 
-            if (tripId != null){
+            if (tripId != null) {
                 ChatDetails(
                     tripId = tripId,
-                    tripViewModel = tripViewModel)
+                    tripViewModel = tripViewModel
+                )
             }
 
 

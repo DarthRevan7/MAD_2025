@@ -1,6 +1,5 @@
 package com.example.voyago.view
 
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -43,30 +42,31 @@ import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegistrationVerificationCodeScreen(navController: NavController, uvm: UserViewModel) {
-    var user =
-        navController.previousBackStackEntry?.savedStateHandle?.get<User>("userValues")
+fun RegistrationVerificationScreen(navController: NavController, uvm: UserViewModel) {
+    // Retrieve the User object passed from the previous screen via saved state handle
+    var user = navController.previousBackStackEntry?.savedStateHandle?.get<User>("userValues")
 
+    // Message state to display feedback to the user
     var message by remember { mutableStateOf("") }
 
-
+    // Outer container filling the whole screen with a light background color
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF5F5F5))
     ) {
 
-
-        // Main Content
+        // Main content column with padding and centered alignment
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Add space from the top
             Spacer(modifier = Modifier.height(60.dp))
 
-            // Profile Icon
+            // Circular background box for profile icon
             Box(
                 modifier = Modifier
                     .size(80.dp)
@@ -74,8 +74,9 @@ fun RegistrationVerificationCodeScreen(navController: NavController, uvm: UserVi
                         Color(0xFFE1D5F7),
                         shape = CircleShape
                     ),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center     // Center icon inside the circle
             ) {
+                // Person icon representing the user profile
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = null,
@@ -84,9 +85,10 @@ fun RegistrationVerificationCodeScreen(navController: NavController, uvm: UserVi
                 )
             }
 
+            // Space below icon
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Title
+            // Title Text prompting the user to confirm registration
             Text(
                 text = "Confirm Registration",
                 fontSize = 24.sp,
@@ -97,7 +99,7 @@ fun RegistrationVerificationCodeScreen(navController: NavController, uvm: UserVi
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Subtitle
+            // Subtitle Text with instructions
             Text(
                 text = "Click on the link sent to your E-mail to confirm your registration",
                 fontSize = 16.sp,
@@ -107,24 +109,31 @@ fun RegistrationVerificationCodeScreen(navController: NavController, uvm: UserVi
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
 
+            // Space before button
             Spacer(modifier = Modifier.height(40.dp))
 
-            // Send Again Button
+            // Button to resend verification email
             Button(
                 onClick = {
                     val auth = FirebaseAuth.getInstance()
+                    // Store user info in ViewModel
                     uvm.storeUser(user!!)
+                    // Trigger Firebase Authentication user creation with email and password
                     auth.createUserWithEmailAndPassword(user!!.email, user!!.password)
                         .addOnSuccessListener { result ->
+                            // On successful account creation, send verification email
                             result.user?.sendEmailVerification()
                                 ?.addOnSuccessListener {
+                                    // Display success message on email sent
                                     message = "Verification email sent. Please check your inbox."
                                 }
                                 ?.addOnFailureListener {
+                                    // Display error if verification email sending failed
                                     message = "Failed to send verification email."
                                 }
                         }
                         .addOnFailureListener {
+                            // Display error message if registration failed
                             message = "Registration failed: ${it.message}"
                         }
                 },
@@ -146,8 +155,7 @@ fun RegistrationVerificationCodeScreen(navController: NavController, uvm: UserVi
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
-
+            // Show feedback message if available
             if (message.isNotEmpty()) {
                 message.let { message ->
                     Card(
@@ -163,6 +171,7 @@ fun RegistrationVerificationCodeScreen(navController: NavController, uvm: UserVi
                             Color(0xFF81C784) // medium green
                         )
                     ) {
+                        // Centered row containing the message text
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -183,36 +192,45 @@ fun RegistrationVerificationCodeScreen(navController: NavController, uvm: UserVi
             }
 
 
-            // Or text
+            // Simple separator text
             Text(
                 text = "or",
                 color = Color.Gray,
                 fontSize = 16.sp
             )
 
+            // Space before next button
             Spacer(modifier = Modifier.height(32.dp))
 
+            // Button to confirm registration after user clicked verification link in email
             Button(
                 onClick = {
+                    // Get current user from Firebase
                     val fireUser = FirebaseAuth.getInstance().currentUser
-                    Log.d("R1", "fireUser: $fireUser")
+
+                    // Refresh user info from ViewModel’s pending user
                     user = uvm.pendingUser!!
+
+                    // If the Firebase user is not null
                     if (fireUser != null) {
-                        Log.d("R1", "fireUser.email: ${fireUser.email}, user.email: ${user.email}")
+                        // Check if the authenticated Firebase user email matches the saved user email
                         if (fireUser.email == user.email) {
+                            // Update user UID with Firebase user UID
                             user.uid = fireUser.uid
+
+                            // Update user data in ViewModel
                             uvm.editUserData(user)
-                            Log.d("R1", "User data updated: $user")
-                            Log.d("R1", "User data firebase: $fireUser")
+
+                            // Navigate to profile overview screen
                             navController.navigate("profile_overview") {
                                 popUpTo("home_main") {
+                                    // Keep home_main in back stack
                                     inclusive = false
                                 }
+                                // Prevent duplicate destinations on the stack
                                 launchSingleTop = true
                             }
                         }
-
-
                     }
                 },
                 modifier = Modifier
