@@ -1560,8 +1560,7 @@ fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
                     tripId = tripId,
                     tripViewModel = tripViewModel,
                     uvm = userViewModel,
-                    chatViewModel = chatViewModel,
-                    navController = navController)
+                    chatViewModel = chatViewModel)
             }
         }
 
@@ -1657,6 +1656,55 @@ fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
                 nvm = notificationViewModel,
                 chatViewModel = chatViewModel
             )
+        }
+
+        composable(
+            route = "profile_overview?tabIndex={tabIndex}",
+            arguments = listOf(
+                navArgument("tabIndex") {
+                    type = NavType.IntType
+                    defaultValue = 0 // fallback to "About" tab
+                }
+            )
+        ) { entry ->
+            // Require authentication before accessing the profile overview
+            RequireAuth(navController) {
+                // Get the back stack entry for the profile graph
+                val chatGraphEntry = remember(entry) {
+                    navController.getBackStackEntry(Screen.Chats.route)
+                }
+                // Create instances of the ViewModels using the Factory
+                val tripViewModel: TripViewModel = viewModel(
+                    viewModelStoreOwner = chatGraphEntry,
+                    factory = Factory
+                )
+                // Create an instance of the UserViewModel using the Factory
+                val userViewModel: UserViewModel = viewModel(
+                    viewModelStoreOwner = chatGraphEntry,
+                    factory = Factory
+                )
+                // Create an instance of the ReviewViewModel using the Factory
+                val reviewViewModel: ReviewViewModel = viewModel(
+                    viewModelStoreOwner = chatGraphEntry,
+                    factory = Factory
+                )
+                // Create an instance of the ArticleViewModel using the ArticleFactory
+                val articleViewModel: ArticleViewModel = viewModel(
+                    viewModelStoreOwner = chatGraphEntry,
+                    factory = ArticleFactory
+                )
+                // Gat tab index from the arguments, defaulting to 0 if not provided
+                val tabIndex = entry.arguments?.getInt("tabIndex") ?: 0
+                // Pass the NavController and ViewModels to the MyProfileScreen composable
+                MyProfileScreen(
+                    navController = navController,
+                    vm = tripViewModel,
+                    vm2 = articleViewModel,
+                    uvm = userViewModel,
+                    rvm = reviewViewModel,
+                    defaultTabIndex = tabIndex
+                )
+            }
         }
 
     }

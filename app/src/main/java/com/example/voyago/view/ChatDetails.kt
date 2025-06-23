@@ -2,6 +2,7 @@ package com.example.voyago.view
 
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -95,6 +96,9 @@ fun ChatDetails(navController: NavController,
                 val user = userState.value
                 if (user != null) {
                     MemberItem(
+                        navController,
+                        loggedUserId = uvm.loggedUser.value.id,
+                        userId = user.id,
                         name = "${user.firstname} ${user.surname}",
                         rating = String.format("%.1f", user.rating),
                         isCreator = user.id == trip.creatorId,
@@ -178,6 +182,9 @@ fun ChatDetails(navController: NavController,
 
 @Composable
 fun MemberItem(
+    navController: NavController,
+    userId: Int,
+    loggedUserId: Int,
     name: String,
     rating: String,
     isCreator: Boolean,
@@ -187,7 +194,15 @@ fun MemberItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(70.dp),
+            .height(70.dp)
+            .clickable {
+                if(userId != loggedUserId) {
+                    navController.navigate("user_profile/${userId}")
+                }
+                else {
+                    navController.navigate("profile_overview?tabIndex={tabIndex}")
+                }
+            },
         shape = RoundedCornerShape(8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
