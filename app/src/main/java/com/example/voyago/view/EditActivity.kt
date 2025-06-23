@@ -55,7 +55,7 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
     val currentTrip = when (vm.userAction) {
         TripViewModel.UserAction.EDIT_ACTIVITY -> {
 
-            if (vm.editTrip.isValid()) vm.editTrip else vm.selectedTrip.value
+            vm.selectedTrip.value
         }
 
         TripViewModel.UserAction.CREATE_TRIP -> {
