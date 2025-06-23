@@ -34,13 +34,19 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.navigation.NavController
 import com.example.voyago.model.Trip
+import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
 
 
 @SuppressLint("DiscouragedApi")
 @Composable
-fun MyTripsPage(navController: NavController, vm: TripViewModel, uvm: UserViewModel) {
+fun MyTripsPage(
+    navController: NavController,
+    vm: TripViewModel,
+    uvm: UserViewModel,
+    rvm: ReviewViewModel
+) {
 
     // Get the currently logged-in user from the UserViewModel
     val loggedUser by uvm.loggedUser.collectAsState()
@@ -108,7 +114,10 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel, uvm: UserViewMo
                         navController,
                         vm,
                         vm.userAction == TripViewModel.UserAction.EDIT_TRIP,
-                        isDraft = false
+                        false,
+                        true,
+                        uvm,
+                        rvm
                     )
                 }
             } else {
@@ -142,7 +151,10 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel, uvm: UserViewMo
                         navController,
                         vm,
                         vm.userAction == TripViewModel.UserAction.EDIT_TRIP,
-                        isDraft = trip.isDraft
+                        trip.isDraft,
+                        true,
+                        uvm,
+                        rvm
                     )
                 }
             } else {
@@ -175,7 +187,7 @@ fun MyTripsPage(navController: NavController, vm: TripViewModel, uvm: UserViewMo
                 }
                 items(visibleJoinedTrips, key = { it.id }) { trip ->
                     vm.userAction = TripViewModel.UserAction.VIEW_TRIP
-                    TripCard(trip, navController, vm, false)
+                    TripCard(trip, navController, vm, false, false, true, uvm, rvm)
                 }
             } else {
                 // Show fallback message if no joined trips

@@ -194,6 +194,8 @@ class MainActivity : ComponentActivity() {
         // Initialize the UserViewModel with the UserFactory
         val viewModel: UserViewModel by viewModels { UserFactory }
 
+        val tripViewModel: TripViewModel by viewModels { Factory }
+
         // Handle deep link for email verification
         val data = intent?.data
         val mode = data?.getQueryParameter("mode")
@@ -248,7 +250,7 @@ class MainActivity : ComponentActivity() {
 
         // Set the content view with the main screen
         setContent {
-            MainScreen(viewModel)
+            MainScreen(viewModel, tripViewModel)
         }
 
     }
@@ -299,7 +301,7 @@ class MainActivity : ComponentActivity() {
 
 // Composable function to display the main screen with a top bar and bottom navigation
 @Composable
-fun MainScreen(viewModel: UserViewModel) {
+fun MainScreen(viewModel: UserViewModel, vm: TripViewModel) {
     val navController = rememberNavController()
     val notificationViewModel = NotificationViewModel()
     val userVerified by viewModel.userVerified.collectAsState()
@@ -336,7 +338,7 @@ fun MainScreen(viewModel: UserViewModel) {
         },
         bottomBar = {
             // Display the bottom navigation bar
-            BottomBar(navController)
+            BottomBar(navController, vm)
         }
     ) { innerPadding ->
         // Main content of the app, which includes the navigation graph
@@ -346,7 +348,7 @@ fun MainScreen(viewModel: UserViewModel) {
 
 // Composable function to display the bottom navigation bar
 @Composable
-fun BottomBar(navController: NavHostController) {
+fun BottomBar(navController: NavHostController, vm: TripViewModel) {
     // Define the navigation items for the bottom bar
     val items = listOf(
         NavItem("Explore", Icons.Filled.LocationOn, Screen.Explore.route, "explore_main"),
@@ -363,6 +365,9 @@ fun BottomBar(navController: NavHostController) {
         // Get the current destination from the back stack entry
         val currentDestination = navBackStackEntry?.destination
 
+        // MyTrips has notifications
+        val hasTripNotifications by vm.hasTripNotifications.collectAsState()
+
         // Create a navigation bar item for each item in the list
         items.forEach { item ->
             // Check if the current destination matches the item's root route
@@ -372,7 +377,22 @@ fun BottomBar(navController: NavHostController) {
 
             // Create a NavigationBarItem for the item
             NavigationBarItem(
-                icon = { Icon(item.icon, contentDescription = item.label) },
+                icon = {
+                    Box {
+                        Icon(item.icon, contentDescription = item.label)
+
+                        // Show red dot if this is the "My Trips" item and any trip has applied users
+                        if (item.label == "My Trips" && hasTripNotifications) {
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .align(Alignment.TopEnd)
+                                    .offset(x = 4.dp, y = (-4).dp)
+                                    .background(Color.Red, shape = CircleShape)
+                            )
+                        }
+                    }
+                },
                 label = { Text(item.label) },
                 selected = selected,
                 onClick = {
@@ -853,8 +873,18 @@ fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
                 viewModelStoreOwner = exploreGraphEntry,
                 factory = Factory
             )
+            // Create an instance of the UserViewModel using the Factory
+            val reviewViewModel: ReviewViewModel = viewModel(
+                viewModelStoreOwner = exploreGraphEntry,
+                factory = Factory
+            )
             // Pass the NavController and ViewModels to the ExplorePage composable
-            ExplorePage(navController = navController, vm = tripViewModel, userViewModel)
+            ExplorePage(
+                navController = navController,
+                vm = tripViewModel,
+                userViewModel,
+                reviewViewModel
+            )
         }
 
         // Define the composable for the trip details page
@@ -1016,8 +1046,18 @@ fun NavGraphBuilder.myTripsNavGraph(navController: NavController) {
                     viewModelStoreOwner = myTripGraphEntry,
                     factory = Factory
                 )
+                // Create an instance of the UserViewModel using the Factory
+                val reviewViewModel: ReviewViewModel = viewModel(
+                    viewModelStoreOwner = myTripGraphEntry,
+                    factory = Factory
+                )
                 // Pass the NavController and ViewModels to the MyTripsPage composable
-                MyTripsPage(navController = navController, vm = tripViewModel, uvm = userViewModel)
+                MyTripsPage(
+                    navController = navController,
+                    vm = tripViewModel,
+                    uvm = userViewModel,
+                    rvm = reviewViewModel
+                )
             }
 
         }

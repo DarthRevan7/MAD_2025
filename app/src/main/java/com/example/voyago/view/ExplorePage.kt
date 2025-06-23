@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -33,6 +34,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,6 +51,7 @@ import com.bumptech.glide.integration.compose.GlideImage
 import com.example.voyago.R
 import com.example.voyago.model.Trip
 import com.example.voyago.viewmodel.Factory
+import com.example.voyago.viewmodel.ReviewViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
 
@@ -58,7 +61,7 @@ import com.example.voyago.viewmodel.UserViewModel
 @Composable
 fun ExplorePage(
     navController: NavController, vm: TripViewModel = viewModel(factory = Factory),
-    uvm: UserViewModel
+    uvm: UserViewModel, rvm: ReviewViewModel
 ) {
 
     // Observe filtered trip list from the ViewModel
@@ -136,7 +139,7 @@ fun ExplorePage(
         } else {
             // Show each trip using TripCard
             items(filteredTrips) { trip ->
-                TripCard(trip, navController, vm, false, false)
+                TripCard(trip, navController, vm, false, false, false, uvm, rvm)
             }
         }
     }
@@ -150,8 +153,28 @@ fun TripCard(
     navController: NavController,
     vm: TripViewModel,
     edit: Boolean,
-    isDraft: Boolean = false // Whether it is in draft state, the default value is false
+    isDraft: Boolean = false, // Whether it is in draft state, the default value is false
+    owner: Boolean,
+    uvm: UserViewModel,
+    rvm: ReviewViewModel
 ) {
+
+    // Get the logged in user from the viewmodel
+    val loggedUser by uvm.loggedUser.collectAsState()
+
+    // Whether current user reviewed this trip
+    val reviewedTrips by rvm.reviewedMap.collectAsState()
+    val isReviewed = reviewedTrips[trip.id] == true
+
+    // Local Coroutine scope
+    val localScope = rememberCoroutineScope()
+
+    // Check if the trip is been reviewed by the user
+    LaunchedEffect(trip.id) {
+        if (!reviewedTrips.containsKey(trip.id)) {
+            rvm.checkIfReviewed(loggedUser.id, trip.id, localScope)
+        }
+    }
 
     //Clicking on the card the user goes to the page that show the details of the trip
     Card(
@@ -265,6 +288,23 @@ fun TripCard(
             } else if (!trip.canJoin() && !isDraft) { // If the trip it is not is a draft state and cannot be joined
                 //Banner that shows that nobody can join the trip anymore
                 BookedBanner(Modifier.align(Alignment.TopEnd)) // Align to top right corner
+            }
+
+            // If we are in "MyTrips" section
+            if (owner) {
+                val applications = trip.appliedUsers.isNotEmpty() && trip.creatorId == loggedUser.id
+                val review = trip.status == Trip.TripStatus.COMPLETED.toString() && !isReviewed
+                
+                // Red dot in bottom right corner of card
+                if (applications || review) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(8.dp)
+                            .size(12.dp)
+                            .background(color = Color.Red, shape = CircleShape)
+                    )
+                }
             }
         }
     }

@@ -8,9 +8,12 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.voyago.model.Review
 import com.example.voyago.model.ReviewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 
 class ReviewViewModel(val reviewModel: ReviewModel) : ViewModel() {
@@ -69,6 +72,17 @@ class ReviewViewModel(val reviewModel: ReviewModel) : ViewModel() {
     val tripReview = reviewModel.tripReview
     fun getTripReview(tripId: Int, userId: Int) =
         reviewModel.getTripReview(userId, tripId, viewModelScope)
+
+    //Get if trips are reviewed by a user
+    private val _reviewedMap = MutableStateFlow<Map<Int, Boolean>>(emptyMap())
+    val reviewedMap: StateFlow<Map<Int, Boolean>> = _reviewedMap
+
+    fun checkIfReviewed(userId: Int, tripId: Int, scope: CoroutineScope) {
+        scope.launch {
+            val review = reviewModel.getTripReview(userId, tripId, scope)
+            _reviewedMap.update { it + (tripId to (true)) }
+        }
+    }
 
     //Get users reviews by Logged IN user ID
     val usersReviews = reviewModel.usersTripReviews
