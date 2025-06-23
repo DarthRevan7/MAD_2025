@@ -10,6 +10,7 @@ import com.example.voyago.model.Trip.TripStatus
 import com.example.voyago.toCalendar
 import com.example.voyago.toStringDate
 import com.example.voyago.view.SelectableItem
+import com.example.voyago.view.isUriString
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
@@ -948,10 +949,13 @@ class TripModel {
 
                 // If a new photo is provided, upload it and get the URL
                 if (updatedTrip.photo != null) {
-                        Log.d("T2", "updatedTrip.photo=${updatedTrip.photo}")
-                        val photoUrl = uploadPhotoAndGetUrl(updatedTrip.photo!!.toUri(), updatedTrip.id.toString())
-                        tripToUpdate = tripToUpdate.copy(photo = photoUrl) // Update the trip with the new URL
-                        Log.d("T2", "Photo update success: URL = $photoUrl")
+                        if(updatedTrip.photo!!.isUriString())
+                        {
+                            Log.d("T2", "updatedTrip.photo=${updatedTrip.photo}")
+                            val photoUrl = uploadPhotoAndGetUrl(updatedTrip.photo!!.toUri(), updatedTrip.id.toString())
+                            tripToUpdate = tripToUpdate.copy(photo = photoUrl) // Update the trip with the new URL
+                            Log.d("T2", "Photo update success: URL = $photoUrl")
+                        }
                 }
 
 
