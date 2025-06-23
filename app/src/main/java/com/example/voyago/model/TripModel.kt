@@ -923,7 +923,7 @@ class TripModel {
 
     suspend fun uploadPhotoAndGetUrl(photoUri: Uri, tripId: String): String {
         return try {
-            val storageUrl = "trips/${tripId}/${System.currentTimeMillis()}"
+            val storageUrl = "trips/${tripId}/${tripId + "_cover"}"
             val storageRef = Firebase.storage.reference.child(storageUrl)
             storageRef.putFile(photoUri).await()
             return storageUrl // Get download URL
@@ -948,13 +948,10 @@ class TripModel {
 
                 // If a new photo is provided, upload it and get the URL
                 if (updatedTrip.photo != null) {
-                    if(updatedTrip.photo != originalTrip.photo)
-                    {
                         Log.d("T2", "updatedTrip.photo=${updatedTrip.photo}")
                         val photoUrl = uploadPhotoAndGetUrl(updatedTrip.photo!!.toUri(), updatedTrip.id.toString())
                         tripToUpdate = tripToUpdate.copy(photo = photoUrl) // Update the trip with the new URL
                         Log.d("T2", "Photo update success: URL = $photoUrl")
-                    }
                 }
 
 
