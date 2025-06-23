@@ -1,7 +1,5 @@
 package com.example.voyago.view
 
-
-import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.util.Log
@@ -46,87 +44,81 @@ import com.example.voyago.model.Trip
 import com.example.voyago.parseAndSetTime
 import com.example.voyago.toCalendar
 import com.example.voyago.toStringDate
-import java.util.Calendar
-import java.util.Locale
 import com.example.voyago.viewmodel.TripViewModel
 import com.google.firebase.Timestamp
+import java.util.Calendar
 import java.util.Date
+import java.util.Locale
 
-
-// 修复1970年日期问题 - 关键修复点用注释标记
-
+// Composable function that renders a UI for adding a new activity to a selected trip
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewActivity(navController: NavController, vm: TripViewModel) {
 
-    // 🔴 修复点1: 使用LaunchedEffect确保获取最新的Trip状态
+    // Safely observe the selected trip from ViewModel
+    // This ensures that any updates to the selectedTrip state are reflected here
     val selectedTrip by vm.selectedTrip
 
-    // 🔴 修复点2: 添加调试日志监控Trip状态
-    LaunchedEffect(selectedTrip.id) {
-        Log.d("NewActivity", "=== Trip State Debug ===")
-        Log.d("NewActivity", "Trip ID: ${selectedTrip.id}")
-        Log.d("NewActivity", "Trip title: ${selectedTrip.title}")
-        Log.d("NewActivity", "Start date seconds: ${selectedTrip.startDate.seconds}")
-        Log.d("NewActivity", "Start date: ${selectedTrip.startDate.toDate()}")
-        Log.d("NewActivity", "End date seconds: ${selectedTrip.endDate.seconds}")
-        Log.d("NewActivity", "Activities: ${selectedTrip.activities}")
-    }
-
+    // Checkbox state to mark if this is a group activity
     var isGroupActivityChecked by rememberSaveable { mutableStateOf(false) }
 
+    // State to hold the description of the activity
     var activityDescription by rememberSaveable { mutableStateOf("") }
+
+    // Tracks whether the user has interacted with the description field
     var descriptionTouched = remember { mutableStateOf(false) }
+
+    // Validation state: True if description is empty or doesn't contain letters
     val descriptionHasErrors by remember {
         derivedStateOf {
             descriptionTouched.value && (activityDescription.isBlank() || !activityDescription.any { it.isLetter() })
         }
     }
 
-    // 🔴 修复点3: 使用derivedStateOf确保日期始终基于最新的Trip状态
+    // Dynamically calculate default date based on trip's start date
     val defaultDate by remember {
         derivedStateOf {
             try {
-                Log.d("NewActivity", "Computing default date...")
-                Log.d("NewActivity", "Trip start date seconds: ${selectedTrip.startDate.seconds}")
-
                 when {
+                    // If the start date is valid formats it in a Calendar and returns it
                     selectedTrip.startDate.seconds > 0 -> {
                         val formatted = toCalendar(selectedTrip.startDate).toStringDate()
-                        Log.d("NewActivity", "Using trip start date: $formatted")
                         formatted
                     }
+                    // Otherwise gets the current date in Calendar format and returns it
                     else -> {
                         val currentDate = Calendar.getInstance().toStringDate()
-                        Log.d("NewActivity", "Using current date: $currentDate")
                         currentDate
                     }
                 }
             } catch (e: Exception) {
+                // Handles the exception
                 Log.e("NewActivity", "Error computing default date", e)
                 Calendar.getInstance().toStringDate()
             }
         }
     }
 
-    // 🔴 修复点4: 改变日期状态管理方式
+    // Track user-selected activity date
     var activityDate by rememberSaveable { mutableStateOf("") }
 
-    // 🔴 修复点5: 当defaultDate改变时更新activityDate（只在activityDate为空时）
+    // Automatically set the activity date to the default if not already selected
     LaunchedEffect(defaultDate) {
         if (activityDate.isEmpty()) {
             activityDate = defaultDate
-            Log.d("NewActivity", "Set activity date to: $activityDate")
         }
     }
 
+    // Time selected for the activity
     var selectedTime by rememberSaveable { mutableStateOf("09:00 AM") }
 
+    // Error state for date validation
     var showDateError by rememberSaveable { mutableStateOf(false) }
     var dateErrorMessage by rememberSaveable { mutableStateOf("") }
 
-    // 🔴 修复点6: 添加Trip有效性检查，防止无效数据
+    // Validate that the trip is valid before proceeding
     if (selectedTrip.id == 0 || selectedTrip.startDate.seconds <= 0) {
+        // If the trip is not valid show an error message
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -139,7 +131,10 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.error
             )
+
             Spacer(modifier = Modifier.height(16.dp))
+
+            // Go Back button
             Button(onClick = { navController.popBackStack() }) {
                 Text("Go Back")
             }
@@ -147,11 +142,13 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
         return
     }
 
+    // Root container box with background color
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF3EDF7))
     ) {
+        // For maintaining scroll position
         val listState = rememberLazyListState()
 
         LazyColumn(
@@ -167,9 +164,9 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
             // Group Activity selection
             item {
+                // Row with the "Group Activity" text and relative checkbox
                 Row(
                     modifier = Modifier
                         .fillMaxWidth(.8f)
@@ -177,8 +174,13 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                         .padding(horizontal = 16.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // "Group Activity" text
                     Text(text = "Group activity")
+
+                    // Spacer to move the checkbox to the right
                     Spacer(modifier = Modifier.weight(1f))
+
+                    // Checkbox for the "Group Activity"
                     Checkbox(
                         checked = isGroupActivityChecked,
                         onCheckedChange = { isGroupActivityChecked = it }
@@ -186,38 +188,42 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                 }
             }
 
-            // Select Date Button
+            // Select Date Section
             item {
+                // Get current context
                 val context = LocalContext.current
 
-                // 🔴 修复点7: 使用当前Trip状态计算初始Calendar，添加remember依赖
+                // Initialize calendar based on selectedTrip's start date
                 val initialCalendar = remember(selectedTrip.startDate.seconds) {
                     Calendar.getInstance().apply {
                         try {
-                            if (selectedTrip.startDate.seconds > 0) {
-                                time = selectedTrip.startDate.toDate()
-                                Log.d("NewActivity", "Initial calendar set to trip start: $time")
+                            // Set the start date as the initial selected date in the calendar if it is valid
+                            time = if (selectedTrip.startDate.seconds > 0) {
+                                selectedTrip.startDate.toDate()
                             } else {
-                                time = Date(0)
-                                Log.d("NewActivity", "Initial calendar set to current: $time")
+                                // Otherwise fallback to the current date
+                                Date(0)
                             }
                         } catch (e: Exception) {
+                            // Error handling: return and empty date
                             Log.e("NewActivity", "Error setting initial calendar", e)
                             time = Date()
                         }
                     }
                 }
 
+                // Get year, month, day from the selected date
                 val year = initialCalendar.get(Calendar.YEAR)
                 val month = initialCalendar.get(Calendar.MONTH)
                 val day = initialCalendar.get(Calendar.DAY_OF_MONTH)
 
-                // 🔴 修复点8: 添加remember依赖确保DatePickerDialog基于最新Trip状态
+                // DatePickerDialog should reflect latest selectedTrip state
                 val startDatePickerDialog = remember(selectedTrip.id) {
                     DatePickerDialog(
                         context,
                         { _: DatePicker, y: Int, m: Int, d: Int ->
                             try {
+                                // Get selected date
                                 val pickedCalendar = Calendar.getInstance().apply {
                                     set(Calendar.YEAR, y)
                                     set(Calendar.MONTH, m)
@@ -228,7 +234,7 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                                     set(Calendar.MILLISECOND, 0)
                                 }
 
-                                // 🔴 修复点9: 使用最新的Trip状态验证日期
+                                // Trip boundaries for validation
                                 val tripStartCal = Calendar.getInstance().apply {
                                     time = selectedTrip.startDate.toDate()
                                     set(Calendar.HOUR_OF_DAY, 0)
@@ -245,31 +251,49 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                                     set(Calendar.MILLISECOND, 999)
                                 }
 
-                                Log.d("NewActivity", "Validating date: ${pickedCalendar.time}")
-                                Log.d("NewActivity", "Trip range: ${tripStartCal.time} to ${tripEndCal.time}")
+                                // Validation for selected date
+                                val isValid =
+                                    !pickedCalendar.before(tripStartCal) && !pickedCalendar.after(
+                                        tripEndCal
+                                    )
 
-                                val isValid = !pickedCalendar.before(tripStartCal) && !pickedCalendar.after(tripEndCal)
-
+                                // If the selected date is valid
                                 if (isValid) {
+                                    // Format the date
                                     activityDate = "$d/${m + 1}/$y"
+
+                                    // Set the date error as False
                                     showDateError = false
+
+                                    // Set the error message as empty
                                     dateErrorMessage = ""
-                                    Log.d("NewActivity", "Date selected: $activityDate")
                                 } else {
+                                    // Otherwise
+                                    // Set the date error as True
                                     showDateError = true
-                                    dateErrorMessage = "Activity date must be within the trip period \n(${tripStartCal.toStringDate()} - ${tripEndCal.toStringDate()})"
-                                    Log.w("NewActivity", "Invalid date selected: $activityDate")
+
+                                    // Set the message error
+                                    dateErrorMessage =
+                                        "Activity date must be within the trip period \n(${tripStartCal.toStringDate()} - ${tripEndCal.toStringDate()})"
                                 }
                             } catch (e: Exception) {
+                                // Handle exception
                                 Log.e("NewActivity", "Error handling date selection", e)
+
+                                // Set the date error as True
                                 showDateError = true
+
+                                // Set the error message
                                 dateErrorMessage = "Error selecting date. Please try again."
                             }
-                        }, year, month, day
+                        }, year, month, day // Get year, month and date of the selected date
                     ).apply {
                         try {
-                            // 🔴 修复点10: 设置正确的日期限制
+                            // If the start date and the selected date are valid
                             if (selectedTrip.startDate.seconds > 0 && selectedTrip.endDate.seconds > 0) {
+                                // Set the correct date limit
+
+                                // Start date limit
                                 val tripStartCal = Calendar.getInstance().apply {
                                     time = selectedTrip.startDate.toDate()
                                     set(Calendar.HOUR_OF_DAY, 0)
@@ -278,6 +302,7 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                                     set(Calendar.MILLISECOND, 0)
                                 }
 
+                                // End date limit
                                 val tripEndCal = Calendar.getInstance().apply {
                                     time = selectedTrip.endDate.toDate()
                                     set(Calendar.HOUR_OF_DAY, 23)
@@ -286,19 +311,20 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                                     set(Calendar.MILLISECOND, 999)
                                 }
 
+                                // Set the date limits
                                 datePicker.minDate = tripStartCal.timeInMillis
                                 datePicker.maxDate = tripEndCal.timeInMillis
-
-                                Log.d("NewActivity", "Date picker limits set: ${tripStartCal.time} to ${tripEndCal.time}")
                             }
                         } catch (e: Exception) {
+                            // Handle exception
                             Log.e("NewActivity", "Error setting date picker limits", e)
                         }
                     }
                 }
 
+                // Button for the selection of the date
                 Button(
-                    onClick = { startDatePickerDialog.show() },
+                    onClick = { startDatePickerDialog.show() },     // Show the start date picker
                     modifier = Modifier
                         .fillMaxWidth(.8f)
                         .height(56.dp),
@@ -307,9 +333,10 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                         containerColor = Color(0xFFD6D0D9)
                     )
                 ) {
-                    Text("Selected Date: $activityDate")
+                    Text("Selected Date: $activityDate")    // Show the selected date
                 }
 
+                // If there is an error in the date, show the error message
                 if (showDateError) {
                     Text(
                         text = dateErrorMessage,
@@ -320,33 +347,47 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                 }
             }
 
-            // Select Time Button
+            // Select Time Section
             item {
+                // Get the local context
                 val context = LocalContext.current
+
+                // State for showing the time picker
                 val showTimePicker = remember { mutableStateOf(false) }
 
+                // If the state of the picker is True, show the Time Picker
                 if (showTimePicker.value) {
-                    // 🔴 修复点11: 增强时间解析错误处理
+                    //
                     val (currentHour, currentMinute) = remember {
                         try {
+                            // Get the current time
                             val cal = Calendar.getInstance()
                             cal.time = parseAndSetTime(cal, selectedTime).time
                             Pair(cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE))
                         } catch (e: Exception) {
+                            // In case of exception log it and set the default time "9:00"
                             Log.e("NewActivity", "Error parsing time", e)
-                            Pair(9, 0) // 默认9:00
+                            Pair(9, 0)
                         }
                     }
 
+                    // Time Picker Component
                     TimePickerDialog(
                         context,
                         { _: TimePicker, hourOfDay: Int, minute: Int ->
+                            // Get current hour and minute in a calendar object with the current date
                             val cal = Calendar.getInstance().apply {
                                 set(Calendar.HOUR_OF_DAY, hourOfDay)
                                 set(Calendar.MINUTE, minute)
                             }
+
+                            // Set the hour
                             val hour = cal.get(Calendar.HOUR)
+
+                            // Establish if it is AM or PM
                             val amPm = if (cal.get(Calendar.AM_PM) == Calendar.AM) "AM" else "PM"
+
+                            // Format the selected time
                             selectedTime = String.format(
                                 Locale.US,
                                 "%02d:%02d %s",
@@ -354,8 +395,9 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                                 minute,
                                 amPm
                             )
+
+                            // Close the Time Picker setting its state as false
                             showTimePicker.value = false
-                            Log.d("NewActivity", "Time selected: $selectedTime")
                         },
                         currentHour,
                         currentMinute,
@@ -363,8 +405,9 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                     ).show()
                 }
 
+                // Button for the selection of the Time
                 Button(
-                    onClick = { showTimePicker.value = true },
+                    onClick = { showTimePicker.value = true },  // Show the Time Picker
                     modifier = Modifier
                         .fillMaxWidth(0.8f)
                         .height(56.dp),
@@ -373,12 +416,13 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                         containerColor = Color(0xFFD6D0D9)
                     )
                 ) {
-                    Text("Select Time: $selectedTime")
+                    Text("Select Time: $selectedTime")      // Show the selected time
                 }
             }
 
-            // Activity Description
+            // Activity Description section
             item {
+                // Validate real-time the activity description input field
                 ValidatingInputTextField(
                     activityDescription,
                     {
@@ -392,13 +436,14 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
 
             // Cancel Button and Add Button
             item {
+                // row that contains the Cancel and Add Button
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 24.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    // Cancel Button
+                    // Cancel Button that send you back in the stack
                     Button(
                         onClick = { navController.popBackStack() },
                         modifier = Modifier
@@ -408,45 +453,38 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                         Text("Cancel")
                     }
 
+                    // Space between the buttons
                     Spacer(modifier = Modifier.width(16.dp))
 
                     // Add Button
                     Button(
                         onClick = {
-                            // 🔴 修复点12: 添加详细的调试日志
-                            Log.d("NewActivity", "=== Add Button Clicked ===")
-                            Log.d("NewActivity", "Activity date: $activityDate")
-                            Log.d("NewActivity", "Selected time: $selectedTime")
-                            Log.d("NewActivity", "Trip ID: ${selectedTrip.id}")
-                            Log.d("NewActivity", "Trip start: ${selectedTrip.startDate.toDate()}")
-                            Log.d("NewActivity", "Trip end: ${selectedTrip.endDate.toDate()}")
-
-                            // 🔴 修复点13: 增强日期解析和验证
+                            // Final validation before adding activity
                             val parsedDate = try {
+                                // Format the date to a Calendar
                                 activityDate.toCalendar()
                             } catch (e: Exception) {
+                                // Otherwise log the exception and return null
                                 Log.e("NewActivity", "Date parsing failed: $activityDate", e)
                                 null
                             }
 
+                            // If the date is null
                             if (parsedDate == null) {
+                                // Set the date error as True
                                 showDateError = true
+
+                                // Set the message error
                                 dateErrorMessage = "Invalid date format. Please select a date."
+
+                                // Return the button
                                 return@Button
                             }
 
+                            // Assign the date to ActivityCalendar
                             val activityCalendar = parsedDate
-//                            Calendar.getInstance().apply {
-//                                time = parsedDate.time
-//                                set(Calendar.HOUR_OF_DAY, 0)
-//                                set(Calendar.MINUTE, 0)
-//                                set(Calendar.SECOND, 0)
-//                                set(Calendar.MILLISECOND, 0)
-//                            }
 
-                            Log.d("NewActivity", "Activity calendar: ${activityCalendar.time}")
-
-                            // 🔴 修复点14: 使用当前Trip状态进行最终验证
+                            // Define limit for start date
                             val tripStartCal = Calendar.getInstance().apply {
                                 time = selectedTrip.startDate.toDate()
                                 set(Calendar.HOUR_OF_DAY, 0)
@@ -455,6 +493,7 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                                 set(Calendar.MILLISECOND, 0)
                             }
 
+                            // Define limit for the end date
                             val tripEndCal = Calendar.getInstance().apply {
                                 time = selectedTrip.endDate.toDate()
                                 set(Calendar.HOUR_OF_DAY, 23)
@@ -463,39 +502,58 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                                 set(Calendar.MILLISECOND, 999)
                             }
 
-                            val isDateValid = !activityCalendar.before(tripStartCal) && !activityCalendar.after(tripEndCal)
+                            // Define variable that validates the date
+                            val isDateValid =
+                                !activityCalendar.before(tripStartCal) && !activityCalendar.after(
+                                    tripEndCal
+                                )
 
-                            Log.d("NewActivity", "Date validation result: $isDateValid")
-
+                            // If the date is not valid
                             if (!isDateValid) {
+                                // Set the date error as true
                                 showDateError = true
+
+                                // Set the date error message
                                 dateErrorMessage = "Activity date must be within the trip period"
+
+                                // Return the button
                                 return@Button
                             }
 
+                            // Set that the user has interacted with the description field
                             descriptionTouched.value = true
 
+                            // if the date and the description of the activity don't have errors
                             if (!showDateError && !descriptionHasErrors) {
-                                // 🔴 修复点15: 改进活动ID生成逻辑
-                                val existingIds = selectedTrip.activities.values.flatten().map { it.id }.toSet()
-                                var newActivityId = if (existingIds.isEmpty()) 1 else (existingIds.maxOrNull() ?: 0) + 1
+                                // Collect all existing activity IDs for the current trip
+                                val existingIds =
+                                    selectedTrip.activities.values.flatten().map { it.id }.toSet()
+
+                                // Generate a new unique ID for the new activity
+                                var newActivityId =
+                                    if (existingIds.isEmpty()) 1 else (existingIds.maxOrNull()
+                                        ?: 0) + 1
+
+                                // Ensure the generated ID is truly unique
+                                // It's unlikely but possible that the newActivityId already exists,
+                                // so we increment it until we find an unused one
                                 while (existingIds.contains(newActivityId)) {
                                     newActivityId++
                                 }
 
+                                // Create a new Trip.Activity object with all the entered data
                                 val newActivity = Trip.Activity(
-                                    id = newActivityId,
-                                    date = Timestamp(activityCalendar.time),
-                                    time = selectedTime,
-                                    isGroupActivity = isGroupActivityChecked,
-                                    description = activityDescription
+                                    id = newActivityId,                         // The unique ID we just computed
+                                    date = Timestamp(activityCalendar.time),    // Convert the selected Calendar to a Timestamp
+                                    time = selectedTime,                        // User-selected time string
+                                    isGroupActivity = isGroupActivityChecked,   // Boolean flag from checkbox
+                                    description = activityDescription           // Text description of the activity
                                 )
 
-                                // 🔴 修复点16: 添加详细的活动创建日志
-                                Log.d("NewActivity", "Creating activity: $newActivity")
-                                Log.d("NewActivity", "Activity date timestamp: ${newActivity.date.seconds}")
-
+                                // Add the new activity to the ViewModel
                                 vm.addActivityToTrip(newActivity)
+
+                                // Navigate back to the previous screen
                                 navController.popBackStack()
                             }
                         },
