@@ -8,7 +8,6 @@ import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.createSavedStateHandle
@@ -24,7 +23,6 @@ import com.example.voyago.model.User
 import com.example.voyago.model.UserModel
 import com.example.voyago.view.SelectableItem
 import com.google.firebase.Timestamp
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,17 +31,8 @@ import java.util.Calendar
 
 class TripViewModel(
     val tripModel: TripModel,
-    val userModel: UserModel,
-    val reviewModel: ReviewModel,
-    private val savedStateHandle: SavedStateHandle,
+    val userModel: UserModel
 ) : ViewModel() {
-    private val auth = FirebaseAuth.getInstance()
-
-    fun getCurrentUserId(): Int {
-        return auth.currentUser?.uid?.hashCode()?.let {
-            if (it < 0) -it else it
-        } ?: -1
-    }
 
     //Use in the new Trip interface
     var newTrip: Trip = Trip()
@@ -69,13 +58,6 @@ class TripViewModel(
 
     //Identify what the user is doing
     var userAction by mutableStateOf(UserAction.NOTHING)
-//    var userAction by mutableStateOf(savedStateHandle["userAction"] ?: UserAction.NOTHING)
-//        private set
-
-//    fun setUserAction(action: UserAction) {
-//        userAction = action
-//        savedStateHandle["userAction"] = action
-//    }
 
     enum class UserAction {
         EDIT_TRIP, CREATE_TRIP, VIEW_TRIP, NOTHING, SEARCHING, FILTER_SELECTION, VIEW_OTHER_TRIP, EDIT_ACTIVITY
@@ -212,7 +194,7 @@ class TripViewModel(
     }
 
     //Apply selected filters
-    fun applyFilters(loggedUserId : Int) = tripModel.filterFunction(
+    fun applyFilters(loggedUserId: Int) = tripModel.filterFunction(
         allPublishedList,
         filterDestination,
         filterMinPrice,
@@ -291,6 +273,26 @@ class TripViewModel(
     }
 
     //MY TRIPS
+
+    private val _hasTripNotifications = MutableStateFlow(false)
+    val hasTripNotifications: StateFlow<Boolean> = _hasTripNotifications
+
+    fun evaluateTripNotifications(
+        trips: List<Trip>,
+        userId: Int,
+        reviewedMap: Map<Int, Boolean>
+    ) {
+        val hasNotifications = trips.any { trip ->
+            val hasApplications = trip.appliedUsers.isNotEmpty() && trip.creatorId == userId
+            val needsReview =
+                trip.status == Trip.TripStatus.COMPLETED.toString() && !(reviewedMap[trip.id]
+                    ?: true)
+            hasApplications || needsReview
+        }
+        _hasTripNotifications.value = hasNotifications
+    }
+
+    // Edit a Trip
     fun editTrip(trip: Trip, onResult: (Boolean) -> Unit) {
         editExistingTrip(trip, onResult)
     }
@@ -316,7 +318,7 @@ class TripViewModel(
     fun addImportedTrip(
         photo: String?, title: String, destination: String, startDate: Calendar,
         endDate: Calendar, estimatedPrice: Double, groupSize: Int,
-        activities: Map<String, List<Trip.Activity>>, typeTravel: List<String>, creatorId: Int,
+        activities: Map<String, List<Activity>>, typeTravel: List<String>, creatorId: Int,
         published: Boolean, onResult: (Boolean, Trip?) -> Unit
     ) {
         tripModel.importTrip(
@@ -386,7 +388,6 @@ class TripViewModel(
 
     //Mutable list of applications
     private val _applications = MutableStateFlow<Map<User, Trip.JoinRequest>>(emptyMap())
-    val applications: StateFlow<Map<User, Trip.JoinRequest>> = _applications
 
     // Participants with spots taken
     private val _tripParticipants = MutableStateFlow<Map<User, Trip.JoinRequest>>(emptyMap())
@@ -544,22 +545,11 @@ class TripViewModel(
         }
     }
 
-    //Add new trip to the database
-    fun addNewTrip(newTrip: Trip, onResult: (Boolean, Trip?) -> Unit) {
-        tripModel.createNewTrip(newTrip) { success, createdTrip ->
-            if (success && createdTrip != null) {
-                _selectedTrip.value = createdTrip
-            }
-            onResult(success, createdTrip)
-        }
-    }
-
-
     //Edit an already existing trip in the database
     fun editExistingTrip(trip: Trip, onResult: (Boolean) -> Unit) {
         Log.d("T1", "vm.editTrip.act=${editTrip.activities.values}")
         Log.d("T1", "updatedTrip.act=${trip.activities.values}")
-        tripModel.editTrip(trip,selectedTrip.value, viewModelScope) { success ->
+        tripModel.editTrip(trip, selectedTrip.value, viewModelScope) { success ->
             if (success) {
                 _selectedTrip.value = trip
             }
@@ -569,7 +559,7 @@ class TripViewModel(
 
 
     //Delete activity from a specific trip
-    fun deleteActivity(activity: Trip.Activity) {
+    fun deleteActivity(activity: Activity) {
         Log.d("TripViewModel", "Deleting activity: ${activity.id}")
 
         when (userAction) {
@@ -715,7 +705,11 @@ class TripViewModel(
                                 val uploadSuccess = createdTrip.setPhoto(imageUri)
                                 if (uploadSuccess) {
                                     // 图片上传成功，更新Trip
-                                    tripModel.editTrip(createdTrip,createdTrip, viewModelScope) { updateSuccess ->
+                                    tripModel.editTrip(
+                                        createdTrip,
+                                        createdTrip,
+                                        viewModelScope
+                                    ) { updateSuccess ->
                                         if (updateSuccess) {
                                             onResult(true, createdTrip, null)
                                         } else {
@@ -746,26 +740,8 @@ class TripViewModel(
         }
     }
 
-    fun refreshSelectedTrip() {
-        when (userAction) {
-            UserAction.CREATE_TRIP -> {
-                _selectedTrip.value = newTrip
-                Log.d("TripViewModel", "Refreshed selected trip to newTrip: ${newTrip.id}")
-            }
-
-            UserAction.EDIT_TRIP -> {
-                _selectedTrip.value = editTrip
-                Log.d("TripViewModel", "Refreshed selected trip to editTrip: ${editTrip.id}")
-            }
-
-            else -> {
-                Log.d("TripViewModel", "Keeping current selected trip: ${_selectedTrip.value.id}")
-            }
-        }
-    }
-
     // 🔴 修复点18: 改进addActivityToTrip方法，确保状态同步
-    fun addActivityToTrip(activity: Trip.Activity) {
+    fun addActivityToTrip(activity: Activity) {
         Log.d("TripViewModel", "Adding activity: $activity")
         Log.d("TripViewModel", "Current user action: $userAction")
 
@@ -835,7 +811,7 @@ object Factory : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         return when {
             modelClass.isAssignableFrom(TripViewModel::class.java) ->
-                TripViewModel(tripModel, userModel, reviewModel, savedStateHandle) as T
+                TripViewModel(tripModel, userModel) as T
 
             modelClass.isAssignableFrom(UserViewModel::class.java) ->
                 UserViewModel(userModel) as T
