@@ -29,10 +29,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.voyago.model.FirebaseChatMessage
 import com.example.voyago.model.User
 import com.example.voyago.viewmodel.ChatViewModel
+import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -49,7 +51,9 @@ fun SingleChatScreen(
     chatViewModel: ChatViewModel,
     roomId: String,
     uvm: UserViewModel,
-    onBack: () -> Unit // Add a lambda for navigation
+    tripViewModel: TripViewModel,
+    navController: NavController,
+    onBack: () -> Unit
 ) {
     val messages by chatViewModel.messages.collectAsState()
     val user by uvm.loggedUser.collectAsState()
@@ -65,6 +69,8 @@ fun SingleChatScreen(
 
     val chatRoomNames by chatViewModel.chatRoomNames.collectAsState()
     val chatRoomName = chatRoomNames[roomId] ?: "Chat"
+    val chatRoomTypes by chatViewModel.chatRoomTypes.collectAsState()
+    val chatRoomType = chatRoomTypes[roomId] ?: "private"
 
     var newMessage by remember { mutableStateOf("") }
 
@@ -85,11 +91,24 @@ fun SingleChatScreen(
                     tint = Color.White
                 )
             }
+            val coroutineScope = rememberCoroutineScope()
+
             Text(
                 text = chatRoomName.ifBlank { "Chat" },
                 style = MaterialTheme.typography.titleMedium,
                 color = Color.White,
-                modifier = Modifier.padding(start = 8.dp)
+                modifier = Modifier
+                    .padding(start = 8.dp)
+                    .clickable(enabled = chatRoomType == "group") {
+                        if (chatRoomType == "group") {
+                            coroutineScope.launch {
+                                val trip = tripViewModel.getTripByTitle(chatRoomName)
+                                if (trip != null) {
+                                    navController.navigate("chat_details/${trip.id}")
+                                }
+                            }
+                        }
+                    }
             )
         }
 

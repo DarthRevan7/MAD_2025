@@ -53,6 +53,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -86,11 +87,13 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.example.voyago.R
 import com.example.voyago.model.NavItem
+import com.example.voyago.model.Trip
 import com.example.voyago.model.User
 import com.example.voyago.model.UserModel
 import com.example.voyago.view.ActivitiesList
 import com.example.voyago.view.ArticleDetailScreen
 import com.example.voyago.view.ArticleSearchScreen
+import com.example.voyago.view.ChatDetails
 import com.example.voyago.view.ChatListScreen
 import com.example.voyago.view.CompleteAccount
 import com.example.voyago.view.CreateAccount2Screen
@@ -1473,14 +1476,47 @@ fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
                 factory = ChatFactory
             )
 
+            // Create instances of the TripViewModel using the Factory
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = Factory
+            )
+
             SingleChatScreen(
                 chatViewModel = chatViewModel,
                 roomId = roomId,
                 uvm = userViewModel,
+                tripViewModel = tripViewModel,
+                navController = navController,
                 onBack = { navController.popBackStack() }
             )
 
         }
+
+        composable(
+            route = "chat_details/{tripId}",
+            arguments = listOf(navArgument("tripId") { type = NavType.StringType })
+        ) { entry ->
+            val tripId = entry.arguments?.getString("tripId")
+
+            val chatGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Chats.route)
+            }
+
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = Factory
+            )
+
+            if (tripId != null){
+                ChatDetails(
+                    tripId = tripId,
+                    tripViewModel = tripViewModel)
+            }
+
+
+        }
+
     }
 
 
@@ -1749,10 +1785,18 @@ fun NavGraphBuilder.profileNavGraph(navController: NavHostController) {
                 factory = ChatFactory
             )
 
+            // Create instances of the TripViewModel using the Factory
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = profileGraphEntry,
+                factory = Factory
+            )
+
             SingleChatScreen(
                 chatViewModel = chatViewModel,
                 roomId = roomId,
                 uvm = userViewModel,
+                tripViewModel = tripViewModel,
+                navController = navController,
                 onBack = { navController.popBackStack() }
             )
         }
