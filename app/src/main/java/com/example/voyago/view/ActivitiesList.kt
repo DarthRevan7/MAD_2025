@@ -313,8 +313,9 @@ fun ActivitiesListContent(trip: Trip?, vm: TripViewModel, navController: NavCont
             )
         } else {
             // Iterate through each sorted day with activities
-            sortedDays.forEach { day ->
+            sortedDays.forEachIndexed { index,day ->
 
+                val dayIndex = index + 1  // 简单地基于排序后的位置
                 // Convert string day key to Calendar
                 val activityCalendar = day.toCalendar()
 
@@ -322,7 +323,7 @@ fun ActivitiesListContent(trip: Trip?, vm: TripViewModel, navController: NavCont
                 val currentTripStartCalendar = trip.startDateAsCalendar()
 
                 // Calculate which "day number" of the trip this date represents (e.g., Day 1, Day 2, etc.)
-                val dayIndex = calculateDayIndex(activityCalendar, currentTripStartCalendar)
+              //  val dayIndex = calculateDayIndex(activityCalendar, currentTripStartCalendar)
 
                 // Prepare formatter to sort activities by time of day
                 val formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.US)
@@ -420,18 +421,18 @@ fun ActivitiesListContent(trip: Trip?, vm: TripViewModel, navController: NavCont
 }
 
 
-// Calculates the day index (starting from Day 1) of an activity relative to the trip's start date
+
 fun calculateDayIndex(activityCalendar: Calendar, tripStartCalendar: Calendar): Int {
-    // Normalize the activity date by resetting time fields to midnight (00:00)
+    // 标准化活动日期（设置为午夜）
     val activityDate = Calendar.getInstance().apply {
         timeInMillis = activityCalendar.timeInMillis
-        set(Calendar.HOUR_OF_DAY, 0)    // Set hour to 0
-        set(Calendar.MINUTE, 0)         // Set minute to 0
-        set(Calendar.SECOND, 0)         // Set second to 0
-        set(Calendar.MILLISECOND, 0)    // Set millisecond to 0
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
     }
 
-    // Normalize the trip start date to midnight for consistent comparison
+    // 标准化旅行开始日期（设置为午夜）
     val tripStartDate = Calendar.getInstance().apply {
         timeInMillis = tripStartCalendar.timeInMillis
         set(Calendar.HOUR_OF_DAY, 0)
@@ -440,13 +441,28 @@ fun calculateDayIndex(activityCalendar: Calendar, tripStartCalendar: Calendar): 
         set(Calendar.MILLISECOND, 0)
     }
 
-    // Calculate the difference in time (milliseconds) between activity and trip start
+    // 计算日期差（以天为单位）
     val diffInMillis = activityDate.timeInMillis - tripStartDate.timeInMillis
+    val diffInDays = diffInMillis / (24 * 60 * 60 * 1000)
 
-    // Convert the time difference from milliseconds to days
-    val diffInDays = diffInMillis / (24 * 60 * 60 * 1000) // 1 day = 86400000 ms
-
-    // Add 1 so day count starts from 1 (not 0). E.g., same day = Day 1
+    // 返回相对天数（从第1天开始）
     return (diffInDays + 1).toInt()
 }
 
+fun calculateDayIndexFromTrip(trip: Trip, activityDateKey: String): Int {
+    // 获取旅行中所有活动日期的排序列表
+    val sortedDays = trip.activities.keys.sortedBy { key ->
+        val calendar = key.toCalendar()
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        calendar
+    }
+
+    // 找到当前活动日期在排序列表中的索引位置
+    val dayIndex = sortedDays.indexOf(activityDateKey)
+
+    // 返回基于1的索引（第1天、第2天等）
+    return if (dayIndex >= 0) dayIndex + 1 else 1
+}
