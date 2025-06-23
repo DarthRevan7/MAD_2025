@@ -5,9 +5,21 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,8 +27,23 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,24 +52,19 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.text.isDigitsOnly
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.voyago.model.Article
 import com.example.voyago.viewmodel.ArticleViewModel
+import com.example.voyago.viewmodel.NotificationViewModel
 import com.example.voyago.viewmodel.UserViewModel
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.core.text.isDigitsOnly
-import coil3.compose.AsyncImage
-import com.example.voyago.viewmodel.NotificationViewModel
 
-// 在 NewArticle.kt 中的修改部分
-
-
+// View for creating a new article
 @Composable
 fun CreateArticleScreen(
     navController: NavController,
@@ -50,32 +72,41 @@ fun CreateArticleScreen(
     userViewModel: UserViewModel,
     nvm: NotificationViewModel
 ) {
-    var articleTitle by remember { mutableStateOf("") }
-    var articleContent by remember { mutableStateOf("") }
+    // States for title and content input fields
+    var articleTitle by remember { mutableStateOf("") }         // Article Title input
+    var articleContent by remember { mutableStateOf("") }       // Article Content input
 
+    // Validation check flags (the content is valid)
     var articleContentCheck by remember { mutableStateOf(false) }
     var articleTitleCheck by remember { mutableStateOf(false) }
+
+    // Track whether the user has interacted with the fields
     var articleContentTouched by remember { mutableStateOf(false) }
     var articleTitleTouched by remember { mutableStateOf(false) }
 
-    // 🔥 修改为支持多张图片
+    // State to hold selected images (multiple image support)
     var selectedImageUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
 
-    var isLoading by remember { mutableStateOf(false) }
+    // State for loading UI and error handling
+    var isLoading by remember { mutableStateOf(false) }     // Controls loading state during article upload
     var showError by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
 
+    // For launching suspend functions in Compose
     val coroutineScope = rememberCoroutineScope()
+
+    // Get current logged-in user from ViewModel
     val currentUser by userViewModel.loggedUser.collectAsState()
 
-    // 🔥 修改图片选择器支持多选（不限数量）
+    // ActivityResultLauncher for selecting multiple images
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetMultipleContents()
     ) { uris: List<Uri> ->
-        // 🔥 不限制图片数量
+        // Save selected images into state
         selectedImageUris = uris
     }
 
+    // Main layout container
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -83,14 +114,19 @@ fun CreateArticleScreen(
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        // Title Input
+        // Article Title Input Field
         OutlinedTextField(
             value = articleTitle,
-            onValueChange = { item -> articleTitle = item; articleTitleTouched = true;
-                articleTitleCheck = item.isNotBlank() && !item.isDigitsOnly() && item.any{ it.isLetter() || it.isDigit()}},
+            onValueChange = { item ->
+                articleTitle = item    // Update the input
+                articleTitleTouched = true     // Set that the user interacted with the field
+                // Validation: non-empty, not numeric-only, must contain letter or digit
+                articleTitleCheck =
+                    item.isNotBlank() && !item.isDigitsOnly() && item.any { it.isLetter() || it.isDigit() }
+            },
             label = { Text("Article Title") },
             placeholder = { Text("Input") },
-            isError = articleTitleTouched && !articleTitleCheck,
+            isError = articleTitleTouched && !articleTitleCheck,    // Error check
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
@@ -99,10 +135,10 @@ fun CreateArticleScreen(
                 unfocusedBorderColor = Color(0xFFCCC2DC),
                 focusedContainerColor = Color(0xFFE8E0E9),
                 unfocusedContainerColor = Color(0xFFE8E0E9)
-                //errorBorderColor = Color.Red
             ),
             shape = RoundedCornerShape(8.dp),
             trailingIcon = {
+                // Show a clear icon when the title is not empty
                 if (articleTitle.isNotEmpty()) {
                     IconButton(onClick = { articleTitle = "" }) {
                         Icon(
@@ -115,20 +151,28 @@ fun CreateArticleScreen(
             }
         )
 
-        if(!articleTitleCheck && articleTitleTouched) {
+        // If there aren't errors in the title
+        if (!articleTitleCheck && articleTitleTouched) {
+            // Add a little space
             Spacer(modifier = Modifier.height(1.dp))
+
+            // Show a message error
             Text("Empty or invalid field!", color = Color.Red)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Content Input
+        // Article Content Input Field
         OutlinedTextField(
             value = articleContent,
-            onValueChange = { item -> articleContent = item; articleContentTouched = true;
-                articleContentCheck = item.isNotBlank() && !item.isDigitsOnly() },
-            placeholder = { Text("Write here your article") },
-            isError = articleContentTouched && !articleContentCheck,
+            onValueChange = { item ->
+                articleContent = item     // Update the input
+                articleContentTouched = true        // Set that the user interacted with the field
+                articleContentCheck =
+                    item.isNotBlank() && !item.isDigitsOnly() // Validation check on the field
+            },
+            placeholder = { Text("Write here your article") }, // Placeholder text
+            isError = articleContentTouched && !articleContentCheck,    // Error check
             modifier = Modifier
                 .fillMaxWidth()
                 .height(400.dp),
@@ -141,16 +185,20 @@ fun CreateArticleScreen(
             shape = RoundedCornerShape(8.dp)
         )
 
-        if(!articleContentCheck && articleContentTouched) {
+        // If there aren't errors in the article content
+        if (!articleContentCheck && articleContentTouched) {
+            // Add a little space
             Spacer(modifier = Modifier.height(1.dp))
+
+            // Show message error
             Text("Empty or invalid field!", color = Color.Red)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 🔥 修改按钮文字，移除数量限制
+        // Image Picker Button
         Button(
-            onClick = { imagePickerLauncher.launch("image/*") },
+            onClick = { imagePickerLauncher.launch("image/*") },    // Opens image selection
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
@@ -160,38 +208,46 @@ fun CreateArticleScreen(
             ),
             shape = RoundedCornerShape(12.dp)
         ) {
+            // Add Icon
             Icon(
                 Icons.Default.Add,
                 contentDescription = "Add",
                 modifier = Modifier.size(24.dp)
             )
+
+            // Spacer between icon and text
             Spacer(modifier = Modifier.width(8.dp))
+
+            // Add images text
             Text(
-                "Add Images", // 🔥 移除 "(Max 3)" 限制
+                "Add Images",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Medium
             )
         }
 
-        // 🔥 显示选中的图片数量和预览
+        // Images Preview and Count
         if (selectedImageUris.isNotEmpty()) {
+
+            // Text with the number of images selected
             Text(
                 "${selectedImageUris.size} image(s) selected ✓",
                 color = Color(0xFF4CAF50),
                 modifier = Modifier.padding(top = 8.dp)
             )
 
-            // 🔥 改进的图片预览，支持多行显示
+            // Grid of selected images
             LazyVerticalGrid(
-                columns = GridCells.Fixed(4), // 每行显示4张图片
+                columns = GridCells.Fixed(4), // Display 4 images per line
                 modifier = Modifier
                     .padding(top = 8.dp)
-                    .heightIn(max = 200.dp), // 最大高度
+                    .heightIn(max = 200.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(selectedImageUris) { uri ->
                     Box {
+                        // Async load each image
                         AsyncImage(
                             model = uri,
                             contentDescription = "Selected image",
@@ -201,7 +257,7 @@ fun CreateArticleScreen(
                             contentScale = ContentScale.Crop
                         )
 
-                        // 🔥 添加删除按钮
+                        // Remove image button
                         IconButton(
                             onClick = {
                                 selectedImageUris = selectedImageUris - uri
@@ -214,6 +270,7 @@ fun CreateArticleScreen(
                                     CircleShape
                                 )
                         ) {
+                            // Remove image Icon
                             Icon(
                                 Icons.Default.Close,
                                 contentDescription = "Remove image",
@@ -228,12 +285,12 @@ fun CreateArticleScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Action Buttons
+        // Bottom Action Buttons Row (Cancel & Publish)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Cancel Button
+            // Cancel button (navigate back)
             Button(
                 onClick = { navController.popBackStack() },
                 modifier = Modifier
@@ -252,19 +309,20 @@ fun CreateArticleScreen(
                 )
             }
 
-            // Publish Button
+            // Publish button
             Button(
                 onClick = {
+                    // If there aren't errors in the title and the content of the article
                     if (articleTitleCheck && articleContentCheck) {
+                        // Set isLoading as True
                         isLoading = true
+
+                        // Launch a coroutine
                         coroutineScope.launch {
                             try {
-                                Log.d("CreateArticle", "Starting to publish article...")
-
-                                // 🔥 上传多张图片
+                                // Upload each selected image and get its storage path
                                 val photoPaths = selectedImageUris.mapNotNull { uri ->
                                     try {
-                                        Log.d("CreateArticle", "Uploading image...")
                                         val imageFileName = "${UUID.randomUUID()}.jpg"
                                         val imageRef = FirebaseStorage.getInstance()
                                             .reference
@@ -276,28 +334,26 @@ fun CreateArticleScreen(
                                         "articles/$imageFileName"
                                     } catch (e: Exception) {
                                         Log.e("CreateArticle", "Image upload failed", e)
-                                        null
+                                        null// Ignore failed uploads
                                     }
                                 }
 
-                                // 🔥 构建 Article 对象
+                                // Create Article object with uploaded image paths
                                 val newArticle = Article(
                                     id = null,
                                     title = articleTitle,
                                     text = articleContent,
                                     authorId = currentUser.id,
                                     date = System.currentTimeMillis(),
-                                    photo = photoPaths, // 🔥 传递图片路径列表
+                                    photo = photoPaths,
                                     tags = emptyList(),
                                     viewCount = 0
                                 )
 
-                                Log.d("CreateArticle", "Publishing article: $newArticle")
-
+                                // Publish the article via ViewModel
                                 val publishedArticle = articleViewModel.publishArticle(newArticle)
 
-                                Log.d("CreateArticle", "Article published successfully")
-
+                                // Notify other users about new article
                                 val title = "${newArticle.title}"
                                 val body = "New article!"
                                 val notificationType = "ARTICLE"
@@ -315,18 +371,28 @@ fun CreateArticleScreen(
                                     }
                                 }
 
+                                // Navigate back after success
                                 navController.popBackStack()
 
                             } catch (e: Exception) {
                                 Log.e("CreateArticle", "Failed to publish article", e)
+
+                                // Set Error Message
                                 errorMessage = "Failed to publish article: ${e.message}"
+
+                                // Show Error Message
                                 showError = true
                             } finally {
+                                // Set isLoading as False
                                 isLoading = false
                             }
                         }
                     } else {
+                        // Form validation failed
+                        // Set Error Message
                         errorMessage = "Please fill in all required fields"
+
+                        // Show Error Message
                         showError = true
                     }
                 },
@@ -340,12 +406,15 @@ fun CreateArticleScreen(
                 shape = RoundedCornerShape(28.dp),
                 enabled = !isLoading
             ) {
+                // If isLoading is True
                 if (isLoading) {
+                    // Show the Loading indicator on the button
                     CircularProgressIndicator(
                         color = Color.White,
                         modifier = Modifier.size(24.dp)
                     )
                 } else {
+                    // Otherwise show the "Publish" text on the button
                     Text(
                         "Publish",
                         fontSize = 18.sp,
