@@ -47,21 +47,21 @@ import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RetrievePassword(
-    navController: NavController,
-    onSendClick: (String) -> Unit = { _ -> }
-) {
+fun RetrievePassword(navController: NavController) {
+
+    // State variables for user input and UI feedback
     var email by remember { mutableStateOf("") }
     var emailTouched by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
 
+    // Outer container with background color
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF5F5F5))
     ) {
 
-        // Main Content
+        // Inner content container
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -70,7 +70,7 @@ fun RetrievePassword(
         ) {
             Spacer(modifier = Modifier.height(60.dp))
 
-            // Profile Icon
+            // User icon placeholder
             Box(
                 modifier = Modifier
                     .size(80.dp)
@@ -90,7 +90,7 @@ fun RetrievePassword(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Title
+            // Title text
             Text(
                 text = "Retrieve your password",
                 fontSize = 24.sp,
@@ -101,7 +101,7 @@ fun RetrievePassword(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Subtitle
+            // Subtitle text
             Text(
                 text = "Enter your email to reset your password",
                 fontSize = 16.sp,
@@ -113,7 +113,7 @@ fun RetrievePassword(
 
             Spacer(modifier = Modifier.height(40.dp))
 
-            // Email TextField
+            // Email input field with error handling
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it; emailTouched = true },
@@ -143,22 +143,28 @@ fun RetrievePassword(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Send Button
+            // Button to send password reset email
             Button(
                 onClick = {
+                    // If the email is not empty
                     if (email.isNotBlank()) {
+                        // Get the firebase authentication
                         val auth = FirebaseAuth.getInstance()
-                        auth.sendPasswordResetEmail(email.toString()) // Replace with the actual email input
+                        // Send the email to reset the password
+                        auth.sendPasswordResetEmail(email.toString())
                             .addOnCompleteListener { task ->
                                 errorMessage = if (task.isSuccessful) {
+                                    // If the task is successful
                                     "Password reset email send successfully. Please check your inbox."
                                 } else {
+                                    // If the task fails
                                     "Failed to send password reset email"
                                 }
                             }
 
                     } else {
-                        emailTouched = true // Show error if email is empty
+                        // Trigger error state if email is empty
+                        emailTouched = true
                     }
                 },
                 modifier = Modifier
@@ -179,7 +185,9 @@ fun RetrievePassword(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // If the error message is not empty
             if (errorMessage.isNotEmpty()) {
+                // Show the message in a card
                 errorMessage.let { message ->
                     Card(
                         modifier = Modifier
@@ -215,12 +223,14 @@ fun RetrievePassword(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Go back to login
+            // Navigation back to login screen
             TextButton(onClick = {
                 navController.navigate("login") {
                     popUpTo("retrieve_password") {
+                        // Remove previous screen to prevent back navigation
                         inclusive = true
                     }
+                    // Prevent duplicate destinations on the stack
                     launchSingleTop = true
                 }
             }) {
