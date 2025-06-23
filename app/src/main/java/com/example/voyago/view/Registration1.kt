@@ -2,10 +2,8 @@ package com.example.voyago.view
 
 import android.util.Patterns
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,7 +21,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -49,10 +46,9 @@ import java.time.format.DateTimeParseException
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateAccountScreen(
-    navController: NavController,
-    onGoogleSignUpClick: () -> Unit = {}
-) {
+fun CreateAccountScreen(navController: NavController) {
+
+    // User input state holders
     var name by remember { mutableStateOf("") }
     var surname by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -60,8 +56,10 @@ fun CreateAccountScreen(
     var dateOfBirth by remember { mutableStateOf("") }
     var country by remember { mutableStateOf("") }
 
+    // For displaying general form validation error
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
+    // Touched flags help us only validate fields after the user interacts with them
     var nameTouched by remember { mutableStateOf(false) }
     var surnameTouched by remember { mutableStateOf(false) }
     var emailTouched by remember { mutableStateOf(false) }
@@ -75,7 +73,7 @@ fun CreateAccountScreen(
             .background(Color(0xFFF5F5F5))
     ) {
 
-        // Main Content
+        // Main content column with padding and scroll support
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -85,7 +83,7 @@ fun CreateAccountScreen(
         ) {
             Spacer(modifier = Modifier.height(40.dp))
 
-            // Profile Icon
+            // Profile placeholder icon
             Box(
                 modifier = Modifier
                     .size(80.dp)
@@ -105,7 +103,7 @@ fun CreateAccountScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Title
+            // Title text
             Text(
                 text = "Create an account",
                 fontSize = 24.sp,
@@ -127,7 +125,7 @@ fun CreateAccountScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Name TextField
+            // Name Field
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it; nameTouched = true },
@@ -141,8 +139,10 @@ fun CreateAccountScreen(
                 singleLine = true,
                 isError = nameTouched && !isValidName(name),
                 supportingText = {
+                    // If the field is empty
                     if (nameTouched && name.isEmpty()) {
                         Text("This field cannot be empty")
+                        // If the field is not valid
                     } else if (nameTouched && !isValidName(name)) {
                         Text("Invalid name format. Only letters, spaces, apostrophes, and hyphens are allowed.")
                     }
@@ -159,7 +159,7 @@ fun CreateAccountScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Surname TextField
+            // Surname Field
             OutlinedTextField(
                 value = surname,
                 onValueChange = { surname = it; surnameTouched = true },
@@ -173,8 +173,10 @@ fun CreateAccountScreen(
                 singleLine = true,
                 isError = surnameTouched && !isValidName(surname),
                 supportingText = {
+                    // If the field is empty
                     if (nameTouched && name.isEmpty()) {
                         Text("This field cannot be empty")
+                        //If the field is not valid
                     } else if (nameTouched && !isValidName(name)) {
                         Text("Invalid name format. Only letters, spaces, apostrophes, and hyphens are allowed.")
                     }
@@ -191,7 +193,7 @@ fun CreateAccountScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Email TextField
+            // Email Field
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it; emailTouched = true },
@@ -205,8 +207,10 @@ fun CreateAccountScreen(
                 singleLine = true,
                 isError = emailTouched && !isValidEmail(email),
                 supportingText = {
+                    // If the field is empty
                     if (emailTouched && email.isEmpty()) {
                         Text("This field cannot be empty")
+                        // If the field is not valid
                     } else if (emailTouched && !isValidEmail(email)) {
                         Text("Invalid email format")
                     }
@@ -223,7 +227,7 @@ fun CreateAccountScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Password TextField
+            // Password Field
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it; passwordTouched = true },
@@ -237,8 +241,10 @@ fun CreateAccountScreen(
                 singleLine = true,
                 isError = passwordTouched && !isValidPassword(password),
                 supportingText = {
+                    // If the field is empty
                     if (passwordTouched && password.isEmpty()) {
                         Text("This field cannot be empty")
+                        // If the field is not valid
                     } else if (passwordTouched && !isValidPassword(password)) {
                         Text("Password must be at least 8 characters long, include uppercase, lowercase, digit, and special character.")
                     }
@@ -256,7 +262,7 @@ fun CreateAccountScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Date of Birth TextField
+            // Date of Birth Field
             OutlinedTextField(
                 value = dateOfBirth,
                 onValueChange = { dateOfBirth = it; dateOfBirthTouched = true },
@@ -270,8 +276,10 @@ fun CreateAccountScreen(
                 singleLine = true,
                 isError = dateOfBirthTouched && !isValidDateOfBirth(dateOfBirth),
                 supportingText = {
+                    // If the field is empty
                     if (dateOfBirthTouched && dateOfBirth.isEmpty()) {
                         Text("This field cannot be empty")
+                        // If the field is not valid
                     } else if (dateOfBirthTouched && !isValidDateOfBirth(dateOfBirth)) {
                         Text("Invalid date format or underage. Use yyyy-mm-dd format.")
                     }
@@ -288,7 +296,7 @@ fun CreateAccountScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Country TextField
+            // Country Field
             OutlinedTextField(
                 value = country,
                 onValueChange = { country = it; countryTouched = true },
@@ -302,8 +310,10 @@ fun CreateAccountScreen(
                 singleLine = true,
                 isError = countryTouched && !isValidCountry(country),
                 supportingText = {
+                    // If the field is empty
                     if (countryTouched && country.isEmpty()) {
                         Text("This field cannot be empty")
+                        // If the field is not valid
                     } else if (countryTouched && !isValidCountry(country)) {
                         Text("Invalid country name")
                     }
@@ -323,14 +333,17 @@ fun CreateAccountScreen(
             // Continue Button
             Button(
                 onClick = {
+                    // Validation check for all fields
                     if (!isValidName(name) || !isValidName(surname) || !isValidEmail(email) ||
                         !isValidPassword(password) || !isValidDateOfBirth(dateOfBirth) || !isValidCountry(
                             country
                         )
                     ) {
+                        // If not valid set the Error Message and return the Button
                         errorMessage = "Please correct the errors above."
                         return@Button
                     } else {
+                        // If valid, pass the values to the next screen via saved state handle
                         val fields = RegistrationFormValues(
                             name,
                             surname,
@@ -339,10 +352,14 @@ fun CreateAccountScreen(
                             dateOfBirth,
                             country
                         )
+
+                        // Pass the data using navController's SavedStateHandle
                         navController.currentBackStackEntry?.savedStateHandle?.set(
                             "registrationFormValues",
                             fields
                         )
+
+                        // Navigate to the second page for the registration
                         navController.navigate("register2")
                     }
                 },
@@ -363,48 +380,79 @@ fun CreateAccountScreen(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
-
         }
     }
 }
 
+// Function used to validate Name and Surname
 fun isValidName(name: String): Boolean {
+    // Trim leading and trailing whitespace from the input
     val trimmed = name.trim()
 
+    // Check the length of the trimmed name
+    // Valid names must be at least 1 character and at most 100 characters
     if (trimmed.length !in 1..100) {
         return false
     }
 
+    // Define the allowed pattern using a regular expression
+    // ^ and $ ensure the pattern must match the entire string
+    // \\p{L} allows any kind of letter from any language
+    // \\s allows whitespace characters
+    // '- allows apostrophes and hyphens
+    // The + means one or more of these characters must be present
     val regex = Regex("^[\\p{L}\\s'-]+$")
 
+    // Return whether the trimmed name matches the pattern
     return regex.matches(trimmed)
 }
 
+// Function used to validate the Email
 fun isValidEmail(email: String): Boolean {
+    // Trim leading and trailing whitespace from the input
+    // Check that is not empty
+    // Check that respect the email address pattern
     return email.trim().let {
         it.isNotEmpty() && Patterns.EMAIL_ADDRESS.matcher(it).matches()
     }
 }
 
+// Function used to validate the Password
 fun isValidPassword(password: String): Boolean {
+    // Trim leading and trailing whitespace from the input
     val trimmed = password.trim()
 
-    // At least 8 characters, 1 uppercase, 1 lowercase, 1 digit, 1 special character
-    val regex = Regex("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#\$%^&+=!]).{8,}$")
+    // Define the allowed pattern using a regular expression
+    // ^ and $ ensure the pattern must match the entire string
+    //(?=.*[a-z]): Lookahead to ensure at least one lowercase letter
+    // (?=.*[A-Z]): Lookahead to ensure at least one uppercase letter
+    // (?=.*\\d): Lookahead to ensure at least one digit
+    // (?=.*[@#$%^&+=!]): Lookahead to ensure at least one special character from this set
+    // .{8,}$: Match any character (.) at least 8 times (.{8,})
+    // Summary: at least 8 characters, 1 uppercase, 1 lowercase, 1 digit, 1 special character
+    val regex = Regex("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%^&+=!]).{8,}$")
 
+    // Return whether the trimmed name matches the pattern
     return regex.matches(trimmed)
 }
 
+// Function used to validate the Date Of Birth
 fun isValidDateOfBirth(dob: String, minAge: Int = 13): Boolean {
     return try {
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd") // Expected format: 2023-06-07
+        // Define the expected date format: "yyyy-MM-dd"
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+
+        // Parse the input string into a LocalDate, trimming any surrounding whitespace
         val birthDate = LocalDate.parse(dob.trim(), formatter)
+
+        // Get the current date
         val today = LocalDate.now()
 
         // Must not be in the future and must meet minimum age requirement
         !birthDate.isAfter(today) && Period.between(birthDate, today).years >= minAge
-    } catch (e: DateTimeParseException) {
-        false // Invalid date format
+    } catch (_: DateTimeParseException) {
+        // If parsing fails due to an invalid format return false
+        false
     }
 }
 
@@ -441,6 +489,8 @@ val isCountryList = listOf(
     "Zambia", "Zimbabwe"
 )
 
+// Function used to validate the Country
 fun isValidCountry(input: String): Boolean {
+    // If the country is in the isCountryList return true
     return isCountryList.any { it.equals(input.trim(), ignoreCase = true) }
 }
