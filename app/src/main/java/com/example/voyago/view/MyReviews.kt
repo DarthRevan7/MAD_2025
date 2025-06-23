@@ -197,7 +197,7 @@ fun MyReviews(
                 if (tripReview.isValidReview()) {
                     // Show existing trip review
                     item {
-                        ShowReview(tripReview, vm, true, uvm, navController)
+                        ShowReview(tripReview, uvm, navController)
                     }
                 } else {
                     item {
@@ -316,7 +316,7 @@ fun MyReviews(
                 // If reviews have been made, show existing ones
                 if (othersReviews.value.isNotEmpty()) {
                     items(othersReviews.value) { review ->
-                        ShowReview(review, vm, true, uvm, navController)
+                        ShowReview(review, uvm, navController)
                     }
                 } else {
                     item {
