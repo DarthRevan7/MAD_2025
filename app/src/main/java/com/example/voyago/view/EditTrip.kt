@@ -68,7 +68,6 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
     // Set the current user action in the ViewModel to editing mode
     vm.userAction = TripViewModel.UserAction.EDIT_TRIP
 
-
     // Remember a deep copy of the original trip for rollback/cancel purposes
     val originalTripState = remember {
         vm.editTrip.copy(
@@ -228,7 +227,7 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                 ) {
                     // Iterate over each field for rendering input and validation
                     fieldValues.forEachIndexed { index, item ->
-                        //Title and Destination Fields
+                        // Title and Destination Fields
                         if (index == 0 || index == 1) {
                             val textHasErrors = item.toString().isBlank() || // Check if it is empty
                                     !item.toString()
@@ -249,7 +248,7 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                                 fieldTouched[index] && fieldErrors[index],
                                 fieldNames[index]
                             )
-                        } else if (index == 2) { //Price Estimated Field
+                        } else if (index == 2) { // Price Estimated Field
                             // Setting two decimal places to price
                             val priceText = item.toString() // Get price text
                             val floatHasErrors = priceText.isBlank() || // Check if it is empty
@@ -293,7 +292,7 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                                 floatHasErrors, // Are there any errors?
                                 fieldNames[index] // Field name
                             )
-                        } else { //Group Size Field
+                        } else { // Group Size Field
                             val intHasErrors =
                                 (item.toString().isBlank() || item.toString().toIntOrNull()
                                     ?.let { it <= 1 } != false)
@@ -514,22 +513,21 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                 Spacer(modifier = Modifier.height(50.dp))
             }
 
-            //Cancel Button and Next Button
+            // Cancel Button and Next Button
             item {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp),
                 ) {
-                    //Cancel Button
+                    // Cancel Button
                     Button(
                         onClick = {
                             // Revert trip to its original state and return to previous screen
                             vm.editTrip = originalTripState
                             vm.setSelectedTrip(originalTripState)
                             navController.popBackStack()
-
-                                  },
+                        },
                         modifier = Modifier
                             .width(160.dp)
                             .height(60.dp)
@@ -540,7 +538,7 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
 
                     Spacer(modifier = Modifier.weight(1f))
 
-                    //Next Button
+                    // Next Button
                     Button(
                         onClick = {
                             vm.userAction = TripViewModel.UserAction.EDIT_TRIP
@@ -572,7 +570,7 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
 
                                 if (hasDateChanged && startCalendar != null && endCalendar != null) {
 
-                                    //Automatically reallocate activities without asking
+                                    // Automatically reallocate activities with user choice
                                     smartReallocateActivitiesWithUserChoice(
                                         vm = vm,
                                         oldStartCal = originalStartCal,
@@ -617,24 +615,23 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
         }
     }
 
-    // Reassign confirmation dialog
-    // 重新分配确认对话框
+    // Activity reallocation confirmation dialog
     if (showReallocationDialog) {
         AlertDialog(
             onDismissRequest = {
                 showReallocationDialog = false
-                // 重置对话框状态
+                // Reset dialog state
                 onConfirmReallocation = null
                 onCancelReallocation = null
             },
-            title = { Text("活动重新分配") },
+            title = { Text("Activity Reallocation") },
             text = { Text(dialogMessage) },
             confirmButton = {
                 TextButton(
                     onClick = {
                         showReallocationDialog = false
                         onConfirmReallocation?.invoke()
-                        // 执行完重新分配后，继续更新行程并导航
+                        // After reallocation, continue to update trip and navigate
                         updateTripAndNavigate(
                             vm, startCalendar!!, endCalendar!!, navController,
                             selected, fieldValues[0], fieldValues[1],
@@ -642,7 +639,7 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                         )
                     }
                 ) {
-                    Text("移动到最后一天")
+                    Text("Move to Last Day")
                 }
             },
             dismissButton = {
@@ -650,7 +647,7 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                     onClick = {
                         showReallocationDialog = false
                         onCancelReallocation?.invoke()
-                        // 执行完删除后，继续更新行程并导航
+                        // After deletion, continue to update trip and navigate
                         updateTripAndNavigate(
                             vm, startCalendar!!, endCalendar!!, navController,
                             selected, fieldValues[0], fieldValues[1],
@@ -658,7 +655,7 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                         )
                     }
                 ) {
-                    Text("删除超出的活动")
+                    Text("Delete Excess Activities")
                 }
             }
         )
@@ -682,7 +679,7 @@ fun TripImageEdit(trip: Trip, imageUri: Uri?, onUriSelected: (Uri?) -> Unit) {
     // State to hold remote trip image URL (from the trip object in case no new image is selected)
     var remoteImageUrl by remember { mutableStateOf<String?>(null) }
 
-    // This ensures we always show the trip’s existing image if there’s no local change
+    // This ensures we always show the trip's existing image if there's no local change
     LaunchedEffect(trip.photo) {
         if (imageUri == null) {
             remoteImageUrl = trip.getPhoto()
@@ -697,7 +694,7 @@ fun TripImageEdit(trip: Trip, imageUri: Uri?, onUriSelected: (Uri?) -> Unit) {
         contentAlignment = Alignment.Center
     ) {
 
-        //Conditional rendering: Choose what image to display
+        // Conditional rendering: Choose what image to display
         when {
             // Case 1: If a new image URI is selected, show it
             imageUri != null -> {
@@ -943,10 +940,8 @@ private fun updateTripAndNavigate(
     // Explicitly mark this as an EDIT_TRIP action
     vm.userAction = TripViewModel.UserAction.EDIT_TRIP
 
-
     // Update the DB with the new trip
     vm.editTrip(vm.selectedTrip.value) { success -> Log.d("DB2", "$success") }
-
 
     // Navigate to the activities list screen where the trip details will be shown
     navController.navigate("activities_list")
@@ -1052,7 +1047,7 @@ fun parseActivityDate(dateKey: String): Calendar {
             }
         }
     } catch (e: Exception) {
-        Log.e("DateParsing", "Errore nel parsing della data $dateKey: ${e.message}")
+        Log.e("DateParsing", "Error parsing date $dateKey: ${e.message}")
         try {
             // Retry using a known fallback date format
             parseDateManually(dateKey, "d/M/yyyy")
@@ -1089,7 +1084,7 @@ private fun parseDateManually(dateString: String, format: String = "YYYY-MM-DD")
         // Format: "d/M/yyyy"
         "d/M/yyyy" -> {
             val day = parts[0].toInt()          // Day comes first
-            val month = parts[1].toInt() - 1    // Day comes first
+            val month = parts[1].toInt() - 1    // Month is zero-based in Calendar
             val year = parts[2].toInt()         // Year comes last
 
             // Construct a Calendar instance with parsed values
@@ -1112,7 +1107,7 @@ private fun reallocateWithShorterInterval(
     newEndCal: Calendar,
     updatedActivities: MutableMap<String, List<Trip.Activity>>
 ) {
-    // Normalize original start date (remove time fields for accurate day comparison
+    // Normalize original start date (remove time fields for accurate day comparison)
     val oldStart = Calendar.getInstance().apply {
         timeInMillis = oldStartCal.timeInMillis
         set(Calendar.HOUR_OF_DAY, 0)
@@ -1220,8 +1215,7 @@ private fun reallocateWithShorterInterval(
     }
 }
 
-
-
+// Function with user choice for activity reallocation
 fun smartReallocateActivitiesWithUserChoice(
     vm: TripViewModel,
     oldStartCal: Calendar,
@@ -1237,7 +1231,7 @@ fun smartReallocateActivitiesWithUserChoice(
     val updatedActivities = mutableMapOf<String, List<Trip.Activity>>()
 
     when {
-        // 情况1：相同间隔 - 直接移动所有活动
+        // Case 1: Same interval - directly move all activities
         oldIntervalDays == newIntervalDays -> {
             reallocateWithSameInterval(
                 currentTrip.activities,
@@ -1245,11 +1239,11 @@ fun smartReallocateActivitiesWithUserChoice(
                 newStartCal,
                 updatedActivities
             )
-            // 直接应用更新
+            // Apply update directly
             applyActivityUpdate(vm, currentTrip, updatedActivities, newStartCal, newEndCal)
         }
 
-        // 情况2：新间隔更长 - 保持活动在相同相对位置，其他日期留空
+        // Case 2: Longer interval - keep activities at same relative positions, leave other dates empty
         newIntervalDays > oldIntervalDays -> {
             reallocateWithLongerInterval(
                 currentTrip.activities,
@@ -1257,13 +1251,13 @@ fun smartReallocateActivitiesWithUserChoice(
                 newStartCal,
                 updatedActivities
             )
-            // 直接应用更新
+            // Apply update directly
             applyActivityUpdate(vm, currentTrip, updatedActivities, newStartCal, newEndCal)
         }
 
-        // 情况3：新间隔更短 - 显示用户选择对话框
+        // Case 3: Shorter interval - show user choice dialog
         newIntervalDays < oldIntervalDays -> {
-            val dialogMessage = "新的旅行时间更短，一些活动将超出旅行期间。请选择处理方式："
+            val dialogMessage = "The new trip duration is shorter, some activities will exceed the trip period. Please choose how to handle them:"
 
             val onMoveToLastDay = {
                 reallocateWithShorterInterval(
@@ -1287,12 +1281,13 @@ fun smartReallocateActivitiesWithUserChoice(
                 applyActivityUpdate(vm, currentTrip, updatedActivities, newStartCal, newEndCal)
             }
 
-            // 显示用户选择对话框
+            // Show user choice dialog
             onShowDialog(dialogMessage, onMoveToLastDay, onDeleteExcess)
         }
     }
 }
 
+// Function to handle deleting excess activities when interval becomes shorter
 private fun reallocateWithShorterIntervalDeleteExcess(
     originalActivities: Map<String, List<Trip.Activity>>,
     oldStartCal: Calendar,
@@ -1339,7 +1334,7 @@ private fun reallocateWithShorterIntervalDeleteExcess(
 
             val dayNumber = calculateDaysBetween(oldStart, normalizedActivityDate)
 
-            // 只保留在新旅行期间内的活动，超出的直接删除
+            // Only keep activities within the new trip period, excess activities are directly deleted
             if (dayNumber <= newTripDays) {
                 val newDate = Calendar.getInstance().apply {
                     timeInMillis = newStart.timeInMillis
@@ -1357,13 +1352,15 @@ private fun reallocateWithShorterIntervalDeleteExcess(
 
                 updatedActivities[newDateKey] = updatedActivityList
             }
-            // 超出的活动不添加到 updatedActivities，相当于被删除
+            // Excess activities are not added to updatedActivities, effectively deleted
 
         } catch (e: Exception) {
             Log.e("SmartReallocation", "Error processing date $oldDateKey: ${e.message}")
         }
     }
 }
+
+// Helper function to apply activity updates
 private fun applyActivityUpdate(
     vm: TripViewModel,
     currentTrip: Trip,
