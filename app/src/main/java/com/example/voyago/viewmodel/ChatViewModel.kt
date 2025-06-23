@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.voyago.Collections
 import com.example.voyago.model.ChatRoom
 import com.example.voyago.model.FirebaseChatMessage
 import com.google.firebase.Timestamp
@@ -14,6 +15,7 @@ import com.google.firebase.firestore.ktx.toObject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class ChatViewModel : ViewModel() {
 
@@ -423,6 +425,33 @@ class ChatViewModel : ViewModel() {
         }
     }
 
+    private val _chatRoom = MutableStateFlow<ChatRoom?>(null)
+    val chatRoom: StateFlow<ChatRoom?> = _chatRoom
+
+    fun getChatRoomFromId(chatId: String) {
+        // Start a Coroutine
+        viewModelScope.launch {
+            try {
+                // Wait for Firebase operation result
+                val snapshot = Collections.chatRooms.document(chatId).get().await()
+
+                if (snapshot.exists()) {
+                    val loadedChatRoom = snapshot.toObject(ChatRoom::class.java)
+                    //Update stateflow and UI
+                    _chatRoom.value = loadedChatRoom
+                    Log.d("CH1", "ChatRoom caricata e stato aggiornato: $loadedChatRoom")
+                } else {
+                    // If the chatroom is not found then set to null
+                    _chatRoom.value = null
+                    Log.d("CH1", "ChatRoom con ID '$chatId' non trovata.")
+                }
+            } catch (e: Exception) {
+                _chatRoom.value = null
+                Log.e("CH1", "Errore nel recupero della ChatRoom con ID '$chatId': ${e.message}", e)
+            }
+        }
+    }
+
 
 
 }
@@ -436,6 +465,8 @@ object ChatFactory : ViewModelProvider.Factory {
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
+
+
 
 
 

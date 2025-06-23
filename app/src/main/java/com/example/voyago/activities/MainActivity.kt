@@ -1549,8 +1549,58 @@ fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
                     tripViewModel = tripViewModel
                 )
             }
+        }
 
 
+        composable(
+            route = "user_profile/{userId}",
+            arguments = listOf(
+                navArgument("userId") {
+                    type = NavType.IntType
+                }
+            )
+        ) { entry ->
+            // Get the back stack entry for the profile graph
+            val chatGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Chats.route)
+            }
+            // Create an instance of the TripViewModel using the Factory
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = Factory
+            )
+            // Create an instance of the UserViewModel using the Factory
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = Factory
+            )
+            // Create an instance of the ReviewViewModel using the Factory
+            val reviewViewModel: ReviewViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = Factory
+            )
+            // Create an instance of the ArticleViewModel using the ArticleFactory
+            val articleViewModel: ArticleViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = ArticleFactory
+            )
+            // Create an instance of the ChatViewModel using the ChatFactory
+            val chatViewModel: ChatViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = ChatFactory
+            )
+            // Get the userId from the arguments, defaulting to -1 if not provided
+            val userId = entry.arguments?.getInt("userId") ?: -1
+            // Pass the NavController, ViewModels, userId to the UserProfileScreen composable
+            UserProfileScreen(
+                navController = navController,
+                vm = tripViewModel,
+                vm2 = articleViewModel,
+                userId = userId,
+                uvm = userViewModel,
+                rvm = reviewViewModel,
+                chatViewModel = chatViewModel
+            )
         }
 
     }
