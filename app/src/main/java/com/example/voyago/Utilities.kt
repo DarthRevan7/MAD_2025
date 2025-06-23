@@ -6,6 +6,10 @@ import java.util.Calendar
 import java.util.Locale
 
 
+fun formatMessageTimestamp(timestamp: Timestamp): String {
+    return toCalendar(timestamp).get(Calendar.HOUR).toString() + ":" + toCalendar(timestamp).get(Calendar.MINUTE).toString()
+}
+
 fun toCalendar(timeDate: Timestamp): Calendar {
     var calendarDate = Calendar.getInstance()
     calendarDate.time = timeDate.toDate()
