@@ -43,7 +43,7 @@ import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegistrationVerificationCodeScreen(navController: NavController, uvm: UserViewModel) {
+fun RegistrationVerificationScreen(navController: NavController, uvm: UserViewModel) {
     var user =
         navController.previousBackStackEntry?.savedStateHandle?.get<User>("userValues")
 
