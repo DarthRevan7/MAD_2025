@@ -1,5 +1,6 @@
 package com.example.voyago.view
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +28,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,12 +44,13 @@ import androidx.navigation.NavController
 import com.example.voyago.model.Trip
 import com.example.voyago.model.deepCopy
 import com.example.voyago.toCalendar
+import com.example.voyago.toStringDate
 import com.example.voyago.viewmodel.TripViewModel
+import com.google.firebase.firestore.FirebaseFirestore
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Locale
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,6 +58,9 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
 
     // Observe the currently selected trip from the ViewModel
     val selectedTrip by vm.selectedTrip
+    LaunchedEffect(selectedTrip.id) {
+        debugTripData1(selectedTrip, vm)  // 直接传递 Trip 对象
+    }
 
     // State to control whether to show the incomplete activities warning dialog
     var showIncompleteDialog by rememberSaveable { mutableStateOf(false) }
@@ -271,40 +277,57 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
     }
 }
 
-// Function that showcase the activities list content
+// Function that showcase the activities list content with fixed date-based grouping
 @Composable
 fun ActivitiesListContent(trip: Trip?, vm: TripViewModel, navController: NavController) {
-    // Handle case when no trip is selected
+    LaunchedEffect(trip?.id) {
+        debugTripData(trip, vm)
+    }
+
+    // Log function entry
+
+    Log.d("ActivitiesListContent", "Function entered")
+    Log.d("ActivitiesListContent", "Trip: ${trip?.let { "ID=${it.id}, Destination=${it.destination}" } ?: "null"}")
+
     if (trip == null) {
+        Log.w("ActivitiesListContent", "No trip provided, showing 'No trip selected' message")
         Text("No trip selected", modifier = Modifier.padding(16.dp))
-        return      // Exit early
+        return
     }
 
-    // Sort the trip days by calendar date (ensures chronological order)
-    val sortedDays = trip.activities.keys.sortedBy { key ->
-        val calendar = key.toCalendar()
-        // Normalize time to 00:00 to avoid issues in comparison/sorting
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
-        // Return calendar for sorting
-        calendar
-    }
+    // Generate complete date range from trip start to end date
+    val tripStartCal = trip.startDateAsCalendar()
+    val tripEndCal = trip.endDateAsCalendar()
+    Log.d("ActivitiesListContent", "Trip dates - Start: ${tripStartCal.time}, End: ${tripEndCal.time}")
+    Log.d("ActivitiesListContent", "Trip start date string: ${trip.startDate}")
+    Log.d("ActivitiesListContent", "Trip end date string: ${trip.endDate}")
 
-    // Check if the trip contains any activities at all
-    val hasNoActivities = trip.activities.values.all { it.isEmpty() }
+    val dateRange = generateDateRange(tripStartCal, tripEndCal)
+    Log.d("ActivitiesListContent", "Generated date range: ${dateRange.size} days - ${dateRange.joinToString()}")
+    Log.w("ActivitiesListContent", "ISSUE CHECK - Date range vs Activity dates:")
+    Log.w("ActivitiesListContent", "  Date range keys: ${dateRange.joinToString()}")
+    Log.w("ActivitiesListContent", "  Activity date keys: ${trip.activities.keys.joinToString()}")
 
-    // State to hold which activity is being deleted (if any), persistent across recompositions
+    // State for delete confirmation dialog
     var activityToDelete by rememberSaveable { mutableStateOf<Trip.Activity?>(null) }
 
-    // Main container
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
+    // Log activities data
+    Log.d("ActivitiesListContent", "Total activity keys: ${trip.activities.keys.size}")
+    trip.activities.forEach { (date, activities) ->
+        Log.d("ActivitiesListContent", "Date $date has ${activities.size} activities")
+        activities.forEachIndexed { index, activity ->
+            Log.v("ActivitiesListContent", "  Activity $index: ID=${activity.id}, Time=${activity.time}, Desc=${activity.description}")
+        }
+    }
 
-        // Display a message if the trip has no activities
+    Column(modifier = Modifier.fillMaxSize()) {
+
+        // Check if there are any activities
+        val hasNoActivities = trip.activities.values.all { it.isEmpty() }
+        Log.d("ActivitiesListContent", "Has no activities: $hasNoActivities")
+
         if (hasNoActivities) {
+            Log.i("ActivitiesListContent", "Displaying 'no activities' message")
             Text(
                 text = "No activities for trip to ${trip.destination}.",
                 modifier = Modifier.padding(16.dp),
@@ -312,157 +335,375 @@ fun ActivitiesListContent(trip: Trip?, vm: TripViewModel, navController: NavCont
                 color = Color.Gray
             )
         } else {
-            // Iterate through each sorted day with activities
-            sortedDays.forEachIndexed { index,day ->
+            Log.i("ActivitiesListContent", "Displaying activities for ${dateRange.size} days")
 
-                val dayIndex = index + 1  // 简单地基于排序后的位置
-                // Convert string day key to Calendar
-                val activityCalendar = day.toCalendar()
+            // Iterate through each day in the date range and display activities
+            dateRange.forEachIndexed { index, dateKey ->
+                val dayIndex = index + 1
+                Log.v("ActivitiesListContent", "Processing Day $dayIndex with dateKey: $dateKey")
 
-                // Get the calendar instance of the trip’s start date
-                val currentTripStartCalendar = trip.startDateAsCalendar()
+                // Find all activities for this specific date
+                val activitiesForDay = findActivitiesForDate(dateKey, trip.activities)
+                Log.d("ActivitiesListContent", "Day $dayIndex has ${activitiesForDay.size} activities")
 
-                // Calculate which "day number" of the trip this date represents (e.g., Day 1, Day 2, etc.)
-              //  val dayIndex = calculateDayIndex(activityCalendar, currentTripStartCalendar)
+                // DEBUG: Check if dateKey matches any activity keys
+                val matchingActivityKeys = trip.activities.keys.filter { it.contains(dateKey) || dateKey.contains(it) }
+                if (matchingActivityKeys.isNotEmpty()) {
+                    Log.w("ActivitiesListContent", "  Potential matches for $dateKey: $matchingActivityKeys")
+                } else {
+                    Log.w("ActivitiesListContent", "  No matches found for dateKey: $dateKey")
+                    Log.w("ActivitiesListContent", "  Available activity keys: ${trip.activities.keys.take(3).joinToString()}")
+                }
 
-                // Prepare formatter to sort activities by time of day
-                val formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.US)
+                // Only display the day if it has activities
+                if (activitiesForDay.isNotEmpty()) {
+                    Log.d("ActivitiesListContent", "Rendering Day $dayIndex with activities")
 
-                // Get the list of activities for this day, sorted by time
-                val activitiesForDay = (trip.activities[day] ?: emptyList())
-                    .sortedBy { LocalTime.parse(it.time, formatter) }
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        // Day title
+                        Text(
+                            text = "Day $dayIndex",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF555555)
+                        )
 
-                // Render section for the day
-                Column(modifier = Modifier.padding(16.dp)) {
+                        Spacer(modifier = Modifier.height(8.dp))
 
-                    // Day header (e.g., "Day 2")
-                    Text(
-                        text = "Day $dayIndex",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF555555)
-                    )
+                        // Display each activity for this day (already sorted by time)
+                        activitiesForDay.forEachIndexed { activityIndex, activity ->
+                            Log.v("ActivitiesListContent", "Rendering activity $activityIndex for Day $dayIndex: ${activity.description}")
 
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Display each activity for the current day
-                    activitiesForDay.forEach { activity ->
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .padding(bottom = 8.dp)
-                                .fillMaxWidth()
-                        ) {
-                            // Edit icon, navigates to edit screen for the activity
-                            Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = "Edit Activity",
-                                tint = Color(0xFF4CAF50),
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
-                                    .size(20.dp)
-                                    .clickable {
-                                        vm.userAction = TripViewModel.UserAction.EDIT_ACTIVITY
-                                        navController.navigate("edit_Activity/${activity.id}")
-                                    }
-                            )
-
-                            Spacer(modifier = Modifier.width(8.dp))
-
-                            // Activity details (time and description)
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = "${activity.time} - ${activity.description}" +
-                                            if (activity.isGroupActivity) " (group activity)" else "",
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-                            }
-
-                            // Delete button (sets state to trigger confirmation dialog)
-                            OutlinedButton(
-                                onClick = {
-                                    activityToDelete = activity
-                                },
-                                modifier = Modifier.height(36.dp)
+                                    .padding(bottom = 8.dp)
+                                    .fillMaxWidth()
                             ) {
-                                Text("Delete", color = Color.Red)
+                                // Edit icon
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = "Edit Activity",
+                                    tint = Color(0xFF4CAF50),
+                                    modifier = Modifier
+                                        .size(20.dp)
+                                        .clickable {
+                                            Log.d("ActivitiesListContent", "Edit clicked for activity ID: ${activity.id}")
+                                            vm.userAction = TripViewModel.UserAction.EDIT_ACTIVITY
+                                            navController.navigate("edit_Activity/${activity.id}")
+                                        }
+                                )
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                // Activity details
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = "${activity.time} - ${activity.description}" +
+                                                if (activity.isGroupActivity) " (group activity)" else "",
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                }
+
+                                // Delete button
+                                OutlinedButton(
+                                    onClick = {
+                                        Log.d("ActivitiesListContent", "Delete button clicked for activity ID: ${activity.id}")
+                                        activityToDelete = activity
+                                    },
+                                    modifier = Modifier.height(36.dp)
+                                ) {
+                                    Text("Delete", color = Color.Red)
+                                }
                             }
                         }
                     }
-
-                    // Show confirmation dialog when a delete is initiated
-                    activityToDelete?.let { activity ->
-                        AlertDialog(
-                            onDismissRequest = {
-                                activityToDelete = null     // Cancel delete
-                            },
-                            title = { Text("Delete Activity") },
-                            text = { Text("Are you sure you want to delete this activity?") },
-                            confirmButton = {
-                                TextButton(onClick = {
-                                    vm.deleteActivity(activity)     // Actual delete call to ViewModel
-                                    activityToDelete = null     // Clear dialog state
-                                }) {
-                                    Text("Delete")
-                                }
-                            },
-                            dismissButton = {
-                                TextButton(onClick = {
-                                    activityToDelete = null     // Clear dialog state
-                                }) {
-                                    Text("Cancel")
-                                }
-                            }
-                        )
-                    }
+                } else {
+                    Log.v("ActivitiesListContent", "Day $dayIndex has no activities, skipping render")
                 }
             }
         }
+
+        // Delete confirmation dialog
+        activityToDelete?.let { activity ->
+            Log.d("ActivitiesListContent", "Showing delete confirmation dialog for activity: ${activity.description}")
+
+            AlertDialog(
+                onDismissRequest = {
+                    Log.d("ActivitiesListContent", "Delete dialog dismissed")
+                    activityToDelete = null
+                },
+                title = { Text("Delete Activity") },
+                text = { Text("Are you sure you want to delete this activity?") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        Log.i("ActivitiesListContent", "Confirming deletion of activity ID: ${activity.id}")
+                        vm.deleteActivity(activity)
+                        activityToDelete = null
+                        Log.d("ActivitiesListContent", "Activity deletion completed")
+                    }) {
+                        Text("Delete")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        Log.d("ActivitiesListContent", "Delete dialog cancelled")
+                        activityToDelete = null
+                    }) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
     }
+
+    Log.d("ActivitiesListContent", "Function completed successfully")
 }
 
-
-
-fun calculateDayIndex(activityCalendar: Calendar, tripStartCalendar: Calendar): Int {
-    // 标准化活动日期（设置为午夜）
-    val activityDate = Calendar.getInstance().apply {
-        timeInMillis = activityCalendar.timeInMillis
+/*
+这是一个私有函数，输入两个 Calendar 类型的日期：startCal（开始日期）和 endCal（结束日期），输出是一个 List<String>，每个字符串表示一个日期
+用来存储所有的日期字符串
+example:
+startCal = 2025年6月20日
+endCal = 2025年6月23日
+["2025-06-20", "2025-06-21", "2025-06-22", "2025-06-23"]
+ */
+// Helper function: Generate date range from start to end date
+private fun generateDateRange(startCal: Calendar, endCal: Calendar): List<String> {
+    val dateList = mutableListOf<String>()
+    val current = Calendar.getInstance().apply {
+        timeInMillis = startCal.timeInMillis
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }
+    val end = Calendar.getInstance().apply {
+        timeInMillis = endCal.timeInMillis
         set(Calendar.HOUR_OF_DAY, 0)
         set(Calendar.MINUTE, 0)
         set(Calendar.SECOND, 0)
         set(Calendar.MILLISECOND, 0)
     }
 
-    // 标准化旅行开始日期（设置为午夜）
-    val tripStartDate = Calendar.getInstance().apply {
-        timeInMillis = tripStartCalendar.timeInMillis
-        set(Calendar.HOUR_OF_DAY, 0)
-        set(Calendar.MINUTE, 0)
-        set(Calendar.SECOND, 0)
-        set(Calendar.MILLISECOND, 0)
+    while (!current.after(end)) {
+        // 🔥 修改：使用 DD/MM/YYYY 格式
+        val dateString = String.format("%d/%d/%d",
+            current.get(Calendar.DAY_OF_MONTH),
+            current.get(Calendar.MONTH) + 1,
+            current.get(Calendar.YEAR)
+        )
+        dateList.add(dateString)
+        current.add(Calendar.DAY_OF_MONTH, 1)
     }
 
-    // 计算日期差（以天为单位）
-    val diffInMillis = activityDate.timeInMillis - tripStartDate.timeInMillis
-    val diffInDays = diffInMillis / (24 * 60 * 60 * 1000)
-
-    // 返回相对天数（从第1天开始）
-    return (diffInDays + 1).toInt()
+    Log.d("DateRangeDebug", "Generated date list: $dateList")
+    return dateList
 }
 
-fun calculateDayIndexFromTrip(trip: Trip, activityDateKey: String): Int {
-    // 获取旅行中所有活动日期的排序列表
-    val sortedDays = trip.activities.keys.sortedBy { key ->
-        val calendar = key.toCalendar()
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
-        calendar
+// Helper function: Find all activities for a specific date
+/*
+根据某个目标日期（targetDateKey）从活动列表中筛选出这一天的所有活动，并按时间排序返回
+目标日期字符串，比如 "2025-06-23"
+活动字典，键是日期字符串，值是该日期的活动列表
+2025-06-24  key
+08:00 - 酒店早餐  value
+09:30 - 客户会议
+12:15 - 午餐
+ */
+
+// Helper function: Parse activity date from string key
+private fun findActivitiesForDate(targetDateKey: String, allActivities: Map<String, List<Trip.Activity>>): List<Trip.Activity> {
+    Log.d("ActivitySearch", "Looking for activities with dateKey: '$targetDateKey'")
+
+    // 直接匹配，因为现在格式一致了 (DD/MM/YYYY)
+    val activities = allActivities[targetDateKey] ?: emptyList()
+
+    Log.d("ActivitySearch", "Found ${activities.size} activities for '$targetDateKey'")
+
+    // 按时间排序
+    return activities.sortedBy { activity ->
+        parseTimeToMinutes(activity.time)
+    }
+}
+
+
+// Helper function: Convert time string to minutes for sorting
+/*
+将时间字符串（例如 "02:30 PM"）解析成从午夜开始的分钟数。
+返回值是 Int 类型，例如：
+"02:30 PM" → 14 * 60 + 30 = 870 分钟
+"07:15 AM" → 7 * 60 + 15 = 435 分钟
+定义一个私有函数，输入是 String 类型的时间字符串，返回该时间距当日午夜的分钟数（Int 类型）
+ */
+private fun parseTimeToMinutes(timeString: String): Int {
+    //使用 try-catch 块来处理可能的时间解析异常
+    return try {
+        /*
+        创建一个时间格式解析器：
+           hh：12小时制（01-12）
+           mm：分钟（00-59）
+           a：AM 或 PM
+           Locale.US：确保解析时使用英文 AM/PM，否则某些语言（如中文）可能导致解析失败。
+         */
+        val formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.US)
+        /*
+        使用 formatter 将传入的时间字符串解析成一个 LocalTime 对象（只包含小时和分钟，不包含日期）
+         */
+        val time = LocalTime.parse(timeString, formatter)
+        time.hour * 60 + time.minute
+    } catch (e: Exception) {
+        // If parsing fails, return a default value
+        Log.e("TimeParsing", "Error parsing time: $timeString", e)
+        0
+    }
+}
+
+fun debugTripData(trip: Trip?, vm: TripViewModel) {
+    Log.d("TripDebug", "=== COMPREHENSIVE TRIP DEBUG START ===")
+
+    if (trip == null) {
+        Log.e("TripDebug", "Trip is NULL!")
+        return
     }
 
-    // 找到当前活动日期在排序列表中的索引位置
-    val dayIndex = sortedDays.indexOf(activityDateKey)
+    // 基本信息
+    Log.d("TripDebug", "基本信息")
+    Log.d("TripDebug", "Trip ID: ${trip.id}")
+    Log.d("TripDebug", "Trip Title: '${trip.title}'")
+    Log.d("TripDebug", "Trip Destination: '${trip.destination}'")
+    Log.d("TripDebug", "Trip Creator ID: ${trip.creatorId}")
+    Log.d("TripDebug", "Trip Published: ${trip.published}")
+    Log.d("TripDebug", "Trip Draft: ${trip.isDraft}")
+    Log.d("TripDebug", "基本信息")
 
-    // 返回基于1的索引（第1天、第2天等）
-    return if (dayIndex >= 0) dayIndex + 1 else 1
+    // 日期信息
+    Log.d("TripDebug", "日期信息")
+    Log.d("TripDebug", "Start Date: ${trip.startDate}")
+    Log.d("TripDebug", "End Date: ${trip.endDate}")
+    Log.d("TripDebug", "Start Date Calendar: ${trip.startDateAsCalendar().time}")
+    Log.d("TripDebug", "End Date Calendar: ${trip.endDateAsCalendar().time}")
+    Log.d("TripDebug", "日期信息")
+
+    // 活动信息 - 详细分析
+    Log.d("TripDebug", "=== ACTIVITIES DEBUG ===")
+    Log.d("TripDebug", "Activities Map Size: ${trip.activities.size}")
+    Log.d("TripDebug", "Activities Map Keys: ${trip.activities.keys.joinToString()}")
+    Log.d("TripDebug", "Activities Map Empty: ${trip.activities.isEmpty()}")
+    Log.d("TripDebug", "=== ACTIVITIES DEBUG ===")
+
+    if (trip.activities.isNotEmpty()) {
+        trip.activities.forEach { (dateKey, activities) ->
+            Log.d("TripDebug", "Date Key: '$dateKey' -> ${activities.size} activities")
+            activities.forEachIndexed { index, activity ->
+                Log.d("TripDebug", "  Activity $index: ID=${activity.id}, Time='${activity.time}', Desc='${activity.description}'")
+                Log.d("TripDebug", "  Activity Date: ${activity.date}")
+            }
+        }
+    } else {
+        Log.w("TripDebug", "NO ACTIVITIES FOUND IN TRIP!")
+    }
+
+    // ViewModel 状态检查
+    Log.d("TripDebug", "ViewModel User Action: ${vm.userAction}")
+    Log.d("TripDebug", "ViewModel Selected Trip ID: ${vm.selectedTrip.value.id}")
+    Log.d("TripDebug", "ViewModel Selected Trip Activities: ${vm.selectedTrip.value.activities.size}")
+
+    when (vm.userAction) {
+        TripViewModel.UserAction.CREATE_TRIP -> {
+            Log.d("TripDebug", "NewTrip ID: ${vm.newTrip.id}")
+            Log.d("TripDebug", "NewTrip Activities: ${vm.newTrip.activities.size}")
+            vm.newTrip.activities.forEach { (k, v) ->
+                Log.d("TripDebug", "NewTrip - $k: ${v.size} activities")
+            }
+        }
+        TripViewModel.UserAction.EDIT_TRIP -> {
+            Log.d("TripDebug", "EditTrip ID: ${vm.editTrip.id}")
+            Log.d("TripDebug", "EditTrip Activities: ${vm.editTrip.activities.size}")
+            vm.editTrip.activities.forEach { (k, v) ->
+                Log.d("TripDebug", "EditTrip - $k: ${v.size} activities")
+            }
+        }
+        else -> Log.d("TripDebug", "Other action: ${vm.userAction}")
+    }
+
+    // 检查三个Trip对象是否一致
+    Log.d("TripDebug", "=== TRIP OBJECTS COMPARISON ===")
+    Log.d("TripDebug", "selectedTrip vs input trip - Same ID: ${vm.selectedTrip.value.id == trip.id}")
+    Log.d("TripDebug", "selectedTrip vs input trip - Same activities count: ${vm.selectedTrip.value.activities.size == trip.activities.size}")
+
+    // 检查是否有状态不同步的问题
+    if (vm.userAction == TripViewModel.UserAction.CREATE_TRIP) {
+        Log.d("TripDebug", "newTrip vs selectedTrip - Same ID: ${vm.newTrip.id == vm.selectedTrip.value.id}")
+        Log.d("TripDebug", "newTrip vs selectedTrip - Same activities: ${vm.newTrip.activities.size == vm.selectedTrip.value.activities.size}")
+    } else if (vm.userAction == TripViewModel.UserAction.EDIT_TRIP) {
+        Log.d("TripDebug", "editTrip vs selectedTrip - Same ID: ${vm.editTrip.id == vm.selectedTrip.value.id}")
+        Log.d("TripDebug", "editTrip vs selectedTrip - Same activities: ${vm.editTrip.activities.size == vm.selectedTrip.value.activities.size}")
+    }
+}
+
+// 🔧 修复版本：简化的调试函数，直接接收 Trip 对象
+fun debugTripData1(trip: Trip, vm: TripViewModel) {
+    Log.d("TripDebug", "=== COMPREHENSIVE TRIP DEBUG ===")
+
+    // 基本信息
+    Log.d("TripDebug", "Trip ID: ${trip.id}")
+    Log.d("TripDebug", "Trip Title: '${trip.title}'")
+    Log.d("TripDebug", "Trip Destination: '${trip.destination}'")
+    Log.d("TripDebug", "Trip Creator ID: ${trip.creatorId}")
+    Log.d("TripDebug", "Trip Published: ${trip.published}")
+    Log.d("TripDebug", "Trip Draft: ${trip.isDraft}")
+
+    // 日期信息
+    Log.d("TripDebug", "Start Date: ${trip.startDate}")
+    Log.d("TripDebug", "End Date: ${trip.endDate}")
+    Log.d("TripDebug", "Start Date Calendar: ${trip.startDateAsCalendar().time}")
+    Log.d("TripDebug", "End Date Calendar: ${trip.endDateAsCalendar().time}")
+
+    // 活动信息 - 详细分析
+    Log.d("TripDebug", "Activities Map Size: ${trip.activities.size}")
+    Log.d("TripDebug", "Activities Map Keys: ${trip.activities.keys.joinToString()}")
+    Log.d("TripDebug", "Activities Map Empty: ${trip.activities.isEmpty()}")
+
+    if (trip.activities.isNotEmpty()) {
+        trip.activities.forEach { (dateKey, activities) ->
+            Log.d("TripDebug", "Date Key: '$dateKey' -> ${activities.size} activities")
+            activities.forEachIndexed { index, activity ->
+                Log.d("TripDebug", "  Activity $index: ID=${activity.id}, Time='${activity.time}', Desc='${activity.description}'")
+                Log.d("TripDebug", "  Activity Date: ${activity.date}")
+            }
+        }
+    } else {
+        Log.w("TripDebug", "NO ACTIVITIES FOUND IN TRIP!")
+    }
+
+    // ViewModel 状态检查
+    Log.d("TripDebug", "ViewModel User Action: ${vm.userAction}")
+    Log.d("TripDebug", "ViewModel Selected Trip ID: ${vm.selectedTrip.value.id}")
+    Log.d("TripDebug", "ViewModel Selected Trip Activities: ${vm.selectedTrip.value.activities.size}")
+
+    when (vm.userAction) {
+        TripViewModel.UserAction.CREATE_TRIP -> {
+            Log.d("TripDebug", "NewTrip ID: ${vm.newTrip.id}")
+            Log.d("TripDebug", "NewTrip Activities: ${vm.newTrip.activities.size}")
+            vm.newTrip.activities.forEach { (k, v) ->
+                Log.d("TripDebug", "NewTrip - $k: ${v.size} activities")
+            }
+        }
+        TripViewModel.UserAction.EDIT_TRIP -> {
+            Log.d("TripDebug", "EditTrip ID: ${vm.editTrip.id}")
+            Log.d("TripDebug", "EditTrip Activities: ${vm.editTrip.activities.size}")
+            vm.editTrip.activities.forEach { (k, v) ->
+                Log.d("TripDebug", "EditTrip - $k: ${v.size} activities")
+            }
+        }
+        else -> Log.d("TripDebug", "Other action: ${vm.userAction}")
+    }
+
+    // 检查三个Trip对象是否一致
+    Log.d("TripDebug", "=== TRIP OBJECTS COMPARISON ===")
+    Log.d("TripDebug", "selectedTrip vs input trip - Same ID: ${vm.selectedTrip.value.id == trip.id}")
+    Log.d("TripDebug", "selectedTrip vs input trip - Same activities count: ${vm.selectedTrip.value.activities.size == trip.activities.size}")
+
+
 }

@@ -134,9 +134,26 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
     var typeTravelError by rememberSaveable { mutableStateOf(false) }
 
     // Date Handling: Start Date and End Date fields and related Calendar objects
-    var startDate by rememberSaveable { mutableStateOf(trip.startDateAsCalendar().toStringDate()) }
+    var startDate by rememberSaveable {
+        mutableStateOf(
+            String.format("%d/%d/%d",
+                trip.startDateAsCalendar().get(Calendar.DAY_OF_MONTH),
+                trip.startDateAsCalendar().get(Calendar.MONTH) + 1,
+                trip.startDateAsCalendar().get(Calendar.YEAR)
+            )
+        )
+    }
+    var endDate by rememberSaveable {
+        mutableStateOf(
+            String.format("%d/%d/%d",
+                trip.endDateAsCalendar().get(Calendar.DAY_OF_MONTH),
+                trip.endDateAsCalendar().get(Calendar.MONTH) + 1,
+                trip.endDateAsCalendar().get(Calendar.YEAR)
+            )
+        )
+    }
     var startCalendar by rememberSaveable { mutableStateOf<Calendar?>(trip.startDateAsCalendar()) }
-    var endDate by rememberSaveable { mutableStateOf(trip.endDateAsCalendar().toStringDate()) }
+
     var endCalendar by rememberSaveable { mutableStateOf<Calendar?>(trip.endDateAsCalendar()) }
 
     // Holds error message related to dates
@@ -408,13 +425,13 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                     DatePickerDialog(
                         context,
                         { _: DatePicker, y: Int, m: Int, d: Int ->
-                            startDate = "$d/${m + 1}/$y"
+                            // 🔥 修改：使用 DD/MM/YYYY 格式
+                            startDate = String.format("%d/%d/%d", d, m + 1, y)
                             val newStartCalendar = Calendar.getInstance().apply {
                                 set(y, m, d, 0, 0, 0)
                                 set(Calendar.MILLISECOND, 0)
                             }
                             startCalendar = newStartCalendar
-
                         }, year, month, day
                     ).apply {
                         datePicker.minDate = today.timeInMillis
@@ -425,13 +442,13 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                     DatePickerDialog(
                         context,
                         { _: DatePicker, y: Int, m: Int, d: Int ->
-                            endDate = "$d/${m + 1}/$y"
+                            // 🔥 修改：使用 DD/MM/YYYY 格式
+                            endDate = String.format("%d/%d/%d", d, m + 1, y)
                             val newEndCalendar = Calendar.getInstance().apply {
                                 set(y, m, d, 0, 0, 0)
                                 set(Calendar.MILLISECOND, 0)
                             }
                             endCalendar = newEndCalendar
-
                         }, year, month, day
                     )
                 }
@@ -748,6 +765,10 @@ fun TripImageEdit(trip: Trip, imageUri: Uri?, onUriSelected: (Uri?) -> Unit) {
 // Function: Smartly reallocates activities in a trip when the date range changes
 
 // Calculates the number of days between two Calendar dates
+/*
+从 2025-06-01 到 2025-06-01 → 返回 1 天
+从 2025-06-01 到 2025-06-03 → 返回 3 天
+ */
 fun calculateDaysBetween(startCal: Calendar, endCal: Calendar): Int {
 
     // Create a clean copy of the start date and normalize it to midnight
@@ -778,41 +799,34 @@ fun calculateDaysBetween(startCal: Calendar, endCal: Calendar): Int {
 // Case 1: When the trip duration (number of days) is unchanged,
 // this function repositions all activities to the same relative day,
 // just offset by the number of days between the old and new start dates.
+
 private fun reallocateWithSameInterval(
     originalActivities: Map<String, List<Trip.Activity>>,
     oldStartCal: Calendar,
     newStartCal: Calendar,
     updatedActivities: MutableMap<String, List<Trip.Activity>>
 ) {
-
-    // Calculate how many days the start date has shifted by
-    // Subtract 1 to get the offset (e.g., if shifted by 3 full days, offset = 2)
-    val dayOffset = calculateDaysBetween(oldStartCal, newStartCal) - 1
-
-    // Iterate over each original activity date and its corresponding list of activities
     originalActivities.forEach { (oldDateKey, activities) ->
         try {
-            // Parse the original date key (String) into a Calendar object
-            val oldActivityDate = parseActivityDate(oldDateKey)
+            val oldActivityDate = parseActivityDateDDMMYYYY(oldDateKey)
+            val dayNumber = calculateDaysBetween(oldStartCal, oldActivityDate)
 
-            // Create a new Calendar instance based on the old date and shift it by the offset
             val newActivityDate = Calendar.getInstance().apply {
-                timeInMillis = oldActivityDate.timeInMillis     // Start from old activity's date
-                add(
-                    Calendar.DAY_OF_MONTH,
-                    dayOffset
-                )           // Move it by the offset to the new position
+                timeInMillis = newStartCal.timeInMillis
+                add(Calendar.DAY_OF_MONTH, dayNumber - 1)
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
             }
 
-            // Convert the new Calendar object back to a String key to use in the updated map
-            val newDateKey = newActivityDate.toStringDate()
+            // 🔥 使用 DD/MM/YYYY 格式
+            val newDateKey = newActivityDate.toDDMMYYYYString()
 
-            // Update all activities to reflect the new date (copying each one with a new timestamp)
             val updatedActivityList = activities.map { activity ->
                 activity.copy(date = Timestamp(newActivityDate.time))
             }
 
-            // Add the updated activities to the output map under the new date key
             updatedActivities[newDateKey] = updatedActivityList
 
         } catch (e: Exception) {
@@ -821,37 +835,176 @@ private fun reallocateWithSameInterval(
     }
 }
 
-// Case 2: When the new trip duration is longer than the original
+private fun reallocateWithShorterInterval(
+    originalActivities: Map<String, List<Trip.Activity>>,
+    oldStartCal: Calendar,
+    newStartCal: Calendar,
+    newEndCal: Calendar,
+    updatedActivities: MutableMap<String, List<Trip.Activity>>
+) {
+    Log.d("ShorterInterval", "=== REALLOCATE WITH SHORTER INTERVAL START ===")
+    Log.d("ShorterInterval", "Old Start: ${oldStartCal.time}")
+    Log.d("ShorterInterval", "New Start: ${newStartCal.time}")
+    Log.d("ShorterInterval", "New End: ${newEndCal.time}")
+
+    // 计算新旅行的天数
+    val newTripDays = calculateDaysBetween(newStartCal, newEndCal)
+    Log.d("ShorterInterval", "New trip duration: $newTripDays days")
+
+    // 收集超出范围的活动
+    val overflowActivities = mutableListOf<Trip.Activity>()
+
+    Log.d("ShorterInterval", "Original activities keys: ${originalActivities.keys.joinToString()}")
+    Log.d("ShorterInterval", "Total original activity groups: ${originalActivities.size}")
+
+    // 遍历每个原始活动日期
+    originalActivities.forEach { (oldDateKey, activities) ->
+        Log.d("ShorterInterval", "--- Processing date group: '$oldDateKey' with ${activities.size} activities ---")
+
+        try {
+            // 🔥 修改1：使用 DD/MM/YYYY 格式解析函数
+            val oldActivityDate = parseActivityDateDDMMYYYY(oldDateKey)
+            Log.d("ShorterInterval", "Parsed old activity date: ${oldActivityDate.time}")
+
+            // 计算这个活动在原始旅行中是第几天
+            val dayNumber = calculateDaysBetween(oldStartCal, oldActivityDate)
+            Log.d("ShorterInterval", "Day number in original trip: $dayNumber (date: $oldDateKey)")
+
+            Log.d("ShorterInterval", "Checking: dayNumber($dayNumber) <= newTripDays($newTripDays)?")
+
+            if (dayNumber <= newTripDays) {
+                Log.d("ShorterInterval", "✅ Day $dayNumber is within new trip range")
+
+                // 如果这一天在新旅行范围内，计算新的对应日期
+                val newActivityDate = Calendar.getInstance().apply {
+                    timeInMillis = newStartCal.timeInMillis
+                    add(Calendar.DAY_OF_MONTH, dayNumber - 1)
+                    set(Calendar.HOUR_OF_DAY, 0)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }
+
+                Log.d("ShorterInterval", "Calculated new activity date: ${newActivityDate.time}")
+
+                // 🔥 修改2：使用 DD/MM/YYYY 格式生成日期键
+                val newDateKey = newActivityDate.toDDMMYYYYString()
+                Log.d("ShorterInterval", "New date key: '$newDateKey'")
+
+                // 更新活动的日期
+                val updatedActivityList = activities.map { activity ->
+                    Log.d("ShorterInterval", "  Updating activity: ID=${activity.id}, Desc='${activity.description}', Time=${activity.time}")
+                    activity.copy(date = Timestamp(newActivityDate.time))
+                }
+
+                Log.d("ShorterInterval", "Adding ${updatedActivityList.size} activities to new date '$newDateKey'")
+                updatedActivities[newDateKey] = updatedActivityList
+
+            } else {
+                Log.w("ShorterInterval", "❌ Day $dayNumber is BEYOND new trip range ($newTripDays days)")
+                Log.w("ShorterInterval", "Adding ${activities.size} activities to overflow list:")
+
+                activities.forEach { activity ->
+                    Log.w("ShorterInterval", "  Overflow activity: ID=${activity.id}, Desc='${activity.description}', Time=${activity.time}")
+                }
+
+                // 超出范围的活动，添加到溢出列表
+                overflowActivities.addAll(activities)
+            }
+
+        } catch (e: Exception) {
+            Log.e("ShorterInterval", "❌ ERROR processing date '$oldDateKey': ${e.message}", e)
+            Log.e("ShorterInterval", "Adding ${activities.size} activities to overflow due to error")
+            // 如果解析失败，将活动视为溢出
+            overflowActivities.addAll(activities)
+        }
+
+        Log.d("ShorterInterval", "--- End processing '$oldDateKey' ---")
+    }
+
+    Log.d("ShorterInterval", "Processing complete. Overflow activities: ${overflowActivities.size}")
+
+    // 将溢出的活动分配到最后一天
+    if (overflowActivities.isNotEmpty()) {
+        Log.w("ShorterInterval", "=== PROCESSING OVERFLOW ACTIVITIES ===")
+        Log.w("ShorterInterval", "Total overflow activities: ${overflowActivities.size}")
+
+        val lastDay = Calendar.getInstance().apply {
+            timeInMillis = newEndCal.timeInMillis
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+
+        Log.w("ShorterInterval", "Last day date: ${lastDay.time}")
+
+        // 🔥 修改3：使用 DD/MM/YYYY 格式生成最后一天的日期键
+        val lastDayKey = lastDay.toDDMMYYYYString()
+        Log.w("ShorterInterval", "Last day key: '$lastDayKey'")
+
+        val overflowWithNewDate = overflowActivities.map { activity ->
+            Log.w("ShorterInterval", "  Moving to last day: ID=${activity.id}, Desc='${activity.description}', Time=${activity.time}")
+            activity.copy(date = Timestamp(lastDay.time))
+        }
+
+        // 检查最后一天是否已经有活动
+        val existingActivitiesOnLastDay = updatedActivities[lastDayKey]?.size ?: 0
+        Log.w("ShorterInterval", "Existing activities on last day: $existingActivitiesOnLastDay")
+
+        // 如果最后一天已经有活动，合并；否则创建新的
+        val finalActivitiesForLastDay = (updatedActivities[lastDayKey] ?: emptyList()) + overflowWithNewDate
+        updatedActivities[lastDayKey] = finalActivitiesForLastDay
+
+        Log.w("ShorterInterval", "Total activities on last day after merge: ${finalActivitiesForLastDay.size}")
+        Log.w("ShorterInterval", "=== OVERFLOW PROCESSING COMPLETE ===")
+    } else {
+        Log.d("ShorterInterval", "No overflow activities to process")
+    }
+
+    Log.d("ShorterInterval", "=== FINAL RESULT ===")
+    Log.d("ShorterInterval", "Updated activities map keys: ${updatedActivities.keys.joinToString()}")
+    updatedActivities.forEach { (dateKey, activities) ->
+        Log.d("ShorterInterval", "  '$dateKey': ${activities.size} activities")
+    }
+    Log.d("ShorterInterval", "=== REALLOCATE WITH SHORTER INTERVAL END ===")
+}
+
+// 同样需要修改 reallocateWithLongerInterval 函数
 private fun reallocateWithLongerInterval(
     originalActivities: Map<String, List<Trip.Activity>>,
     oldStartCal: Calendar,
     newStartCal: Calendar,
     updatedActivities: MutableMap<String, List<Trip.Activity>>
 ) {
-    // Loop through each original date and the associated activities
+    // 遍历每个原始活动日期
     originalActivities.forEach { (oldDateKey, activities) ->
         try {
+            // 🔥 修改：使用 DD/MM/YYYY 格式解析函数
+            val oldActivityDate = parseActivityDateDDMMYYYY(oldDateKey)
 
-            // Convert the old string date key into a Calendar object
-            val oldActivityDate = parseActivityDate(oldDateKey)
-
-            // Calculate the position of this date in the original trip (relative to old start date)
+            // 计算这个活动在原始旅行中是第几天（相对位置）
             val relativeDay = calculateDaysBetween(oldStartCal, oldActivityDate) - 1
 
-            // Create the new date by adding the same relative day to the new trip's start date
+            // 在新旅行中计算对应的日期（保持相同的相对位置）
             val newActivityDate = Calendar.getInstance().apply {
-                timeInMillis = newStartCal.timeInMillis     // Start from the new start date
-                add(Calendar.DAY_OF_MONTH, relativeDay)     // Maintain the same relative day
+                timeInMillis = newStartCal.timeInMillis
+                add(Calendar.DAY_OF_MONTH, relativeDay)
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
             }
 
-            // Convert the calculated Calendar date back into a string key
-            val newDateKey = newActivityDate.toStringDate()
+            // 🔥 修改：使用 DD/MM/YYYY 格式生成日期键
+            val newDateKey = newActivityDate.toDDMMYYYYString()
 
+            // 更新活动的日期时间戳
             val updatedActivityList = activities.map { activity ->
                 activity.copy(date = Timestamp(newActivityDate.time))
             }
 
-            // Update each activity to have a new date
+            // 添加到结果中
             updatedActivities[newDateKey] = updatedActivityList
 
         } catch (e: Exception) {
@@ -859,6 +1012,55 @@ private fun reallocateWithLongerInterval(
         }
     }
 }
+
+// 还需要修改 reallocateWithShorterIntervalDeleteExcess 函数
+private fun reallocateWithShorterIntervalDeleteExcess(
+    originalActivities: Map<String, List<Trip.Activity>>,
+    oldStartCal: Calendar,
+    newStartCal: Calendar,
+    newEndCal: Calendar,
+    updatedActivities: MutableMap<String, List<Trip.Activity>>
+) {
+    // 计算新旅行的天数
+    val newTripDays = calculateDaysBetween(newStartCal, newEndCal)
+
+    originalActivities.forEach { (oldDateKey, activities) ->
+        try {
+            // 🔥 修改：使用 DD/MM/YYYY 格式解析函数
+            val oldActivityDate = parseActivityDateDDMMYYYY(oldDateKey)
+
+            // 计算这个活动在原始旅行中是第几天
+            val dayNumber = calculateDaysBetween(oldStartCal, oldActivityDate)
+
+            // 只保留在新旅行期间内的活动
+            if (dayNumber <= newTripDays) {
+                val newActivityDate = Calendar.getInstance().apply {
+                    timeInMillis = newStartCal.timeInMillis
+                    add(Calendar.DAY_OF_MONTH, dayNumber - 1)
+                    set(Calendar.HOUR_OF_DAY, 0)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }
+
+                // 🔥 修改：使用 DD/MM/YYYY 格式生成日期键
+                val newDateKey = newActivityDate.toDDMMYYYYString()
+                val updatedActivityList = activities.map { activity ->
+                    activity.copy(date = Timestamp(newActivityDate.time))
+                }
+
+                updatedActivities[newDateKey] = updatedActivityList
+            }
+            // 超出的活动不添加到 updatedActivities，直接删除
+
+        } catch (e: Exception) {
+            Log.e("SmartReallocation", "Error processing date $oldDateKey: ${e.message}")
+        }
+    }
+}
+
+
+
 
 // Date Validation Function: Ensures that the end date is not earlier than the start date.
 fun validateDateOrder(startCalendar: Calendar?, endCalendar: Calendar?): Boolean {
@@ -948,272 +1150,50 @@ private fun updateTripAndNavigate(
 }
 
 // Automatically reallocates activities for a trip when the start or end date is changed.
-fun smartReallocateActivitiesDirectly(
-    vm: TripViewModel,
-    oldStartCal: Calendar,
-    oldEndCal: Calendar,
-    newStartCal: Calendar,
-    newEndCal: Calendar,
-    onShowDialog: ((String, () -> Unit, () -> Unit) -> Unit)? = null
-) {
-    val currentTrip = vm.editTrip
-    val oldIntervalDays = calculateDaysBetween(oldStartCal, oldEndCal)
-    val newIntervalDays = calculateDaysBetween(newStartCal, newEndCal)
-
-    val updatedActivities = mutableMapOf<String, List<Trip.Activity>>()
-
-    when {
-        // Case 1: Same interval - directly move all activities
-        oldIntervalDays == newIntervalDays -> {
-            reallocateWithSameInterval(
-                currentTrip.activities,
-                oldStartCal,
-                newStartCal,
-                updatedActivities
-            )
-            applyActivityUpdate(vm, currentTrip, updatedActivities, newStartCal, newEndCal)
-        }
-
-        // Case 2: Longer interval - keep activities at same relative positions, leave other dates empty
-        newIntervalDays > oldIntervalDays -> {
-            reallocateWithLongerInterval(
-                currentTrip.activities,
-                oldStartCal,
-                newStartCal,
-                updatedActivities
-            )
-            applyActivityUpdate(vm, currentTrip, updatedActivities, newStartCal, newEndCal)
-        }
-
-        // Case 3: Shorter interval - handle based on whether dialog callback is provided
-        newIntervalDays < oldIntervalDays -> {
-            if (onShowDialog != null) {
-                // Show user choice dialog if callback is provided
-                val dialogMessage = "The new trip duration is shorter, some activities will exceed the trip period. Please choose how to handle them:"
-
-                val onMoveToLastDay = {
-                    reallocateWithShorterInterval(
-                        currentTrip.activities,
-                        oldStartCal,
-                        newStartCal,
-                        newEndCal,
-                        updatedActivities
-                    )
-                    applyActivityUpdate(vm, currentTrip, updatedActivities, newStartCal, newEndCal)
-                }
-
-                val onDeleteExcess = {
-                    reallocateWithShorterIntervalDeleteExcess(
-                        currentTrip.activities,
-                        oldStartCal,
-                        newStartCal,
-                        newEndCal,
-                        updatedActivities
-                    )
-                    applyActivityUpdate(vm, currentTrip, updatedActivities, newStartCal, newEndCal)
-                }
-
-                onShowDialog(dialogMessage, onMoveToLastDay, onDeleteExcess)
-            } else {
-                // Default behavior: move excess activities to last day (original behavior)
-                reallocateWithShorterInterval(
-                    currentTrip.activities,
-                    oldStartCal,
-                    newStartCal,
-                    newEndCal,
-                    updatedActivities
-                )
-                applyActivityUpdate(vm, currentTrip, updatedActivities, newStartCal, newEndCal)
-            }
-        }
-    }
-}
 
 // Parses a given dateKey string into a Calendar object
-fun parseActivityDate(dateKey: String): Calendar {
-    return try {
-        when {
-            // If the string can be parsed as a long number and looks like a timestamp
-            dateKey.toLongOrNull() != null && dateKey.length > 10 -> {
-                // Parse it as a timestamp (milliseconds since epoch)
-                Calendar.getInstance().apply {
-                    timeInMillis = dateKey.toLong()
-                }
-            }
 
-            else -> {
-                // Fallback — treat the string as a manually formatted date
-                parseDateManually(dateKey)
+fun parseActivityDateDDMMYYYY(dateKey: String): Calendar {
+    Log.d("DateParse", "Parsing date key: '$dateKey'")
+
+    val calendar = Calendar.getInstance()
+
+    try {
+        // 处理 DD/MM/YYYY 格式
+        if (dateKey.contains("/")) {
+            val parts = dateKey.split("/")
+            if (parts.size == 3) {
+                val day = parts[0].toInt()
+                val month = parts[1].toInt() - 1  // Calendar 月份从0开始
+                val year = parts[2].toInt()
+                calendar.set(year, month, day)
+                Log.d("DateParse", "Parsed as DD/MM/YYYY: $day/${month+1}/$year")
+            } else {
+                throw IllegalArgumentException("Invalid DD/MM/YYYY format: $dateKey")
             }
+        } else {
+            throw IllegalArgumentException("Expected DD/MM/YYYY format with '/' separator: $dateKey")
         }
-    } catch (e: Exception) {
-        Log.e("DateParsing", "Error parsing date $dateKey: ${e.message}")
-        try {
-            // Retry using a known fallback date format
-            parseDateManually(dateKey, "d/M/yyyy")
-        } catch (_: Exception) {
-            // If all parsing attempts fail, return current date as a fallback
-            Calendar.getInstance()
-        }
+    } catch (e: NumberFormatException) {
+        throw IllegalArgumentException("Invalid date numbers in: $dateKey", e)
     }
+
+    // 清零时间部分
+    calendar.set(Calendar.HOUR_OF_DAY, 0)
+    calendar.set(Calendar.MINUTE, 0)
+    calendar.set(Calendar.SECOND, 0)
+    calendar.set(Calendar.MILLISECOND, 0)
+
+    return calendar
 }
+
+
+
 
 // Manually parses a date string into a Calendar object, based on the provided format
-private fun parseDateManually(dateString: String, format: String = "YYYY-MM-DD"): Calendar {
-    // Split the input string into parts using either "-" or "/" as separators
-    val parts = dateString.split("-", "/")
-
-    // Validate that the date string has exactly three components (day, month, year)
-    if (parts.size != 3) {
-        throw IllegalArgumentException("Invalid date format: $dateString")
-    }
-
-    return when (format) {
-        // Format: "YYYY-MM-DD"
-        "YYYY-MM-DD" -> {
-            val year = parts[0].toInt()         // Extract year from first part
-            val month = parts[1].toInt() - 1     // Month is zero-based in Calendar
-            val day = parts[2].toInt()       // Extract day from third part
-
-            // Construct a Calendar instance with parsed values
-            Calendar.getInstance().apply {
-                set(year, month, day)
-            }
-        }
-
-        // Format: "d/M/yyyy"
-        "d/M/yyyy" -> {
-            val day = parts[0].toInt()          // Day comes first
-            val month = parts[1].toInt() - 1    // Month is zero-based in Calendar
-            val year = parts[2].toInt()         // Year comes last
-
-            // Construct a Calendar instance with parsed values
-            Calendar.getInstance().apply {
-                set(year, month, day)
-            }
-        }
-        // Unsupported or unrecognized format
-        else -> {
-            throw IllegalArgumentException("Unsupported date parsing format: $format")
-        }
-    }
-}
 
 // Reallocates trip activities when the new trip duration is shorter than the original
-private fun reallocateWithShorterInterval(
-    originalActivities: Map<String, List<Trip.Activity>>,
-    oldStartCal: Calendar,
-    newStartCal: Calendar,
-    newEndCal: Calendar,
-    updatedActivities: MutableMap<String, List<Trip.Activity>>
-) {
-    // Normalize original start date (remove time fields for accurate day comparison)
-    val oldStart = Calendar.getInstance().apply {
-        timeInMillis = oldStartCal.timeInMillis
-        set(Calendar.HOUR_OF_DAY, 0)
-        set(Calendar.MINUTE, 0)
-        set(Calendar.SECOND, 0)
-        set(Calendar.MILLISECOND, 0)
-    }
 
-    // Normalize new start date
-    val newStart = Calendar.getInstance().apply {
-        timeInMillis = newStartCal.timeInMillis
-        set(Calendar.HOUR_OF_DAY, 0)
-        set(Calendar.MINUTE, 0)
-        set(Calendar.SECOND, 0)
-        set(Calendar.MILLISECOND, 0)
-    }
-
-    // Normalize new end date
-    val newEnd = Calendar.getInstance().apply {
-        timeInMillis = newEndCal.timeInMillis
-        set(Calendar.HOUR_OF_DAY, 0)
-        set(Calendar.MINUTE, 0)
-        set(Calendar.SECOND, 0)
-        set(Calendar.MILLISECOND, 0)
-    }
-
-    // Calculate the number of days in the new trip duration
-    val newTripDays = calculateDaysBetween(newStart, newEnd)
-
-    // List to collect any activities that fall outside the new date range
-    val overflowActivities = mutableListOf<Trip.Activity>()
-
-    // Map to store valid activities assigned to each valid day in the new date range
-    val dayToActivitiesMap = mutableMapOf<Int, MutableList<Trip.Activity>>()
-
-    // Loop through each date key in the original activity map
-    originalActivities.forEach { (oldDateKey, activities) ->
-        try {
-            // Parse the original date key to a Calendar object
-            val activityDate = parseActivityDate(oldDateKey)
-
-            // Normalize the activity date (remove time components)
-            val normalizedActivityDate = Calendar.getInstance().apply {
-                timeInMillis = activityDate.timeInMillis
-                set(Calendar.HOUR_OF_DAY, 0)
-                set(Calendar.MINUTE, 0)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }
-
-            // Calculate the day index relative to the original start date (1-based)
-            val dayNumber = calculateDaysBetween(oldStart, normalizedActivityDate)
-
-            if (dayNumber <= newTripDays) {
-                // If activity fits within the new trip duration, add it to the correct day
-                if (!dayToActivitiesMap.containsKey(dayNumber)) {
-                    dayToActivitiesMap[dayNumber] = mutableListOf()
-                }
-                dayToActivitiesMap[dayNumber]?.addAll(activities)
-
-            } else {
-                // Otherwise, mark it as overflow
-                overflowActivities.addAll(activities)
-            }
-
-        } catch (e: Exception) {
-            Log.e("SmartReallocation", "Error processing date $oldDateKey: ${e.message}")
-            // If date parsing or logic fails, treat the activities as overflow
-            overflowActivities.addAll(activities)
-        }
-    }
-
-    // Reassign valid activities to the corresponding new dates
-    dayToActivitiesMap.forEach { (dayNumber, activities) ->
-        val newDate = Calendar.getInstance().apply {
-            timeInMillis = newStart.timeInMillis
-            add(Calendar.DAY_OF_MONTH, dayNumber - 1)
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
-
-        val newDateKey = newDate.toStringDate()
-
-        // Copy activities and assign them the new timestamp
-        val updatedActivityList = activities.map { activity ->
-            activity.copy(date = Timestamp(newDate.time))
-        }
-
-        updatedActivities[newDateKey] = updatedActivityList
-    }
-
-    // Assign all overflow activities to the last day of the new trip
-    if (overflowActivities.isNotEmpty()) {
-        val lastDayKey = newEnd.toStringDate()
-
-        val overflowWithNewDate = overflowActivities.map { activity ->
-            activity.copy(date = Timestamp(newEnd.time))
-        }
-
-        // Append overflow activities to any existing activities on the last day
-        updatedActivities[lastDayKey] =
-            (updatedActivities[lastDayKey] ?: emptyList()) + overflowWithNewDate
-    }
-}
 
 // Function with user choice for activity reallocation
 fun smartReallocateActivitiesWithUserChoice(
@@ -1288,77 +1268,7 @@ fun smartReallocateActivitiesWithUserChoice(
 }
 
 // Function to handle deleting excess activities when interval becomes shorter
-private fun reallocateWithShorterIntervalDeleteExcess(
-    originalActivities: Map<String, List<Trip.Activity>>,
-    oldStartCal: Calendar,
-    newStartCal: Calendar,
-    newEndCal: Calendar,
-    updatedActivities: MutableMap<String, List<Trip.Activity>>
-) {
-    val oldStart = Calendar.getInstance().apply {
-        timeInMillis = oldStartCal.timeInMillis
-        set(Calendar.HOUR_OF_DAY, 0)
-        set(Calendar.MINUTE, 0)
-        set(Calendar.SECOND, 0)
-        set(Calendar.MILLISECOND, 0)
-    }
 
-    val newStart = Calendar.getInstance().apply {
-        timeInMillis = newStartCal.timeInMillis
-        set(Calendar.HOUR_OF_DAY, 0)
-        set(Calendar.MINUTE, 0)
-        set(Calendar.SECOND, 0)
-        set(Calendar.MILLISECOND, 0)
-    }
-
-    val newEnd = Calendar.getInstance().apply {
-        timeInMillis = newEndCal.timeInMillis
-        set(Calendar.HOUR_OF_DAY, 0)
-        set(Calendar.MINUTE, 0)
-        set(Calendar.SECOND, 0)
-        set(Calendar.MILLISECOND, 0)
-    }
-
-    val newTripDays = calculateDaysBetween(newStart, newEnd)
-
-    originalActivities.forEach { (oldDateKey, activities) ->
-        try {
-            val activityDate = parseActivityDate(oldDateKey)
-            val normalizedActivityDate = Calendar.getInstance().apply {
-                timeInMillis = activityDate.timeInMillis
-                set(Calendar.HOUR_OF_DAY, 0)
-                set(Calendar.MINUTE, 0)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }
-
-            val dayNumber = calculateDaysBetween(oldStart, normalizedActivityDate)
-
-            // Only keep activities within the new trip period, excess activities are directly deleted
-            if (dayNumber <= newTripDays) {
-                val newDate = Calendar.getInstance().apply {
-                    timeInMillis = newStart.timeInMillis
-                    add(Calendar.DAY_OF_MONTH, dayNumber - 1)
-                    set(Calendar.HOUR_OF_DAY, 0)
-                    set(Calendar.MINUTE, 0)
-                    set(Calendar.SECOND, 0)
-                    set(Calendar.MILLISECOND, 0)
-                }
-
-                val newDateKey = newDate.toStringDate()
-                val updatedActivityList = activities.map { activity ->
-                    activity.copy(date = Timestamp(newDate.time))
-                }
-
-                updatedActivities[newDateKey] = updatedActivityList
-            }
-            // Excess activities are not added to updatedActivities, effectively deleted
-
-        } catch (e: Exception) {
-            Log.e("SmartReallocation", "Error processing date $oldDateKey: ${e.message}")
-        }
-    }
-}
 
 // Helper function to apply activity updates
 private fun applyActivityUpdate(
@@ -1375,3 +1285,11 @@ private fun applyActivityUpdate(
     )
     vm.setSelectedTrip(vm.editTrip)
 }
+fun Calendar.toDDMMYYYYString(): String {
+    return String.format("%d/%d/%d",
+        get(Calendar.DAY_OF_MONTH),
+        get(Calendar.MONTH) + 1,
+        get(Calendar.YEAR)
+    )
+}
+

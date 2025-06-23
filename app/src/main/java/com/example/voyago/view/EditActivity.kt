@@ -338,14 +338,14 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                                 null
                             }
 
-                            // If date is invalid, show error
+                            // 验证日期格式
                             if (parsedDate == null) {
                                 showDateError = true
                                 dateErrorMessage = "Invalid date format. Please select a date."
                                 return@Button
                             }
 
-                            // Validate that date is within the trip duration
+                            // 验证日期是否在行程期间内
                             val activityCalendar = parsedDate
                             val tripStartCal = toCalendar(currentTrip.startDate).apply {
                                 set(Calendar.HOUR_OF_DAY, 0)
@@ -362,9 +362,7 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                             }
 
                             val isDateValid =
-                                !activityCalendar.before(tripStartCal) && !activityCalendar.after(
-                                    tripEndCal
-                                )
+                                !activityCalendar.before(tripStartCal) && !activityCalendar.after(tripEndCal)
 
                             if (!isDateValid) {
                                 showDateError = true
@@ -372,12 +370,12 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                                 return@Button
                             }
 
-                            // Trigger description validation
+                            // 触发描述验证
                             descriptionTouched.value = true
 
-                            // Only proceed if all fields are valid
+                            // 只有在所有字段都有效时才继续
                             if (!showDateError && !descriptionHasErrors) {
-                                // Create updated activity object
+                                // 创建更新后的活动对象
                                 val updatedActivity = Trip.Activity(
                                     id = activityId,
                                     date = Timestamp(activityCalendar.time),
@@ -386,10 +384,10 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                                     description = activityDescription
                                 )
 
-                                //Update the activity through the ViewModel
+                                // 更新活动（这里会自动处理日期归类）
                                 vm.editActivity(activityId, updatedActivity)
 
-                                // Navigate back after updating
+                                // 更新完成后导航回去
                                 navController.popBackStack()
                             }
                         },
