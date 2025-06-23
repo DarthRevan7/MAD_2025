@@ -472,27 +472,75 @@ class ChatViewModel : ViewModel() {
             }
     }
 
-    fun removeUserFromChatByName(roomName: String, userId: Int) {
+//    fun removeUserFromChatByName(roomName: String, userId: Int) {
+//        fetchChatRoomIdByName(roomName) { roomId ->
+//            if (roomId != null) {
+//                removeUserFromChat(roomId, userId)
+//            } else {
+//                Log.e("ChatVM", "Chat room with name '$roomName' not found.")
+//            }
+//        }
+//    }
+//
+//    fun removeUserFromChat(roomId: String, userId: Int) {
+//        val roomRef = db.collection("chatRooms").document(roomId)
+//
+//        roomRef.update("participants.$userId", FieldValue.delete())
+//            .addOnSuccessListener {
+//                Log.d("ChatVM", "User $userId removed from chat room $roomId")
+//            }
+//            .addOnFailureListener {
+//                Log.e("ChatVM", "Failed to remove user $userId from chat room $roomId", it)
+//            }
+//    }
+
+    fun removeParticipantFromRoom(roomName: String, userIdToRemove: Int) {
         fetchChatRoomIdByName(roomName) { roomId ->
-            if (roomId != null) {
-                removeUserFromChat(roomId, userId)
-            } else {
-                Log.e("ChatVM", "Chat room with name '$roomName' not found.")
+            if (roomId == null) {
+                Log.w("ChatDebug", "No chat room found with name $roomName")
+                return@fetchChatRoomIdByName
             }
+
+            val roomRef = db.collection("chatRooms").document(roomId)
+
+            roomRef.get()
+                .addOnSuccessListener { snapshot ->
+                    if (!snapshot.exists()) {
+                        Log.w("ChatDebug", "Room $roomId does not exist")
+                        return@addOnSuccessListener
+                    }
+
+                    val currentParticipants = (snapshot.get("participants") as? List<*>)?.mapNotNull {
+                        when (it) {
+                            is Number -> it.toInt()
+                            is String -> it.toIntOrNull()
+                            else -> null
+                        }
+                    } ?: emptyList()
+
+                    if (!currentParticipants.contains(userIdToRemove)) {
+                        Log.d("ChatDebug", "User $userIdToRemove is not a participant in room $roomId")
+                        return@addOnSuccessListener
+                    }
+
+                    val updatedParticipants = currentParticipants.filter { it != userIdToRemove }
+
+                    roomRef.update("participants", updatedParticipants)
+                        .addOnSuccessListener {
+                            Log.d("ChatDebug", "User $userIdToRemove removed from room $roomId")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("ChatDebug", "Failed to remove user: ${e.message}")
+                        }
+                }
+                .addOnFailureListener { e ->
+                    Log.e("ChatDebug", "Failed to fetch chat room: ${e.message}")
+                }
         }
     }
 
-    fun removeUserFromChat(roomId: String, userId: Int) {
-        val roomRef = db.collection("chatRooms").document(roomId)
 
-        roomRef.update("participants.$userId", FieldValue.delete())
-            .addOnSuccessListener {
-                Log.d("ChatVM", "User $userId removed from chat room $roomId")
-            }
-            .addOnFailureListener {
-                Log.e("ChatVM", "Failed to remove user $userId from chat room $roomId", it)
-            }
-    }
+
 
 
 

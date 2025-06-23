@@ -148,7 +148,7 @@ fun ChatDetails(navController: NavController,
                         tripViewModel.updateTripParticipants(trip.id, loggedUser.id)
 
                         // Remove user from chat participants
-                        chatViewModel.removeUserFromChatByName(trip.title, loggedUser.id)
+                        chatViewModel.removeParticipantFromRoom(trip.title, loggedUser.id)
 
                         // Penalize reliability
                         uvm.updateUserReliability(loggedUser.id, -5) { success ->
