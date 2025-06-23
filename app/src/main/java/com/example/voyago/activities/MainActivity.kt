@@ -604,21 +604,6 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
                 }
             )
         }
-
-//        composable(Screen.Notifications.route) { entry ->
-//            val parentEntry = remember(entry) {
-//                navController.getBackStackEntry(startDest)
-//            }
-//
-//            val nvm: NotificationViewModel =
-//                viewModel(viewModelStoreOwner = parentEntry, factory = NotificationFactory)
-//            val uvm: UserViewModel = viewModel(viewModelStoreOwner = parentEntry, factory = Factory)
-//            val vm: TripViewModel = viewModel(viewModelStoreOwner = parentEntry, factory = Factory)
-//            val avm: ArticleViewModel =
-//                viewModel(viewModelStoreOwner = parentEntry, factory = ArticleFactory)
-//
-//            NotificationView(navController, nvm, uvm, vm, avm)
-//        }
     }
 }
 
@@ -1558,14 +1543,120 @@ fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
                 factory = Factory
             )
 
-            if (tripId != null) {
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = Factory
+            )
+
+            // Create an instance of the ChatViewModel using the ChatFactory
+            val chatViewModel: ChatViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = ChatFactory
+            )
+
+            if (tripId != null){
                 ChatDetails(
+                    navController = navController,
                     tripId = tripId,
-                    tripViewModel = tripViewModel
-                )
+                    tripViewModel = tripViewModel,
+                    uvm = userViewModel,
+                    chatViewModel = chatViewModel,
+                    navController = navController)
             }
+        }
 
 
+        composable(
+            route = "user_profile/{userId}",
+            arguments = listOf(
+                navArgument("userId") {
+                    type = NavType.IntType
+                }
+            )
+        ) { entry ->
+            // Get the back stack entry for the profile graph
+            val chatGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Chats.route)
+            }
+            // Create an instance of the TripViewModel using the Factory
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = Factory
+            )
+            // Create an instance of the UserViewModel using the Factory
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = Factory
+            )
+            // Create an instance of the ReviewViewModel using the Factory
+            val reviewViewModel: ReviewViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = Factory
+            )
+            // Create an instance of the ArticleViewModel using the ArticleFactory
+            val articleViewModel: ArticleViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = ArticleFactory
+            )
+            // Create an instance of the ChatViewModel using the ChatFactory
+            val chatViewModel: ChatViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = ChatFactory
+            )
+            // Get the userId from the arguments, defaulting to -1 if not provided
+            val userId = entry.arguments?.getInt("userId") ?: -1
+            // Pass the NavController, ViewModels, userId to the UserProfileScreen composable
+            UserProfileScreen(
+                navController = navController,
+                vm = tripViewModel,
+                vm2 = articleViewModel,
+                userId = userId,
+                uvm = userViewModel,
+                rvm = reviewViewModel,
+                chatViewModel = chatViewModel
+            )
+        }
+
+        composable("trip_details") { entry ->
+            // Get the back stack entry for the profile graph
+            val chatGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Chats.route)
+            }
+            // Create an instance of the TripViewModel using the Factory
+            val tripViewModel: TripViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = Factory
+            )
+            // Create an instance of the UserViewModel using the Factory
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = Factory
+            )
+            // Create an instance of the ReviewViewModel using the Factory
+            val reviewViewModel: ReviewViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = Factory
+            )
+            // Create an instance of the NotificationViewModel using the NotificationFactory
+            val notificationViewModel: NotificationViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = NotificationFactory
+            )
+            // Create an instance of the ChatViewModel using the ChatFactory
+            val chatViewModel: ChatViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = ChatFactory
+            )
+            // Pass the NavController and ViewModels to the TripDetails composable
+            TripDetails(
+                navController = navController,
+                vm = tripViewModel,
+                owner = false,
+                uvm = userViewModel,
+                rvm = reviewViewModel,
+                nvm = notificationViewModel,
+                chatViewModel = chatViewModel
+            )
         }
 
     }

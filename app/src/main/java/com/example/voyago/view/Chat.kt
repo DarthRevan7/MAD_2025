@@ -2,6 +2,7 @@ package com.example.voyago.view
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -58,6 +59,7 @@ fun SingleChatScreen(
     val messages by chatViewModel.messages.collectAsState()
     val user by uvm.loggedUser.collectAsState()
     val senderNames by chatViewModel.senderNames.collectAsState()
+    val chatRoom by chatViewModel.chatRoom.collectAsState()
 
 
     // Fetch messages and room name when screen shows
@@ -65,6 +67,7 @@ fun SingleChatScreen(
         chatViewModel.fetchMessagesForRoom(roomId)
         chatViewModel.fetchChatRoomName(roomId, user.id)
         chatViewModel.removeUserFromUsersNotRead(roomId, user.id.toString())
+        chatViewModel.getChatRoomFromId(roomId)
     }
 
     val chatRoomNames by chatViewModel.chatRoomNames.collectAsState()
@@ -99,7 +102,7 @@ fun SingleChatScreen(
                 color = Color.White,
                 modifier = Modifier
                     .padding(start = 8.dp)
-                    .clickable(enabled = chatRoomType == "group") {
+                    .clickable(enabled = chatRoomType == "group" || chatRoomType == "private") {
                         if (chatRoomType == "group") {
                             coroutineScope.launch {
                                 val trip = tripViewModel.getTripByTitle(chatRoomName)
@@ -107,6 +110,20 @@ fun SingleChatScreen(
                                     navController.navigate("chat_details/${trip.id}")
                                 }
                             }
+                        }
+                        else if(chatRoomType == "private")
+                        {
+                            var userId = 0
+                                chatRoom?.participants?.forEach{
+                                    if(it != user.id){
+                                    userId = it
+                                }
+                            }
+                            if(userId != 0)
+                            {
+                                navController.navigate("user_profile/${userId}")
+                            }
+
                         }
                     }
             )
