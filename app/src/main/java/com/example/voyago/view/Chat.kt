@@ -141,38 +141,7 @@ fun SingleChatScreen(
                 val isOwnMessage = message.senderId == user.id.toString()
                 val senderName = senderNames[message.senderId] ?: "..."
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    horizontalAlignment = if (isOwnMessage) Alignment.End else Alignment.Start
-                ) {
-                    // Show sender name only if it's NOT from the logged-in user
-                    if (!isOwnMessage) {
-                        Text(
-                            text = senderName,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = Color.Gray,
-                            modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)
-                        )
-                    }
-
-                    Text(
-                        text = message.content,
-                        modifier = Modifier
-                            .background(
-                                if (isOwnMessage) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.secondary,
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                            .padding(12.dp),
-                        color = Color.White
-                    )
-
-                    Text(
-                        text = formatMessageTimestamp(message.timestamp)
-                    )
-                }
+                ChatMessage(isOwnMessage, senderName, message)
             }
         }
 
@@ -207,6 +176,44 @@ fun SingleChatScreen(
                 Icon(Icons.Default.Send, contentDescription = "Send")
             }
         }
+    }
+}
+
+@Composable
+fun ChatMessage(isOwnMessage: Boolean,
+                senderName: String,
+                message: FirebaseChatMessage) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        horizontalAlignment = if (isOwnMessage) Alignment.End else Alignment.Start
+    ) {
+        // Show sender name only if it's NOT from the logged-in user
+        if (!isOwnMessage) {
+            Text(
+                text = senderName,
+                style = MaterialTheme.typography.labelSmall,
+                color = Color.Gray,
+                modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)
+            )
+        }
+
+        Text(
+            text = message.content,
+            modifier = Modifier
+                .background(
+                    if (isOwnMessage) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.secondary,
+                    shape = RoundedCornerShape(8.dp)
+                )
+                .padding(12.dp),
+            color = Color.White
+        )
+
+        Text(
+            text = formatMessageTimestamp(message.timestamp)
+        )
     }
 }
 
