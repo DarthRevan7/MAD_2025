@@ -461,12 +461,20 @@ fun TopBar(nvm: NotificationViewModel, navController: NavController, uvm: UserVi
             // Notification Icon - Click to mark notifications as read and navigate to Notifications screen
             IconButton(
                 onClick = {
-                    // Mark notifications as read
-                    nvm.markNotificationsRead(userId)
-                    // Navigate to the Notifications screen
-                    navController.navigate("notifications") {
-                        // Launch the Notifications screen as a single top instance
-                        launchSingleTop = true
+                    // Get the current route
+                    val currentDestination = navController.currentBackStackEntry?.destination?.route
+
+                    // If already on the Notifications screen, pop it off the back stack
+                    if (currentDestination == "notifications") {
+                        navController.popBackStack()
+                    } else {
+                        // Mark notifications as read
+                        nvm.markNotificationsRead(userId)
+                        // Navigate to the Notifications screen
+                        navController.navigate("notifications") {
+                            // Launch the Notifications screen as a single top instance
+                            launchSingleTop = true
+                        }
                     }
                 }
             ) {
@@ -544,55 +552,7 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
         profileNavGraph(navController)
         loginNavGraph(navController, auth)
         notificationNavGraph(navController, auth)
-        articleNavGraph(navController, auth)
-
-        // WE NEED TO ADD THE FOLLOWING ROUTES AND NAVIGATION'S GRAPH: NOTIFICATIONS, ARTICLE
-        // FROM THIS POINT, WE NEED TO RELOCATE STUFF
-
-//        // 添加全局的 article_search 路由，这样从任何地方都可以访问
-//        composable("article_search") {
-//            val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
-//
-//            ArticleSearchScreen(
-//                navController = navController,
-//                articleViewModel = articleViewModel
-//            )
-//        }
-//        // 添加 create_article 路由
-//        composable("create_article") {
-//            RequireAuth(navController) {
-//                val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
-//                val userViewModel: UserViewModel = viewModel(factory = UserFactory)
-//                val notificationViewModel: NotificationViewModel =
-//                    viewModel(factory = NotificationFactory)
-//
-//                CreateArticleScreen(
-//                    navController = navController,
-//                    articleViewModel = articleViewModel,
-//                    userViewModel = userViewModel,
-//                    nvm = notificationViewModel
-//                )
-//            }
-//        }
-//
-//        // 添加 article_detail 路由
-//        composable(
-//            route = "article_detail/{articleId}",
-//            arguments = listOf(
-//                navArgument("articleId") {
-//                    type = NavType.IntType
-//                }
-//            )
-//        ) { backStackEntry ->
-//            val articleId = backStackEntry.arguments?.getInt("articleId") ?: 0
-//            val articleViewModel: ArticleViewModel = viewModel(factory = ArticleFactory)
-//
-//            ArticleDetailScreen(
-//                navController = navController,
-//                articleId = articleId,
-//                articleViewModel = articleViewModel
-//            )
-//        }
+        articleNavGraph(navController)
 
         composable("camera") {
             val context = LocalContext.current
@@ -608,7 +568,7 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
 }
 
 //Composable function to set up the navigation graph for the "Article" section
-fun NavGraphBuilder.articleNavGraph(navController: NavHostController, auth: FirebaseAuth) {
+fun NavGraphBuilder.articleNavGraph(navController: NavHostController) {
     //Define the start destination for the article navigation graph
     navigation(startDestination = "articles", route = Screen.Articles.route)
     {
@@ -624,8 +584,10 @@ fun NavGraphBuilder.articleNavGraph(navController: NavHostController, auth: Fire
                 factory = ArticleFactory
             )
 
-            ArticleSearchScreen(navController = navController,
-                articleViewModel = articleViewModel)
+            ArticleSearchScreen(
+                navController = navController,
+                articleViewModel = articleViewModel
+            )
 
         }
 
@@ -1554,13 +1516,14 @@ fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
                 factory = ChatFactory
             )
 
-            if (tripId != null){
+            if (tripId != null) {
                 ChatDetails(
                     navController = navController,
                     tripId = tripId,
                     tripViewModel = tripViewModel,
                     uvm = userViewModel,
-                    chatViewModel = chatViewModel)
+                    chatViewModel = chatViewModel
+                )
             }
         }
 
