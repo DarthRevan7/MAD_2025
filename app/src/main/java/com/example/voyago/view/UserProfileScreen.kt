@@ -62,7 +62,6 @@ fun UserProfileScreen(
     // Get the currently logged in user
     val loggedUser by uvm.loggedUser.collectAsState()
 
-
     // Handle null case
     if (user == null) {
         return
