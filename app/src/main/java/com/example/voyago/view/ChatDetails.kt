@@ -1,5 +1,6 @@
 package com.example.voyago.view
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,6 +17,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -25,7 +27,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,21 +40,29 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.example.voyago.model.Trip
 import com.example.voyago.model.User
+import com.example.voyago.viewmodel.ChatViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
 
 @Composable
-fun ChatDetails(tripId: String, tripViewModel: TripViewModel, uvm: UserViewModel) {
+fun ChatDetails(
+    tripId: String,
+    tripViewModel: TripViewModel,
+    chatViewModel: ChatViewModel,
+    uvm: UserViewModel,
+    navController: NavController
+) {
     val tripState = produceState<Trip?>(initialValue = null, tripId) {
-        tripViewModel.fetchTripById(tripId) { trip ->
-            value = trip
-        }
+        tripViewModel.fetchTripById(tripId) { trip -> value = trip }
     }
 
     val trip = tripState.value
+    val showDialog = remember { mutableStateOf(false) }
+    val loggedUser by uvm.loggedUser.collectAsState()
 
     if (trip == null) {
         CircularProgressIndicator(modifier = Modifier.padding(16.dp))
@@ -56,14 +70,11 @@ fun ChatDetails(tripId: String, tripViewModel: TripViewModel, uvm: UserViewModel
     }
 
     Column(modifier = Modifier.padding(16.dp)) {
-        Text(
-            text = "Trip: ${trip.title}",
-            style = MaterialTheme.typography.titleLarge
-        )
+        Text("Trip: ${trip.title}", style = MaterialTheme.typography.titleLarge)
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(onClick = { /* TODO */ }) {
+        Button(onClick = { /* See trip details */ }) {
             Text("See trip details")
         }
 
@@ -76,9 +87,7 @@ fun ChatDetails(tripId: String, tripViewModel: TripViewModel, uvm: UserViewModel
             val userId = userIdString.toIntOrNull()
             if (userId != null) {
                 val userState = produceState<User?>(initialValue = null, userId) {
-                    uvm.getUserData(userId).collect { user ->
-                        value = user
-                    }
+                    uvm.getUserData(userId).collect { user -> value = user }
                 }
 
                 val user = userState.value
@@ -101,15 +110,69 @@ fun ChatDetails(tripId: String, tripViewModel: TripViewModel, uvm: UserViewModel
 
         Spacer(modifier = Modifier.height(16.dp))
 
-
-        Button(
-            onClick = { /* TODO */ },
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
-        ) {
-            Text("Leave trip", color = Color.White)
+        if (trip.status == Trip.TripStatus.COMPLETED.toString()) {
+            Text(
+                text = "Trip completed!",
+                color = Color.Gray,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = 16.dp)
+            )
+        } else {
+            Button(
+                onClick = { showDialog.value = true },
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+            ) {
+                Text("Leave trip", color = Color.White)
+            }
         }
+
+    }
+
+    if (showDialog.value) {
+        AlertDialog(
+            onDismissRequest = { showDialog.value = false },
+            title = { Text("Confirm Leave Trip") },
+            text = {
+                Text("Are you sure you want to leave this trip? This action will affect your reliability score.")
+            },
+            confirmButton = {
+                Button(onClick = {
+                    if (trip.status != Trip.TripStatus.COMPLETED.toString()) {
+                        // Remove user from trip
+                        tripViewModel.updateTripParticipants(trip.id, loggedUser.id)
+
+                        // Remove user from chat participants
+                        chatViewModel.removeUserFromChatByName(trip.title, loggedUser.id)
+
+                        // Penalize reliability
+                        uvm.updateUserReliability(loggedUser.id, -5) { success ->
+                            if (success) {
+                                Log.d("TripDetails", "Reliability updated")
+                            } else {
+                                Log.e("TripDetails", "Reliability update failed")
+                            }
+                        }
+                    } else {
+                        // Just cancel the trip if completed
+                        tripViewModel.cancelTrip(trip.creatorId.toString(), trip.id.toString())
+                    }
+
+                    showDialog.value = false
+                    navController.popBackStack()
+                }) {
+                    Text("Confirm")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showDialog.value = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
+
+
 
 @Composable
 fun MemberItem(

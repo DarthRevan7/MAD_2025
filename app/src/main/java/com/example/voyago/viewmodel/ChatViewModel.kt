@@ -10,6 +10,7 @@ import com.example.voyago.model.ChatRoom
 import com.example.voyago.model.FirebaseChatMessage
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.toObject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -450,6 +451,48 @@ class ChatViewModel : ViewModel() {
                 Log.e("CH1", "Errore nel recupero della ChatRoom con ID '$chatId': ${e.message}", e)
             }
         }
+    }
+
+    fun fetchChatRoomIdByName(
+        roomName: String,
+        onResult: (roomId: String?) -> Unit
+    ) {
+        db.collection("chatRooms")
+            .whereEqualTo("name", roomName)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val doc = querySnapshot.documents.firstOrNull()
+                if (doc != null) {
+                    onResult(doc.id)
+                } else {
+                    onResult(null)
+                }
+            }
+            .addOnFailureListener {
+                onResult(null)
+            }
+    }
+
+    fun removeUserFromChatByName(roomName: String, userId: Int) {
+        fetchChatRoomIdByName(roomName) { roomId ->
+            if (roomId != null) {
+                removeUserFromChat(roomId, userId)
+            } else {
+                Log.e("ChatVM", "Chat room with name '$roomName' not found.")
+            }
+        }
+    }
+
+    fun removeUserFromChat(roomId: String, userId: Int) {
+        val roomRef = db.collection("chatRooms").document(roomId)
+
+        roomRef.update("participants.$userId", FieldValue.delete())
+            .addOnSuccessListener {
+                Log.d("ChatVM", "User $userId removed from chat room $roomId")
+            }
+            .addOnFailureListener {
+                Log.e("ChatVM", "Failed to remove user $userId from chat room $roomId", it)
+            }
     }
 
 
