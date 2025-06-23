@@ -11,7 +11,7 @@ import com.example.voyago.toCalendar
 import com.example.voyago.toStringDate
 import com.example.voyago.view.SelectableItem
 import com.example.voyago.view.isUriString
-import com.example.voyago.view.parseActivityDate
+import com.example.voyago.view.parseActivityDateDDMMYYYY
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
@@ -31,7 +31,6 @@ import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-
 //Trip data structure
 data class Trip(
     val id: Int = 0,
@@ -121,7 +120,7 @@ data class Trip(
     //Activity data structure
     data class Activity(
         val id: Int = 0,
-        var date: Timestamp = Timestamp(Date(0)),         // yyyy-mm-dd
+        var date: Timestamp = Timestamp(Date(0)),
         var time: String = "",                            // hh:mm
         var isGroupActivity: Boolean = false,
         var description: String = "",
@@ -1049,14 +1048,14 @@ class TripModel {
     //ACTIVITY MANAGEMENT
 
     //Function that add an Activity to a specific Trip
-    fun addActivityToTrip(activity: Activity, trip: Trip?): Trip {
+    fun addActivityToTrip(activity: Trip.Activity, trip: Trip?): Trip {
         val currentTrip = trip ?: Trip()
 
         // 创建活动的可变副本
         val updatedActivities = currentTrip.activities.toMutableMap()
 
-        // 使用活动日期作为字符串键
-        val dateKey: String = activity.dateAsCalendar().toStringDate()
+        // 🔥 修改：使用 DD/MM/YYYY 格式作为键
+        val dateKey: String = activity.dateAsCalendar().toDDMMYYYYString()
 
         // 获取该日期现有的活动列表
         val existingActivities = updatedActivities.getOrDefault(dateKey, emptyList()).toMutableList()
@@ -1096,6 +1095,17 @@ class TripModel {
         return updatedTrip
     }
 
+    fun Calendar.toDDMMYYYYString(): String {
+        return String.format("%d/%d/%d",
+            get(Calendar.DAY_OF_MONTH),
+            get(Calendar.MONTH) + 1,
+            get(Calendar.YEAR)
+        )
+    }
+
+    fun Calendar.toActivityDateKey(): String {
+        return this.toDDMMYYYYString()
+    }
 
     //Function that edits an Activity
     fun editActivityInSelectedTrip(
@@ -1199,7 +1209,7 @@ class TripModel {
         // 首先检查是否与现有的日期键匹配
         for (dateKey in existingActivities.keys) {
             try {
-                val existingDate = parseActivityDate(dateKey)
+                val existingDate = parseActivityDateDDMMYYYY(dateKey)
                 val normalizedExistingDate = Calendar.getInstance().apply {
                     timeInMillis = existingDate.timeInMillis
                     set(Calendar.HOUR_OF_DAY, 0)
