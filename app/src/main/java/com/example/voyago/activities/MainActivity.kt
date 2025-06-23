@@ -1543,11 +1543,16 @@ fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
                 factory = Factory
             )
 
-            if (tripId != null) {
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = chatGraphEntry,
+                factory = Factory
+            )
+
+            if (tripId != null){
                 ChatDetails(
                     tripId = tripId,
-                    tripViewModel = tripViewModel
-                )
+                    tripViewModel = tripViewModel,
+                    uvm = userViewModel)
             }
         }
 
