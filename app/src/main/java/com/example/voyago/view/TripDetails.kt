@@ -88,7 +88,6 @@ import com.example.voyago.model.User
 import com.example.voyago.model.isTimestampLong
 import com.example.voyago.model.timestampToCalendar
 import com.example.voyago.toCalendar
-import com.example.voyago.toStringDate
 import com.example.voyago.viewmodel.ChatViewModel
 import com.example.voyago.viewmodel.NotificationViewModel
 import com.example.voyago.viewmodel.ReviewViewModel
@@ -99,7 +98,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.Serializable
 import java.time.LocalTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
 import java.util.Calendar
 import java.util.Locale
 
@@ -334,7 +335,7 @@ fun TripDetails(
                 ) {
                     Text(
                         text = formatTripDate(trip.startDateAsCalendar()) + " - " +
-                                formatTripDate(trip.endDateAsCalendar()) + "\n " +
+                                formatTripDate(trip.endDateAsCalendar()) + "\n" +
                                 "${trip.groupSize} people" +
                                 if (trip.availableSpots() > 0) {
                                     " (${trip.availableSpots()} spots left)"
@@ -1172,7 +1173,32 @@ fun Hero(trip: Trip, vm: TripViewModel, loggedUser: User, import: Boolean = fals
 
 //Function that create a good format for the dates
 fun formatTripDate(calendar: Calendar): String {
-    return calendar.toStringDate()
+    // Get local date
+    val localDate = calendar.toInstant()
+        .atZone(ZoneId.systemDefault())
+        .toLocalDate()
+
+    // Get day from local date
+    val day = localDate.dayOfMonth
+    // Get suffix for the day
+    val suffix = getDaySuffix(day)
+    // Get month from local date
+    val month = localDate.month.getDisplayName(TextStyle.SHORT, Locale.ENGLISH)
+    // Get year from local date
+    val year = localDate.year
+
+    // Return in the format "dayWithSuffix month, year"
+    return "$day$suffix $month, $year"
+}
+
+// Function that get the right suffix for the day of the month
+fun getDaySuffix(day: Int): String {
+    return if (day in 11..13) "th" else when (day % 10) {
+        1 -> "st"
+        2 -> "nd"
+        3 -> "rd"
+        else -> "th"
+    }
 }
 
 // Composable with the box for the titles
