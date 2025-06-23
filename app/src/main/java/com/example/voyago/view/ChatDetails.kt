@@ -14,10 +14,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.voyago.model.Trip
+import com.example.voyago.model.User
 import com.example.voyago.viewmodel.TripViewModel
+import com.example.voyago.viewmodel.UserViewModel
 
 @Composable
-fun ChatDetails(tripId: String, tripViewModel: TripViewModel) {
+fun ChatDetails(tripId: String, tripViewModel: TripViewModel, uvm: UserViewModel) {
     val tripState = produceState<Trip?>(initialValue = null, tripId) {
         tripViewModel.fetchTripById(tripId) { trip ->
             value = trip
@@ -27,17 +29,33 @@ fun ChatDetails(tripId: String, tripViewModel: TripViewModel) {
     val trip = tripState.value
 
 
-    // Actual UI when trip is loaded
     Column(modifier = Modifier.padding(16.dp)) {
         Text(text = "Trip: ${trip?.title}", style = MaterialTheme.typography.titleLarge)
-
         Spacer(modifier = Modifier.height(16.dp))
 
-        /* TODO */
         Text("Participants:")
-//        trip.participants.forEach {
-//            Text("- ${it.name}")
-//        }
+        val participantIds = trip?.participants?.keys
+
+        participantIds?.forEach { userIdString ->
+            val userId = userIdString.toIntOrNull()
+            if (userId != null) {
+                val userState = produceState<User?>(initialValue = null, userId) {
+                    uvm.getUserData(userId).collect { user ->
+                        value = user
+                    }
+                }
+
+                val user = userState.value
+
+                if (user != null) {
+                    Text("- ${user.firstname} ${user.surname}")
+                } else {
+                    Text("- Loading user $userId...")
+                }
+            } else {
+                Text("- Invalid user ID: $userIdString")
+            }
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
