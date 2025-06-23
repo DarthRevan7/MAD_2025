@@ -153,7 +153,7 @@ fun ArticleSearchScreen(
                 // Show "Most Popular" section only if there's no active search
                 if (mostPopularArticles.isNotEmpty() && searchQuery.isEmpty()) {
                     MostPopularSection(
-                        articles = mostPopularArticles, // 传递3篇文章
+                        articles = mostPopularArticles,
                         onArticleClick = { selectedArticle ->
                             navController.navigate("article_detail/${selectedArticle.id}")
                         },
