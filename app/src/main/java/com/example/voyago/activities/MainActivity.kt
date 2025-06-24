@@ -1519,7 +1519,13 @@ fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
                     factory = ChatFactory
                 )
 
-                ChatListScreen(chatViewModel, userViewModel, navController, Modifier)
+                val tripViewModel: TripViewModel = viewModel(
+                    viewModelStoreOwner = chatGraphEntry,
+                    factory = Factory
+                )
+
+                ChatListScreen(chatViewModel, tripViewModel = tripViewModel,
+                    userViewModel, navController, Modifier)
 
             }
 

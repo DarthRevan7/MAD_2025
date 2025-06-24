@@ -1,6 +1,8 @@
 package com.example.voyago.view
 
+import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,22 +30,32 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
+import com.example.voyago.activities.ProfilePhoto
 import com.example.voyago.model.ChatRoom
+import com.example.voyago.model.Trip
+import com.example.voyago.model.User
 import com.example.voyago.viewmodel.ChatViewModel
+import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
 
 
 @Composable
 fun ChatListScreen(
     chatViewModel: ChatViewModel,
+    tripViewModel: TripViewModel,
     uvm: UserViewModel,
     navController: NavController,
     modifier: Modifier = Modifier
@@ -72,7 +84,9 @@ fun ChatListScreen(
         LazyColumn {
             items(chatRooms) { chatRoom ->
                 ChatRoomItem(
+                    userViewModel = uvm,
                     chatViewModel = chatViewModel,
+                    tripViewModel = tripViewModel,
                     chatRoom = chatRoom,
                     currentUserId = user.id,
                     onClick = {
@@ -87,6 +101,8 @@ fun ChatListScreen(
 @Composable
 fun ChatRoomItem(
     chatViewModel: ChatViewModel,
+    userViewModel: UserViewModel,
+    tripViewModel: TripViewModel,
     chatRoom: ChatRoom,
     currentUserId: Int,
     onClick: () -> Unit
@@ -121,11 +137,38 @@ fun ChatRoomItem(
                     .background(if (chatRoom.type == "group") Color(0xFF1976D2) else Color(0xFF4CAF50)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = if (chatRoom.type == "group") Icons.Default.Group else Icons.Default.Person,
-                    contentDescription = "Chat Type Icon",
-                    tint = Color.White
-                )
+                if(chatRoom.type == "group") {
+                    var tripFetched: Trip? = null
+                        tripViewModel.fetchTripById(chatRoom.id)
+                    { trip ->
+                        tripFetched = trip
+                    }
+
+                    if(tripFetched != null) {
+                        ProfilePhotoChatList(modifier = Modifier,
+                            trip = tripFetched!!,
+                            small = true)
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Group,
+                            contentDescription = "Group Chat Icon",
+                            tint = Color.White
+                        )
+                    }
+
+
+                }
+                else if(chatRoom.type == "private") {
+                    val userId = chatRoom.participants.find { it != currentUserId }
+                    if(userId != null) {
+                        val user = userViewModel.getUserData(userId).collectAsState(initial = null)
+                        if(user.value != null) {
+                            ProfilePhoto(modifier = Modifier,
+                                user = user.value!!,
+                                small = true)
+                            }
+                        }
+                    }
             }
 
             Spacer(modifier = Modifier.width(12.dp))
@@ -156,344 +199,62 @@ fun ChatRoomItem(
     }
 }
 
+@OptIn(ExperimentalGlideComposeApi::class)
+@Composable
+fun ProfilePhotoChatList(modifier: Modifier = Modifier, trip: Trip, small: Boolean = false) {
+    // Use remember to hold the profile image URL state
+    val profileImageUrl = remember { mutableStateOf<String?>(null) }
 
+    // Asynchronous acquisition Firebase Storage URL
+    LaunchedEffect(trip.photo) {
+        // If the user has a profile picture URL, try to load it
+        if (!trip.photo.isNullOrEmpty()) {
+            try {
+                // Use Firebase Storage to get the profile photo URL
+                profileImageUrl.value = trip.getPhoto()
+            } catch (e: Exception) {
+                // Log the error if the profile photo fails to load
+                Log.e("ProfilePhoto", "Failed to load profile photo", e)
+                // Reset the profile image URL to null if loading fails
+                profileImageUrl.value = null
+            }
+        }
+    }
 
-//
-//@Composable
-//fun ChatScreen(
-//    chatViewModel: ChatViewModel,
-//    firebaseChatRoomViewModel: FirebaseChatRoomViewModel,
-//    navController: NavController,
-//    modifier: Modifier = Modifier
-//) {
-//    val privateChats = chatViewModel.filteredPrivateChats.value
-//    val searchQuery = chatViewModel.searchQuery
-//
-//    //val onlineUsers by remember { mutableStateOf(firebaseChatRoomViewModel.onlineUsers) }
-//
-//    Column(
-//        modifier = modifier
-//            .fillMaxSize()
-//            .padding(16.dp)
-//    ) {
-//        // Search bar
-//        OutlinedTextField(
-//            value = searchQuery,
-//            onValueChange = chatViewModel::updateSearch,
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(bottom = 12.dp),
-//            label = { Text("Search chats") },
-//            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-//            singleLine = true,
-//            shape = RoundedCornerShape(24.dp)
-//        )
-//
-//        LazyColumn(modifier = Modifier.weight(1f)) {
-//            // Group Chats Header
-//            item {
-//                Text(
-//                    "Group Chat - General Room",
-//                    style = MaterialTheme.typography.titleMedium,
-//                    modifier = Modifier.padding(vertical = 8.dp)
-//                )
-//            }
-//
-//            // Firebase Group Chat
-//            val lastMessage = firebaseChatRoomViewModel.messages.lastOrNull()
-//
-//            item {
-//                FirebaseGroupLastMessageItem(
-//                    lastMessage = lastMessage,
-//                    onClick = {
-//                        // Navigate to group chat screen
-//                        //navController.navigate("groupChat")
-//                    }
-//                )
-//            }
-//
-//            // Private Chat Header
-//            if (privateChats.isNotEmpty()) {
-//                item {
-//                    Text(
-//                        "Private Chats",
-//                        style = MaterialTheme.typography.titleMedium,
-//                        modifier = Modifier.padding(vertical = 8.dp)
-//                    )
-//                }
-//                items(privateChats) { privateChat ->
-//                    PrivateChatItem(
-//                        privateChat = privateChat,
-//                        onClick = {
-//                            // Handle private chat click
-//                        }
-//                    )
-//                }
-//            }
-//        }
-//    }
-//}
-//
-//@Composable
-//fun FirebaseGroupLastMessageItem(
-//    lastMessage: FirebaseChatMessage?,
-//    onClick: () -> Unit
-//) {
-//    Card(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .padding(vertical = 4.dp)
-//            .clickable { onClick() },
-//        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-//    ) {
-//        Row(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(horizontal = 16.dp, vertical = 12.dp),
-//            verticalAlignment = Alignment.CenterVertically
-//        ) {
-//            // Group chat icon
-//            Box(
-//                modifier = Modifier
-//                    .size(48.dp)
-//                    .clip(CircleShape)
-//                    .background(Color(0xFF2196F3)),
-//                contentAlignment = Alignment.Center
-//            ) {
-//                Icon(
-//                    imageVector = Icons.Default.Group,
-//                    contentDescription = "Group Chat Icon",
-//                    tint = Color.White
-//                )
-//            }
-//
-//            Spacer(modifier = Modifier.width(12.dp))
-//
-//            Column(modifier = Modifier.weight(1f)) {
-//                Text("General Room", fontWeight = FontWeight.Bold)
-//                Spacer(modifier = Modifier.height(4.dp))
-//                Text(
-//                    text = lastMessage?.let {
-//                        if (it.type == "TEXT") "${it.senderName}: ${it.content}"
-//                        else if (it.type == "IMAGE") "${it.senderName} sent an image"
-//                        else "${it.senderName} sent a file"
-//                    } ?: "No messages yet",
-//                    style = MaterialTheme.typography.bodySmall,
-//                    maxLines = 1,
-//                    overflow = TextOverflow.Ellipsis
-//                )
-//            }
-//        }
-//    }
-//}
-//
-//
-//@Composable
-//fun FirebaseGroupUserItem(
-//    onlineUser: OnlineUser,
-//    onClick: () -> Unit
-//) {
-//    Card(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .padding(vertical = 4.dp)
-//            .clickable { onClick() },
-//        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-//    ) {
-//        Row(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(horizontal = 16.dp, vertical = 12.dp),
-//            verticalAlignment = Alignment.CenterVertically
-//        ) {
-//            // Avatar or icon
-//            Box(
-//                modifier = Modifier
-//                    .size(48.dp)
-//                    .clip(CircleShape)
-//                    .background(Color.Gray),
-//                contentAlignment = Alignment.Center
-//            ) {
-//                Icon(
-//                    imageVector = Icons.Default.Person,
-//                    contentDescription = "User Icon",
-//                    tint = Color.White
-//                )
-//            }
-//
-//            Spacer(modifier = Modifier.width(12.dp))
-//
-//            Column(modifier = Modifier.weight(1f)) {
-//                Text(onlineUser.name, fontWeight = FontWeight.Bold)
-//                Spacer(modifier = Modifier.height(4.dp))
-//                Text(
-//                    "Online",
-//                    style = MaterialTheme.typography.bodySmall,
-//                    color = Color.Green
-//                )
-//            }
-//        }
-//    }
-//}
-//
-//
-//
-//@Composable
-//fun ChatGroupItem(chatGroup: ChatGroup, onClick: () -> Unit) {
-//    Card(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .padding(vertical = 4.dp)
-//            .clickable { onClick() },
-//        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-//    ) {
-//        Row(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(horizontal = 16.dp, vertical = 12.dp),
-//            verticalAlignment = Alignment.CenterVertically
-//        ) {
-//            // Avatar or icon
-//            Box(
-//                modifier = Modifier
-//                    .size(48.dp)
-//                    .clip(CircleShape)
-//                    .background(Color.Gray),
-//                contentAlignment = Alignment.Center
-//            ) {
-//                Icon(
-//                    imageVector = Icons.Default.Group,
-//                    contentDescription = "Group Icon",
-//                    tint = Color.White
-//                )
-//            }
-//
-//            Spacer(modifier = Modifier.width(12.dp))
-//
-//            // Title and message column with weight to push badge to the end
-//            Column(
-//                modifier = Modifier.weight(1f)
-//            ) {
-//                Text(chatGroup.title, fontWeight = FontWeight.Bold)
-//                Spacer(modifier = Modifier.height(4.dp))
-//                Text(
-//                    chatGroup.lastMessage,
-//                    style = MaterialTheme.typography.bodySmall,
-//                    maxLines = 1,
-//                    overflow = TextOverflow.Ellipsis
-//                )
-//            }
-//
-//            // Unread badge pushed fully to the right
-//            if (chatGroup.unreadCount > 0) {
-//                Box(
-//                    modifier = Modifier
-//                        .padding(start = 8.dp)
-//                        .background(Color(0xFF7E57C2), shape = CircleShape)
-//                        .size(28.dp),
-//                    contentAlignment = Alignment.Center
-//                ) {
-//                    Text(
-//                        text = chatGroup.unreadCount.toString(),
-//                        color = Color.White,
-//                        style = MaterialTheme.typography.bodyMedium,
-//                        fontWeight = FontWeight.Bold
-//                    )
-//                }
-//            }
-//        }
-//    }
-//}
-//
-//
-//@Composable
-//fun PrivateChatItem(privateChat: PrivateChat, onClick: () -> Unit) {
-//    Card(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .padding(vertical = 4.dp)
-//            .clickable { onClick() },
-//        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-//    ) {
-//        Row(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(horizontal = 16.dp, vertical = 12.dp),
-//            verticalAlignment = Alignment.CenterVertically
-//        ) {
-//            Box(
-//                modifier = Modifier
-//                    .size(48.dp)
-//                    .clip(CircleShape)
-//                    .background(Color.LightGray),
-//                contentAlignment = Alignment.Center
-//            ) {
-//                Icon(Icons.Default.Person, contentDescription = null)
-//            }
-//
-//            Spacer(modifier = Modifier.width(12.dp))
-//
-//            Column(
-//                modifier = Modifier.weight(1f)
-//            ) {
-//                Text(privateChat.username, fontWeight = FontWeight.Bold)
-//                Spacer(modifier = Modifier.height(4.dp))
-//                Text(
-//                    privateChat.lastMessage,
-//                    style = MaterialTheme.typography.bodySmall,
-//                    maxLines = 1,
-//                    overflow = TextOverflow.Ellipsis
-//                )
-//            }
-//
-//            if (privateChat.unreadCount > 0) {
-//                Box(
-//                    modifier = Modifier
-//                        .padding(start = 8.dp)
-//                        .background(Color(0xFF7E57C2), shape = CircleShape)
-//                        .size(28.dp),
-//                    contentAlignment = Alignment.Center
-//                ) {
-//                    Text(
-//                        text = privateChat.unreadCount.toString(),
-//                        color = Color.White,
-//                        style = MaterialTheme.typography.bodyMedium,
-//                        fontWeight = FontWeight.Bold
-//                    )
-//                }
-//            }
-//        }
-//    }
-//}
-//
-//
-////@Preview(showBackground = true)
-////@Composable
-////fun ChatScreenFullPreview() {
-////    val context = LocalContext.current
-////    val navController = rememberNavController()
-////
-////    val dummyNotificationViewModel = NotificationViewModel()
-////    val dummyUserViewModel = UserViewModel(UserModel())
-////    val dummyChatViewModel = ChatViewModel(ChatModel(), UserModel(), TripModel())
-////
-////    MaterialTheme {
-////        Scaffold(
-////            topBar = {
-////                TopBar(
-////                    nvm = dummyNotificationViewModel,
-////                    navController = navController,
-////                    uvm = dummyUserViewModel
-////                )
-////            },
-////            bottomBar = { BottomBar(navController) }
-////        ) { innerPadding ->
-////            ChatScreen(
-////                chatViewModel = dummyChatViewModel,
-////                navController = navController,
-////                modifier = Modifier.padding(innerPadding)
-////            )
-////        }
-////    }
-////}
-//
+    // Determine the size of the profile photo based on the small parameter
+    val size = if (small) 50.dp else 120.dp
+
+    // Create a Box to center the content and apply a circular background
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .size(size)
+            .background(Color.Blue, shape = CircleShape)
+    ) {
+        when {
+            // If you have a Firebase Storage URL，use GlideImage
+            profileImageUrl.value != null -> {
+                // Use GlideImage to load the profile picture from the URL
+                GlideImage(
+                    model = profileImageUrl.value,
+                    contentDescription = "Profile Picture",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape)
+                        .border(if (small) 1.dp else 2.dp, Color.White, CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            }
+
+            else -> {
+                // If no profile picture is available, display the initials
+                Icon(
+                    imageVector = Icons.Default.Group,
+                    contentDescription = "Group Chat Icon",
+                    tint = Color.White
+                )
+            }
+        }
+    }
+}
+
