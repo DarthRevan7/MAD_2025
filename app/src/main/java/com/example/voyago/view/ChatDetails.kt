@@ -54,6 +54,7 @@ import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
+import com.example.voyago.activities.ProfilePhoto
 import com.example.voyago.model.Trip
 import com.example.voyago.model.User
 import com.example.voyago.viewmodel.ChatViewModel
@@ -108,13 +109,10 @@ fun ChatDetails(navController: NavController,
                     if (user != null) {
                         MemberItem(
                             navController,
+                            user = user,
                             loggedUserId = uvm.loggedUser.value.id,
-                            userId = user.id,
-                            name = "${user.firstname} ${user.surname}",
-                            rating = String.format("%.1f", user.rating),
                             isCreator = user.id == trip.creatorId,
-                            isDarkBackground = false,
-                            avatarUrl = user.profilePictureUrl
+                            isDarkBackground = false
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                     } else {
@@ -223,21 +221,18 @@ fun ChatDetails(navController: NavController,
 @Composable
 fun MemberItem(
     navController: NavController,
-    userId: Int,
+    user: User,
     loggedUserId: Int,
-    name: String,
-    rating: String,
     isCreator: Boolean,
-    isDarkBackground: Boolean,
-    avatarUrl: String? = null
+    isDarkBackground: Boolean
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .height(70.dp)
             .clickable {
-                if(userId != loggedUserId) {
-                    navController.navigate("user_profile/${userId}")
+                if(user.id != loggedUserId) {
+                    navController.navigate("user_profile/${user.id}")
                 }
                 else {
                     navController.navigate("profile_overview?tabIndex={tabIndex}")
@@ -254,16 +249,11 @@ fun MemberItem(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (avatarUrl != null) {
-                    AsyncImage(
-                        model = avatarUrl,
-                        contentDescription = "$name's Avatar",
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(CircleShape)
-                            .background(Color.LightGray, CircleShape),
-                        contentScale = ContentScale.Crop
-                    )
+                if (user.profilePictureUrl != null) {
+                    ProfilePhoto(modifier = Modifier,
+                        user = user,
+                        small = true
+                        )
                 } else {
                     Box(
                         modifier = Modifier
@@ -276,7 +266,7 @@ fun MemberItem(
                 Spacer(modifier = Modifier.width(16.dp))
 
                 Text(
-                    text = name,
+                    text = user.firstname + " " + user.surname,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Medium,
                     color = if (isDarkBackground) Color.White else Color.Black
@@ -292,7 +282,7 @@ fun MemberItem(
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = rating,
+                    text = user.rating.toString(),
                     fontSize = 16.sp,
                     color = if (isDarkBackground) Color.White else Color.Black
                 )
