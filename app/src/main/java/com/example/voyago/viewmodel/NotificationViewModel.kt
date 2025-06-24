@@ -77,6 +77,7 @@ class NotificationViewModel : ViewModel() {
                     var hasUnread = false
                     for (doc in snapshots) {
                         val notification = NotificationModel(
+                            id = doc.id,
                             title = doc.getString("title") ?: "",
                             body = doc.getString("body") ?: "",
                             type = doc.getString("type") ?: "",
@@ -141,6 +142,43 @@ class NotificationViewModel : ViewModel() {
                 }
             }
     }
+
+    fun deleteNotification(userId: String, notificationId: String) {
+        val db = FirebaseFirestore.getInstance()
+        val userNotifications = db.collection("users")
+            .document(userId)
+            .collection("notifications")
+
+        userNotifications
+            .document(notificationId)
+            .delete()
+            .addOnSuccessListener {
+                Log.d("Notification", "Notification deleted successfully.")
+            }
+            .addOnFailureListener { e ->
+                Log.e("Notification", "Error deleting notification", e)
+            }
+    }
+
+    fun deleteAllNotifications(userId: String) {
+        val db = FirebaseFirestore.getInstance()
+        val userNotifications = db.collection("users")
+            .document(userId)
+            .collection("notifications")
+
+        userNotifications.get()
+            .addOnSuccessListener { documents ->
+                for (doc in documents) {
+                    userNotifications.document(doc.id).delete()
+                }
+                Log.d("Notification", "All notifications deleted.")
+            }
+            .addOnFailureListener { e ->
+                Log.e("Notification", "Failed to delete all notifications", e)
+            }
+    }
+
+
 }
 
 object NotificationFactory : ViewModelProvider.Factory {
