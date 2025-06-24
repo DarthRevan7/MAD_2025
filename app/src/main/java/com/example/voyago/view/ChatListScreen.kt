@@ -139,7 +139,7 @@ fun ChatRoomItem(
             ) {
                 if(chatRoom.type == "group") {
                     var tripFetched: Trip? = null
-                    tripViewModel.fetchTripById(chatRoom.id)
+                    tripViewModel.fetchTripById(chatRoom.tripId)
                     { trip ->
                         tripFetched = trip
                     }
