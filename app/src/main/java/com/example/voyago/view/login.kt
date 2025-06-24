@@ -460,15 +460,28 @@ fun handleGoogleSignInResult(
                             val db = Firebase.firestore
                             val userDocRef = db.collection("users").document(uid)
 
-                            userDocRef.get()
-                                .addOnSuccessListener { document ->
-                                    val email = document.getString("email")
-                                    Log.d("FirestoreUser", "User document data: ${document.data}")
-                                    if (!document.exists() || email.isNullOrEmpty()) {
+                            val userEmail = account.email  // get email from Google account
+
+                            if (userEmail.isNullOrEmpty()) {
+                                setError("Google sign-in failed: Email not available.")
+                                return
+                            }
+
+                            db.collection("users")
+                                .whereEqualTo("email", userEmail)
+                                .get()
+                                .addOnSuccessListener { querySnapshot ->
+                                    Log.d(
+                                        "FirestoreUser",
+                                        "Query result size: ${querySnapshot.size()}"
+                                    )
+                                    if (querySnapshot.isEmpty) {
+                                        // No user found with this email → complete profile
                                         navController.navigate("complete_profile") {
                                             popUpTo("login") { inclusive = true }
                                         }
                                     } else {
+                                        // User exists → go to home
                                         navController.navigate("home_main") {
                                             popUpTo("login") { inclusive = true }
                                         }
