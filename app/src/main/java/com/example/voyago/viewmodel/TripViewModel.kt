@@ -275,7 +275,7 @@ class TripViewModel(
 
     private val _hasTripNotifications = MutableStateFlow(false)
     val hasTripNotifications: StateFlow<Boolean> = _hasTripNotifications
-    
+
 
     fun evaluateTripNotifications(
         trips: List<Trip>,
@@ -284,10 +284,8 @@ class TripViewModel(
     ) {
         val hasNotifications = trips.any { trip ->
             val hasApplications = trip.appliedUsers.isNotEmpty() && trip.creatorId == userId
-            setHasApplication(hasApplications)
             val needsReview =
                 trip.status == Trip.TripStatus.COMPLETED.toString() && reviewedMap[trip.id] == false
-            setNeedsReview(needsReview)
             hasApplications || needsReview
         }
         _hasTripNotifications.value = hasNotifications
