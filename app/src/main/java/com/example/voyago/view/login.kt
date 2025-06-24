@@ -464,7 +464,6 @@ fun handleGoogleSignInResult(
 
                             if (userEmail.isNullOrEmpty()) {
                                 setError("Google sign-in failed: Email not available.")
-                                return
                             }
 
                             db.collection("users")
