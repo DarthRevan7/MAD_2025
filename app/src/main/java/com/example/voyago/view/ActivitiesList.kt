@@ -516,8 +516,24 @@ private fun generateDateRange(startCal: Calendar, endCal: Calendar): List<String
 private fun findActivitiesForDate(targetDateKey: String, allActivities: Map<String, List<Trip.Activity>>): List<Trip.Activity> {
     Log.d("ActivitySearch", "Looking for activities with dateKey: '$targetDateKey'")
 
-    // 直接匹配，因为现在格式一致了 (DD/MM/YYYY)
-    val activities = allActivities[targetDateKey] ?: emptyList()
+    // First try direct match (DD/MM/YYYY format)
+    var activities = allActivities[targetDateKey] ?: emptyList()
+    
+    // If no direct match, try converting DD/MM/YYYY to YYYY-MM-DD format
+    if (activities.isEmpty() && targetDateKey.contains("/")) {
+        try {
+            val parts = targetDateKey.split("/")
+            if (parts.size == 3) {
+                val day = parts[0].padStart(2, '0')
+                val month = parts[1].padStart(2, '0')
+                val year = parts[2]
+                val alternativeKey = "$year-$month-$day"
+                activities = allActivities[alternativeKey] ?: emptyList()
+            }
+        } catch (e: Exception) {
+            // Silently handle conversion errors
+        }
+    }
 
     Log.d("ActivitySearch", "Found ${activities.size} activities for '$targetDateKey'")
 
