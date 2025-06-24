@@ -43,8 +43,8 @@ import com.google.firebase.auth.FirebaseAuth
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegistrationVerificationScreen(navController: NavController, uvm: UserViewModel) {
-    // Retrieve the User object passed from the previous screen via saved state handle
-    var user = navController.previousBackStackEntry?.savedStateHandle?.get<User>("userValues")
+    // Retrieve the User object from the ViewModel's pending user
+    var user = uvm.pendingUser
 
     // Message state to display feedback to the user
     var message by remember { mutableStateOf("") }
@@ -115,27 +115,50 @@ fun RegistrationVerificationScreen(navController: NavController, uvm: UserViewMo
             // Button to resend verification email
             Button(
                 onClick = {
-                    val auth = FirebaseAuth.getInstance()
-                    // Store user info in ViewModel
-                    uvm.storeUser(user!!)
-                    // Trigger Firebase Authentication user creation with email and password
-                    auth.createUserWithEmailAndPassword(user!!.email, user!!.password)
-                        .addOnSuccessListener { result ->
-                            // On successful account creation, send verification email
-                            result.user?.sendEmailVerification()
+                    user?.let { currentUser ->
+                        // Validate user data before proceeding
+                        if (currentUser.email.isEmpty()) {
+                            message = "Email is missing. Please try registering again."
+                            return@let
+                        }
+                        
+                        val auth = FirebaseAuth.getInstance()
+                        // Get the current Firebase user (should already exist from Registration2)
+                        val firebaseUser = auth.currentUser
+                        
+                        if (firebaseUser != null) {
+                            // User already exists, just resend verification email
+                            firebaseUser.sendEmailVerification()
                                 ?.addOnSuccessListener {
-                                    // Display success message on email sent
                                     message = "Verification email sent. Please check your inbox."
                                 }
                                 ?.addOnFailureListener {
-                                    // Display error if verification email sending failed
-                                    message = "Failed to send verification email."
+                                    message = "Failed to send verification email: ${it.message}"
+                                }
+                        } else {
+                            // User might not be signed in, try to sign in first
+                            auth.signInWithEmailAndPassword(currentUser.email, currentUser.password)
+                                .addOnSuccessListener { result ->
+                                    result.user?.sendEmailVerification()
+                                        ?.addOnSuccessListener {
+                                            message = "Verification email sent. Please check your inbox."
+                                        }
+                                        ?.addOnFailureListener {
+                                            message = "Failed to send verification email: ${it.message}"
+                                        }
+                                }
+                                .addOnFailureListener {
+                                    // Handle Firebase security blocks gracefully
+                                    if (it.message?.contains("blocked") == true || it.message?.contains("unusual activity") == true) {
+                                        message = "Too many attempts. Please try again later or contact support."
+                                    } else {
+                                        message = "Failed to resend verification email: ${it.message}"
+                                    }
                                 }
                         }
-                        .addOnFailureListener {
-                            // Display error message if registration failed
-                            message = "Registration failed: ${it.message}"
-                        }
+                    } ?: run {
+                        message = "User data not available. Please try again."
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -209,17 +232,17 @@ fun RegistrationVerificationScreen(navController: NavController, uvm: UserViewMo
                     val fireUser = FirebaseAuth.getInstance().currentUser
 
                     // Refresh user info from ViewModel’s pending user
-                    user = uvm.pendingUser!!
+                    val currentUser = uvm.pendingUser
 
-                    // If the Firebase user is not null
-                    if (fireUser != null) {
+                    // If both Firebase user and pending user are not null
+                    if (fireUser != null && currentUser != null) {
                         // Check if the authenticated Firebase user email matches the saved user email
-                        if (fireUser.email == user.email) {
+                        if (fireUser.email == currentUser.email) {
                             // Update user UID with Firebase user UID
-                            user.uid = fireUser.uid
+                            currentUser.uid = fireUser.uid
 
                             // Update user data in ViewModel
-                            uvm.editUserData(user)
+                            uvm.editUserData(currentUser)
 
                             // Navigate to profile overview screen
                             navController.navigate("profile_overview") {
