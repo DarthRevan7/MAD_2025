@@ -36,7 +36,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.voyago.model.User
 import com.example.voyago.viewmodel.UserViewModel
 import com.google.firebase.auth.FirebaseAuth
 
@@ -121,18 +120,18 @@ fun RegistrationVerificationScreen(navController: NavController, uvm: UserViewMo
                             message = "Email is missing. Please try registering again."
                             return@let
                         }
-                        
+
                         val auth = FirebaseAuth.getInstance()
                         // Get the current Firebase user (should already exist from Registration2)
                         val firebaseUser = auth.currentUser
-                        
+
                         if (firebaseUser != null) {
                             // User already exists, just resend verification email
                             firebaseUser.sendEmailVerification()
-                                ?.addOnSuccessListener {
+                                .addOnSuccessListener {
                                     message = "Verification email sent. Please check your inbox."
                                 }
-                                ?.addOnFailureListener {
+                                .addOnFailureListener {
                                     message = "Failed to send verification email: ${it.message}"
                                 }
                         } else {
@@ -141,19 +140,25 @@ fun RegistrationVerificationScreen(navController: NavController, uvm: UserViewMo
                                 .addOnSuccessListener { result ->
                                     result.user?.sendEmailVerification()
                                         ?.addOnSuccessListener {
-                                            message = "Verification email sent. Please check your inbox."
+                                            message =
+                                                "Verification email sent. Please check your inbox."
                                         }
                                         ?.addOnFailureListener {
-                                            message = "Failed to send verification email: ${it.message}"
+                                            message =
+                                                "Failed to send verification email: ${it.message}"
                                         }
                                 }
                                 .addOnFailureListener {
                                     // Handle Firebase security blocks gracefully
-                                    if (it.message?.contains("blocked") == true || it.message?.contains("unusual activity") == true) {
-                                        message = "Too many attempts. Please try again later or contact support."
-                                    } else {
-                                        message = "Failed to resend verification email: ${it.message}"
-                                    }
+                                    message =
+                                        if (it.message?.contains("blocked") == true || it.message?.contains(
+                                                "unusual activity"
+                                            ) == true
+                                        ) {
+                                            "Too many attempts. Please try again later or contact support."
+                                        } else {
+                                            "Failed to resend verification email: ${it.message}"
+                                        }
                                 }
                         }
                     } ?: run {
