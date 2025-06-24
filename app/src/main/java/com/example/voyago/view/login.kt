@@ -446,11 +446,12 @@ fun handleGoogleSignInResult(
                         // If UID exists, save the FCM token to Firestore for push notifications
                         userId?.let { saveFcmTokenToFirestore(it) }
 
-                        // Navigate to the main/home screen
+                        navController.navigate("complete_profile")
+                        /*// Navigate to the main/home screen
                         navController.navigate("home_main") {
                             // Clear the back stack so user cannot return to login
                             popUpTo("login") { inclusive = true }
-                        }
+                        }*/
                     } else {
                         // If Firebase sign-in failed, report the specific error or fallback message
                         setError("Google sign-in failed: ${authResult.exception?.localizedMessage ?: "Unknown error"}")

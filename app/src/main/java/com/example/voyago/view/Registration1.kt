@@ -1,5 +1,6 @@
 package com.example.voyago.view
 
+import android.util.Log
 import android.util.Patterns
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -440,25 +441,27 @@ fun isValidPassword(password: String): Boolean {
 // Function used to validate the Date Of Birth
 fun isValidDateOfBirth(dob: String, minAge: Int = 13): Boolean {
     return try {
-        //Date formatter
-        val formatter = DateTimeFormatter
-            .ofPattern("yyyy-MM-dd")                   // Expected date format
-            .withResolverStyle(ResolverStyle.STRICT)   // Enforce strict date validation
+        // Use 'uuuu' for the proleptic Gregorian year, and strict resolution to reject invalid dates like Feb 30
+        val formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd")
+            .withResolverStyle(ResolverStyle.STRICT)
 
-        // Parse the input string into a LocalDate
+        // Parse the input string using the formatter
         val birthDate = LocalDate.parse(dob.trim(), formatter)
 
-        // Get the current date for age comparison
         val today = LocalDate.now()
 
-        // Validate that the birth date is not in the future (i.e., user is born) and that the user is at least 13 years old
-        !birthDate.isAfter(today) &&
-                Period.between(birthDate, today).years >= minAge
-    } catch (_: DateTimeParseException) {
-        // If parsing fails return false as it's not a valid date of birth
+        // Calculate the age
+        val age = Period.between(birthDate, today).years
+
+        // Return true only if date is in the past and meets age requirement
+        !birthDate.isAfter(today) && age >= minAge
+    } catch (e: DateTimeParseException) {
+        // Log error info for debugging
+        Log.e("DateValidation", "Invalid date format or value: $dob", e)
         false
     }
 }
+
 
 val isCountryList = listOf(
     "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda",
