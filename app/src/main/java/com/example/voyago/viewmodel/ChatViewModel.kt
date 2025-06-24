@@ -92,7 +92,8 @@ class ChatViewModel : ViewModel() {
                             participants = participants,
                             name = data["name"] as? String ?: "",
                             lastMessage = data["lastMessage"] as? String ?: "",
-                            usersNotRead = (data["usersNotRead"] as? List<*>)?.filterIsInstance<String>() ?: emptyList()
+                            usersNotRead = (data["usersNotRead"] as? List<*>)?.filterIsInstance<String>() ?: emptyList(),
+                            tripId = data["tripId"] as? String ?: ""
                         )
                     } else {
                         Log.d("ChatDebug", "User $userId is NOT a participant in room ${doc.id}")
@@ -328,7 +329,7 @@ class ChatViewModel : ViewModel() {
             }
     }
 
-    fun createGroupIfNotExists(groupName: String, creatorId: Int, onComplete: (created: Boolean) -> Unit) {
+    fun createGroupIfNotExists(groupName: String, creatorId: Int, tripId: String = "", onComplete: (created: Boolean) -> Unit) {
         db.collection("chatRooms")
             .whereEqualTo("type", "group")
             .whereEqualTo("name", groupName)
@@ -341,7 +342,8 @@ class ChatViewModel : ViewModel() {
                         "name" to groupName,
                         "participants" to listOf(creatorId),
                         "lastMessage" to "",
-                        "usersNotRead" to emptyList<String>()
+                        "usersNotRead" to emptyList<String>(),
+                        "tripId" to tripId
                     )
                     db.collection("chatRooms")
                         .add(newGroup)

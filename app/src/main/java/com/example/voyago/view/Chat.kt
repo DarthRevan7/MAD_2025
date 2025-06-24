@@ -132,14 +132,17 @@ fun SingleChatScreen(
                     }
             )
 
-            Spacer(modifier = Modifier.weight(1f))
+            if (chatRoomType == "private"){
+                Spacer(modifier = Modifier.weight(1f))
 
-            BlockUserButton(
-                roomId,
-                chatViewModel,
-                navController,
-                user.id
-            )
+                BlockUserButton(
+                    roomId,
+                    chatViewModel,
+                    navController,
+                    user.id
+                )
+            }
+
         }
 
 

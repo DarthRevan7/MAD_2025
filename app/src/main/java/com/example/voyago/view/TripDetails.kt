@@ -519,7 +519,8 @@ fun TripDetails(
                                             // Ensure a group chat exists for this trip; create if needed
                                             chatViewModel.createGroupIfNotExists(
                                                 trip.title,
-                                                uvm.loggedUser.value.id
+                                                uvm.loggedUser.value.id,
+                                                trip.id.toString()
                                             ) { created ->
                                                 if (created) {
                                                     Log.d(
