@@ -842,40 +842,41 @@ private fun reallocateWithShorterInterval(
     newEndCal: Calendar,
     updatedActivities: MutableMap<String, List<Trip.Activity>>
 ) {
-    Log.d("ShorterInterval", "=== REALLOCATE WITH SHORTER INTERVAL START ===")
-    Log.d("ShorterInterval", "Old Start: ${oldStartCal.time}")
-    Log.d("ShorterInterval", "New Start: ${newStartCal.time}")
-    Log.d("ShorterInterval", "New End: ${newEndCal.time}")
-
-    // 计算新旅行的天数
-    val newTripDays = calculateDaysBetween(newStartCal, newEndCal)
-    Log.d("ShorterInterval", "New trip duration: $newTripDays days")
-
     // 收集超出范围的活动
     val overflowActivities = mutableListOf<Trip.Activity>()
 
-    Log.d("ShorterInterval", "Original activities keys: ${originalActivities.keys.joinToString()}")
-    Log.d("ShorterInterval", "Total original activity groups: ${originalActivities.size}")
-
     // 遍历每个原始活动日期
     originalActivities.forEach { (oldDateKey, activities) ->
-        Log.d("ShorterInterval", "--- Processing date group: '$oldDateKey' with ${activities.size} activities ---")
-
         try {
-            // 🔥 修改1：使用 DD/MM/YYYY 格式解析函数
+            // Parse the activity date
             val oldActivityDate = parseActivityDateDDMMYYYY(oldDateKey)
-            Log.d("ShorterInterval", "Parsed old activity date: ${oldActivityDate.time}")
 
-            // 计算这个活动在原始旅行中是第几天
-            val dayNumber = calculateDaysBetween(oldStartCal, oldActivityDate)
-            Log.d("ShorterInterval", "Day number in original trip: $dayNumber (date: $oldDateKey)")
+            // Normalize the dates for comparison (set to end of day for new end date)
+            val normalizedNewEndDate = Calendar.getInstance().apply {
+                timeInMillis = newEndCal.timeInMillis
+                set(Calendar.HOUR_OF_DAY, 23)
+                set(Calendar.MINUTE, 59)
+                set(Calendar.SECOND, 59)
+                set(Calendar.MILLISECOND, 999)
+            }
 
-            Log.d("ShorterInterval", "Checking: dayNumber($dayNumber) <= newTripDays($newTripDays)?")
+            val normalizedOldActivityDate = Calendar.getInstance().apply {
+                timeInMillis = oldActivityDate.timeInMillis
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
 
-            if (dayNumber <= newTripDays) {
-                Log.d("ShorterInterval", "✅ Day $dayNumber is within new trip range")
+            // Check if this activity date is AFTER the new end date
+            if (normalizedOldActivityDate.timeInMillis > normalizedNewEndDate.timeInMillis) {
+                // Only add to overflow if the activity is truly after the new end date
+                overflowActivities.addAll(activities)
+            } else {
+                // Calculate the day number in the original trip
+                val dayNumber = calculateDaysBetween(oldStartCal, oldActivityDate)
 
-                // 如果这一天在新旅行范围内，计算新的对应日期
+                // Calculate the corresponding new date
                 val newActivityDate = Calendar.getInstance().apply {
                     timeInMillis = newStartCal.timeInMillis
                     add(Calendar.DAY_OF_MONTH, dayNumber - 1)
@@ -885,50 +886,25 @@ private fun reallocateWithShorterInterval(
                     set(Calendar.MILLISECOND, 0)
                 }
 
-                Log.d("ShorterInterval", "Calculated new activity date: ${newActivityDate.time}")
-
-                // 🔥 修改2：使用 DD/MM/YYYY 格式生成日期键
                 val newDateKey = newActivityDate.toDDMMYYYYString()
-                Log.d("ShorterInterval", "New date key: '$newDateKey'")
 
-                // 更新活动的日期
+                // Update the activity dates
                 val updatedActivityList = activities.map { activity ->
-                    Log.d("ShorterInterval", "  Updating activity: ID=${activity.id}, Desc='${activity.description}', Time=${activity.time}")
                     activity.copy(date = Timestamp(newActivityDate.time))
                 }
 
-                Log.d("ShorterInterval", "Adding ${updatedActivityList.size} activities to new date '$newDateKey'")
                 updatedActivities[newDateKey] = updatedActivityList
-
-            } else {
-                Log.w("ShorterInterval", "❌ Day $dayNumber is BEYOND new trip range ($newTripDays days)")
-                Log.w("ShorterInterval", "Adding ${activities.size} activities to overflow list:")
-
-                activities.forEach { activity ->
-                    Log.w("ShorterInterval", "  Overflow activity: ID=${activity.id}, Desc='${activity.description}', Time=${activity.time}")
-                }
-
-                // 超出范围的活动，添加到溢出列表
-                overflowActivities.addAll(activities)
             }
 
         } catch (e: Exception) {
-            Log.e("ShorterInterval", "❌ ERROR processing date '$oldDateKey': ${e.message}", e)
-            Log.e("ShorterInterval", "Adding ${activities.size} activities to overflow due to error")
+            Log.e("SmartReallocation", "Error processing date $oldDateKey", e)
             // 如果解析失败，将活动视为溢出
             overflowActivities.addAll(activities)
         }
-
-        Log.d("ShorterInterval", "--- End processing '$oldDateKey' ---")
     }
-
-    Log.d("ShorterInterval", "Processing complete. Overflow activities: ${overflowActivities.size}")
 
     // 将溢出的活动分配到最后一天
     if (overflowActivities.isNotEmpty()) {
-        Log.w("ShorterInterval", "=== PROCESSING OVERFLOW ACTIVITIES ===")
-        Log.w("ShorterInterval", "Total overflow activities: ${overflowActivities.size}")
-
         val lastDay = Calendar.getInstance().apply {
             timeInMillis = newEndCal.timeInMillis
             set(Calendar.HOUR_OF_DAY, 0)
@@ -937,37 +913,16 @@ private fun reallocateWithShorterInterval(
             set(Calendar.MILLISECOND, 0)
         }
 
-        Log.w("ShorterInterval", "Last day date: ${lastDay.time}")
-
-        // 🔥 修改3：使用 DD/MM/YYYY 格式生成最后一天的日期键
         val lastDayKey = lastDay.toDDMMYYYYString()
-        Log.w("ShorterInterval", "Last day key: '$lastDayKey'")
 
         val overflowWithNewDate = overflowActivities.map { activity ->
-            Log.w("ShorterInterval", "  Moving to last day: ID=${activity.id}, Desc='${activity.description}', Time=${activity.time}")
             activity.copy(date = Timestamp(lastDay.time))
         }
-
-        // 检查最后一天是否已经有活动
-        val existingActivitiesOnLastDay = updatedActivities[lastDayKey]?.size ?: 0
-        Log.w("ShorterInterval", "Existing activities on last day: $existingActivitiesOnLastDay")
 
         // 如果最后一天已经有活动，合并；否则创建新的
         val finalActivitiesForLastDay = (updatedActivities[lastDayKey] ?: emptyList()) + overflowWithNewDate
         updatedActivities[lastDayKey] = finalActivitiesForLastDay
-
-        Log.w("ShorterInterval", "Total activities on last day after merge: ${finalActivitiesForLastDay.size}")
-        Log.w("ShorterInterval", "=== OVERFLOW PROCESSING COMPLETE ===")
-    } else {
-        Log.d("ShorterInterval", "No overflow activities to process")
     }
-
-    Log.d("ShorterInterval", "=== FINAL RESULT ===")
-    Log.d("ShorterInterval", "Updated activities map keys: ${updatedActivities.keys.joinToString()}")
-    updatedActivities.forEach { (dateKey, activities) ->
-        Log.d("ShorterInterval", "  '$dateKey': ${activities.size} activities")
-    }
-    Log.d("ShorterInterval", "=== REALLOCATE WITH SHORTER INTERVAL END ===")
 }
 
 // 同样需要修改 reallocateWithLongerInterval 函数
@@ -1154,25 +1109,37 @@ private fun updateTripAndNavigate(
 // Parses a given dateKey string into a Calendar object
 
 fun parseActivityDateDDMMYYYY(dateKey: String): Calendar {
-    Log.d("DateParse", "Parsing date key: '$dateKey'")
-
     val calendar = Calendar.getInstance()
 
     try {
-        // 处理 DD/MM/YYYY 格式
-        if (dateKey.contains("/")) {
-            val parts = dateKey.split("/")
-            if (parts.size == 3) {
-                val day = parts[0].toInt()
-                val month = parts[1].toInt() - 1  // Calendar 月份从0开始
-                val year = parts[2].toInt()
-                calendar.set(year, month, day)
-                Log.d("DateParse", "Parsed as DD/MM/YYYY: $day/${month+1}/$year")
-            } else {
-                throw IllegalArgumentException("Invalid DD/MM/YYYY format: $dateKey")
+        when {
+            // 处理 DD/MM/YYYY 格式
+            dateKey.contains("/") -> {
+                val parts = dateKey.split("/")
+                if (parts.size == 3) {
+                    val day = parts[0].toInt()
+                    val month = parts[1].toInt() - 1  // Calendar 月份从0开始
+                    val year = parts[2].toInt()
+                    calendar.set(year, month, day)
+                } else {
+                    throw IllegalArgumentException("Invalid DD/MM/YYYY format: $dateKey")
+                }
             }
-        } else {
-            throw IllegalArgumentException("Expected DD/MM/YYYY format with '/' separator: $dateKey")
+            // 处理 YYYY-MM-DD 格式
+            dateKey.contains("-") -> {
+                val parts = dateKey.split("-")
+                if (parts.size == 3) {
+                    val year = parts[0].toInt()
+                    val month = parts[1].toInt() - 1  // Calendar 月份从0开始
+                    val day = parts[2].toInt()
+                    calendar.set(year, month, day)
+                } else {
+                    throw IllegalArgumentException("Invalid YYYY-MM-DD format: $dateKey")
+                }
+            }
+            else -> {
+                throw IllegalArgumentException("Expected DD/MM/YYYY or YYYY-MM-DD format: $dateKey")
+            }
         }
     } catch (e: NumberFormatException) {
         throw IllegalArgumentException("Invalid date numbers in: $dateKey", e)
