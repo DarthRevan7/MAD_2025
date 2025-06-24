@@ -5,8 +5,8 @@
     <style name="Theme.Voyago" parent="Theme.AppCompat.Light.NoActionBar" />
 
     <style name="Theme.App.Starting" parent="Theme.SplashScreen">
-        <item name="android:windowBackground">@drawable/splash_background</item>
-        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowBackground">@android:color/holo_purple</item>
+        <item name="android:statusBarColor">@android:color/holo_purple</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/icon</item>
         <item name="postSplashScreenTheme">@style/Theme.Voyago</item>
     </style>
