@@ -43,6 +43,7 @@ import java.time.LocalDate
 import java.time.Period
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
+import java.time.format.ResolverStyle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -439,19 +440,22 @@ fun isValidPassword(password: String): Boolean {
 // Function used to validate the Date Of Birth
 fun isValidDateOfBirth(dob: String, minAge: Int = 13): Boolean {
     return try {
-        // Define the expected date format: "yyyy-MM-dd"
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        //Date formatter
+        val formatter = DateTimeFormatter
+            .ofPattern("yyyy-MM-dd")                   // Expected date format
+            .withResolverStyle(ResolverStyle.STRICT)   // Enforce strict date validation
 
-        // Parse the input string into a LocalDate, trimming any surrounding whitespace
+        // Parse the input string into a LocalDate
         val birthDate = LocalDate.parse(dob.trim(), formatter)
 
-        // Get the current date
+        // Get the current date for age comparison
         val today = LocalDate.now()
 
-        // Must not be in the future and must meet minimum age requirement
-        !birthDate.isAfter(today) && Period.between(birthDate, today).years >= minAge
+        // Validate that the birth date is not in the future (i.e., user is born) and that the user is at least 13 years old
+        !birthDate.isAfter(today) &&
+                Period.between(birthDate, today).years >= minAge
     } catch (_: DateTimeParseException) {
-        // If parsing fails due to an invalid format return false
+        // If parsing fails return false as it's not a valid date of birth
         false
     }
 }
