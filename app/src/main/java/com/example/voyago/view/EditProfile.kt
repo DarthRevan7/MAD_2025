@@ -232,23 +232,39 @@ fun EditProfileScreen(
                 fieldValues.forEachIndexed { index, item ->
                     // Name and Surname fields
                     if (index == 0 || index == 1) {
-                        isValidName(item)
-                    }
-                    // Username field
-                    else if (index == 2) {
-                        val emailHasErrors by derivedStateOf {
-                            isValidUsername(item)
+                        val validatorHasErrors by derivedStateOf {
+                            !isValidName(item)
                         }
 
-                        errors[index] = emailHasErrors
+                        errors[index] = validatorHasErrors
 
-                        ValidatingInputEmailField(item, { fieldValues[index] = it }, emailHasErrors)
+                        ValidatingInputTextField(
+                            item,
+                            { fieldValues[index] = it },
+                            validatorHasErrors,
+                            fieldNames[fieldValues.indexOf(item)]
+                        )
+                    }
+                    // Username field
+                    if (index == 2) {
+                        val validatorHasErrors by derivedStateOf {
+                            !isValidUsername(item)
+                        }
+
+                        errors[index] = validatorHasErrors
+
+                        ValidatingInputTextField(
+                            item,
+                            { fieldValues[index] = it },
+                            validatorHasErrors,
+                            fieldNames[fieldValues.indexOf(item)]
+                        )
 
                     }
                     // Email field
-                    else if (index == 3) {
+                    if (index == 3) {
                         val emailHasErrors by derivedStateOf {
-                            isValidEmail(item)
+                            !isValidEmail(item)
                         }
 
                         errors[index] = emailHasErrors
@@ -257,12 +273,24 @@ fun EditProfileScreen(
 
                     }
                     // Country field
-                    else if (index == 4) {
-                        isValidCountry(item)
-                    } else {
-                        // General validation for other fields: must not be blank
+                    if (index == 4) {
                         val validatorHasErrors by derivedStateOf {
-                            isValidUserDescription(item)
+                            !isValidCountry(item)
+                        }
+
+                        errors[index] = validatorHasErrors
+
+                        ValidatingInputTextField(
+                            item,
+                            { fieldValues[index] = it },
+                            validatorHasErrors,
+                            fieldNames[fieldValues.indexOf(item)]
+                        )
+                    }
+                    if (index == 5) {
+                        // User Description
+                        val validatorHasErrors by derivedStateOf {
+                            !isValidUserDescription(item)
                         }
 
                         errors[index] = validatorHasErrors
