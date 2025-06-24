@@ -488,9 +488,9 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                             .weight(1f)
                             .padding(vertical = 8.dp)
                     ) {
-                        // If a start date exists, set minimum end date to same day or later
+                        // If a start date exists, set minimum end date to the later of today or start date
                         OutlinedButton(onClick = {
-                            if (startCalendar != null) {
+                            val minDate = if (startCalendar != null) {
                                 val startDateMin = Calendar.getInstance().apply {
                                     timeInMillis = startCalendar!!.timeInMillis
                                     set(Calendar.HOUR_OF_DAY, 0)
@@ -498,11 +498,17 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                                     set(Calendar.SECOND, 0)
                                     set(Calendar.MILLISECOND, 0)
                                 }
-                                endDatePickerDialog.datePicker.minDate = startDateMin.timeInMillis
+                                // Use the later of today or start date
+                                if (startDateMin.timeInMillis >= today.timeInMillis) {
+                                    startDateMin.timeInMillis
+                                } else {
+                                    today.timeInMillis
+                                }
                             } else {
-                                // If no start date selected, fallback to today as minimum
-                                endDatePickerDialog.datePicker.minDate = today.timeInMillis
+                                // If no start date selected, use today as minimum
+                                today.timeInMillis
                             }
+                            endDatePickerDialog.datePicker.minDate = minDate
                             endDatePickerDialog.show()
                         }) {
                             Text("End Date")
