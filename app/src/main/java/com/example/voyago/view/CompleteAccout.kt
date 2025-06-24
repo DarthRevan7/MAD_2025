@@ -1,5 +1,6 @@
 package com.example.voyago.view
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -65,6 +66,7 @@ import com.google.firebase.auth.FirebaseAuth
 @Composable
 fun CompleteAccount(
     navController: NavController,
+    onGoogleSignUpClick: () -> Unit = {},
     uvm: UserViewModel
 ) {
 

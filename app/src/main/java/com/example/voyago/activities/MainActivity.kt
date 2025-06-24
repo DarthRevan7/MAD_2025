@@ -68,6 +68,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.zIndex
 import androidx.core.content.ContextCompat
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -89,6 +90,7 @@ import com.example.voyago.R
 import com.example.voyago.model.NavItem
 import com.example.voyago.model.User
 import com.example.voyago.model.UserModel
+import com.example.voyago.ui.theme.VoyagoTheme
 import com.example.voyago.view.ActivitiesList
 import com.example.voyago.view.ArticleDetailScreen
 import com.example.voyago.view.ArticleSearchScreen
@@ -137,8 +139,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen // <-- IMPORTANTE: aggiungi questo import
-import com.example.voyago.ui.theme.VoyagoTheme
 
 // List of screens in the app, routing to different parts of the app
 sealed class Screen(val route: String) {
@@ -236,12 +236,20 @@ class MainActivity : ComponentActivity() {
                             )
                         } else {
                             // If user data is missing or not verified, show a toast message
-                            Toast.makeText(this, "User data missing or not verified", Toast.LENGTH_LONG)
+                            Toast.makeText(
+                                this,
+                                "User data missing or not verified",
+                                Toast.LENGTH_LONG
+                            )
                                 .show()
                         }
                     }
                     .addOnFailureListener {
-                        Toast.makeText(this, "Verification failed: ${it.message}", Toast.LENGTH_LONG)
+                        Toast.makeText(
+                            this,
+                            "Verification failed: ${it.message}",
+                            Toast.LENGTH_LONG
+                        )
                             .show()
                     }
             }
@@ -262,8 +270,6 @@ class MainActivity : ComponentActivity() {
 
             false
         }
-
-
 
         setContent {
             VoyagoTheme {
@@ -840,8 +846,16 @@ fun NavGraphBuilder.loginNavGraph(navController: NavHostController, auth: Fireba
     navigation(startDestination = "login", route = Screen.Login.route) {
         // Define the composable for the login screen
         composable("login") { entry ->
+            val loginGraphEntry = remember(entry) {
+                navController.getBackStackEntry(Screen.Login.route)
+            }
+            // Create an instance of the UserViewModel using the Factory
+            val userViewModel: UserViewModel = viewModel(
+                viewModelStoreOwner = loginGraphEntry,
+                factory = Factory
+            )
             // Pass the UserViewModel and FirebaseAuth instance to the LoginScreen composable
-            LoginScreen(navController = navController, auth = auth)
+            LoginScreen(navController = navController, auth = auth, userViewmodel = userViewModel)
         }
 
         // Define the composable for the retrieve password screen

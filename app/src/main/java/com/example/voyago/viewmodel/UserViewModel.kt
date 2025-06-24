@@ -111,6 +111,7 @@ class UserViewModel(val model: UserModel) : ViewModel() {
             }
     }
 
+    // Store sign in google account
     var account: GoogleSignInAccount? = null
 
     //Edit user profile

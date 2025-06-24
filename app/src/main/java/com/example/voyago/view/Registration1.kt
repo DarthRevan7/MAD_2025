@@ -1,6 +1,5 @@
 package com.example.voyago.view
 
-import android.util.Log
 import android.util.Patterns
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -441,7 +440,7 @@ fun isValidPassword(password: String): Boolean {
 // Function used to validate the Date Of Birth
 fun isValidDateOfBirth(dob: String, minAge: Int = 13): Boolean {
     return try {
-        // Use 'uuuu' for the proleptic Gregorian year, and strict resolution to reject invalid dates like Feb 30
+        // Use 'uuuu' for the Gregorian year, and strict resolution to reject invalid dates like Feb 30
         val formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd")
             .withResolverStyle(ResolverStyle.STRICT)
 
@@ -455,9 +454,7 @@ fun isValidDateOfBirth(dob: String, minAge: Int = 13): Boolean {
 
         // Return true only if date is in the past and meets age requirement
         !birthDate.isAfter(today) && age >= minAge
-    } catch (e: DateTimeParseException) {
-        // Log error info for debugging
-        Log.e("DateValidation", "Invalid date format or value: $dob", e)
+    } catch (_: DateTimeParseException) {
         false
     }
 }

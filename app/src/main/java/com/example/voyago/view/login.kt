@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.voyago.R
+import com.example.voyago.viewmodel.UserViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
@@ -65,7 +66,7 @@ import com.google.firebase.messaging.FirebaseMessaging
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    navController: NavHostController, auth: FirebaseAuth
+    navController: NavHostController, auth: FirebaseAuth, userViewmodel: UserViewModel
 ) {
 
     // Email input field state
@@ -106,7 +107,8 @@ fun LoginScreen(
             auth = auth,
             navController = navController,
             setError = { errorMessage = it },
-            setLoading = { isGoogleLoading = it }
+            setLoading = { isGoogleLoading = it },
+            userViewModel = userViewmodel
         )
     }
 
@@ -400,8 +402,10 @@ fun handleGoogleSignInResult(
     auth: FirebaseAuth,
     navController: NavHostController,
     setError: (String?) -> Unit,
-    setLoading: (Boolean) -> Unit
+    setLoading: (Boolean) -> Unit,
+    userViewModel: UserViewModel
 ) {
+
     // Immediately stop any loading indicator as result has arrived
     setLoading(false)
 
@@ -419,10 +423,13 @@ fun handleGoogleSignInResult(
         // Extract the GoogleSignInAccount task from the intent data
         val task = GoogleSignIn.getSignedInAccountFromIntent(data)
 
-
         try {
             // Try to get the GoogleSignInAccount object from the task result
             val account = task.getResult(ApiException::class.java)
+
+            //Store the account in the UserViewModel
+            userViewModel.account = account
+
             // Extract the ID token from the Google account, required for Firebase auth
             val idToken = account.idToken
 
@@ -446,12 +453,36 @@ fun handleGoogleSignInResult(
                         // If UID exists, save the FCM token to Firestore for push notifications
                         userId?.let { saveFcmTokenToFirestore(it) }
 
-                        navController.navigate("complete_profile")
-                        /*// Navigate to the main/home screen
-                        navController.navigate("home_main") {
-                            // Clear the back stack so user cannot return to login
-                            popUpTo("login") { inclusive = true }
-                        }*/
+
+                        userId?.let { uid ->
+                            saveFcmTokenToFirestore(uid)
+
+                            val db = Firebase.firestore
+                            val userDocRef = db.collection("users").document(uid)
+
+                            userDocRef.get()
+                                .addOnSuccessListener { document ->
+                                    val email = document.getString("email")
+                                    Log.d("FirestoreUser", "User document data: ${document.data}")
+                                    if (!document.exists() || email.isNullOrEmpty()) {
+                                        navController.navigate("complete_profile") {
+                                            popUpTo("login") { inclusive = true }
+                                        }
+                                    } else {
+                                        navController.navigate("home_main") {
+                                            popUpTo("login") { inclusive = true }
+                                        }
+                                    }
+                                }
+                                .addOnFailureListener {
+                                    navController.navigate("complete_profile") {
+                                        popUpTo("login") { inclusive = true }
+                                    }
+                                }
+
+                        }
+
+
                     } else {
                         // If Firebase sign-in failed, report the specific error or fallback message
                         setError("Google sign-in failed: ${authResult.exception?.localizedMessage ?: "Unknown error"}")
