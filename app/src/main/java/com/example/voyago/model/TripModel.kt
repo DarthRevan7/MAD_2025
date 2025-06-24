@@ -246,11 +246,17 @@ data class Trip(
 
         var days = 0
 
-        // Then counts how many days are between the start date (inclusive) and end date (exclusive)
-        while (start.before(end)) {         // Loop until start date reaches end date
-            days++                          // Increment day count
-            start.add(Calendar.DATE, 1)     // Move to the next day
+//        // Then counts how many days are between the start date (inclusive) and end date (exclusive)
+//        while (start.before(end)) {         // Loop until start date reaches end date
+//            days++                          // Increment day count
+//            start.add(Calendar.DATE, 1)     // Move to the next day
+//        }
+        while(start.get(Calendar.DAY_OF_YEAR) <= end.get(Calendar.DAY_OF_YEAR)) {
+            days++
+            start.add(Calendar.DATE, 1)
         }
+
+
         return days
     }
 

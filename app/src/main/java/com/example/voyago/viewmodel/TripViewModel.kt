@@ -110,12 +110,12 @@ class TripViewModel(
 
     var durationItems: List<SelectableItem> by mutableStateOf(
         listOf(
-            SelectableItem("1-3 days", 1, 3),
-            SelectableItem("3-5 days", 3, 5),
+            SelectableItem("1-2 days", 1, 2),
+            SelectableItem("3-4 days", 3, 4),
             SelectableItem("5-7 days", 5, 7),
-            SelectableItem("7-10 days", 7, 10),
-            SelectableItem("10-15 days", 10, 15),
-            SelectableItem("15-20 days", 15, 20),
+            SelectableItem("8-10 days", 8, 10),
+            SelectableItem("11-15 days", 11, 15),
+            SelectableItem("16-19 days", 16, 19),
             SelectableItem("> 20 days", 20, Int.MAX_VALUE)
         )
     )
