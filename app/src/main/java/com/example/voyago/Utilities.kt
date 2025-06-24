@@ -7,7 +7,15 @@ import java.util.Locale
 
 
 fun formatMessageTimestamp(timestamp: Timestamp): String {
-    return toCalendar(timestamp).get(Calendar.HOUR).toString() + ":" + toCalendar(timestamp).get(Calendar.MINUTE).toString()
+    val stringMessageTimestamp =
+//        toCalendar(timestamp).get(Calendar.DAY_OF_MONTH).toString() +
+//                "/" +
+//                toCalendar(timestamp).get(Calendar.MONTH).toString().trimEnd() +
+//                " " +
+        toCalendar(timestamp).get(Calendar.HOUR).toString() +
+                ":" +
+                toCalendar(timestamp).get(Calendar.MINUTE).toString()
+    return stringMessageTimestamp
 }
 
 fun toCalendar(timeDate: Timestamp): Calendar {

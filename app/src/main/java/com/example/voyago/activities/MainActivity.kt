@@ -45,6 +45,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
@@ -136,6 +137,8 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen // <-- IMPORTANTE: aggiungi questo import
+import com.example.voyago.ui.theme.VoyagoTheme
 
 // List of screens in the app, routing to different parts of the app
 sealed class Screen(val route: String) {
@@ -185,11 +188,12 @@ class MainActivity : ComponentActivity() {
 
     // Initialize Firebase and set up the main activity
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        //Splash Screen
+        val splashScreen = installSplashScreen()
+
         // Call the superclass onCreate method
         super.onCreate(savedInstanceState)
-
-        // Initialize Firebase
-        FirebaseApp.initializeApp(this)
 
         // Initialize the UserViewModel with the UserFactory
         val viewModel: UserViewModel by viewModels { UserFactory }
@@ -200,63 +204,77 @@ class MainActivity : ComponentActivity() {
 
         val reviewViewModel: ReviewViewModel by viewModels { Factory }
 
-        // Handle deep link for email verification
-        val data = intent?.data
-        val mode = data?.getQueryParameter("mode")
-        val oobCode = data?.getQueryParameter("oobCode")
+        splashScreen.setKeepOnScreenCondition {
+            // Initialize Firebase
+            FirebaseApp.initializeApp(this)
 
-        // If the mode is "verifyEmail" and oobCode is not null, apply the action code
-        if (mode == "verifyEmail" && oobCode != null) {
-            FirebaseAuth.getInstance().applyActionCode(oobCode)
-                .addOnSuccessListener {
-                    // Get the current user and pending user from the ViewModel
-                    val currentUser = FirebaseAuth.getInstance().currentUser
-                    val pendingUser = viewModel.pendingUser
+            // Handle deep link for email verification
+            val data = intent?.data
+            val mode = data?.getQueryParameter("mode")
+            val oobCode = data?.getQueryParameter("oobCode")
 
-                    // If the current user is not null, email is verified, and pending user exists,
-                    if (currentUser != null && currentUser.isEmailVerified && pendingUser != null) {
-                        // Create a new user in Firestore
-                        createNewUser(
-                            firebaseUser = currentUser,
-                            newUser = pendingUser,
-                            onResult = { success, _ ->
-                                if (success) {
-                                    viewModel.clearUser()
-                                    viewModel.setUserVerified(true)
+            // If the mode is "verifyEmail" and oobCode is not null, apply the action code
+            if (mode == "verifyEmail" && oobCode != null) {
+                FirebaseAuth.getInstance().applyActionCode(oobCode)
+                    .addOnSuccessListener {
+                        // Get the current user and pending user from the ViewModel
+                        val currentUser = FirebaseAuth.getInstance().currentUser
+                        val pendingUser = viewModel.pendingUser
+
+                        // If the current user is not null, email is verified, and pending user exists,
+                        if (currentUser != null && currentUser.isEmailVerified && pendingUser != null) {
+                            // Create a new user in Firestore
+                            createNewUser(
+                                firebaseUser = currentUser,
+                                newUser = pendingUser,
+                                onResult = { success, _ ->
+                                    if (success) {
+                                        viewModel.clearUser()
+                                        viewModel.setUserVerified(true)
+                                    }
                                 }
-                            }
-                        )
-                    } else {
-                        // If user data is missing or not verified, show a toast message
-                        Toast.makeText(this, "User data missing or not verified", Toast.LENGTH_LONG)
+                            )
+                        } else {
+                            // If user data is missing or not verified, show a toast message
+                            Toast.makeText(this, "User data missing or not verified", Toast.LENGTH_LONG)
+                                .show()
+                        }
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(this, "Verification failed: ${it.message}", Toast.LENGTH_LONG)
                             .show()
                     }
-                }
-                .addOnFailureListener {
-                    Toast.makeText(this, "Verification failed: ${it.message}", Toast.LENGTH_LONG)
-                        .show()
-                }
+            }
+
+            // Enable edge-to-edge mode for the activity
+            // This allows the app to use the full screen, including the status bar and navigation bar
+            enableEdgeToEdge()
+
+            // Set the content view to the main activity layout
+            context = this
+            // Initialize the camera executor for handling camera operations
+            cameraExecutor = Executors.newSingleThreadExecutor()
+
+            // Check for camera permissions
+            if (!allPermissionsGranted()) {
+                requestPermissions()
+            }
+
+            false
         }
 
-        // Enable edge-to-edge mode for the activity
-        // This allows the app to use the full screen, including the status bar and navigation bar
-        enableEdgeToEdge()
 
-        // Set the content view to the main activity layout
-        context = this
-        // Initialize the camera executor for handling camera operations
-        cameraExecutor = Executors.newSingleThreadExecutor()
 
-        // Check for camera permissions
-        if (!allPermissionsGranted()) {
-            requestPermissions()
-        }
-
-        // Set the content view with the main screen
         setContent {
-            MainScreen(viewModel, tripViewModel, userViewModel, reviewViewModel)
+            VoyagoTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    MainScreen(viewModel, tripViewModel, userViewModel, reviewViewModel)
+                }
+            }
         }
-
     }
 
     // Request camera permissions

@@ -124,4 +124,7 @@ dependencies {
 
     // 文本选择支持 - 聊天室消息复制功能
     implementation("androidx.compose.foundation:foundation:1.5.4")
+
+    //Theme for splash screen
+    implementation("androidx.core:core-splashscreen:1.0.1")
 }
