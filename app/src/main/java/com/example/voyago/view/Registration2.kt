@@ -492,8 +492,7 @@ fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
                             }
                     }
 
-                    // Trigger user creation logic in ViewModel
-                    uvm.createUser(user)
+                    // Note: We don't call createUser here since the user will be created after email verification
 
                     // Pass the pending user to the next screen using saved state handle
                     navController.currentBackStackEntry?.savedStateHandle?.set(
