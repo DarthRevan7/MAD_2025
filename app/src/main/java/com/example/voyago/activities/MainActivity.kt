@@ -403,9 +403,11 @@ fun BottomBar(
         // Create a navigation bar item for each item in the list
         items.forEach { item ->
             // Check if the current destination matches the item's root route
-            val selected = currentDestination
+            val selected = navBackStackEntry
+                ?.destination
                 ?.hierarchy
                 ?.any { it.route == item.rootRoute } == true
+
 
             // Create a NavigationBarItem for the item
             NavigationBarItem(
@@ -414,8 +416,6 @@ fun BottomBar(
                         Icon(item.icon, contentDescription = item.label)
 
                         // Show red dot if this is the "My Trips" item and any trip has applied users
-                        Log.d("L1", "item.label = ${item.label}")
-                        Log.d("L1", "hasTripNot = $hasTripNotifications")
                         if (item.label == "My Trips" && hasTripNotifications) {
                             Box(
                                 modifier = Modifier
@@ -1524,8 +1524,10 @@ fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
                     factory = Factory
                 )
 
-                ChatListScreen(chatViewModel, tripViewModel = tripViewModel,
-                    userViewModel, navController, Modifier)
+                ChatListScreen(
+                    chatViewModel, tripViewModel = tripViewModel,
+                    userViewModel, navController, Modifier
+                )
 
             }
 
@@ -1704,7 +1706,7 @@ fun NavGraphBuilder.chatsNavGraph(navController: NavController) {
         }
 
         composable(
-            route = "profile_overview?tabIndex={tabIndex}",
+            route = "profile_root/profile_overview?tabIndex={tabIndex}",
             arguments = listOf(
                 navArgument("tabIndex") {
                     type = NavType.IntType
