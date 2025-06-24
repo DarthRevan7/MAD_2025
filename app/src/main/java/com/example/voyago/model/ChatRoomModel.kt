@@ -9,7 +9,8 @@ data class ChatRoom(
     val participants: List<Int> = emptyList(), // List IDs
     val name: String = "", // Optional for group chats
     val lastMessage: String = "", // Last message content
-    val usersNotRead: List<String> = emptyList() // Users who haven't read last message
+    val usersNotRead: List<String> = emptyList(), // Users who haven't read last message
+    val tripId: String = "" // Trip ID for group chats
 )
 
 data class FirebaseChatMessage(
