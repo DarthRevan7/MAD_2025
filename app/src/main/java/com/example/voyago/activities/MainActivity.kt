@@ -196,6 +196,10 @@ class MainActivity : ComponentActivity() {
 
         val tripViewModel: TripViewModel by viewModels { Factory }
 
+        val userViewModel: UserViewModel by viewModels { Factory }
+
+        val reviewViewModel: ReviewViewModel by viewModels { Factory }
+
         // Handle deep link for email verification
         val data = intent?.data
         val mode = data?.getQueryParameter("mode")
@@ -250,7 +254,7 @@ class MainActivity : ComponentActivity() {
 
         // Set the content view with the main screen
         setContent {
-            MainScreen(viewModel, tripViewModel)
+            MainScreen(viewModel, tripViewModel, userViewModel, reviewViewModel)
         }
 
     }
@@ -301,7 +305,10 @@ class MainActivity : ComponentActivity() {
 
 // Composable function to display the main screen with a top bar and bottom navigation
 @Composable
-fun MainScreen(viewModel: UserViewModel, vm: TripViewModel) {
+fun MainScreen(
+    viewModel: UserViewModel, vm: TripViewModel, uvm: UserViewModel,
+    rvm: ReviewViewModel
+) {
     val navController = rememberNavController()
     val notificationViewModel = NotificationViewModel()
     val userVerified by viewModel.userVerified.collectAsState()
@@ -338,7 +345,7 @@ fun MainScreen(viewModel: UserViewModel, vm: TripViewModel) {
         },
         bottomBar = {
             // Display the bottom navigation bar
-            BottomBar(navController, vm)
+            BottomBar(navController, vm, rvm, uvm)
         }
     ) { innerPadding ->
         // Main content of the app, which includes the navigation graph
@@ -347,8 +354,13 @@ fun MainScreen(viewModel: UserViewModel, vm: TripViewModel) {
 }
 
 // Composable function to display the bottom navigation bar
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
-fun BottomBar(navController: NavHostController, vm: TripViewModel) {
+fun BottomBar(
+    navController: NavHostController, vm: TripViewModel,
+    rvm: ReviewViewModel,
+    uvm: UserViewModel
+) {
     // Define the navigation items for the bottom bar
     val items = listOf(
         NavItem("Explore", Icons.Filled.LocationOn, Screen.Explore.route, "explore_main"),
@@ -367,6 +379,26 @@ fun BottomBar(navController: NavHostController, vm: TripViewModel) {
 
         // MyTrips has notifications
         val hasTripNotifications by vm.hasTripNotifications.collectAsState()
+        val publishedTrips by vm.publishedTrips.collectAsState()
+        val joinedTrips by vm.joinedTrips.collectAsState()
+        val loggedUser by uvm.loggedUser.collectAsState()
+
+        // Run only once to trigger the fetch
+        LaunchedEffect(loggedUser.id) {
+            if (loggedUser.id != 0) {
+                vm.creatorPublicFilter(loggedUser.id)
+                vm.tripUserJoined(loggedUser.id)
+            }
+        }
+
+        // Run every time the data actually changes
+        LaunchedEffect(publishedTrips, joinedTrips, loggedUser.id, rvm.reviewedMap.value) {
+            if (loggedUser.id != 0 && publishedTrips.isNotEmpty() || joinedTrips.isNotEmpty()) {
+                val tripList = publishedTrips + joinedTrips
+                vm.evaluateTripNotifications(tripList, loggedUser.id, rvm.reviewedMap.value)
+            }
+        }
+
 
         // Create a navigation bar item for each item in the list
         items.forEach { item ->
@@ -382,6 +414,8 @@ fun BottomBar(navController: NavHostController, vm: TripViewModel) {
                         Icon(item.icon, contentDescription = item.label)
 
                         // Show red dot if this is the "My Trips" item and any trip has applied users
+                        Log.d("L1", "item.label = ${item.label}")
+                        Log.d("L1", "hasTripNot = $hasTripNotifications")
                         if (item.label == "My Trips" && hasTripNotifications) {
                             Box(
                                 modifier = Modifier
@@ -434,8 +468,10 @@ fun TopBar(nvm: NotificationViewModel, navController: NavController, uvm: UserVi
     // Get the logged-in user from the UserViewModel
     val user by uvm.loggedUser.collectAsState()
     val userId = user.id.toString()
+
     // Check if there are new notifications
     val hasNewNotification by nvm.hasNewNotification
+
     // Get the current context
     val context = LocalContext.current
 

@@ -1,3 +1,5 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package com.example.voyago.viewmodel
 
 import android.app.NotificationChannel
@@ -79,7 +81,7 @@ class NotificationViewModel : ViewModel() {
                             body = doc.getString("body") ?: "",
                             type = doc.getString("type") ?: "",
                             idLink = doc.getLong("idLink")?.toInt() ?: -1,
-                            read = doc.getBoolean("read") ?: false
+                            read = doc.getBoolean("read") == true
                         )
                         if (!notification.read) hasUnread = true
                         _notifications.add(notification)

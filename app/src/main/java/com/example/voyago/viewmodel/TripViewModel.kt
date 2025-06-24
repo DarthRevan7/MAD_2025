@@ -10,7 +10,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.voyago.model.ReviewModel
@@ -276,6 +275,7 @@ class TripViewModel(
 
     private val _hasTripNotifications = MutableStateFlow(false)
     val hasTripNotifications: StateFlow<Boolean> = _hasTripNotifications
+    
 
     fun evaluateTripNotifications(
         trips: List<Trip>,
@@ -284,9 +284,10 @@ class TripViewModel(
     ) {
         val hasNotifications = trips.any { trip ->
             val hasApplications = trip.appliedUsers.isNotEmpty() && trip.creatorId == userId
+            setHasApplication(hasApplications)
             val needsReview =
-                trip.status == Trip.TripStatus.COMPLETED.toString() && !(reviewedMap[trip.id]
-                    ?: true)
+                trip.status == Trip.TripStatus.COMPLETED.toString() && reviewedMap[trip.id] == false
+            setNeedsReview(needsReview)
             hasApplications || needsReview
         }
         _hasTripNotifications.value = hasNotifications
@@ -806,7 +807,6 @@ object Factory : ViewModelProvider.Factory {
     private val reviewModel: ReviewModel = ReviewModel()
 
     override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
-        val savedStateHandle = extras.createSavedStateHandle()
 
         @Suppress("UNCHECKED_CAST")
         return when {

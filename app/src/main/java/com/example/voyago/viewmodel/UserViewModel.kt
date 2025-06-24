@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.example.voyago.viewmodel
 
 import android.net.Uri
@@ -52,7 +54,7 @@ class UserViewModel(val model: UserModel) : ViewModel() {
     //  添加这个方法来处理头像上传和用户更新
     fun updateUserWithProfileImage(
         updatedUser: User,
-        newImageUri: android.net.Uri?,
+        newImageUri: Uri?,
         onResult: (Boolean) -> Unit
     ) {
         viewModelScope.launch {
@@ -99,9 +101,6 @@ class UserViewModel(val model: UserModel) : ViewModel() {
         pendingUser = null
     }
 
-    private val _userData = MutableStateFlow<User>(User())
-    val userData: StateFlow<User> = _userData
-
     //Create a new user
     fun createUser(newUser: User) {
         pendingUser =
@@ -113,9 +112,6 @@ class UserViewModel(val model: UserModel) : ViewModel() {
     }
 
     var account: GoogleSignInAccount? = null
-    fun setAccountUserViewModel(googleAccount: GoogleSignInAccount) {
-        account = googleAccount
-    }
 
     //Edit user profile
     fun editUserData(updatedUserData: User) {
@@ -125,31 +121,6 @@ class UserViewModel(val model: UserModel) : ViewModel() {
     //Get user information
     fun getUserData(id: Int): Flow<User?> {
         return model.getUser(id)
-    }
-
-
-    //Given a list of username get a list of their ids
-    fun getIdListFromUsernames(usernames: List<String>): List<Int> {
-        var userList = emptyList<User>()
-
-        viewModelScope.launch {
-            model.getUsersFromUsernames(usernames).collect { users -> userList = users }
-        }
-
-        var idList: MutableList<Int> = mutableListOf()
-
-        userList.forEach { idList.add(it.id) }
-
-        return idList
-    }
-
-    //Given a username check if the user exists
-    fun doesUserExist(username: String): Boolean {
-        var userList = emptyList<User>()
-        viewModelScope.launch {
-            model.getUsersFromUsernames(listOf(username)).collect { users -> userList = users }
-        }
-        return userList.isNotEmpty()
     }
 
     // Camera
@@ -217,7 +188,7 @@ class UserViewModel(val model: UserModel) : ViewModel() {
                     .await()
 
                 val exists = !result.isEmpty
-                Log.d("UserViewModel", "User '$username' exists: $exists, user ${user.toString()}")
+                Log.d("UserViewModel", "User '$username' exists: $exists, user $user")
 
                 // 确保在主线程回调
                 withContext(Dispatchers.Main) {
