@@ -69,8 +69,15 @@ fun ChatDetails(navController: NavController,
                  chatViewModel: ChatViewModel,) {
 
 
-    val tripState = produceState<Trip?>(initialValue = null, tripId) {
-        tripViewModel.fetchTripById(tripId) { trip -> value = trip }
+    val tripState = remember { mutableStateOf<Trip?>(null) }
+
+    tripViewModel.getTripById(tripId.toInt()) {
+        trip ->
+        if(trip != null) {
+            tripState.value = trip
+            trip
+        }
+        null
     }
 
     val trip = tripState.value

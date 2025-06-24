@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import com.example.voyago.Collections
 import com.example.voyago.model.ReviewModel
 import com.example.voyago.model.Trip
 import com.example.voyago.model.Trip.Activity
@@ -26,6 +27,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.util.Calendar
 
 class TripViewModel(
@@ -652,13 +654,30 @@ class TripViewModel(
         }
     }
 
+    fun getTripById(tripId: Int, callback: (Trip?) -> Trip? ) {
+        try {
+            Collections.trips.document(tripId.toString())
+                .get().addOnSuccessListener { snapshot ->
+                    if(snapshot.exists()) {
+                        val trip = snapshot.toObject(Trip::class.java)
+                        Log.d("TC1", "trip=${trip}")
+                        callback(trip)
+                    }
+                }
+        }
+        catch (e: Exception) {
+            callback(null)
+        }
+    }
+
     fun fetchTripById(tripId: String, onResult: (Trip?) -> Unit) {
         tripModel.getTripById(tripId) { trip ->
             if (trip != null) {
                 _otherTrip.value = trip
             }
-            onResult(trip)
+
         }
+        onResult(_otherTrip.value)
     }
 
     fun createTripWithImageUpload(

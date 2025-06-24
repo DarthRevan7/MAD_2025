@@ -50,6 +50,7 @@ import com.example.voyago.model.User
 import com.example.voyago.viewmodel.ChatViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
+import kotlinx.coroutines.delay
 
 
 @Composable
@@ -107,15 +108,18 @@ fun ChatRoomItem(
     currentUserId: Int,
     onClick: () -> Unit
 ) {
-    LaunchedEffect(chatRoom.id) {
-        chatViewModel.fetchChatRoomName(chatRoom.id, currentUserId)
-    }
 
     val chatRoomNames by chatViewModel.chatRoomNames.collectAsState()
     val chatRoomName = chatRoomNames[chatRoom.id] ?: "Chat"
 
     // Check if user has unread messages
     val hasUnreadMessages = chatRoom.usersNotRead.contains(currentUserId.toString())
+
+    val tripFetched = remember { mutableStateOf<Trip?>(null) }
+
+    LaunchedEffect(chatRoom.id) {
+        chatViewModel.fetchChatRoomName(chatRoom.id, currentUserId)
+    }
 
     Card(
         modifier = Modifier
@@ -138,16 +142,24 @@ fun ChatRoomItem(
                 contentAlignment = Alignment.Center
             ) {
                 if(chatRoom.type == "group") {
-                    var tripFetched: Trip? = null
-                    tripViewModel.fetchTripById(chatRoom.tripId)
-                    { trip ->
-                        tripFetched = trip
+                    Log.d("TC1", "TripId To fetch= ${chatRoom.tripId}")
+                    tripViewModel.getTripById(chatRoom.tripId.toInt()) {
+                        trip ->
+                        if(trip != null) {
+                            tripFetched.value = trip
+                            trip
+                        }
+                        null
                     }
+                    Log.d("TC1", "tripFetched=${tripFetched.value}")
 
-                    if(tripFetched != null) {
-                        ProfilePhotoChatList(modifier = Modifier,
-                            trip = tripFetched!!,
-                            small = true)
+                    ProfilePhotoChatList(modifier = Modifier,
+                        trip = tripFetched.value,
+                        small = true)
+
+                    if(tripFetched.value != null) {
+                        Log.d("TC2", "TripId fetched= ${tripFetched.value!!.id}")
+
                     } else {
                         Icon(
                             imageVector = Icons.Default.Group,
@@ -201,17 +213,20 @@ fun ChatRoomItem(
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun ProfilePhotoChatList(modifier: Modifier = Modifier, trip: Trip, small: Boolean = false) {
-    // Use remember to hold the profile image URL state
+fun ProfilePhotoChatList(modifier: Modifier = Modifier, trip: Trip?, small: Boolean = false) {
+
     val profileImageUrl = remember { mutableStateOf<String?>(null) }
 
     // Asynchronous acquisition Firebase Storage URL
-    LaunchedEffect(trip.photo) {
+    LaunchedEffect(trip?.photo) {
         // If the user has a profile picture URL, try to load it
-        if (!trip.photo.isNullOrEmpty()) {
+        if (!trip?.photo.isNullOrEmpty()) {
             try {
-                // Use Firebase Storage to get the profile photo URL
-                profileImageUrl.value = trip.getPhoto()
+                if(profileImageUrl.value == null)
+                {
+                    // Use Firebase Storage to get the profile photo URL
+                    profileImageUrl.value = trip?.getPhoto()
+                }
             } catch (e: Exception) {
                 // Log the error if the profile photo fails to load
                 Log.e("ProfilePhoto", "Failed to load profile photo", e)
