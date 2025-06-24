@@ -246,7 +246,7 @@ class ChatViewModel : ViewModel() {
                     else -> emptyList()
                 }
 
-                if (type == "private" && participants.size == 2) {
+                if (type != "group" && participants.size == 2) {
                     val otherParticipantId = participants.firstOrNull { it != currentUserId }
                     if (otherParticipantId != null) {
                         db.collection("users")
@@ -472,27 +472,6 @@ class ChatViewModel : ViewModel() {
             }
     }
 
-//    fun removeUserFromChatByName(roomName: String, userId: Int) {
-//        fetchChatRoomIdByName(roomName) { roomId ->
-//            if (roomId != null) {
-//                removeUserFromChat(roomId, userId)
-//            } else {
-//                Log.e("ChatVM", "Chat room with name '$roomName' not found.")
-//            }
-//        }
-//    }
-//
-//    fun removeUserFromChat(roomId: String, userId: Int) {
-//        val roomRef = db.collection("chatRooms").document(roomId)
-//
-//        roomRef.update("participants.$userId", FieldValue.delete())
-//            .addOnSuccessListener {
-//                Log.d("ChatVM", "User $userId removed from chat room $roomId")
-//            }
-//            .addOnFailureListener {
-//                Log.e("ChatVM", "Failed to remove user $userId from chat room $roomId", it)
-//            }
-//    }
 
     fun removeParticipantFromRoom(roomName: String, userIdToRemove: Int) {
         fetchChatRoomIdByName(roomName) { roomId ->
@@ -538,6 +517,18 @@ class ChatViewModel : ViewModel() {
                 }
         }
     }
+
+    fun blockChatRoom(roomId: String) {
+        db.collection("chatRooms").document(roomId)
+            .update("type", "blocked")
+            .addOnSuccessListener {
+                Log.d("ChatDebug", "Room $roomId successfully blocked.")
+            }
+            .addOnFailureListener {
+                Log.e("ChatDebug", "Failed to block room: ${it.message}")
+            }
+    }
+
 
 
 

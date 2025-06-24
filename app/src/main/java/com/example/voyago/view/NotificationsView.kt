@@ -14,10 +14,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -40,51 +43,56 @@ fun NotificationView(
     vm: TripViewModel,
     avm: ArticleViewModel
 ) {
-
-    // Get the currently logged-in user from the user view model
     val user by uvm.loggedUser.collectAsState()
-
-    // Extract the user's ID for fetching notifications
     val userId = user.id.toString()
-
-    // Android context
     val context = LocalContext.current
 
-    // Load notifications once when the userId becomes available or changes
     LaunchedEffect(userId) {
         nvm.loadNotificationsForUser(context, userId)
     }
 
-    // Main column layout to structure the screen content
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // Screen title
-        Text(
-            text = "Notifications",
-            style = MaterialTheme.typography.titleLarge
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Notifications",
+                style = MaterialTheme.typography.titleLarge
+            )
 
-        // Space below the title
+            Spacer(modifier = Modifier.weight(1f))
+
+            if (nvm.notifications.isNotEmpty()) {
+                TextButton(
+                    onClick = {
+                        nvm.deleteAllNotifications(userId)
+                    }
+                ) {
+                    Text("Delete All")
+                }
+            }
+        }
+
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Show message if there are no notifications
+
         if (nvm.notifications.isEmpty()) {
             Text("No notifications yet.")
         } else {
-            // Scrollable list of notifications
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Iterate through each notification
                 items(nvm.notifications) { notification ->
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
+                        verticalAlignment = Alignment.Top,
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
@@ -276,23 +284,49 @@ fun NotificationView(
                                     }
                                 }
                             }
-                            // Padding inside each notification row
-                            .padding(8.dp)
+                            .padding(8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        // Icon indicating it's a notification
-                        Icon(
-                            imageVector = Icons.Default.Notifications,
-                            contentDescription = "Notification Icon",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
+                        Row(
+                            modifier = Modifier.weight(1f),
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Notifications,
+                                contentDescription = "Notification Icon",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
 
-                        // Space between icon and text
-                        Spacer(modifier = Modifier.width(8.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
 
-                        // Column with notification title and body
-                        Column {
-                            Text(notification.title, style = MaterialTheme.typography.bodyLarge)
-                            Text(notification.body, style = MaterialTheme.typography.bodySmall)
+                            Column {
+                                Text(
+                                    text = notification.title,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                                Text(
+                                    text = notification.body,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    maxLines = 2
+                                )
+                            }
+                        }
+
+                        // Delete single notification button
+                        IconButton(
+                            onClick = {
+                                nvm.deleteNotification(
+                                    userId.toString(),
+                                    notificationId = notification.id
+                                )
+                            },
+                            modifier = Modifier.align(Alignment.Top)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Delete Notification",
+                                tint = MaterialTheme.colorScheme.error
+                            )
                         }
                     }
                 }
@@ -300,5 +334,4 @@ fun NotificationView(
         }
     }
 }
-
 

@@ -158,7 +158,7 @@ fun ChatRoomItem(
 
 
                 }
-                else if(chatRoom.type == "private") {
+                else if(chatRoom.type == "private" || chatRoom.type == "blocked") {
                     val userId = chatRoom.participants.find { it != currentUserId }
                     if(userId != null) {
                         val user = userViewModel.getUserData(userId).collectAsState(initial = null)
