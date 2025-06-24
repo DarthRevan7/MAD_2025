@@ -28,9 +28,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.voyago.formatMessageTimestamp
 import com.example.voyago.model.FirebaseChatMessage
@@ -129,7 +131,19 @@ fun SingleChatScreen(
                         }
                     }
             )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            BlockUserButton(
+                roomId,
+                chatViewModel,
+                navController,
+                user.id
+            )
         }
+
+
+
 
         LazyColumn(
             modifier = Modifier
@@ -145,35 +159,46 @@ fun SingleChatScreen(
             }
         }
 
-        Row(
-            modifier = Modifier
-                .padding(8.dp)
-                .fillMaxWidth()
-                .background(Color.LightGray.copy(alpha = 0.1f), RoundedCornerShape(8.dp)),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            TextField(
-                value = newMessage,
-                onValueChange = { newMessage = it },
-                modifier = Modifier.weight(1f),
-                placeholder = { Text("Type a message") },
-                singleLine = true
+        if (chatRoomType == "blocked") {
+            Text(
+                text = "This chat was blocked and no new messages can be sent",
+                color = Color.Red,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
             )
-            IconButton(
-                onClick = {
-                    if (newMessage.isNotBlank()) {
-                        chatViewModel.sendMessage(
-                            roomId,
-                            FirebaseChatMessage(
-                                senderId = user.id.toString(),
-                                content = newMessage
-                            )
-                        )
-                        newMessage = ""
-                    }
-                }
+        } else {
+            Row(
+                modifier = Modifier
+                    .padding(8.dp)
+                    .fillMaxWidth()
+                    .background(Color.LightGray.copy(alpha = 0.1f), RoundedCornerShape(8.dp)),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(Icons.Default.Send, contentDescription = "Send")
+                TextField(
+                    value = newMessage,
+                    onValueChange = { newMessage = it },
+                    modifier = Modifier.weight(1f),
+                    placeholder = { Text("Type a message") },
+                    singleLine = true
+                )
+                IconButton(
+                    onClick = {
+                        if (newMessage.isNotBlank()) {
+                            chatViewModel.sendMessage(
+                                roomId,
+                                FirebaseChatMessage(
+                                    senderId = user.id.toString(),
+                                    content = newMessage
+                                )
+                            )
+                            newMessage = ""
+                        }
+                    }
+                ) {
+                    Icon(Icons.Default.Send, contentDescription = "Send")
+                }
             }
         }
     }
@@ -216,6 +241,55 @@ fun ChatMessage(isOwnMessage: Boolean,
         )
     }
 }
+
+@Composable
+fun BlockUserButton(
+    roomId: String,
+    chatViewModel: ChatViewModel,
+    navController: NavController,
+    userId : Int
+) {
+    var showDialog by remember { mutableStateOf(false) }
+
+    // Icon button to trigger dialog
+    IconButton(onClick = {
+        showDialog = true
+    }) {
+        Icon(
+            imageVector = Icons.Default.Block,
+            contentDescription = "Block User",
+            tint = Color.White
+        )
+    }
+
+    // Confirmation Dialog
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Block User") },
+            text = {
+                Text("Are you sure you want to block this user? This action can't be undone.")
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDialog = false
+                    chatViewModel.blockChatRoom(roomId)
+                    chatViewModel.getChatRoomFromId(roomId)
+                    chatViewModel.fetchChatRoomsForUser(userId)
+                    navController.navigate("home_main")
+                }) {
+                    Text("Block", color = Color.Red)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+}
+
 
 
 
