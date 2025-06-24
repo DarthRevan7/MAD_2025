@@ -247,7 +247,7 @@ fun RegistrationVerificationScreen(navController: NavController, uvm: UserViewMo
                             currentUser.uid = fireUser.uid
 
                             // Update user data in ViewModel
-                            uvm.editUserData(currentUser)
+                            uvm.createUser(currentUser)
 
                             // Navigate to profile overview screen
                             navController.navigate("profile_overview") {
