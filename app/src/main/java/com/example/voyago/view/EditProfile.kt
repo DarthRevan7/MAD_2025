@@ -230,23 +230,39 @@ fun EditProfileScreen(
 
                 // Input Fields
                 fieldValues.forEachIndexed { index, item ->
-                    // Email field has specific validation pattern
-                    if (index == 3) {
+                    // Name and Surname fields
+                    if (index == 0 || index == 1) {
+                        isValidName(item)
+                    }
+                    // Username field
+                    else if (index == 2) {
                         val emailHasErrors by derivedStateOf {
-                            if (item.isNotEmpty()) {
-                                !android.util.Patterns.EMAIL_ADDRESS.matcher(item).matches()
-                            } else {
-                                false
-                            }
+                            isValidUsername(item)
                         }
 
                         errors[index] = emailHasErrors
 
                         ValidatingInputEmailField(item, { fieldValues[index] = it }, emailHasErrors)
+
+                    }
+                    // Email field
+                    else if (index == 3) {
+                        val emailHasErrors by derivedStateOf {
+                            isValidEmail(item)
+                        }
+
+                        errors[index] = emailHasErrors
+
+                        ValidatingInputEmailField(item, { fieldValues[index] = it }, emailHasErrors)
+
+                    }
+                    // Country field
+                    else if (index == 4) {
+                        isValidCountry(item)
                     } else {
                         // General validation for other fields: must not be blank
                         val validatorHasErrors by derivedStateOf {
-                            item.isBlank()
+                            isValidUserDescription(item)
                         }
 
                         errors[index] = validatorHasErrors
@@ -605,3 +621,13 @@ fun ValidatingInputEmailField(
     )
 }
 
+fun isValidUserDescription(description: String): Boolean {
+    val trimmed = description.trim()
+
+    // Length validation
+    if (trimmed.length < 10 || trimmed.length > 300) return false
+
+    // Restrict special characters (only allow letters, digits, basic punctuation)
+    val regex = "^[a-zA-Z0-9\\s.,!?()'\"-]{10,300}$".toRegex()
+    return trimmed.matches(regex)
+}
