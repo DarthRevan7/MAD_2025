@@ -173,26 +173,28 @@ class ChatModel(private val db: FirebaseFirestore = FirebaseFirestore.getInstanc
                 }
 
                 if (existingRoom != null) {
-                    // Room already exists (either private or blocked)
                     onRoomReady(existingRoom.id)
                 } else {
-                    // Create a new private chat room
-                    val newRoom = hashMapOf(
-                        "type" to "private",
-                        "participants" to listOf(currentUserId, otherUserId),
-                        "name" to "",
-                        "lastMessage" to "",
-                        "usersNotRead" to listOf<String>()
-                    )
+                    // FETCH other user's name BEFORE creating the room
+                    fetchUserDisplayName(otherUserId) { otherUserName ->
+                        val newRoom = hashMapOf(
+                            "type" to "private",
+                            "participants" to listOf(currentUserId, otherUserId),
+                            "name" to "",
+                            "lastMessage" to "",
+                            "usersNotRead" to listOf<String>()
+                        )
 
-                    db.collection("chatRooms")
-                        .add(newRoom)
-                        .addOnSuccessListener { docRef ->
-                            onRoomReady(docRef.id)
-                        }
+                        db.collection("chatRooms")
+                            .add(newRoom)
+                            .addOnSuccessListener { docRef ->
+                                onRoomReady(docRef.id)
+                            }
+                    }
                 }
             }
     }
+
 
 
     fun createGroupIfNotExists(
