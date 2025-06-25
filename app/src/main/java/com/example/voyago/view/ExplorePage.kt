@@ -156,7 +156,8 @@ fun TripCard(
     isDraft: Boolean = false, // Whether it is in draft state, the default value is false
     owner: Boolean,
     uvm: UserViewModel,
-    rvm: ReviewViewModel
+    rvm: ReviewViewModel,
+    onEditTrip: ((Trip) -> Unit)? = null  // Callback for editing
 ) {
 
     // Get the logged in user from the viewmodel
@@ -269,10 +270,15 @@ fun TripCard(
                         modifier = Modifier
                             .size(35.dp)
                             .clickable {
-                                vm.editTrip = trip // Set the trip as the EditTrip in the vm
-                                vm.userAction =
-                                    TripViewModel.UserAction.EDIT_TRIP // Set the user action as EDIT_TRIP
-                                navController.navigate("edit_trip") // Navigate to edit trip page
+                                // 🔥 KEY FIX: Use proper edit handling
+                                if (onEditTrip != null) {
+                                    // Use the callback if provided (from MyTripsPage)
+                                    onEditTrip(trip)
+                                } else {
+                                    // Fallback: use the new startEditingTrip method directly
+                                    vm.startEditingTrip(trip)
+                                    navController.navigate("edit_trip")
+                                }
                             },
                         colorFilter = if (isDraft) {
                             androidx.compose.ui.graphics.ColorFilter.tint(Color.Gray) // If is a draft the icon turns grey
@@ -294,7 +300,7 @@ fun TripCard(
             if (owner) {
                 val applications = trip.appliedUsers.isNotEmpty() && trip.creatorId == loggedUser.id
                 val review = trip.status == Trip.TripStatus.COMPLETED.toString() && !isReviewed
-                
+
                 // Red dot in bottom right corner of card
                 if (applications || review) {
                     Box(

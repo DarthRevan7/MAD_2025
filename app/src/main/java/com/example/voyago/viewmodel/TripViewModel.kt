@@ -21,6 +21,7 @@ import com.example.voyago.model.TripModel
 import com.example.voyago.model.TypeTravel
 import com.example.voyago.model.User
 import com.example.voyago.model.UserModel
+import com.example.voyago.model.deepCopy
 import com.example.voyago.view.SelectableItem
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.flow.Flow
@@ -41,12 +42,83 @@ class TripViewModel(
     //Use in the edit trip interface
     var editTrip: Trip = Trip()
 
+    // Temporary edit state for staging changes during editing process
+    private var tempEditState: Trip? = null
+
+    // Deep copy of original entry state for restoring on cancel
+    private var originalEntryState: Trip? = null
+
     //Used to see the details of a trip that isn't the selected trip
     private val _otherTrip = mutableStateOf<Trip>(Trip())
     val otherTrip: State<Trip> = _otherTrip
 
     fun setOtherTrip(trip: Trip) {
         _otherTrip.value = trip
+    }
+
+    // Start editing a trip, save original state
+    fun startEditingTrip(trip: Trip) {
+        originalEntryState = trip.deepCopy()
+        editTrip = trip.deepCopy()
+        setSelectedTrip(editTrip)
+        userAction = UserAction.EDIT_TRIP
+        Log.d("TripViewModel", "Started editing trip: ${trip.id}, saved original state")
+    }
+
+    // Save current edit state temporarily (called when moving from EditTrip to ActivitiesList)
+    fun saveTemporaryEditState() {
+        tempEditState = editTrip.deepCopy()
+        setSelectedTrip(editTrip)
+        Log.d("TripViewModel", "Saved temporary edit state")
+        // Do not call database save
+    }
+
+    // Cancel editing, restore to original state
+    fun cancelEditing(): Boolean {
+        return if (originalEntryState != null) {
+            editTrip = originalEntryState!!.deepCopy()
+            setSelectedTrip(editTrip)
+            // If there's temporary state and it differs from original, need to restore database
+            if (tempEditState != null && tempEditState!!.id != -1) {
+                // Restore database to original state
+                tripModel.editTrip(originalEntryState!!, originalEntryState!!, viewModelScope) { success ->
+                    Log.d("TripViewModel", "Database restored to original state: $success")
+                }
+            }
+            clearEditingState()
+            true
+        } else {
+            false
+        }
+    }
+
+    // Finish editing, officially save to database
+    fun finishEditing(onResult: (Boolean) -> Unit) {
+        if (originalEntryState != null) {
+            // Remove draft flag and save
+            val finalTrip = editTrip.copy(isDraft = false)
+            tripModel.finishTripEditing(finalTrip, originalEntryState!!, viewModelScope) { success ->
+                if (success) {
+                    setSelectedTrip(finalTrip)
+                    clearEditingState()
+                }
+                onResult(success)
+            }
+        } else {
+            onResult(false)
+        }
+    }
+
+    // Clear editing state
+    private fun clearEditingState() {
+        tempEditState = null
+        originalEntryState = null
+        userAction = UserAction.NOTHING
+    }
+
+    // Existing editTrip method, only call when actually need to save to database
+    fun editTripInDatabase(trip: Trip, onResult: (Boolean) -> Unit) {
+        editExistingTrip(trip, onResult)
     }
 
     //Used in the select trip interface (trip detail)
@@ -239,7 +311,6 @@ class TripViewModel(
         applyFilters(loggedUserId)
     }
 
-
     //Ask to join a trip or cancel application
     val askedTrips = tripModel.askedTrips
     fun askToJoin(
@@ -278,7 +349,6 @@ class TripViewModel(
     private val _hasTripNotifications = MutableStateFlow(false)
     val hasTripNotifications: StateFlow<Boolean> = _hasTripNotifications
 
-
     fun evaluateTripNotifications(
         trips: List<Trip>,
         userId: Int,
@@ -314,7 +384,6 @@ class TripViewModel(
     val canceledTrips: StateFlow<Set<String>> = tripModel.canceledTrips
     fun loadCanceledTrips(userId: String) = tripModel.getCanceledTrips(userId, viewModelScope)
 
-
     //Import an already published trip as a private trip of the logged in user (id=1)
     fun addImportedTrip(
         photo: String?, title: String, destination: String, startDate: Calendar,
@@ -337,7 +406,6 @@ class TripViewModel(
             onResult
         )
     }
-
 
     //Make published or private a trip
     fun changePublishedStatus(id: Int) {
@@ -386,7 +454,6 @@ class TripViewModel(
         }
     }
 
-
     //Mutable list of applications
     private val _applications = MutableStateFlow<Map<User, Trip.JoinRequest>>(emptyMap())
 
@@ -413,13 +480,12 @@ class TripViewModel(
                     }.toMap()
                     _tripParticipants.value = mapped
                 } catch (e: Exception) {
-                    Log.e("TripViewModel", "Errore recupero utenti", e)
+                    Log.e("TripViewModel", "Error retrieving users", e)
                     _tripParticipants.value = emptyMap()
                 }
             }
         }
     }
-
 
     //Applicants with Requested Spots
     private val _tripApplicants = MutableStateFlow<Map<User, Trip.JoinRequest>>(emptyMap())
@@ -444,7 +510,7 @@ class TripViewModel(
                     }.toMap()
                     _tripApplicants.value = mapped
                 } catch (e: Exception) {
-                    Log.e("TripViewModel", "Errore recupero utenti", e)
+                    Log.e("TripViewModel", "Error retrieving users", e)
                     _tripApplicants.value = emptyMap()
                 }
             }
@@ -474,13 +540,12 @@ class TripViewModel(
                     }.toMap()
                     _tripRejectedUsers.value = mapped
                 } catch (e: Exception) {
-                    Log.e("TripViewModel", "Errore recupero utenti", e)
+                    Log.e("TripViewModel", "Error retrieving users", e)
                     _tripRejectedUsers.value = emptyMap()
                 }
             }
         }
     }
-
 
     //Approve an application
     fun acceptApplication(trip: Trip?, userId: Int) {
@@ -534,7 +599,7 @@ class TripViewModel(
 
             trip.updateApplicationStatus(
                 onSuccess = {
-                    Log.d("TripViewModel", "Accepted application and updated Firestore")
+                    Log.d("TripViewModel", "Rejected application and updated Firestore")
                 },
                 onFailure = {
                     Log.e("TripViewModel", "Failed to update trip in Firestore", it)
@@ -558,14 +623,13 @@ class TripViewModel(
         }
     }
 
-
     //Delete activity from a specific trip
     fun deleteActivity(activity: Activity) {
         Log.d("TripViewModel", "Deleting activity: ${activity.id}")
 
         when (userAction) {
             UserAction.CREATE_TRIP -> {
-                // 对于新创建的行程，只在本地删除
+                // For new trip creation, only delete locally
                 val updatedActivities = newTrip.activities.toMutableMap()
                 updatedActivities.forEach { (day, activities) ->
                     val filteredActivities = activities.filter { it.id != activity.id }
@@ -580,15 +644,12 @@ class TripViewModel(
             }
 
             UserAction.EDIT_TRIP -> {
-                // 对于编辑现有行程，调用 TripModel 删除并同步到数据库
+                // For editing existing trip, call TripModel to delete and sync to database
                 tripModel.removeActivityFromTrip(activity.id, editTrip) { success, updatedTrip ->
                     if (success && updatedTrip != null) {
                         editTrip = updatedTrip
                         _selectedTrip.value = updatedTrip
-                        Log.d(
-                            "TripViewModel",
-                            "Activity deleted and synced to Firebase successfully"
-                        )
+                        Log.d("TripViewModel", "Activity deleted and synced to Firebase successfully")
                     } else {
                         Log.e("TripViewModel", "Failed to delete activity from Firebase")
                     }
@@ -596,19 +657,13 @@ class TripViewModel(
             }
 
             else -> {
-                // 对于其他情况，如果是已保存的行程，也调用 TripModel
+                // For other cases, if it's a saved trip, also call TripModel
                 val currentTrip = _selectedTrip.value
                 if (currentTrip.id != -1) {
-                    tripModel.removeActivityFromTrip(
-                        activity.id,
-                        currentTrip
-                    ) { success, updatedTrip ->
+                    tripModel.removeActivityFromTrip(activity.id, currentTrip) { success, updatedTrip ->
                         if (success && updatedTrip != null) {
                             _selectedTrip.value = updatedTrip
-                            Log.d(
-                                "TripViewModel",
-                                "Activity deleted and synced to Firebase successfully"
-                            )
+                            Log.d("TripViewModel", "Activity deleted and synced to Firebase successfully")
                         } else {
                             Log.e("TripViewModel", "Failed to delete activity from Firebase")
                         }
@@ -635,11 +690,9 @@ class TripViewModel(
                     UserAction.EDIT_TRIP -> editTrip = updatedTrip
                     else -> {}
                 }
-
             }
         }
     }
-
 
     private fun updateAllTripStatuses() {
         val trips = tripModel.allPublishedTrips.value
@@ -675,7 +728,6 @@ class TripViewModel(
             if (trip != null) {
                 _otherTrip.value = trip
             }
-
         }
         onResult(_otherTrip.value)
     }
@@ -694,7 +746,7 @@ class TripViewModel(
     ) {
         viewModelScope.launch {
             try {
-                // 首先创建一个临时Trip来获取ID
+                // First create a temporary Trip to get ID
                 val tempTrip = Trip(
                     title = title,
                     destination = destination,
@@ -711,18 +763,18 @@ class TripViewModel(
                     status = Trip.TripStatus.NOT_STARTED.toString(),
                     appliedUsers = emptyMap(),
                     rejectedUsers = emptyMap(),
-                    photo = null // 暂时为null
+                    photo = null // Temporarily null
                 )
 
-                // 创建Trip获取ID
+                // Create Trip to get ID
                 tripModel.createNewTrip(tempTrip) { success, createdTrip ->
                     if (success && createdTrip != null) {
-                        // Trip创建成功，现在上传图片
+                        // Trip created successfully, now upload image
                         if (imageUri != null) {
                             viewModelScope.launch {
                                 val uploadSuccess = createdTrip.setPhoto(imageUri)
                                 if (uploadSuccess) {
-                                    // 图片上传成功，更新Trip
+                                    // Image upload successful, update Trip
                                     tripModel.editTrip(
                                         createdTrip,
                                         createdTrip,
@@ -735,16 +787,13 @@ class TripViewModel(
                                         }
                                     }
                                 } else {
-                                    // 图片上传失败，但Trip已创建，使用默认图片
-                                    Log.w(
-                                        "TripViewModel",
-                                        "Image upload failed, using default image"
-                                    )
+                                    // Image upload failed, but Trip created, use default image
+                                    Log.w("TripViewModel", "Image upload failed, using default image")
                                     onResult(true, createdTrip, null)
                                 }
                             }
                         } else {
-                            // 没有图片，直接返回成功
+                            // No image, return success directly
                             onResult(true, createdTrip, null)
                         }
                     } else {
@@ -758,7 +807,7 @@ class TripViewModel(
         }
     }
 
-    // 🔴 修复点18: 改进addActivityToTrip方法，确保状态同步
+    // Improved addActivityToTrip method to ensure state synchronization
     fun addActivityToTrip(activity: Activity) {
         Log.d("TripViewModel", "Adding activity: $activity")
         Log.d("TripViewModel", "Current user action: $userAction")
@@ -794,7 +843,6 @@ class TripViewModel(
     suspend fun getTripByTitle(title: String): Trip? {
         return tripModel.getTripByTitle(title)
     }
-
 
     //INITIALIZE VIEWMODEL
     init {
@@ -840,4 +888,3 @@ object Factory : ViewModelProvider.Factory {
         }
     }
 }
-

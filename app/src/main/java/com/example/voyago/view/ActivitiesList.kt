@@ -162,23 +162,22 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
                         // Back button to discard changes and go back to the previous screen
                         Button(
                             onClick = {
-                                // When back is pressed, revert trip data to the original snapshot taken when entering
-                                entryTripState?.let {
-                                    when (vm.userAction) {
-                                        // Revert edited trip data
-                                        TripViewModel.UserAction.EDIT_TRIP -> vm.editTrip = it
-                                        // Revert new trip data
-                                        TripViewModel.UserAction.CREATE_TRIP -> vm.newTrip = it
-                                        // No action otherwise
-                                        else -> {}
+                                // 使用取消编辑方法恢复原始状态
+                                when (vm.userAction) {
+                                    TripViewModel.UserAction.EDIT_TRIP -> {
+                                        vm.cancelEditing()
                                     }
-                                    // Sync ViewModel's selected trip state to the snapshot
-                                    vm.setSelectedTrip(it)
+                                    TripViewModel.UserAction.CREATE_TRIP -> {
+                                        // 对于新建行程，恢复到初始状态
+                                        entryTripState?.let {
+                                            vm.newTrip = it
+                                            vm.setSelectedTrip(it)
+                                        }
+                                    }
+                                    else -> {}
                                 }
-                                // Navigate back in the stack
                                 navController.popBackStack()
                             },
-
                             modifier = Modifier
                                 .width(160.dp)
                                 .height(60.dp)
@@ -193,18 +192,16 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
                         // Finish button to save or update the trip
                         Button(
                             onClick = {
-                                // First, verify if all days have at least one activity
+                                // 首先验证是否所有天都有至少一个活动
                                 if (selectedTrip.hasActivityForEachDay()) {
-                                    // If user is creating a new trip
+                                    // 如果用户正在创建新行程
                                     if (vm.userAction == TripViewModel.UserAction.CREATE_TRIP) {
-                                        // Create an updated copy of the new trip with published = false and draft = false
                                         val updatedTrip = vm.newTrip.copy(
                                             activities = vm.newTrip.activities,
                                             published = false,
                                             isDraft = false
                                         )
 
-                                        // Create a join request for the trip creator to mark them as participant
                                         val creatorJoinRequest = Trip.JoinRequest(
                                             userId = updatedTrip.creatorId,
                                             requestedSpots = 1,
@@ -212,54 +209,32 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
                                             registeredParticipants = listOf(updatedTrip.creatorId)
                                         )
 
-                                        // Assign the creator as the only participant initially
                                         updatedTrip.participants =
                                             mapOf(updatedTrip.creatorId.toString() to creatorJoinRequest)
 
-                                        // Call the ViewModel method to save the new trip and navigate to trips list on success
-                                        vm.editTrip(updatedTrip) { success ->
+                                        vm.editTripInDatabase(updatedTrip) { success ->
                                             if (success) {
                                                 navController.navigate("my_trips_main") {
-                                                    popUpTo("my_trips_main") {
-                                                        // Do NOT remove the "my_trips_main" destination itself from the back stack.
-                                                        // Only remove all screens above it.
-                                                        // This ensures we navigate cleanly *back to* "my_trips_main" without duplicating it.
-                                                        inclusive = false
-                                                    }
-                                                    // Prevent multiple instances of "my_trips_main" from being created.
-                                                    // If "my_trips_main" is already at the top of the back stack,
-                                                    // it will reuse the existing instance instead of creating a new one.
+                                                    popUpTo("my_trips_main") { inclusive = false }
                                                     launchSingleTop = true
                                                 }
                                             }
                                         }
 
-                                        // If user is editing an existing trip or editing an activity
                                     } else if (vm.userAction == TripViewModel.UserAction.EDIT_TRIP
-                                        ||
-                                        vm.userAction == TripViewModel.UserAction.EDIT_ACTIVITY
+                                        || vm.userAction == TripViewModel.UserAction.EDIT_ACTIVITY
                                     ) {
-                                        // Call the ViewModel method to update the trip and navigate on success
-                                        vm.editTrip(vm.selectedTrip.value) { success ->
+                                        // 使用完成编辑方法，正式保存并移除 draft 标记
+                                        vm.finishEditing { success ->
                                             if (success) {
                                                 navController.navigate("my_trips_main") {
-                                                    popUpTo("my_trips_main") {
-                                                        // Do NOT remove the "my_trips_main" destination itself from the back stack.
-                                                        // Only remove all screens above it.
-                                                        // This ensures we navigate cleanly *back to* "my_trips_main" without duplicating it.
-                                                        inclusive = false
-                                                    }
-                                                    // Prevent multiple instances of "my_trips_main" from being created.
-                                                    // If "my_trips_main" is already at the top of the back stack,
-                                                    // it will reuse the existing instance instead of creating a new one.
+                                                    popUpTo("my_trips_main") { inclusive = false }
                                                     launchSingleTop = true
                                                 }
                                             }
                                         }
                                     }
-
                                 } else {
-                                    // If some day has no activities, show the warning dialog
                                     showIncompleteDialog = true
                                 }
                             },
