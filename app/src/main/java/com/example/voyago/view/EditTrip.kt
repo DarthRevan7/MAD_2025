@@ -153,9 +153,8 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
             )
         )
     }
-    var startCalendar by rememberSaveable { mutableStateOf<Calendar?>(trip.startDateAsCalendar()) }
-
-    var endCalendar by rememberSaveable { mutableStateOf<Calendar?>(trip.endDateAsCalendar()) }
+    var startCalendar by remember { mutableStateOf<Calendar?>(trip.startDateAsCalendar()) }
+    var endCalendar by remember { mutableStateOf<Calendar?>(trip.endDateAsCalendar()) }
 
     // Holds error message related to dates
     var dateError by rememberSaveable { mutableStateOf("") }
