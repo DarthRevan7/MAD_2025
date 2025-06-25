@@ -595,7 +595,11 @@ fun TopBar(nvm: NotificationViewModel, navController: NavController, uvm: UserVi
 
 // Composable function to require authentication before accessing certain screens
 @Composable
-fun RequireAuth(navController: NavController, content: @Composable () -> Unit) {
+fun RequireAuth(
+    navController: NavController,
+    showToast: Boolean = true,
+    content: @Composable () -> Unit
+) {
     // Get the current context and Firebase user
     val context = LocalContext.current
     val currentUser = FirebaseAuth.getInstance().currentUser
@@ -607,10 +611,13 @@ fun RequireAuth(navController: NavController, content: @Composable () -> Unit) {
     } else {
         // If not authenticated, show a toast message and navigate to the login screen
         LaunchedEffect(Unit) {
-            Toast.makeText(context, "Please log in to access this section", Toast.LENGTH_SHORT)
-                .show()
+            if (showToast) {
+                Toast.makeText(context, "Please log in to access this section", Toast.LENGTH_SHORT)
+                    .show()
+            }
             navController.navigate(Screen.Login.route)
         }
+
     }
 }
 
@@ -1858,7 +1865,7 @@ fun NavGraphBuilder.profileNavGraph(navController: NavHostController) {
             )
         ) { entry ->
             // Require authentication before accessing the profile overview
-            RequireAuth(navController) {
+            RequireAuth(navController, false) {
                 // Get the back stack entry for the profile graph
                 val profileGraphEntry = remember(entry) {
                     navController.getBackStackEntry(Screen.Profile.route)
