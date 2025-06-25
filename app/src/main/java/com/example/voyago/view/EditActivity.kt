@@ -30,7 +30,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,21 +57,29 @@ import java.util.Locale
 @Composable
 fun EditActivity(navController: NavController, vm: TripViewModel, activityId: Int) {
 
-    // Determine which trip to use based on the user's current action (editing or creating a trip)
-    val currentTrip = when (vm.userAction) {
-        TripViewModel.UserAction.EDIT_ACTIVITY -> {
-            vm.selectedTrip.value
+    //
+    val currentTrip = remember(vm.userAction, vm.editTrip, vm.newTrip, vm.selectedTrip.value) {
+        when (vm.userAction) {
+            TripViewModel.UserAction.EDIT_ACTIVITY,
+            TripViewModel.UserAction.EDIT_TRIP -> {
+                Log.d("EditActivity", "Using editTrip for editing mode")
+                vm.editTrip
+            }
+            TripViewModel.UserAction.CREATE_TRIP -> {
+                Log.d("EditActivity", "Using newTrip for creation mode")
+                vm.newTrip
+            }
+            else -> {
+                Log.d("EditActivity", "Using selectedTrip as fallback")
+                vm.selectedTrip.value
+            }
         }
-
-        TripViewModel.UserAction.CREATE_TRIP -> {
-            if (vm.newTrip.isValid()) vm.newTrip else vm.selectedTrip.value
-        }
-
-        else -> vm.selectedTrip.value
     }
 
     // Find the activity the user wants to edit using the provided activityId
-    val activityToEdit = currentTrip.activities.values.flatten().find { it.id == activityId }
+    val activityToEdit = remember(currentTrip.activities, activityId) {
+        currentTrip.activities.values.flatten().find { it.id == activityId }
+    }
 
     // If the activity does not exist, display an error and exit the function early
     if (activityToEdit == null) {
@@ -81,28 +88,28 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
     }
 
     // State variables for form fields initialized with existing activity values
-    var isGroupActivityChecked by rememberSaveable { mutableStateOf(activityToEdit.isGroupActivity) }
-    var activityDescription by rememberSaveable { mutableStateOf(activityToEdit.description) }
+    var isGroupActivityChecked by remember { mutableStateOf(activityToEdit.isGroupActivity) }
+    var activityDescription by remember { mutableStateOf(activityToEdit.description) }
 
     // Tracks whether the description input field has been interacted with
-    var descriptionTouched = rememberSaveable { mutableStateOf(false) }
+    var descriptionTouched = remember { mutableStateOf(false) }
 
     // Validation: Check if the description is not empty and contains at least one letter
-    val descriptionHasErrors by rememberSaveable {
+    val descriptionHasErrors by remember {
         derivedStateOf {
             descriptionTouched.value && (activityDescription.isBlank() || !activityDescription.any { it.isLetter() })
         }
     }
 
     // State for storing the selected date and time
-    var activityDate by rememberSaveable {
+    var activityDate by remember {
         mutableStateOf(toCalendar(activityToEdit.date).toStringDate())
     }
-    var selectedTime by rememberSaveable { mutableStateOf(activityToEdit.time) }
+    var selectedTime by remember { mutableStateOf(activityToEdit.time) }
 
     // State for managing date validation errors
-    var showDateError by rememberSaveable { mutableStateOf(false) }
-    var dateErrorMessage by rememberSaveable { mutableStateOf("") }
+    var showDateError by remember{ mutableStateOf(false) }
+    var dateErrorMessage by remember { mutableStateOf("") }
 
     // Main layout container
     Box(
@@ -154,7 +161,7 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                 var showDatePicker by remember { mutableStateOf(false) }
 
                 // Create date picker dialog with trip date validation
-                val datePickerDialog = remember {
+                val datePickerDialog = remember(currentTrip) {
                     val calendar = activityToEdit.date
                     val year = toCalendar(calendar).get(Calendar.YEAR)
                     val month = toCalendar(calendar).get(Calendar.MONTH)
@@ -190,9 +197,7 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
 
                             // Validate that selected date is within trip range
                             val isValid =
-                                !pickedCalendar.before(tripStartCal) && !pickedCalendar.after(
-                                    tripEndCal
-                                )
+                                !pickedCalendar.before(tripStartCal) && !pickedCalendar.after(tripEndCal)
 
                             if (isValid) {
                                 activityDate = "$d/${m + 1}/$y"
@@ -360,13 +365,18 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
 
                     Spacer(modifier = Modifier.width(16.dp))
 
-                    // Update button: validate inputs and submit the updated activity
-                    // 🔥 修复后的 EditActivity Update 按钮逻辑
+                    // 🔥 修复后的 Update 按钮逻辑
                     Button(
                         onClick = {
+                            Log.d("EditActivity", "=== UPDATE BUTTON CLICKED ===")
+                            Log.d("EditActivity", "Current user action: ${vm.userAction}")
+                            Log.d("EditActivity", "Activity ID: $activityId")
+
+                            // 解析日期
                             val parsedDate = try {
                                 activityDate.toCalendar()
-                            } catch (_: Exception) {
+                            } catch (e: Exception) {
+                                Log.e("EditActivity", "Failed to parse date: $activityDate", e)
                                 null
                             }
 
@@ -392,10 +402,8 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                                 set(Calendar.MILLISECOND, 999)
                             }
 
-                            val isDateValid =
-                                !activityCalendar.before(tripStartCal) && !activityCalendar.after(
-                                    tripEndCal
-                                )
+                            val isDateValid = !activityCalendar.before(tripStartCal) &&
+                                    !activityCalendar.after(tripEndCal)
 
                             if (!isDateValid) {
                                 showDateError = true
@@ -416,23 +424,22 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                                     description = activityDescription
                                 )
 
-                                Log.d("EditActivity", "=== ABOUT TO UPDATE ACTIVITY ===")
-                                Log.d("EditActivity", "Current user action: ${vm.userAction}")
-                                Log.d("EditActivity", "Activity new date: ${activityCalendar.toStringDate()}")
+                                Log.d("EditActivity", "Updating activity with new date: ${activityCalendar.toStringDate()}")
 
-                                // 🔥 关键修复：不要改变 userAction 状态！
-                                // 直接调用 editActivity 而不触发状态转换
+                                // 🔥 关键修复：直接调用 editActivity，不改变用户操作状态
                                 vm.editActivity(activityId, updatedActivity)
 
-                                // 🔥 根据当前状态决定是否保存临时状态
+                                // 🔥 根据当前状态决定后续操作
                                 when (vm.userAction) {
                                     TripViewModel.UserAction.EDIT_TRIP,
                                     TripViewModel.UserAction.EDIT_ACTIVITY -> {
-                                        // 只保存临时编辑状态，不改变 userAction
+                                        // 保存临时编辑状态
                                         vm.saveTemporaryEditState()
+                                        Log.d("EditActivity", "Saved temporary edit state")
                                     }
                                     TripViewModel.UserAction.CREATE_TRIP -> {
-                                        // 创建新行程时，不需要额外操作
+                                        // 创建新行程时，活动已经在内存中更新
+                                        Log.d("EditActivity", "Activity updated in new trip")
                                     }
                                     else -> {
                                         Log.w("EditActivity", "Unexpected user action: ${vm.userAction}")
@@ -441,6 +448,8 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
 
                                 Log.d("EditActivity", "=== UPDATE COMPLETE ===")
                                 navController.popBackStack()
+                            } else {
+                                Log.w("EditActivity", "Validation failed - showDateError: $showDateError, descriptionHasErrors: $descriptionHasErrors")
                             }
                         },
                         modifier = Modifier
@@ -448,22 +457,6 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                             .height(50.dp)
                     ) {
                         Text("Update")
-                    }
-
-
-                    val currentTrip = remember(vm.userAction) {
-                        when (vm.userAction) {
-                            TripViewModel.UserAction.EDIT_ACTIVITY,
-                            TripViewModel.UserAction.EDIT_TRIP -> {
-                                // 优先使用 editTrip，如果无效则使用 selectedTrip
-                                if (vm.editTrip.isValid()) vm.editTrip else vm.selectedTrip.value
-                            }
-                            TripViewModel.UserAction.CREATE_TRIP -> {
-                                // 优先使用 newTrip，如果无效则使用 selectedTrip
-                                if (vm.newTrip.isValid()) vm.newTrip else vm.selectedTrip.value
-                            }
-                            else -> vm.selectedTrip.value
-                        }
                     }
                 }
             }

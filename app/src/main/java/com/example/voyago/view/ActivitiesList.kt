@@ -32,7 +32,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,9 +43,7 @@ import androidx.navigation.NavController
 import com.example.voyago.model.Trip
 import com.example.voyago.model.deepCopy
 import com.example.voyago.toCalendar
-import com.example.voyago.toStringDate
 import com.example.voyago.viewmodel.TripViewModel
-import com.google.firebase.firestore.FirebaseFirestore
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
@@ -60,7 +57,7 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
     val selectedTrip by vm.selectedTrip
 
     // State to control whether to show the incomplete activities warning dialog
-    var showIncompleteDialog by rememberSaveable { mutableStateOf(false) }
+    var showIncompleteDialog by remember { mutableStateOf(false) }
 
     // Create a deep copy snapshot of the trip when entering this screen based on the user action
     // This snapshot will be used to restore state if user cancels/back navigates
@@ -281,7 +278,7 @@ fun ActivitiesListContent(trip: Trip?, vm: TripViewModel, navController: NavCont
     Log.w("ActivitiesListContent", "  Activity date keys: ${trip.activities.keys.joinToString()}")
 
     // State for delete confirmation dialog
-    var activityToDelete by rememberSaveable { mutableStateOf<Trip.Activity?>(null) }
+    var activityToDelete by remember { mutableStateOf<Trip.Activity?>(null) }
 
     // Log activities data
     Log.d("ActivitiesListContent", "Total activity keys: ${trip.activities.keys.size}")

@@ -130,10 +130,10 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
     }
 
     // Tracks if there is a validation error for the trip type selection
-    var typeTravelError by rememberSaveable { mutableStateOf(false) }
+    var typeTravelError by remember { mutableStateOf(false) }
 
     // Date Handling: Start Date and End Date fields and related Calendar objects
-    var startDate by rememberSaveable {
+    var startDate by remember {
         mutableStateOf(
             String.format(
                 "%d/%d/%d",
@@ -143,7 +143,7 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
             )
         )
     }
-    var endDate by rememberSaveable {
+    var endDate by remember{
         mutableStateOf(
             String.format(
                 "%d/%d/%d",
@@ -157,17 +157,17 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
     var endCalendar by remember { mutableStateOf<Calendar?>(trip.endDateAsCalendar()) }
 
     // Holds error message related to dates
-    var dateError by rememberSaveable { mutableStateOf("") }
+    var dateError by remember { mutableStateOf("") }
 
     // States for managing the confirmation dialog for activity reallocation when dates change
-    var showReallocationDialog by rememberSaveable { mutableStateOf(false) }
-    var dialogMessage by rememberSaveable { mutableStateOf("") }
-    var onConfirmReallocation by rememberSaveable { mutableStateOf<(() -> Unit)?>(null) }
-    var onCancelReallocation by rememberSaveable { mutableStateOf<(() -> Unit)?>(null) }
+    var showReallocationDialog by remember { mutableStateOf(false) }
+    var dialogMessage by remember { mutableStateOf("") }
+    var onConfirmReallocation by remember { mutableStateOf<(() -> Unit)?>(null) }
+    var onCancelReallocation by remember { mutableStateOf<(() -> Unit)?>(null) }
 
     // Keep the original start and end dates for comparison to detect changes
-    val originalStartDate = rememberSaveable { vm.editTrip.startDate }
-    val originalEndDate = rememberSaveable { vm.editTrip.endDate }
+    val originalStartDate = remember { vm.editTrip.startDate }
+    val originalEndDate = remember { vm.editTrip.endDate }
 
     // Function to validate input fields by index
     fun validateField(index: Int, value: String) {
