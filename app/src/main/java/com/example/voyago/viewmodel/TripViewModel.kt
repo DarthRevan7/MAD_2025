@@ -68,9 +68,10 @@ class TripViewModel(
     // Save current edit state temporarily (called when moving from EditTrip to ActivitiesList)
     fun saveTemporaryEditState() {
         tempEditState = editTrip.deepCopy()
-        setSelectedTrip(editTrip)
-        Log.d("TripViewModel", "Saved temporary edit state")
-        // Do not call database save
+        // 确保selectedTrip保持draft状态
+        val tripWithDraftFlag = editTrip.copy(isDraft = true)
+        setSelectedTrip(tripWithDraftFlag)
+        Log.d("TripViewModel", "Saved temporary edit state with draft flag preserved")
     }
 
     // Cancel editing, restore to original state
