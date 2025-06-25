@@ -35,6 +35,10 @@ import com.example.voyago.viewmodel.ArticleViewModel
 import com.example.voyago.viewmodel.NotificationViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun NotificationView(
@@ -135,8 +139,12 @@ fun NotificationView(
                                                 notificationTrip
                                             )
 
-                                            // Navigate to the trip details screen
-                                            navController.navigate("trip_details?owner=false")
+                                            // Launch navigation on the main thread with delay
+                                            CoroutineScope(Dispatchers.Main).launch {
+                                                delay(1000) // Give Compose time to store state
+                                                navController.navigate("trip_details?owner=false")
+                                            }
+
                                         } else {
                                             Log.w("Notification", "Loading")
                                         }
