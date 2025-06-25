@@ -440,15 +440,15 @@ fun BottomBar(
                         Icon(item.icon, contentDescription = item.label)
 
                         // Show red dot if this is the "My Trips" item and any trip has applied users
-                        if (item.label == "My Trips" && hasTripNotifications) {
-                            Box(
-                                modifier = Modifier
-                                    .size(8.dp)
-                                    .align(Alignment.TopEnd)
-                                    .offset(x = 4.dp, y = (-4).dp)
-                                    .background(Color.Red, shape = CircleShape)
-                            )
-                        }
+//                        if (item.label == "My Trips" && hasTripNotifications) {
+//                            Box(
+//                                modifier = Modifier
+//                                    .size(8.dp)
+//                                    .align(Alignment.TopEnd)
+//                                    .offset(x = 4.dp, y = (-4).dp)
+//                                    .background(Color.Red, shape = CircleShape)
+//                            )
+//                        }
                     }
                 },
                 label = { Text(item.label) },
