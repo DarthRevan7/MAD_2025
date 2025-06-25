@@ -14,13 +14,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -46,11 +45,9 @@ import com.bumptech.glide.integration.compose.GlideImage
 import com.example.voyago.activities.ProfilePhoto
 import com.example.voyago.model.ChatRoom
 import com.example.voyago.model.Trip
-import com.example.voyago.model.User
 import com.example.voyago.viewmodel.ChatViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
-import kotlinx.coroutines.delay
 
 
 @Composable
@@ -138,26 +135,30 @@ fun ChatRoomItem(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(if (chatRoom.type == "group") Color(0xFF1976D2) else Color(0xFF4CAF50)),
+                    .background(
+                        if (chatRoom.type == "group") Color(0xFF1976D2) else Color(
+                            0xFF4CAF50
+                        )
+                    ),
                 contentAlignment = Alignment.Center
             ) {
-                if(chatRoom.type == "group") {
+                if (chatRoom.type == "group") {
                     Log.d("TC1", "TripId To fetch= ${chatRoom.tripId}")
-                    tripViewModel.getTripById(chatRoom.tripId.toInt()) {
-                        trip ->
-                        if(trip != null) {
+                    tripViewModel.getTripById(chatRoom.tripId.toInt()) { trip ->
+                        if (trip != null) {
                             tripFetched.value = trip
                             trip
                         }
                         null
                     }
-                    Log.d("TC1", "tripFetched=${tripFetched.value}")
 
-                    ProfilePhotoChatList(modifier = Modifier,
+                    ProfilePhotoChatList(
+                        modifier = Modifier,
                         trip = tripFetched.value,
-                        small = true)
+                        small = true
+                    )
 
-                    if(tripFetched.value != null) {
+                    if (tripFetched.value != null) {
                         Log.d("TC2", "TripId fetched= ${tripFetched.value!!.id}")
 
                     } else {
@@ -169,18 +170,19 @@ fun ChatRoomItem(
                     }
 
 
-                }
-                else if(chatRoom.type == "private" || chatRoom.type == "blocked") {
+                } else if (chatRoom.type == "private" || chatRoom.type == "blocked") {
                     val userId = chatRoom.participants.find { it != currentUserId }
-                    if(userId != null) {
+                    if (userId != null) {
                         val user = userViewModel.getUserData(userId).collectAsState(initial = null)
-                        if(user.value != null) {
-                            ProfilePhoto(modifier = Modifier,
+                        if (user.value != null) {
+                            ProfilePhoto(
+                                modifier = Modifier,
                                 user = user.value!!,
-                                small = true)
-                            }
+                                small = true
+                            )
                         }
                     }
+                }
             }
 
             Spacer(modifier = Modifier.width(12.dp))
@@ -222,8 +224,7 @@ fun ProfilePhotoChatList(modifier: Modifier = Modifier, trip: Trip?, small: Bool
         // If the user has a profile picture URL, try to load it
         if (!trip?.photo.isNullOrEmpty()) {
             try {
-                if(profileImageUrl.value == null)
-                {
+                if (profileImageUrl.value == null) {
                     // Use Firebase Storage to get the profile photo URL
                     profileImageUrl.value = trip?.getPhoto()
                 }
