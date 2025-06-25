@@ -1,6 +1,7 @@
 package com.example.voyago.view
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -151,16 +152,27 @@ fun MyTripsPage(
 
             if (privateTrips.isNotEmpty()) {
                 items(privateTrips, key = { it.id }) { trip ->
+                    //  关键修复：检查是否正在编辑这个trip
+                    Log.d("MyTripsPage", "Rendering trip ${trip.id}: trip.isDraft=${trip.isDraft}, vm.editTrip.isDraft=${vm.editTrip.isDraft}")
+
+                    val currentTrip = if (vm.userAction == TripViewModel.UserAction.EDIT_TRIP && trip.id == vm.editTrip.id) {
+                        Log.d("MyTripsPage", "Using editTrip for trip ${trip.id}")
+                        vm.editTrip
+                    } else {
+                        Log.d("MyTripsPage", "Using StateFlow trip for trip ${trip.id}")
+                        trip
+                    }
+
                     TripCard(
-                        trip = trip,
+                        trip = currentTrip,  //  使用正确的trip对象
                         navController = navController,
                         vm = vm,
-                        edit = true,                //  Private trips can be edited
-                        isDraft = trip.isDraft,     // Show actual draft status
-                        owner = true,               //  User is the owner
+                        edit = true,
+                        isDraft = currentTrip.isDraft,  // 🔥 使用正确trip的isDraft状态
+                        owner = true,
                         uvm = uvm,
                         rvm = rvm,
-                        onEditTrip = { tripToEdit ->  //  NEW: Add edit callback
+                        onEditTrip = { tripToEdit ->
                             vm.startEditingTrip(tripToEdit)
                             navController.navigate("edit_trip")
                         }

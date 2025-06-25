@@ -68,22 +68,26 @@ class TripViewModel(
     // Save current edit state temporarily (called when moving from EditTrip to ActivitiesList)
     fun saveTemporaryEditState() {
         tempEditState = editTrip.deepCopy()
-        // 确保selectedTrip保持draft状态
-        val tripWithDraftFlag = editTrip.copy(isDraft = true)
-        setSelectedTrip(tripWithDraftFlag)
-        Log.d("TripViewModel", "Saved temporary edit state with draft flag preserved")
+        // 确保selectedTrip保持editTrip的完整状态，包括isDraft
+        _selectedTrip.value = editTrip.deepCopy()
+        Log.d("TripViewModel", "Saved temporary edit state, editTrip.isDraft=${editTrip.isDraft}, selectedTrip.isDraft=${_selectedTrip.value.isDraft}")
     }
 
     // Cancel editing, restore to original state
+    // 在TripViewModel.kt中修改
     fun cancelEditing(): Boolean {
         return if (originalEntryState != null) {
-            editTrip = originalEntryState!!.deepCopy()
-            setSelectedTrip(editTrip)
-            // If there's temporary state and it differs from original, need to restore database
+            // 🔥 确保恢复时保持draft状态
+            val restoredTrip = originalEntryState!!.deepCopy().copy(isDraft = true)
+            editTrip = restoredTrip
+            setSelectedTrip(restoredTrip)
+
+            // 如果有临时状态且需要恢复数据库
             if (tempEditState != null && tempEditState!!.id != -1) {
-                // Restore database to original state
-                tripModel.editTrip(originalEntryState!!, originalEntryState!!, viewModelScope) { success ->
-                    Log.d("TripViewModel", "Database restored to original state: $success")
+                // 恢复数据库到原始状态，但保持draft标志
+                val dbRestoreTrip = originalEntryState!!.copy(isDraft = true)
+                tripModel.editTrip(dbRestoreTrip, originalEntryState!!, viewModelScope) { success ->
+                    Log.d("TripViewModel", "Database restored to original state with draft: $success")
                 }
             }
             clearEditingState()
@@ -127,7 +131,15 @@ class TripViewModel(
     val selectedTrip: State<Trip> = _selectedTrip
 
     fun setSelectedTrip(trip: Trip) {
-        _selectedTrip.value = trip
+        // 在编辑模式下，避免意外覆盖editTrip的状态
+        if (userAction == UserAction.EDIT_TRIP && trip.id == editTrip.id) {
+            // 如果是编辑中的trip，保持editTrip的状态优先
+            _selectedTrip.value = editTrip.deepCopy()
+            Log.d("TripViewModel", "setSelectedTrip in edit mode, keeping editTrip state: isDraft=${editTrip.isDraft}")
+        } else {
+            _selectedTrip.value = trip.deepCopy()
+            Log.d("TripViewModel", "setSelectedTrip normal mode: isDraft=${trip.isDraft}")
+        }
     }
 
     //Identify what the user is doing
