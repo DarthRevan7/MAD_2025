@@ -59,6 +59,8 @@ import com.example.voyago.viewmodel.TripViewModel
 import com.google.firebase.Timestamp
 import java.util.Calendar
 
+
+
 @Composable
 fun EditTrip(navController: NavController, vm: TripViewModel) {
     // Get the trip to be edited from the ViewModel
@@ -83,11 +85,11 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
     }
 
     // State to track if there was an error related to trip image upload/selection
-    var tripImageError by remember { mutableStateOf(false) }
+    var tripImageError by rememberSaveable { mutableStateOf(false) }
     // State holding the local image URI selected by user
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
     // State holding the remote image URL (e.g. from a server)
-    var remoteImageUrl by remember { mutableStateOf<String?>(null) }
+    var remoteImageUrl by rememberSaveable { mutableStateOf<String?>(null) }
 
     // Load the remote image URL when trip ID changes, only if no local image is selected
     LaunchedEffect(trip.id) {
@@ -110,10 +112,26 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
 
     // Names of fields for labels and validation messages
     val fieldNames = listOf("Title", "Destination", "Price Estimated", "Group Size")
-    // Tracks which fields currently have validation errors
-    val fieldErrors = remember { mutableStateListOf(false, false, false, false) }
-    // Tracks if fields have been touched/modified (for showing errors only after interaction)
-    val fieldTouched = remember { mutableStateListOf(false, false, false, false) }
+
+    // 🔥 修复：使用 listSaver 保存 Boolean 列表
+    val fieldErrors = rememberSaveable(
+        saver = listSaver(
+            save = { it.toList() },
+            restore = { it.toMutableStateList() }
+        )
+    ) {
+        mutableStateListOf(false, false, false, false)
+    }
+
+    // 🔥 修复：使用 listSaver 保存 Boolean 列表
+    val fieldTouched = rememberSaveable(
+        saver = listSaver(
+            save = { it.toList() },
+            restore = { it.toMutableStateList() }
+        )
+    ) {
+        mutableStateListOf(false, false, false, false)
+    }
 
     // List of possible trip types the user can select from
     val typeTravel = listOf("party", "adventure", "culture", "relax")
@@ -153,9 +171,10 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
             )
         )
     }
-    var startCalendar by rememberSaveable { mutableStateOf<Calendar?>(trip.startDateAsCalendar()) }
 
-    var endCalendar by rememberSaveable { mutableStateOf<Calendar?>(trip.endDateAsCalendar()) }
+    // 🔥 修复：Calendar 不能直接保存，使用 remember 而不是 rememberSaveable
+    var startCalendar by remember { mutableStateOf<Calendar?>(trip.startDateAsCalendar()) }
+    var endCalendar by remember { mutableStateOf<Calendar?>(trip.endDateAsCalendar()) }
 
     // Holds error message related to dates
     var dateError by rememberSaveable { mutableStateOf("") }
@@ -163,12 +182,14 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
     // States for managing the confirmation dialog for activity reallocation when dates change
     var showReallocationDialog by rememberSaveable { mutableStateOf(false) }
     var dialogMessage by rememberSaveable { mutableStateOf("") }
-    var onConfirmReallocation by rememberSaveable { mutableStateOf<(() -> Unit)?>(null) }
-    var onCancelReallocation by rememberSaveable { mutableStateOf<(() -> Unit)?>(null) }
+
+    // 🔥 修复：函数类型不能保存，使用 remember 而不是 rememberSaveable
+    var onConfirmReallocation by remember { mutableStateOf<(() -> Unit)?>(null) }
+    var onCancelReallocation by remember { mutableStateOf<(() -> Unit)?>(null) }
 
     // Keep the original start and end dates for comparison to detect changes
-    val originalStartDate = rememberSaveable { vm.editTrip.startDate }
-    val originalEndDate = rememberSaveable { vm.editTrip.endDate }
+    val originalStartDate = remember { vm.editTrip.startDate }
+    val originalEndDate = remember { vm.editTrip.endDate }
 
     // Function to validate input fields by index
     fun validateField(index: Int, value: String) {
@@ -193,6 +214,7 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
         }
     }
 
+    // 其余的UI代码保持不变...
     // Main UI container with background color
     Box(
         modifier = Modifier
@@ -426,7 +448,6 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                     DatePickerDialog(
                         context,
                         { _: DatePicker, y: Int, m: Int, d: Int ->
-                            // 🔥 修改：使用 DD/MM/YYYY 格式
                             startDate = String.format("%d/%d/%d", d, m + 1, y)
                             val newStartCalendar = Calendar.getInstance().apply {
                                 set(y, m, d, 0, 0, 0)
@@ -443,7 +464,6 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                     DatePickerDialog(
                         context,
                         { _: DatePicker, y: Int, m: Int, d: Int ->
-                            // 🔥 修改：使用 DD/MM/YYYY 格式
                             endDate = String.format("%d/%d/%d", d, m + 1, y)
                             val newEndCalendar = Calendar.getInstance().apply {
                                 set(y, m, d, 0, 0, 0)
@@ -547,7 +567,6 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                     // Cancel Button
                     Button(
                         onClick = {
-                            //  关键修复：使用新的取消编辑方法
                             val restored = vm.cancelEditing()
                             if (restored) {
                                 Log.d("EditTrip", "Successfully restored to original state")
@@ -566,7 +585,7 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
 
                     Spacer(modifier = Modifier.weight(1f))
 
-                    // Next Button
+                    // Next Button - 其余逻辑保持不变
                     Button(
                         onClick = {
                             vm.userAction = TripViewModel.UserAction.EDIT_TRIP
@@ -586,7 +605,9 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                             val hasFieldErrors = fieldErrors.any { it }
 
                             if (!typeTravelError && dateError.isEmpty() && !hasFieldErrors) {
-                                // Compare original and current dates to detect change
+                                // 处理日期变更和活动重新分配的逻辑...
+                                // [其余的 Next 按钮逻辑保持不变]
+
                                 val originalStartCal = Calendar.getInstance()
                                     .apply { time = originalStartDate.toDate() }
                                 val originalEndCal =
@@ -597,8 +618,6 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                                             endCalendar?.timeInMillis != originalEndCal.timeInMillis
 
                                 if (hasDateChanged && startCalendar != null && endCalendar != null) {
-
-                                    // Automatically reallocate activities with user choice
                                     smartReallocateActivitiesWithUserChoice(
                                         vm = vm,
                                         oldStartCal = originalStartCal,
@@ -613,9 +632,7 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                                         }
                                     )
 
-                                    // Update trip and navigate forward
                                     if (!showReallocationDialog) {
-
                                         updateTripAndNavigate(
                                             vm, startCalendar!!, endCalendar!!, navController,
                                             selected, fieldValues[0], fieldValues[1],
@@ -623,7 +640,6 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                                         )
                                     }
                                 } else {
-                                    // No date changes – just update trip directly
                                     updateTripAndNavigate(
                                         vm, startCalendar!!, endCalendar!!, navController,
                                         selected, fieldValues[0], fieldValues[1],
@@ -649,7 +665,6 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
         AlertDialog(
             onDismissRequest = {
                 showReallocationDialog = false
-                // Reset dialog state
                 onConfirmReallocation = null
                 onCancelReallocation = null
             },
@@ -660,7 +675,6 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                     onClick = {
                         showReallocationDialog = false
                         onConfirmReallocation?.invoke()
-                        // After reallocation, continue to update trip and navigate
                         updateTripAndNavigate(
                             vm, startCalendar!!, endCalendar!!, navController,
                             selected, fieldValues[0], fieldValues[1],
@@ -676,7 +690,6 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                     onClick = {
                         showReallocationDialog = false
                         onCancelReallocation?.invoke()
-                        // After deletion, continue to update trip and navigate
                         updateTripAndNavigate(
                             vm, startCalendar!!, endCalendar!!, navController,
                             selected, fieldValues[0], fieldValues[1],
@@ -690,6 +703,7 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
         )
     }
 }
+
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @SuppressLint("DiscouragedApi")

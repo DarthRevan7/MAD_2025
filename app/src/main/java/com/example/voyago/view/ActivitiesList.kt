@@ -365,9 +365,82 @@ fun ActivitiesListContent(trip: Trip?, vm: TripViewModel, navController: NavCont
                                     modifier = Modifier
                                         .size(20.dp)
                                         .clickable {
-                                            Log.d("ActivitiesListContent", "Edit clicked for activity ID: ${activity.id}")
-                                            vm.userAction = TripViewModel.UserAction.EDIT_ACTIVITY
-                                            navController.navigate("edit_Activity/${activity.id}")
+
+                                            Log.d("ActivitiesList", "=== EDIT BUTTON CLICKED ===")
+                                            Log.d("ActivitiesList", "Activity ID: ${activity.id}")
+                                            Log.d("ActivitiesList", "Activity Description: '${activity.description}'")
+                                            Log.d("ActivitiesList", "Activity Time: '${activity.time}'")
+                                            Log.d("ActivitiesList", "Current Trip ID: ${trip?.id}")
+                                            Log.d("ActivitiesList", "Current User Action: ${vm.userAction}")
+
+                                            // 🔥 验证 trip 不为空
+                                            if (trip == null) {
+                                                Log.e("ActivitiesList", "Trip is null, cannot edit activity")
+                                                return@clickable
+                                            }
+
+                                            // 🔥 验证活动存在于当前trip中
+                                            val activityExists = trip.activities.values.flatten().any { it.id == activity.id }
+                                            Log.d("ActivitiesList", "Activity exists in current trip: $activityExists")
+
+                                            if (!activityExists) {
+                                                Log.e("ActivitiesList", "Activity ID ${activity.id} does not exist in current trip!")
+                                                Log.e("ActivitiesList", "Available activity IDs: ${trip.activities.values.flatten().map { it.id }}")
+                                                return@clickable
+                                            }
+
+                                            // 🔥 确保状态同步 - 重要！
+                                            try {
+                                                when (vm.userAction) {
+                                                    TripViewModel.UserAction.EDIT_TRIP -> {
+                                                        // 如果正在编辑trip，确保editTrip包含最新数据
+                                                        if (vm.editTrip.id != trip.id || vm.editTrip.activities != trip.activities) {
+                                                            Log.d("ActivitiesList", "Syncing editTrip with current trip")
+                                                            vm.editTrip = trip.copy()
+                                                        }
+                                                    }
+                                                    TripViewModel.UserAction.CREATE_TRIP -> {
+                                                        // 如果正在创建新trip，确保newTrip包含最新数据
+                                                        if (vm.newTrip.id != trip.id || vm.newTrip.activities != trip.activities) {
+                                                            Log.d("ActivitiesList", "Syncing newTrip with current trip")
+                                                            vm.newTrip = trip.copy()
+                                                        }
+                                                    }
+                                                    else -> {
+                                                        // 其他情况，确保selectedTrip是最新的
+                                                        if (vm.selectedTrip.value.id != trip.id || vm.selectedTrip.value.activities != trip.activities) {
+                                                            Log.d("ActivitiesList", "Syncing selectedTrip with current trip")
+                                                            vm.setSelectedTrip(trip)
+                                                        }
+                                                    }
+                                                }
+
+                                                // 🔥 设置用户动作为编辑活动
+                                                vm.userAction = TripViewModel.UserAction.EDIT_ACTIVITY
+
+                                                // 🔥 最终验证：确保目标trip中确实包含该活动
+                                                val targetTrip = when (vm.userAction) {
+                                                    TripViewModel.UserAction.EDIT_ACTIVITY -> vm.selectedTrip.value
+                                                    TripViewModel.UserAction.CREATE_TRIP -> vm.newTrip
+                                                    else -> vm.selectedTrip.value
+                                                }
+
+                                                val finalCheck = targetTrip.activities.values.flatten().any { it.id == activity.id }
+                                                Log.d("ActivitiesList", "Final check - activity exists in target trip: $finalCheck")
+                                                Log.d("ActivitiesList", "Target trip ID: ${targetTrip.id}")
+                                                Log.d("ActivitiesList", "Target trip activities count: ${targetTrip.activities.values.flatten().size}")
+
+                                                if (finalCheck) {
+                                                    Log.d("ActivitiesList", "Navigating to edit_Activity/${activity.id}")
+                                                    navController.navigate("edit_Activity/${activity.id}")
+                                                } else {
+                                                    Log.e("ActivitiesList", "Final check failed - cannot navigate to edit")
+                                                    Log.e("ActivitiesList", "Target trip activity IDs: ${targetTrip.activities.values.flatten().map { it.id }}")
+                                                }
+
+                                            } catch (e: Exception) {
+                                                Log.e("ActivitiesList", "Error in edit button click", e)
+                                            }
                                         }
                                 )
 
