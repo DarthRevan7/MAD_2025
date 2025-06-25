@@ -488,7 +488,7 @@ val isCountryList = listOf(
     "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland",
     "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Timor-Leste", "Togo", "Tonga",
     "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu", "Uganda",
-    "Ukraine", "United Arab Emirates", "United Kingdom", "United States of America",
+    "Ukraine", "United Arab Emirates", "UK", "United Kingdom", "United States of America",
     "Uruguay", "Uzbekistan", "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Yemen",
     "Zambia", "Zimbabwe"
 )
