@@ -274,12 +274,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             VoyagoTheme {
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    modifier = Modifier.fillMaxSize()
                 ) {
-                    MainScreen(viewModel, tripViewModel, userViewModel, reviewViewModel)
+
                 }
             }
+            MainScreen(viewModel, tripViewModel, userViewModel, reviewViewModel)
         }
     }
 
