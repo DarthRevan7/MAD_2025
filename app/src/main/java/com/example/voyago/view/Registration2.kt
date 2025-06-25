@@ -83,8 +83,8 @@ fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
     var username by rememberSaveable { mutableStateOf("") }
     var selectedTravelTypes by rememberSaveable { mutableStateOf(setOf<String>()) }
     var selectedDestinations by rememberSaveable { mutableStateOf(setOf<String>()) }
-    var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
-    var message by rememberSaveable { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var message by remember { mutableStateOf("") }
 
     // Variable that manages query
     var searchQuery by rememberSaveable { mutableStateOf("") }
@@ -93,7 +93,7 @@ fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
     var usernameTouched by rememberSaveable { mutableStateOf(false) }
 
     // Boolean that tells if the username already exists
-    var alreadyExists by rememberSaveable { mutableStateOf(false) }
+    var alreadyExists by remember { mutableStateOf(false) }
 
     // Travel type options
     val travelTypes = listOf("ADVENTURE", "PARTY", "CULTURE", "RELAX")

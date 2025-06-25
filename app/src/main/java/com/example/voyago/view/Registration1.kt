@@ -59,7 +59,7 @@ fun CreateAccountScreen(navController: NavController) {
     var country by rememberSaveable { mutableStateOf("") }
 
     // For displaying general form validation error
-    var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     // Touched flags help us only validate fields after the user interacts with them
     var nameTouched by rememberSaveable { mutableStateOf(false) }

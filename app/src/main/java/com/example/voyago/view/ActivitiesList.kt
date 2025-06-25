@@ -57,7 +57,7 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
     val selectedTrip by vm.selectedTrip
 
     // State to control whether to show the incomplete activities warning dialog
-    var showIncompleteDialog by rememberSaveable { mutableStateOf(false) }
+    var showIncompleteDialog by remember { mutableStateOf(false) }
 
     // Create a deep copy snapshot of the trip when entering this screen based on the user action
     // This snapshot will be used to restore state if user cancels/back navigates

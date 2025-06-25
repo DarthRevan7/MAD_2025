@@ -92,8 +92,8 @@ fun CreateNewTrip(
     var tripImageError by rememberSaveable { mutableStateOf(false) }
 
     // Flags for image upload status
-    var isUploadingImage by rememberSaveable { mutableStateOf(false) }
-    var uploadError by rememberSaveable { mutableStateOf<String?>(null) }
+    var isUploadingImage by remember { mutableStateOf(false) }
+    var uploadError by remember { mutableStateOf<String?>(null) }
 
     // Holds values for the text fields: title, destination, price, group size
     val fieldValues = rememberSaveable(
@@ -113,7 +113,7 @@ fun CreateNewTrip(
     val fieldNames = listOf("Title", "Destination", "Price Estimated", "Group Size")
 
     // Flags to track if each field has been touched
-    var fieldTouched = rememberSaveable { mutableStateListOf(false, false, false, false) }
+    var fieldTouched = remember { mutableStateListOf(false, false, false, false) }
 
     // Array to hold error status for each field
     var fieldErrors = arrayOf(false, false, false, false)
