@@ -41,8 +41,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -73,24 +73,24 @@ fun CreateArticleScreen(
     nvm: NotificationViewModel
 ) {
     // States for title and content input fields
-    var articleTitle by remember { mutableStateOf("") }         // Article Title input
-    var articleContent by remember { mutableStateOf("") }       // Article Content input
+    var articleTitle by rememberSaveable { mutableStateOf("") }         // Article Title input
+    var articleContent by rememberSaveable { mutableStateOf("") }       // Article Content input
 
     // Validation check flags (the content is valid)
-    var articleContentCheck by remember { mutableStateOf(false) }
-    var articleTitleCheck by remember { mutableStateOf(false) }
+    var articleContentCheck by rememberSaveable { mutableStateOf(false) }
+    var articleTitleCheck by rememberSaveable { mutableStateOf(false) }
 
     // Track whether the user has interacted with the fields
-    var articleContentTouched by remember { mutableStateOf(false) }
-    var articleTitleTouched by remember { mutableStateOf(false) }
+    var articleContentTouched by rememberSaveable { mutableStateOf(false) }
+    var articleTitleTouched by rememberSaveable { mutableStateOf(false) }
 
     // State to hold selected images (multiple image support)
-    var selectedImageUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
+    var selectedImageUris by rememberSaveable { mutableStateOf<List<Uri>>(emptyList()) }
 
     // State for loading UI and error handling
-    var isLoading by remember { mutableStateOf(false) }     // Controls loading state during article upload
-    var showError by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf("") }
+    var isLoading by rememberSaveable { mutableStateOf(false) }     // Controls loading state during article upload
+    var showError by rememberSaveable { mutableStateOf(false) }
+    var errorMessage by rememberSaveable { mutableStateOf("") }
 
     // For launching suspend functions in Compose
     val coroutineScope = rememberCoroutineScope()

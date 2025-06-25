@@ -66,17 +66,17 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
     var activityDescription by rememberSaveable { mutableStateOf("") }
 
     // Tracks whether the user has interacted with the description field
-    var descriptionTouched = remember { mutableStateOf(false) }
+    var descriptionTouched = rememberSaveable { mutableStateOf(false) }
 
     // Validation state: True if description is empty or doesn't contain letters
-    val descriptionHasErrors by remember {
+    val descriptionHasErrors by rememberSaveable {
         derivedStateOf {
             descriptionTouched.value && (activityDescription.isBlank() || !activityDescription.any { it.isLetter() })
         }
     }
 
     // Dynamically calculate default date based on trip's start date
-    val defaultDate by remember {
+    val defaultDate by rememberSaveable {
         derivedStateOf {
             try {
                 when {
@@ -353,12 +353,12 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                 val context = LocalContext.current
 
                 // State for showing the time picker
-                val showTimePicker = remember { mutableStateOf(false) }
+                val showTimePicker = rememberSaveable { mutableStateOf(false) }
 
                 // If the state of the picker is True, show the Time Picker
                 if (showTimePicker.value) {
                     //
-                    val (currentHour, currentMinute) = remember {
+                    val (currentHour, currentMinute) = rememberSaveable {
                         try {
                             // Get the current time
                             val cal = Calendar.getInstance()
