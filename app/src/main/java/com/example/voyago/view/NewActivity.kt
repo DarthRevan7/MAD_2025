@@ -60,10 +60,10 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
     val selectedTrip by vm.selectedTrip
 
     // Checkbox state to mark if this is a group activity
-    var isGroupActivityChecked by rememberSaveable { mutableStateOf(false) }
+    var isGroupActivityChecked by remember { mutableStateOf(false) }
 
     // State to hold the description of the activity
-    var activityDescription by rememberSaveable { mutableStateOf("") }
+    var activityDescription by remember { mutableStateOf("") }
 
     // Tracks whether the user has interacted with the description field
     var descriptionTouched = remember { mutableStateOf(false) }
@@ -100,7 +100,7 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
     }
 
     // Track user-selected activity date
-    var activityDate by rememberSaveable { mutableStateOf("") }
+    var activityDate by remember { mutableStateOf("") }
 
     // Automatically set the activity date to the default if not already selected
     LaunchedEffect(defaultDate) {
@@ -110,11 +110,11 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
     }
 
     // Time selected for the activity
-    var selectedTime by rememberSaveable { mutableStateOf("09:00 AM") }
+    var selectedTime by remember { mutableStateOf("09:00 AM") }
 
     // Error state for date validation
-    var showDateError by rememberSaveable { mutableStateOf(false) }
-    var dateErrorMessage by rememberSaveable { mutableStateOf("") }
+    var showDateError by remember { mutableStateOf(false) }
+    var dateErrorMessage by remember { mutableStateOf("") }
 
     // Validate that the trip is valid before proceeding
     if (selectedTrip.id == 0 || selectedTrip.startDate.seconds <= 0) {
@@ -194,7 +194,7 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                 val context = LocalContext.current
 
                 // Initialize calendar based on selectedTrip's start date
-                val initialCalendar = rememberSaveable(selectedTrip.startDate.seconds) {
+                val initialCalendar = remember(selectedTrip.startDate.seconds) {
                     Calendar.getInstance().apply {
                         try {
                             // Set the start date as the initial selected date in the calendar if it is valid
@@ -218,7 +218,7 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                 val day = initialCalendar.get(Calendar.DAY_OF_MONTH)
 
                 // DatePickerDialog should reflect latest selectedTrip state
-                val startDatePickerDialog = rememberSaveable(selectedTrip.id) {
+                val startDatePickerDialog = remember(selectedTrip.id) {
                     DatePickerDialog(
                         context,
                         { _: DatePicker, y: Int, m: Int, d: Int ->
@@ -353,7 +353,7 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
                 val context = LocalContext.current
 
                 // State for showing the time picker
-                val showTimePicker = rememberSaveable { mutableStateOf(false) }
+                val showTimePicker = remember { mutableStateOf(false) }
 
                 // If the state of the picker is True, show the Time Picker
                 if (showTimePicker.value) {
