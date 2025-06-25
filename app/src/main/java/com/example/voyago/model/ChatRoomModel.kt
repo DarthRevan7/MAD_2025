@@ -205,7 +205,7 @@ class ChatModel(private val db: FirebaseFirestore = FirebaseFirestore.getInstanc
     ) {
         db.collection("chatRooms")
             .whereEqualTo("type", "group")
-            .whereEqualTo("name", groupName)
+            .whereEqualTo("tripId", tripId)
             .get()
             .addOnSuccessListener { result ->
                 if (result.isEmpty) {
