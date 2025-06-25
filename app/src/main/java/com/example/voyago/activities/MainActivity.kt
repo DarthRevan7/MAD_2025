@@ -541,19 +541,30 @@ fun TopBar(nvm: NotificationViewModel, navController: NavController, uvm: UserVi
             // Notification Icon - Click to mark notifications as read and navigate to Notifications screen
             IconButton(
                 onClick = {
-                    // Get the current route
                     val currentDestination = navController.currentBackStackEntry?.destination?.route
 
-                    // If already on the Notifications screen, pop it off the back stack
                     if (currentDestination == "notifications") {
+                        // Pop the current screen (notifications) off the back stack
                         navController.popBackStack()
                     } else {
                         // Mark notifications as read
                         nvm.markNotificationsRead(userId)
-                        // Navigate to the Notifications screen
+
+                        // Navigate to notifications, removing any existing instance to avoid stacking
                         navController.navigate("notifications") {
-                            // Launch the Notifications screen as a single top instance
                             launchSingleTop = true
+                            restoreState = true
+
+                            // Clear everything above the start screen
+                            popUpTo(navController.graph.startDestinationId) {
+                                saveState = true
+                            }
+
+                            // If you only want to prevent duplicate entries
+                            popUpTo("notifications") {
+                                inclusive =
+                                    true // removes "notifications" if it exists in back stack
+                            }
                         }
                     }
                 }
@@ -796,6 +807,8 @@ fun NavGraphBuilder.notificationNavGraph(navController: NavHostController, auth:
                 factory = ChatFactory
             )
 
+            val isOwner = entry.arguments?.getBoolean("owner") == true
+
             if (auth.currentUser != null) {
                 TripDetails(
                     navController = navController,
@@ -804,7 +817,7 @@ fun NavGraphBuilder.notificationNavGraph(navController: NavHostController, auth:
                     vm = tripViewModel,
                     rvm = reviewViewModel,
                     chatViewModel = chatViewModel,
-                    owner = true
+                    owner = isOwner
                 )
             }
         }

@@ -660,66 +660,65 @@ fun debugTripData(trip: Trip?, vm: TripViewModel) {
 
 // 🔧 修复版本：简化的调试函数，直接接收 Trip 对象
 fun debugTripData1(trip: Trip, vm: TripViewModel) {
-    Log.d("TripDebug", "=== COMPREHENSIVE TRIP DEBUG ===")
+    Log.d("TripDebug1", "=== COMPREHENSIVE TRIP DEBUG ===")
 
     // 基本信息
-    Log.d("TripDebug", "Trip ID: ${trip.id}")
-    Log.d("TripDebug", "Trip Title: '${trip.title}'")
-    Log.d("TripDebug", "Trip Destination: '${trip.destination}'")
-    Log.d("TripDebug", "Trip Creator ID: ${trip.creatorId}")
-    Log.d("TripDebug", "Trip Published: ${trip.published}")
-    Log.d("TripDebug", "Trip Draft: ${trip.isDraft}")
+    Log.d("TripDebug1", "Trip ID: ${trip.id}")
+    Log.d("TripDebug1", "Trip Destination: '${trip.destination}'")
+    Log.d("TripDebug1", "Trip Creator ID: ${trip.creatorId}")
+    Log.d("TripDebug1", "Trip Published: ${trip.published}")
+    Log.d("TripDebug1", "Trip Draft: ${trip.isDraft}")
 
     // 日期信息
-    Log.d("TripDebug", "Start Date: ${trip.startDate}")
-    Log.d("TripDebug", "End Date: ${trip.endDate}")
-    Log.d("TripDebug", "Start Date Calendar: ${trip.startDateAsCalendar().time}")
-    Log.d("TripDebug", "End Date Calendar: ${trip.endDateAsCalendar().time}")
+    Log.d("TripDebug1", "Start Date: ${trip.startDate}")
+    Log.d("TripDebug1", "End Date: ${trip.endDate}")
+    Log.d("TripDebug1", "Start Date Calendar: ${trip.startDateAsCalendar().time}")
+    Log.d("TripDebug1", "End Date Calendar: ${trip.endDateAsCalendar().time}")
 
     // 活动信息 - 详细分析
-    Log.d("TripDebug", "Activities Map Size: ${trip.activities.size}")
-    Log.d("TripDebug", "Activities Map Keys: ${trip.activities.keys.joinToString()}")
-    Log.d("TripDebug", "Activities Map Empty: ${trip.activities.isEmpty()}")
+    Log.d("TripDebug1", "Activities Map Size: ${trip.activities.size}")
+    Log.d("TripDebug1", "Activities Map Keys: ${trip.activities.keys.joinToString()}")
+    Log.d("TripDebug1", "Activities Map Empty: ${trip.activities.isEmpty()}")
 
     if (trip.activities.isNotEmpty()) {
         trip.activities.forEach { (dateKey, activities) ->
-            Log.d("TripDebug", "Date Key: '$dateKey' -> ${activities.size} activities")
+            Log.d("TripDebug1", "Date Key: '$dateKey' -> ${activities.size} activities")
             activities.forEachIndexed { index, activity ->
-                Log.d("TripDebug", "  Activity $index: ID=${activity.id}, Time='${activity.time}', Desc='${activity.description}'")
-                Log.d("TripDebug", "  Activity Date: ${activity.date}")
+                Log.d("TripDebug1", "  Activity $index: ID=${activity.id}, Time='${activity.time}', Desc='${activity.description}'")
+                Log.d("TripDebug1", "  Activity Date: ${activity.date}")
             }
         }
     } else {
-        Log.w("TripDebug", "NO ACTIVITIES FOUND IN TRIP!")
+        Log.w("TripDebug1", "NO ACTIVITIES FOUND IN TRIP!")
     }
 
     // ViewModel 状态检查
-    Log.d("TripDebug", "ViewModel User Action: ${vm.userAction}")
-    Log.d("TripDebug", "ViewModel Selected Trip ID: ${vm.selectedTrip.value.id}")
-    Log.d("TripDebug", "ViewModel Selected Trip Activities: ${vm.selectedTrip.value.activities.size}")
+    Log.d("TripDebug1", "ViewModel User Action: ${vm.userAction}")
+    Log.d("TripDebug1", "ViewModel Selected Trip ID: ${vm.selectedTrip.value.id}")
+    Log.d("TripDebug1", "ViewModel Selected Trip Activities: ${vm.selectedTrip.value.activities.size}")
 
     when (vm.userAction) {
         TripViewModel.UserAction.CREATE_TRIP -> {
-            Log.d("TripDebug", "NewTrip ID: ${vm.newTrip.id}")
-            Log.d("TripDebug", "NewTrip Activities: ${vm.newTrip.activities.size}")
+            Log.d("TripDebug1", "NewTrip ID: ${vm.newTrip.id}")
+            Log.d("TripDebug1", "NewTrip Activities: ${vm.newTrip.activities.size}")
             vm.newTrip.activities.forEach { (k, v) ->
-                Log.d("TripDebug", "NewTrip - $k: ${v.size} activities")
+                Log.d("TripDebug1", "NewTrip - $k: ${v.size} activities")
             }
         }
         TripViewModel.UserAction.EDIT_TRIP -> {
-            Log.d("TripDebug", "EditTrip ID: ${vm.editTrip.id}")
-            Log.d("TripDebug", "EditTrip Activities: ${vm.editTrip.activities.size}")
+            Log.d("TripDebug1", "EditTrip ID: ${vm.editTrip.id}")
+            Log.d("TripDebug1", "EditTrip Activities: ${vm.editTrip.activities.size}")
             vm.editTrip.activities.forEach { (k, v) ->
-                Log.d("TripDebug", "EditTrip - $k: ${v.size} activities")
+                Log.d("TripDebug1", "EditTrip - $k: ${v.size} activities")
             }
         }
-        else -> Log.d("TripDebug", "Other action: ${vm.userAction}")
+        else -> Log.d("TripDebug1", "Other action: ${vm.userAction}")
     }
 
     // 检查三个Trip对象是否一致
-    Log.d("TripDebug", "=== TRIP OBJECTS COMPARISON ===")
-    Log.d("TripDebug", "selectedTrip vs input trip - Same ID: ${vm.selectedTrip.value.id == trip.id}")
-    Log.d("TripDebug", "selectedTrip vs input trip - Same activities count: ${vm.selectedTrip.value.activities.size == trip.activities.size}")
+    Log.d("TripDebug1", "=== TRIP OBJECTS COMPARISON ===")
+    Log.d("TripDebug1", "selectedTrip vs input trip - Same ID: ${vm.selectedTrip.value.id == trip.id}")
+    Log.d("TripDebug1", "selectedTrip vs input trip - Same activities count: ${vm.selectedTrip.value.activities.size == trip.activities.size}")
 
 
 }

@@ -848,41 +848,31 @@ private fun reallocateWithShorterInterval(
     newEndCal: Calendar,
     updatedActivities: MutableMap<String, List<Trip.Activity>>
 ) {
-    // 收集超出范围的活动
     val overflowActivities = mutableListOf<Trip.Activity>()
 
-    // 遍历每个原始活动日期
+    // 计算新行程的天数
+    val newTripDays = calculateDaysBetween(newStartCal, newEndCal)
+
+    Log.d("ReallocationDebug", "New trip duration: $newTripDays days")
+    Log.d("ReallocationDebug", "New start: ${newStartCal.time}")
+    Log.d("ReallocationDebug", "New end: ${newEndCal.time}")
+
     originalActivities.forEach { (oldDateKey, activities) ->
         try {
-            // Parse the activity date
+            // 解析活动日期
             val oldActivityDate = parseActivityDateDDMMYYYY(oldDateKey)
 
-            // Normalize the dates for comparison (set to end of day for new end date)
-            val normalizedNewEndDate = Calendar.getInstance().apply {
-                timeInMillis = newEndCal.timeInMillis
-                set(Calendar.HOUR_OF_DAY, 23)
-                set(Calendar.MINUTE, 59)
-                set(Calendar.SECOND, 59)
-                set(Calendar.MILLISECOND, 999)
-            }
+            // 计算这个活动在原始行程中是第几天
+            val dayNumber = calculateDaysBetween(oldStartCal, oldActivityDate)
 
-            val normalizedOldActivityDate = Calendar.getInstance().apply {
-                timeInMillis = oldActivityDate.timeInMillis
-                set(Calendar.HOUR_OF_DAY, 0)
-                set(Calendar.MINUTE, 0)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }
+            Log.d("ReallocationDebug", "Activity on $oldDateKey was day $dayNumber in original trip")
 
-            // Check if this activity date is AFTER the new end date
-            if (normalizedOldActivityDate.timeInMillis > normalizedNewEndDate.timeInMillis) {
-                // Only add to overflow if the activity is truly after the new end date
+            // 检查这个活动是否会超出新行程的范围
+            if (dayNumber > newTripDays) {
+                Log.d("ReallocationDebug", "Day $dayNumber exceeds new trip duration ($newTripDays), moving to overflow")
                 overflowActivities.addAll(activities)
             } else {
-                // Calculate the day number in the original trip
-                val dayNumber = calculateDaysBetween(oldStartCal, oldActivityDate)
-
-                // Calculate the corresponding new date
+                // 计算对应的新日期
                 val newActivityDate = Calendar.getInstance().apply {
                     timeInMillis = newStartCal.timeInMillis
                     add(Calendar.DAY_OF_MONTH, dayNumber - 1)
@@ -892,18 +882,33 @@ private fun reallocateWithShorterInterval(
                     set(Calendar.MILLISECOND, 0)
                 }
 
-                val newDateKey = newActivityDate.toDDMMYYYYString()
-
-                // Update the activity dates
-                val updatedActivityList = activities.map { activity ->
-                    activity.copy(date = Timestamp(newActivityDate.time))
+                // 再次验证新日期是否在有效范围内
+                val normalizedNewEnd = Calendar.getInstance().apply {
+                    timeInMillis = newEndCal.timeInMillis
+                    set(Calendar.HOUR_OF_DAY, 23)
+                    set(Calendar.MINUTE, 59)
+                    set(Calendar.SECOND, 59)
+                    set(Calendar.MILLISECOND, 999)
                 }
 
-                updatedActivities[newDateKey] = updatedActivityList
+                if (newActivityDate.timeInMillis > normalizedNewEnd.timeInMillis) {
+                    Log.d("ReallocationDebug", "Calculated new date ${newActivityDate.time} exceeds trip end, moving to overflow")
+                    overflowActivities.addAll(activities)
+                } else {
+                    // 活动保持在原来的相对位置
+                    val newDateKey = newActivityDate.toDDMMYYYYString()
+
+                    val updatedActivityList = activities.map { activity ->
+                        activity.copy(date = Timestamp(newActivityDate.time))
+                    }
+
+                    updatedActivities[newDateKey] = updatedActivityList
+                    Log.d("ReallocationDebug", "Activity moved from $oldDateKey to $newDateKey")
+                }
             }
 
         } catch (e: Exception) {
-            Log.e("SmartReallocation", "Error processing date $oldDateKey", e)
+            Log.e("ReallocationDebug", "Error processing date $oldDateKey", e)
             // 如果解析失败，将活动视为溢出
             overflowActivities.addAll(activities)
         }
@@ -911,6 +916,8 @@ private fun reallocateWithShorterInterval(
 
     // 将溢出的活动分配到最后一天
     if (overflowActivities.isNotEmpty()) {
+        Log.d("ReallocationDebug", "Moving ${overflowActivities.size} overflow activities to last day")
+
         val lastDay = Calendar.getInstance().apply {
             timeInMillis = newEndCal.timeInMillis
             set(Calendar.HOUR_OF_DAY, 0)
@@ -920,6 +927,7 @@ private fun reallocateWithShorterInterval(
         }
 
         val lastDayKey = lastDay.toDDMMYYYYString()
+        Log.d("ReallocationDebug", "Last day key: $lastDayKey")
 
         val overflowWithNewDate = overflowActivities.map { activity ->
             activity.copy(date = Timestamp(lastDay.time))
@@ -928,6 +936,10 @@ private fun reallocateWithShorterInterval(
         // 如果最后一天已经有活动，合并；否则创建新的
         val finalActivitiesForLastDay = (updatedActivities[lastDayKey] ?: emptyList()) + overflowWithNewDate
         updatedActivities[lastDayKey] = finalActivitiesForLastDay
+
+        Log.d("ReallocationDebug", "Final activities count for last day: ${finalActivitiesForLastDay.size}")
+    } else {
+        Log.d("ReallocationDebug", "No overflow activities found")
     }
 }
 
@@ -1182,6 +1194,10 @@ fun smartReallocateActivitiesWithUserChoice(
     val newIntervalDays = calculateDaysBetween(newStartCal, newEndCal)
 
     val updatedActivities = mutableMapOf<String, List<Trip.Activity>>()
+    // 在 smartReallocateActivitiesWithUserChoice 函数中添加
+    Log.d("EditTripDebug", "Original trip: ${oldIntervalDays} days")
+    Log.d("EditTripDebug", "New trip: ${newIntervalDays} days")
+    Log.d("EditTripDebug", "Current activities: ${currentTrip.activities.keys}")
 
     when {
         // Case 1: Same interval - directly move all activities
@@ -1238,6 +1254,10 @@ fun smartReallocateActivitiesWithUserChoice(
             onShowDialog(dialogMessage, onMoveToLastDay, onDeleteExcess)
         }
     }
+    // 在 smartReallocateActivitiesWithUserChoice 函数中添加
+    Log.d("EditTripDebug", "Original trip: ${oldIntervalDays} days")
+    Log.d("EditTripDebug", "New trip: ${newIntervalDays} days")
+    Log.d("EditTripDebug", "Current activities: ${currentTrip.activities.keys}")
 }
 
 // Function to handle deleting excess activities when interval becomes shorter
