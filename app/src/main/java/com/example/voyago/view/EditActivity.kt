@@ -1,7 +1,9 @@
 package com.example.voyago.view
 
+import android.R
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Context
 import android.widget.DatePicker
 import android.widget.TimePicker
 import androidx.compose.foundation.background
@@ -99,6 +101,8 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
     var showDateError by rememberSaveable { mutableStateOf(false) }
     var dateErrorMessage by rememberSaveable { mutableStateOf("") }
 
+    var showDatePicker = remember { mutableStateOf(false) }
+
     // Main layout container
     Box(
         modifier = Modifier
@@ -143,82 +147,100 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
 
             // Date picker for selecting the activity date
             item {
-                val context = LocalContext.current
-                val calendar = activityToEdit.date
-                val year = toCalendar(calendar).get(Calendar.YEAR)
-                val month = toCalendar(calendar).get(Calendar.MONTH)
-                val day = toCalendar(calendar).get(Calendar.DAY_OF_MONTH)
+                //var isValid = false
 
-                // Create and configure a DatePickerDialog
-                val startDatePickerDialog = remember {
-                    DatePickerDialog(
-                        context,
-                        { _: DatePicker, y: Int, m: Int, d: Int ->
-                            val pickedCalendar = Calendar.getInstance().apply {
-                                set(Calendar.YEAR, y)
-                                set(Calendar.MONTH, m)
-                                set(Calendar.DAY_OF_MONTH, d)
-                                set(Calendar.HOUR_OF_DAY, 0)
-                                set(Calendar.MINUTE, 0)
-                                set(Calendar.SECOND, 0)
-                                set(Calendar.MILLISECOND, 0)
-                            }
+//                DatePickerChecked() { boolRet ->
+//                    isValid = boolRet
+//                    boolRet
+//                }
 
-                            // Convert trip start and end dates to Calendar for comparison
-                            val tripStartCal = toCalendar(currentTrip.startDate).apply {
-                                set(Calendar.HOUR_OF_DAY, 0)
-                                set(Calendar.MINUTE, 0)
-                                set(Calendar.SECOND, 0)
-                                set(Calendar.MILLISECOND, 0)
-                            }
-
-                            val tripEndCal = toCalendar(currentTrip.endDate).apply {
-                                set(Calendar.HOUR_OF_DAY, 23)
-                                set(Calendar.MINUTE, 59)
-                                set(Calendar.SECOND, 59)
-                                set(Calendar.MILLISECOND, 999)
-                            }
-
-                            // Validate that selected date is within trip range
-                            val isValid =
-                                !pickedCalendar.before(tripStartCal) && !pickedCalendar.after(
-                                    tripEndCal
-                                )
-
-                            if (isValid) {
-                                activityDate = "$d/${m + 1}/$y"
-                                showDateError = false
-                                dateErrorMessage = ""
-                            } else {
-                                showDateError = true
-                                dateErrorMessage =
-                                    "Activity date must be within the trip period \n(${tripStartCal.toStringDate()} - ${tripEndCal.toStringDate()})"
-                            }
-                        }, year, month, day
-                    ).apply {
-                        // Restrict date picker to the trip period only
-                        val tripStartCal = toCalendar(currentTrip.startDate).apply {
-                            set(Calendar.HOUR_OF_DAY, 0)
-                            set(Calendar.MINUTE, 0)
-                            set(Calendar.SECOND, 0)
-                            set(Calendar.MILLISECOND, 0)
-                        }
-
-                        val tripEndCal = toCalendar(currentTrip.endDate).apply {
-                            set(Calendar.HOUR_OF_DAY, 23)
-                            set(Calendar.MINUTE, 59)
-                            set(Calendar.SECOND, 59)
-                            set(Calendar.MILLISECOND, 999)
-                        }
-
-                        datePicker.minDate = tripStartCal.timeInMillis
-                        datePicker.maxDate = tripEndCal.timeInMillis
-                    }
+                if(showDatePicker.value) {
+                    DatePickerChecked(
+                        upperContext = LocalContext.current,
+                        activityToEdit,
+                        currentTrip = currentTrip,
+                    ) { activityDateString, error, errorMessage ->
+                        activityDate = activityDateString
+                        showDateError = error
+                        dateErrorMessage = errorMessage
+                    }.show()
                 }
+
+
+
+
+
+
+//                // Create and configure a DatePickerDialog
+//                val startDatePickerDialog =// remember {
+//                    DatePickerDialog(
+//                        context,
+//                        { _: DatePicker, y: Int, m: Int, d: Int ->
+//                            val pickedCalendar = Calendar.getInstance().apply {
+//                                set(Calendar.YEAR, y)
+//                                set(Calendar.MONTH, m)
+//                                set(Calendar.DAY_OF_MONTH, d)
+//                                set(Calendar.HOUR_OF_DAY, 0)
+//                                set(Calendar.MINUTE, 0)
+//                                set(Calendar.SECOND, 0)
+//                                set(Calendar.MILLISECOND, 0)
+//                            }
+//
+//                            // Convert trip start and end dates to Calendar for comparison
+//                            val tripStartCal = toCalendar(currentTrip.startDate).apply {
+//                                set(Calendar.HOUR_OF_DAY, 0)
+//                                set(Calendar.MINUTE, 0)
+//                                set(Calendar.SECOND, 0)
+//                                set(Calendar.MILLISECOND, 0)
+//                            }
+//
+//                            val tripEndCal = toCalendar(currentTrip.endDate).apply {
+//                                set(Calendar.HOUR_OF_DAY, 23)
+//                                set(Calendar.MINUTE, 59)
+//                                set(Calendar.SECOND, 59)
+//                                set(Calendar.MILLISECOND, 999)
+//                            }
+//
+//                            // Validate that selected date is within trip range
+//                            val isValid =
+//                                !pickedCalendar.before(tripStartCal) && !pickedCalendar.after(
+//                                    tripEndCal
+//                                )
+//
+//                            if (isValid) {
+//                                activityDate = "$d/${m + 1}/$y"
+//                                showDateError = false
+//                                dateErrorMessage = ""
+//                            } else {
+//                                showDateError = true
+//                                dateErrorMessage =
+//                                    "Activity date must be within the trip period \n(${tripStartCal.toStringDate()} - ${tripEndCal.toStringDate()})"
+//                            }
+//                        }, year, month, day
+//                    ).apply {
+//                        // Restrict date picker to the trip period only
+//                        val tripStartCal = toCalendar(currentTrip.startDate).apply {
+//                            set(Calendar.HOUR_OF_DAY, 0)
+//                            set(Calendar.MINUTE, 0)
+//                            set(Calendar.SECOND, 0)
+//                            set(Calendar.MILLISECOND, 0)
+//                        }
+//
+//                        val tripEndCal = toCalendar(currentTrip.endDate).apply {
+//                            set(Calendar.HOUR_OF_DAY, 23)
+//                            set(Calendar.MINUTE, 59)
+//                            set(Calendar.SECOND, 59)
+//                            set(Calendar.MILLISECOND, 999)
+//                        }
+//
+//                        datePicker.minDate = tripStartCal.timeInMillis
+//                        datePicker.maxDate = tripEndCal.timeInMillis
+//                    }
+//                }
 
                 // Button to launch date picker dialog
                 Button(
-                    onClick = { startDatePickerDialog.show() },
+                    onClick = { showDatePicker.value = true },
                     modifier = Modifier
                         .fillMaxWidth(.8f)
                         .height(56.dp),
@@ -401,4 +423,88 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
             }
         }
     }
+}
+
+
+
+@Composable
+fun DatePickerChecked(upperContext: Context,
+                      activityToEdit: Trip.Activity,
+                      currentTrip: Trip,
+                      callback: (String, Boolean, String) -> Unit)
+: DatePickerDialog {
+
+    val context = upperContext
+    val calendar = activityToEdit.date
+    val year = toCalendar(calendar).get(Calendar.YEAR)
+    val month = toCalendar(calendar).get(Calendar.MONTH)
+    val day = toCalendar(calendar).get(Calendar.DAY_OF_MONTH)
+
+    val datePicker = DatePickerDialog(
+        context,
+        { _: DatePicker, y: Int, m: Int, d: Int ->
+            val pickedCalendar = Calendar.getInstance().apply {
+                set(Calendar.YEAR, y)
+                set(Calendar.MONTH, m)
+                set(Calendar.DAY_OF_MONTH, d)
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+
+            // Convert trip start and end dates to Calendar for comparison
+            val tripStartCal = toCalendar(currentTrip.startDate).apply {
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+
+            val tripEndCal = toCalendar(currentTrip.endDate).apply {
+                set(Calendar.HOUR_OF_DAY, 23)
+                set(Calendar.MINUTE, 59)
+                set(Calendar.SECOND, 59)
+                set(Calendar.MILLISECOND, 999)
+            }
+
+            // Validate that selected date is within trip range
+            val isValid =
+                !pickedCalendar.before(tripStartCal) && !pickedCalendar.after(
+                    tripEndCal
+                )
+
+            if (isValid) {
+                callback("$d/${m + 1}/$y", false, "")
+//                    activityDate = "$d/${m + 1}/$y"
+//                    showDateError = false
+//                    dateErrorMessage = ""
+            } else {
+                callback("", true, "Activity date must be within the trip period \n(${tripStartCal.toStringDate()} - ${tripEndCal.toStringDate()})")
+//                     "Activity date mustshowDateError = true
+////                    dateErrorMessage =
+////                        be within the trip period \n(${tripStartCal.toStringDate()} - ${tripEndCal.toStringDate()})"
+            }
+        }, year, month, day
+    ).apply {
+        // Restrict date picker to the trip period only
+        val tripStartCal = toCalendar(currentTrip.startDate).apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+
+        val tripEndCal = toCalendar(currentTrip.endDate).apply {
+            set(Calendar.HOUR_OF_DAY, 23)
+            set(Calendar.MINUTE, 59)
+            set(Calendar.SECOND, 59)
+            set(Calendar.MILLISECOND, 999)
+        }
+
+        datePicker.minDate = tripStartCal.timeInMillis
+        datePicker.maxDate = tripEndCal.timeInMillis
+    }
+
+    return datePicker
 }
