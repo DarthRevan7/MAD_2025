@@ -83,11 +83,11 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
     }
 
     // State to track if there was an error related to trip image upload/selection
-    var tripImageError by rememberSaveable { mutableStateOf(false) }
+    var tripImageError by remember { mutableStateOf(false) }
     // State holding the local image URI selected by user
-    var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
     // State holding the remote image URL (e.g. from a server)
-    var remoteImageUrl by rememberSaveable { mutableStateOf<String?>(null) }
+    var remoteImageUrl by remember { mutableStateOf<String?>(null) }
 
     // Load the remote image URL when trip ID changes, only if no local image is selected
     LaunchedEffect(trip.id) {
@@ -111,9 +111,9 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
     // Names of fields for labels and validation messages
     val fieldNames = listOf("Title", "Destination", "Price Estimated", "Group Size")
     // Tracks which fields currently have validation errors
-    val fieldErrors = rememberSaveable { mutableStateListOf(false, false, false, false) }
+    val fieldErrors = remember { mutableStateListOf(false, false, false, false) }
     // Tracks if fields have been touched/modified (for showing errors only after interaction)
-    val fieldTouched = rememberSaveable { mutableStateListOf(false, false, false, false) }
+    val fieldTouched = remember { mutableStateListOf(false, false, false, false) }
 
     // List of possible trip types the user can select from
     val typeTravel = listOf("party", "adventure", "culture", "relax")
