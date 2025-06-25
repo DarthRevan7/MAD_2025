@@ -1057,19 +1057,19 @@ class TripModel {
     fun addActivityToTrip(activity: Trip.Activity, trip: Trip?): Trip {
         val currentTrip = trip ?: Trip()
 
-        // 创建活动的可变副本
+        //
         val updatedActivities = currentTrip.activities.toMutableMap()
 
-        // 🔥 修改：使用 DD/MM/YYYY 格式作为键
+        //
         val dateKey: String = activity.dateAsCalendar().toDDMMYYYYString()
 
-        // 获取该日期现有的活动列表
+        //
         val existingActivities = updatedActivities.getOrDefault(dateKey, emptyList()).toMutableList()
 
-        // 添加新活动
+        //
         existingActivities.add(activity)
 
-        // 按时间排序活动
+        //
         val sortedActivities = existingActivities.sortedBy { act ->
             try {
                 LocalTime.parse(act.time, DateTimeFormatter.ofPattern("hh:mm a", Locale.US))
@@ -1131,11 +1131,11 @@ class TripModel {
                     return@addOnSuccessListener
                 }
 
-                // 创建活动的可变副本
+                //
                 val originalActivities = currentTrip.activities.toMutableMap()
                 var found = false
 
-                // 第一步：从原位置移除活动
+                //
                 for ((dateKey, activities) in originalActivities.toMap()) {
                     if (activities.any { it.id == activityId }) {
                         val newList = activities.filter { it.id != activityId }
@@ -1157,31 +1157,31 @@ class TripModel {
                     return@addOnSuccessListener
                 }
 
-                // 第二步：根据新的活动日期，找到正确的日期键来放置活动
+                //
                 val newActivityDate = updatedActivity.dateAsCalendar()
                 val newDateKey = findCorrectDateKeyForActivity(newActivityDate, originalActivities, currentTrip)
 
-                // 将活动添加到正确的日期键下
+                //
                 if (originalActivities.containsKey(newDateKey)) {
-                    // 如果该日期已存在活动，添加到现有列表
+                    //
                     val existingActivities = originalActivities[newDateKey]!!.toMutableList()
                     existingActivities.add(updatedActivity)
 
-                    // 按时间排序
+                    //
                     val sortedActivities = existingActivities.sortedBy { activity ->
                         parseTimeToMinutes(activity.time)
                     }
 
                     originalActivities[newDateKey] = sortedActivities
                 } else {
-                    // 如果该日期不存在活动，创建新列表
+                    //
                     originalActivities[newDateKey] = listOf(updatedActivity)
                 }
 
-                // 创建更新后的行程对象
+                //
                 val updatedTrip = currentTrip.copy(activities = originalActivities)
 
-                // 保存到 Firestore
+                //
                 tripRef.set(updatedTrip)
                     .addOnSuccessListener {
                         onResult(true, updatedTrip)
