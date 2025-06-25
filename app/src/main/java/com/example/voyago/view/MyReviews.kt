@@ -37,8 +37,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -73,7 +73,7 @@ fun MyReviews(
     val tripReview by rvm.tripReview.collectAsState()
 
     // Live reference to user-specific reviews
-    val usersReviews = rememberSaveable { rvm.usersReviews }
+    val usersReviews = remember { rvm.usersReviews }
 
     // Whether the user has already submitted reviews
     val hasReviews by rvm.isReviewed.collectAsState()
@@ -93,13 +93,13 @@ fun MyReviews(
     val listState = rememberLazyListState()
 
     // Form state for title, comment, rating and tracking touched fields
-    val titleMap = rememberSaveable { mutableStateMapOf<String, String>() }
-    val reviewMap = rememberSaveable { mutableStateMapOf<String, String>() }
-    val ratingMap = rememberSaveable { mutableStateMapOf<String, Float>() }
+    val titleMap = remember { mutableStateMapOf<String, String>() }
+    val reviewMap = remember { mutableStateMapOf<String, String>() }
+    val ratingMap = remember { mutableStateMapOf<String, Float>() }
 
-    val titleTouchedMap = rememberSaveable { mutableStateMapOf<String, Boolean>() }
-    val reviewTouchedMap = rememberSaveable { mutableStateMapOf<String, Boolean>() }
-    val ratingTouchedMap = rememberSaveable { mutableStateMapOf<String, Boolean>() }
+    val titleTouchedMap = remember { mutableStateMapOf<String, Boolean>() }
+    val reviewTouchedMap = remember { mutableStateMapOf<String, Boolean>() }
+    val ratingTouchedMap = remember { mutableStateMapOf<String, Boolean>() }
 
     // State to track selected photo URIs
     val selectedUris by rvm.selectedUris.collectAsState()
@@ -506,7 +506,6 @@ fun MyReviews(
                                                             )
                                                         }
                                                     }
-                                                navController.popBackStack()
                                             }
                                         }
                                     }
