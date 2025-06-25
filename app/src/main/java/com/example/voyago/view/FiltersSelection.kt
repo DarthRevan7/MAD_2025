@@ -81,14 +81,14 @@ fun FiltersSelection(
     val listState = rememberLazyListState()
 
     // Local state to manage user-typed search query and selection
-    var query by remember { mutableStateOf("") }
-    var selectedDestination by remember { mutableStateOf<String?>(null) }
+    var query by rememberSaveable { mutableStateOf("") }
+    var selectedDestination by rememberSaveable { mutableStateOf<String?>(null) }
 
     //List of all the destinations present in the database
     val allDestinations by vm.allDestinations().collectAsState(initial = emptyList())
 
     // Filter destination suggestions based on current query
-    val filteredSuggestions = remember(query, allDestinations) {
+    val filteredSuggestions = rememberSaveable(query, allDestinations) {
         allDestinations.filter {
             it.contains(query, ignoreCase = true)
         }
