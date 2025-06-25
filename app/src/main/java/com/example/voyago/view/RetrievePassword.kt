@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.example.voyago.view
 
 
@@ -146,24 +148,28 @@ fun RetrievePassword(navController: NavController) {
             // Button to send password reset email
             Button(
                 onClick = {
-                    // If the email is not empty
                     if (email.isNotBlank()) {
-                        // Get the firebase authentication
                         val auth = FirebaseAuth.getInstance()
-                        // Send the email to reset the password
-                        auth.sendPasswordResetEmail(email.toString())
-                            .addOnCompleteListener { task ->
-                                errorMessage = if (task.isSuccessful) {
-                                    // If the task is successful
-                                    "Password reset email send successfully. Please check your inbox."
+                        auth.fetchSignInMethodsForEmail(email).addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                val signInMethods = task.result?.signInMethods
+                                if (signInMethods.isNullOrEmpty()) {
+                                    errorMessage = "This email is not registered."
                                 } else {
-                                    // If the task fails
-                                    "Failed to send password reset email"
+                                    auth.sendPasswordResetEmail(email)
+                                        .addOnCompleteListener { resetTask ->
+                                            errorMessage = if (resetTask.isSuccessful) {
+                                                "Password reset email sent successfully. Please check your inbox."
+                                            } else {
+                                                "Failed to send password reset email."
+                                            }
+                                        }
                                 }
+                            } else {
+                                errorMessage = "Failed to verify email."
                             }
-
+                        }
                     } else {
-                        // Trigger error state if email is empty
                         emailTouched = true
                     }
                 },
