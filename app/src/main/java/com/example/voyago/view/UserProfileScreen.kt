@@ -112,8 +112,9 @@ fun UserProfileScreen(
                                 currentUserId = loggedUser.id,
                                 otherUserId = user!!.id
                             ) { roomId ->
+                                chatViewModel.fetchChatRoomName(roomId, loggedUser.id)
                                 // Navigate to chat screen using the generated room ID
-                                navController.navigate("chat/$roomId") // Assuming you have a route like this
+                                navController.navigate("chats_list")
                             }
                         }
                 )
