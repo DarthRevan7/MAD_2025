@@ -116,7 +116,7 @@ fun MyTripsPage(
                         trip = trip,
                         navController = navController,
                         vm = vm,
-                        edit = true,        //  Published trips can be edited by creator
+                        edit = false,        //  Published trips can be edited by creator
                         isDraft = false,    //  Published trips are not drafts
                         owner = true,       //  User is the owner
                         uvm = uvm,
