@@ -714,39 +714,40 @@ fun NavGraphBuilder.notificationNavGraph(navController: NavHostController, auth:
     {
         //Graph Entry
         composable("notifications") { entry ->
+            RequireAuth(navController) {
+                val notificationGraphEntry = remember(entry) {
+                    navController.getBackStackEntry(Screen.Notifications.route)
+                }
 
-            val notificationGraphEntry = remember(entry) {
-                navController.getBackStackEntry(Screen.Notifications.route)
-            }
-
-            val userViewModel: UserViewModel = viewModel(
-                viewModelStoreOwner = notificationGraphEntry,
-                factory = Factory
-            )
-
-            val tripViewModel: TripViewModel = viewModel(
-                viewModelStoreOwner = notificationGraphEntry,
-                factory = Factory
-            )
-
-            val notificationViewModel: NotificationViewModel = viewModel(
-                viewModelStoreOwner = notificationGraphEntry,
-                factory = NotificationFactory
-            )
-
-            val articlesViewModel: ArticleViewModel = viewModel(
-                viewModelStoreOwner = notificationGraphEntry,
-                factory = ArticleFactory
-            )
-
-            if (auth.currentUser != null) {
-                NotificationView(
-                    navController = navController,
-                    nvm = notificationViewModel,
-                    uvm = userViewModel,
-                    vm = tripViewModel,
-                    avm = articlesViewModel
+                val userViewModel: UserViewModel = viewModel(
+                    viewModelStoreOwner = notificationGraphEntry,
+                    factory = Factory
                 )
+
+                val tripViewModel: TripViewModel = viewModel(
+                    viewModelStoreOwner = notificationGraphEntry,
+                    factory = Factory
+                )
+
+                val notificationViewModel: NotificationViewModel = viewModel(
+                    viewModelStoreOwner = notificationGraphEntry,
+                    factory = NotificationFactory
+                )
+
+                val articlesViewModel: ArticleViewModel = viewModel(
+                    viewModelStoreOwner = notificationGraphEntry,
+                    factory = ArticleFactory
+                )
+
+                if (auth.currentUser != null) {
+                    NotificationView(
+                        navController = navController,
+                        nvm = notificationViewModel,
+                        uvm = userViewModel,
+                        vm = tripViewModel,
+                        avm = articlesViewModel
+                    )
+                }
             }
         }
 

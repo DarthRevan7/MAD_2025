@@ -9,6 +9,8 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,6 +19,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -45,6 +48,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SuggestionChip
+import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -599,6 +604,7 @@ fun TripDetails(
                 item {
                     TitleBox("My Itinerary")
                 }
+
             }
             // The logged-in user is viewing a published trip from the "Explore" section
             else {
@@ -673,6 +679,7 @@ fun TripDetails(
                 item {
                     TitleBox("Itinerary")
                 }
+
             }
 
             //The Itinerary of the trip
@@ -686,6 +693,10 @@ fun TripDetails(
 
             item {
                 Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            item {
+                TypeTravel(trip)
             }
 
             item {
@@ -1990,6 +2001,43 @@ fun CreateACopyButton(
                     )
                 }
             }
+        }
+    }
+}
+
+@SuppressLint("Range")
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun TypeTravel(trip: Trip) {
+    TitleBox("Type Travel")
+
+    FlowRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .padding(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        trip.typeTravel.forEach { type ->
+            SuggestionChip(
+                onClick = {},
+                label = {
+                    Text(
+                        text = type.toString().lowercase(),
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Medium
+                        )
+                    )
+                },
+                colors = SuggestionChipDefaults.elevatedSuggestionChipColors(
+                    containerColor = Color(0xFFF3E5F5),  // light lilac/pink
+                    labelColor = Color(0xFF4A148C)       // deep violet for contrast
+                ),
+                elevation = SuggestionChipDefaults.elevatedSuggestionChipElevation(
+                    elevation = 6.dp
+                )
+            )
         }
     }
 }
