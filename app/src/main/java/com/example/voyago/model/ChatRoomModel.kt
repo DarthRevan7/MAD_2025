@@ -157,7 +157,7 @@ class ChatModel(private val db: FirebaseFirestore = FirebaseFirestore.getInstanc
         onRoomReady: (roomId: String) -> Unit
     ) {
         db.collection("chatRooms")
-            .whereEqualTo("type", "private")
+            .whereIn("type", listOf("private", "blocked"))
             .get()
             .addOnSuccessListener { result ->
                 val existingRoom = result.documents.firstOrNull { doc ->
@@ -173,8 +173,10 @@ class ChatModel(private val db: FirebaseFirestore = FirebaseFirestore.getInstanc
                 }
 
                 if (existingRoom != null) {
+                    // Room already exists (either private or blocked)
                     onRoomReady(existingRoom.id)
                 } else {
+                    // Create a new private chat room
                     val newRoom = hashMapOf(
                         "type" to "private",
                         "participants" to listOf(currentUserId, otherUserId),
@@ -191,6 +193,7 @@ class ChatModel(private val db: FirebaseFirestore = FirebaseFirestore.getInstanc
                 }
             }
     }
+
 
     fun createGroupIfNotExists(
         groupName: String,
