@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -79,7 +80,7 @@ fun SingleChatScreen(
     val chatRoomTypes by chatViewModel.chatRoomTypes.collectAsState()
     val chatRoomType = chatRoomTypes[roomId] ?: "private"
 
-    var newMessage by remember { mutableStateOf("") }
+    var newMessage by rememberSaveable { mutableStateOf("") }
 
     Column(modifier = Modifier.fillMaxSize()) {
 
