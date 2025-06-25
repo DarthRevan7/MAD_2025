@@ -292,6 +292,9 @@ fun ActivitiesListContent(trip: Trip?, vm: TripViewModel, navController: NavCont
         }
     }
 
+
+
+
     Column(modifier = Modifier.fillMaxSize()) {
 
         // Check if there are any activities
@@ -308,6 +311,8 @@ fun ActivitiesListContent(trip: Trip?, vm: TripViewModel, navController: NavCont
             )
         } else {
             Log.i("ActivitiesListContent", "Displaying activities for ${dateRange.size} days")
+
+
 
             // Iterate through each day in the date range and display activities
             dateRange.forEachIndexed { index, dateKey ->
@@ -441,6 +446,7 @@ endCal = 2025年6月23日
 ["2025-06-20", "2025-06-21", "2025-06-22", "2025-06-23"]
  */
 // Helper function: Generate date range from start to end date
+// Keep generateDateRange unchanged - using non-padded format
 private fun generateDateRange(startCal: Calendar, endCal: Calendar): List<String> {
     val dateList = mutableListOf<String>()
     val current = Calendar.getInstance().apply {
@@ -459,7 +465,7 @@ private fun generateDateRange(startCal: Calendar, endCal: Calendar): List<String
     }
 
     while (!current.after(end)) {
-        // 🔥 修改：使用 DD/MM/YYYY 格式
+        //  KEEP: Use non-padded format as requested (1/11/2025 style)
         val dateString = String.format("%d/%d/%d",
             current.get(Calendar.DAY_OF_MONTH),
             current.get(Calendar.MONTH) + 1,
@@ -472,7 +478,6 @@ private fun generateDateRange(startCal: Calendar, endCal: Calendar): List<String
     Log.d("DateRangeDebug", "Generated date list: $dateList")
     return dateList
 }
-
 // Helper function: Find all activities for a specific date
 /*
 根据某个目标日期（targetDateKey）从活动列表中筛选出这一天的所有活动，并按时间排序返回
@@ -485,37 +490,88 @@ private fun generateDateRange(startCal: Calendar, endCal: Calendar): List<String
  */
 
 // Helper function: Parse activity date from string key
+// Fixed Helper function: Find all activities for a specific date
 private fun findActivitiesForDate(targetDateKey: String, allActivities: Map<String, List<Trip.Activity>>): List<Trip.Activity> {
     Log.d("ActivitySearch", "Looking for activities with dateKey: '$targetDateKey'")
 
-    // First try direct match (DD/MM/YYYY format)
+    // First try exact match
     var activities = allActivities[targetDateKey] ?: emptyList()
-    
-    // If no direct match, try converting DD/MM/YYYY to YYYY-MM-DD format
-    if (activities.isEmpty() && targetDateKey.contains("/")) {
-        try {
-            val parts = targetDateKey.split("/")
-            if (parts.size == 3) {
-                val day = parts[0].padStart(2, '0')
-                val month = parts[1].padStart(2, '0')
-                val year = parts[2]
-                val alternativeKey = "$year-$month-$day"
-                activities = allActivities[alternativeKey] ?: emptyList()
+
+    if (activities.isEmpty()) {
+        // Parse target date to Calendar for comparison
+        val targetCalendar = try {
+            targetDateKey.toCalendar().apply {
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
             }
         } catch (e: Exception) {
-            // Silently handle conversion errors
+            Log.e("ActivitySearch", "Error parsing target date: $targetDateKey", e)
+            return emptyList()
+        }
+
+        // Search through all activity date keys to find matching dates
+        for ((dateKey, actList) in allActivities) {
+            try {
+                val existingCalendar = when {
+                    // Handle DD/MM/YYYY format (with or without zero padding)
+                    dateKey.contains("/") -> {
+                        parseFlexibleDateFormat(dateKey)
+                    }
+                    // Handle YYYY-MM-DD format
+                    dateKey.matches(Regex("\\d{4}-\\d{2}-\\d{2}")) -> {
+                        val parts = dateKey.split("-")
+                        Calendar.getInstance().apply {
+                            set(parts[0].toInt(), parts[1].toInt() - 1, parts[2].toInt())
+                            set(Calendar.HOUR_OF_DAY, 0)
+                            set(Calendar.MINUTE, 0)
+                            set(Calendar.SECOND, 0)
+                            set(Calendar.MILLISECOND, 0)
+                        }
+                    }
+                    else -> continue // Skip unrecognized formats
+                }
+
+                // Compare dates by time in milliseconds (day-level precision)
+                if (targetCalendar.timeInMillis == existingCalendar.timeInMillis) {
+                    activities = actList
+                    Log.d("ActivitySearch", "Found match by date comparison: $dateKey -> $targetDateKey")
+                    break
+                }
+            } catch (e: Exception) {
+                Log.e("ActivitySearch", "Error parsing existing date key: $dateKey", e)
+            }
         }
     }
 
     Log.d("ActivitySearch", "Found ${activities.size} activities for '$targetDateKey'")
 
-    // 按时间排序
+    // Sort activities by time
     return activities.sortedBy { activity ->
         parseTimeToMinutes(activity.time)
     }
 }
 
+// Helper function to parse DD/MM/YYYY format with flexible zero-padding
+private fun parseFlexibleDateFormat(dateKey: String): Calendar {
+    val parts = dateKey.split("/")
+    if (parts.size != 3) {
+        throw IllegalArgumentException("Invalid DD/MM/YYYY format: $dateKey")
+    }
 
+    val day = parts[0].toInt()
+    val month = parts[1].toInt() - 1  // Calendar months are 0-based
+    val year = parts[2].toInt()
+
+    return Calendar.getInstance().apply {
+        set(year, month, day)
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }
+}
 // Helper function: Convert time string to minutes for sorting
 /*
 将时间字符串（例如 "02:30 PM"）解析成从午夜开始的分钟数。

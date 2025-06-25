@@ -1123,78 +1123,133 @@ class TripModel {
         val docId = trip.id.toString()
         val tripRef = Collections.trips.document(docId)
 
-        tripRef.get()
-            .addOnSuccessListener { snapshot ->
-                val currentTrip = snapshot.toObject(Trip::class.java)
-                if (currentTrip == null) {
-                    onResult(false, null)
-                    return@addOnSuccessListener
+        Log.d("TripModel", "=== EDIT ACTIVITY DEBUG START ===")
+        Log.d("TripModel", "Activity ID: $activityId")
+        Log.d("TripModel", "Updated Activity Date: ${updatedActivity.date}")
+        Log.d("TripModel", "Updated Activity Date Formatted: ${updatedActivity.dateAsCalendar().toStringDate()}")
+        Log.d("TripModel", "Current trip activities keys: ${trip.activities.keys}")
+
+        //
+        FirebaseFirestore.getInstance().runTransaction { transaction ->
+            val snapshot = transaction.get(tripRef)
+            val currentTrip = snapshot.toObject(Trip::class.java)
+                ?: throw Exception("Trip not found in database")
+
+            val originalActivities = currentTrip.activities.toMutableMap()
+            var found = false
+            var oldDateKey: String? = null
+
+            // 步骤1：从原位置移除活动
+            for ((dateKey, activities) in originalActivities.toMap()) {
+                if (activities.any { it.id == activityId }) {
+                    Log.d("TripModel", "Found activity in date key: $dateKey")
+                    oldDateKey = dateKey
+                    val newList = activities.filter { it.id != activityId }
+
+                    if (newList.isEmpty()) {
+                        Log.d("TripModel", "Removing empty date key: $dateKey")
+                        originalActivities.remove(dateKey)
+                    } else {
+                        Log.d("TripModel", "Updating date key $dateKey with ${newList.size} remaining activities")
+                        originalActivities[dateKey] = newList
+                    }
+                    found = true
+                    break
+                }
+            }
+
+            if (!found) {
+                throw Exception("Activity with ID $activityId not found in any date")
+            }
+
+            //
+            val newActivityDate = updatedActivity.dateAsCalendar()
+            val newDateKey = newActivityDate.toStringDate() // 这确保使用DD/MM/YYYY格式
+
+            Log.d("TripModel", "Moving activity from '$oldDateKey' to '$newDateKey'")
+
+            // 步骤3：将活动添加到新位置
+            if (originalActivities.containsKey(newDateKey)) {
+                val existingActivities = originalActivities[newDateKey]!!.toMutableList()
+                existingActivities.add(updatedActivity)
+
+                // 按时间排序
+                val sortedActivities = existingActivities.sortedBy { activity ->
+                    parseTimeToMinutes(activity.time)
                 }
 
-                //
-                val originalActivities = currentTrip.activities.toMutableMap()
-                var found = false
+                originalActivities[newDateKey] = sortedActivities
+                Log.d("TripModel", "Added activity to existing date key: $newDateKey (${sortedActivities.size} total activities)")
+            } else {
+                originalActivities[newDateKey] = listOf(updatedActivity)
+                Log.d("TripModel", "Created new date key: $newDateKey with 1 activity")
+            }
 
-                //
-                for ((dateKey, activities) in originalActivities.toMap()) {
-                    if (activities.any { it.id == activityId }) {
-                        val newList = activities.filter { it.id != activityId }
+            //
+            val keysToCleanup = mutableListOf<String>()
+            for (dateKey in originalActivities.keys) {
+                if (dateKey.matches(Regex("\\d{4}-\\d{2}-\\d{2}"))) {
+                    keysToCleanup.add(dateKey)
+                }
+            }
 
-                        if (newList.isEmpty()) {
-                            // 如果该日期没有其他活动了，移除整个日期键
-                            originalActivities.remove(dateKey)
-                        } else {
-                            // 否则更新活动列表
-                            originalActivities[dateKey] = newList
+
+            for (oldKey in keysToCleanup) {
+                val activitiesToMigrate = originalActivities[oldKey] ?: continue
+                originalActivities.remove(oldKey)
+
+                // 转换日期格式
+                try {
+                    val parts = oldKey.split("-")
+                    if (parts.size == 3) {
+                        val newKey = "${parts[2]}/${parts[1]}/${parts[0]}"
+                        val existingActivities = originalActivities[newKey]?.toMutableList() ?: mutableListOf()
+
+                        // 更新每个活动的日期为正确格式
+                        val migratedActivities = activitiesToMigrate.map { activity ->
+                            val calendar = Calendar.getInstance().apply {
+                                set(parts[0].toInt(), parts[1].toInt() - 1, parts[2].toInt())
+                                set(Calendar.HOUR_OF_DAY, 0)
+                                set(Calendar.MINUTE, 0)
+                                set(Calendar.SECOND, 0)
+                                set(Calendar.MILLISECOND, 0)
+                            }
+                            activity.copy(date = Timestamp(calendar.time))
                         }
-                        found = true
-                        break
+
+                        existingActivities.addAll(migratedActivities)
+                        val sortedActivities = existingActivities.sortedBy { activity ->
+                            parseTimeToMinutes(activity.time)
+                        }
+                        originalActivities[newKey] = sortedActivities
+                        Log.d("TripModel", "Migrated activities from $oldKey to $newKey")
                     }
+                } catch (e: Exception) {
+                    Log.e("TripModel", "Error migrating date key: $oldKey", e)
                 }
-
-                if (!found) {
-                    onResult(false, trip)
-                    return@addOnSuccessListener
-                }
-
-                //
-                val newActivityDate = updatedActivity.dateAsCalendar()
-                val newDateKey = findCorrectDateKeyForActivity(newActivityDate, originalActivities, currentTrip)
-
-                //
-                if (originalActivities.containsKey(newDateKey)) {
-                    //
-                    val existingActivities = originalActivities[newDateKey]!!.toMutableList()
-                    existingActivities.add(updatedActivity)
-
-                    //
-                    val sortedActivities = existingActivities.sortedBy { activity ->
-                        parseTimeToMinutes(activity.time)
-                    }
-
-                    originalActivities[newDateKey] = sortedActivities
-                } else {
-                    //
-                    originalActivities[newDateKey] = listOf(updatedActivity)
-                }
-
-                //
-                val updatedTrip = currentTrip.copy(activities = originalActivities)
-
-                //
-                tripRef.set(updatedTrip)
-                    .addOnSuccessListener {
-                        onResult(true, updatedTrip)
-                    }
-                    .addOnFailureListener { e ->
-                        Log.e("Firestore", "Failed to update activity", e)
-                        onResult(false, null)
-                    }
             }
-            .addOnFailureListener { e ->
-                Log.e("Firestore", "Failed to fetch trip", e)
-                onResult(false, null)
-            }
+
+            // 创建更新的行程对象
+            val updatedTrip = currentTrip.copy(activities = originalActivities)
+
+            Log.d("TripModel", "Final activities map keys: ${updatedTrip.activities.keys}")
+
+            // 在事务中更新文档
+            transaction.set(tripRef, updatedTrip)
+
+            // 返回更新的行程
+            updatedTrip
+
+        }.addOnSuccessListener { updatedTrip ->
+            Log.d("TripModel", "Successfully updated activity in Firestore transaction")
+            Log.d("TripModel", "=== EDIT ACTIVITY DEBUG END ===")
+            onResult(true, updatedTrip)
+
+        }.addOnFailureListener { e ->
+            Log.e("TripModel", "Failed to update activity in Firestore transaction", e)
+            Log.d("TripModel", "=== EDIT ACTIVITY DEBUG END (FAILED) ===")
+            onResult(false, null)
+        }
     }
 
     // 新增函数：根据活动日期找到正确的日期键

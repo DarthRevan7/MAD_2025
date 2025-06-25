@@ -22,6 +22,7 @@ import com.example.voyago.model.TypeTravel
 import com.example.voyago.model.User
 import com.example.voyago.model.UserModel
 import com.example.voyago.model.deepCopy
+import com.example.voyago.toStringDate
 import com.example.voyago.view.SelectableItem
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.flow.Flow
@@ -131,15 +132,25 @@ class TripViewModel(
     val selectedTrip: State<Trip> = _selectedTrip
 
     fun setSelectedTrip(trip: Trip) {
+        Log.d("TripViewModel", "Setting selected trip: ${trip.id}, activities: ${trip.activities.keys}")
 
-        if (userAction == UserAction.EDIT_TRIP && trip.id == editTrip.id) {
-
-            _selectedTrip.value = editTrip.deepCopy()
-            Log.d("TripViewModel", "setSelectedTrip in edit mode, keeping editTrip state: isDraft=${editTrip.isDraft}")
-        } else {
-            _selectedTrip.value = trip.deepCopy()
-            Log.d("TripViewModel", "setSelectedTrip normal mode: isDraft=${trip.isDraft}")
+        when (userAction) {
+            UserAction.CREATE_TRIP -> {
+                newTrip = trip.deepCopy()
+            }
+            UserAction.EDIT_TRIP, UserAction.EDIT_ACTIVITY -> {
+                editTrip = trip.deepCopy()
+            }
+            else -> {}
         }
+
+
+        _selectedTrip.value = trip.deepCopy()
+
+        // 额外确保状态刷新
+        _selectedTrip.value = _selectedTrip.value.copy(
+            activities = _selectedTrip.value.activities.toMap()
+        )
     }
 
     //Identify what the user is doing
@@ -687,26 +698,86 @@ class TripViewModel(
     }
 
     //Edit a specific activity from a specific trip
+// 🔥 修复后的 editActivity 函数
     fun editActivity(activityId: Int, updatedActivity: Activity) {
-        val trip = _selectedTrip.value
+        Log.d("TripViewModel", "=== EDIT ACTIVITY DEBUG ===")
+        Log.d("TripViewModel", "Current userAction: $userAction")
+        Log.d("TripViewModel", "Activity ID: $activityId")
+        Log.d("TripViewModel", "Current selectedTrip ID: ${_selectedTrip.value.id}")
+        Log.d("TripViewModel", "Current selectedTrip dates: ${_selectedTrip.value.startDate} - ${_selectedTrip.value.endDate}")
+
+        // 🔥 关键修复：获取正确的目标Trip
+        val targetTrip = when (userAction) {
+            UserAction.CREATE_TRIP -> newTrip
+            UserAction.EDIT_TRIP -> editTrip
+            UserAction.EDIT_ACTIVITY -> editTrip
+            else -> _selectedTrip.value
+        }
+
+        Log.d("TripViewModel", "Target trip ID: ${targetTrip.id}")
+        Log.d("TripViewModel", "Target trip dates: ${targetTrip.startDate} - ${targetTrip.endDate}")
+
+        // 🔥 修复：在内存中直接更新活动，避免数据库混乱
+        val updatedActivities = targetTrip.activities.toMutableMap()
+
+        // 找到并更新活动
+        var activityUpdated = false
+        for ((dateKey, activities) in updatedActivities) {
+            val activityIndex = activities.indexOfFirst { it.id == activityId }
+            if (activityIndex != -1) {
+                // 找到活动，更新它
+                val updatedActivityList = activities.toMutableList()
+                updatedActivityList[activityIndex] = updatedActivity
+                updatedActivities[dateKey] = updatedActivityList
+                activityUpdated = true
+                Log.d("TripViewModel", "Updated activity in date: $dateKey")
+                break
+            }
+        }
+
+        if (!activityUpdated) {
+            Log.e("TripViewModel", "Activity with ID $activityId not found!")
+            return
+        }
+
+        // 🔥 修复：创建更新后的Trip，保持原有的ID和日期
+        val updatedTrip = targetTrip.copy(
+            activities = updatedActivities
+            // 🚨 重要：不要修改 id, startDate, endDate 等关键字段！
+        )
+
+        // 🔥 修复：只更新对应的状态，不影响其他状态
+        when (userAction) {
+            UserAction.CREATE_TRIP -> {
+                newTrip = updatedTrip
+                _selectedTrip.value = updatedTrip
+                Log.d("TripViewModel", "Updated newTrip successfully")
+            }
+            UserAction.EDIT_TRIP, UserAction.EDIT_ACTIVITY -> {
+                editTrip = updatedTrip
+                _selectedTrip.value = updatedTrip
+                Log.d("TripViewModel", "Updated editTrip successfully")
+            }
+            else -> {
+                _selectedTrip.value = updatedTrip
+                Log.d("TripViewModel", "Updated selectedTrip successfully")
+            }
+        }
 
         tripModel.editActivityInSelectedTrip(
             activityId,
             updatedActivity,
-            trip
-        ) { success, updatedTrip ->
-            if (success && updatedTrip != null) {
-                _selectedTrip.value = updatedTrip
-
-                when (userAction) {
-                    UserAction.CREATE_TRIP -> newTrip = updatedTrip
-                    UserAction.EDIT_TRIP -> editTrip = updatedTrip
-                    else -> {}
-                }
+            updatedTrip
+        ) { success, _ ->
+            if (success) {
+                Log.d("TripViewModel", "Activity synced to database successfully")
+            } else {
+                Log.e("TripViewModel", "Failed to sync activity to database")
             }
         }
-    }
 
+        Log.d("TripViewModel", "=== EDIT ACTIVITY COMPLETE ===")
+    }
     private fun updateAllTripStatuses() {
         val trips = tripModel.allPublishedTrips.value
 

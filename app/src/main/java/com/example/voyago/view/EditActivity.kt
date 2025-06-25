@@ -2,6 +2,7 @@ package com.example.voyago.view
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.util.Log
 import android.widget.DatePicker
 import android.widget.TimePicker
 import androidx.compose.foundation.background
@@ -356,6 +357,7 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                     Spacer(modifier = Modifier.width(16.dp))
 
                     // Update button: validate inputs and submit the updated activity
+                    // 🔥 修复后的 EditActivity Update 按钮逻辑
                     Button(
                         onClick = {
                             val parsedDate = try {
@@ -364,14 +366,13 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                                 null
                             }
 
-                            // Validate date format
                             if (parsedDate == null) {
                                 showDateError = true
                                 dateErrorMessage = "Invalid date format. Please select a date."
                                 return@Button
                             }
 
-                            // Validate that date is within trip period
+                            // 验证日期是否在行程范围内
                             val activityCalendar = parsedDate
                             val tripStartCal = toCalendar(currentTrip.startDate).apply {
                                 set(Calendar.HOUR_OF_DAY, 0)
@@ -395,12 +396,11 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                                 return@Button
                             }
 
-                            // Trigger description validation
+                            // 触发描述验证
                             descriptionTouched.value = true
 
-                            // Only proceed if all fields are valid
+                            // 只有在所有验证通过时才更新活动
                             if (!showDateError && !descriptionHasErrors) {
-                                // Create updated activity object
                                 val updatedActivity = Trip.Activity(
                                     id = activityId,
                                     date = Timestamp(activityCalendar.time),
@@ -409,10 +409,30 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                                     description = activityDescription
                                 )
 
-                                // Update activity (this will automatically handle date categorization)
+                                Log.d("EditActivity", "=== ABOUT TO UPDATE ACTIVITY ===")
+                                Log.d("EditActivity", "Current user action: ${vm.userAction}")
+                                Log.d("EditActivity", "Activity new date: ${activityCalendar.toStringDate()}")
+
+                                // 🔥 关键修复：不要改变 userAction 状态！
+                                // 直接调用 editActivity 而不触发状态转换
                                 vm.editActivity(activityId, updatedActivity)
 
-                                // Navigate back after update
+                                // 🔥 根据当前状态决定是否保存临时状态
+                                when (vm.userAction) {
+                                    TripViewModel.UserAction.EDIT_TRIP,
+                                    TripViewModel.UserAction.EDIT_ACTIVITY -> {
+                                        // 只保存临时编辑状态，不改变 userAction
+                                        vm.saveTemporaryEditState()
+                                    }
+                                    TripViewModel.UserAction.CREATE_TRIP -> {
+                                        // 创建新行程时，不需要额外操作
+                                    }
+                                    else -> {
+                                        Log.w("EditActivity", "Unexpected user action: ${vm.userAction}")
+                                    }
+                                }
+
+                                Log.d("EditActivity", "=== UPDATE COMPLETE ===")
                                 navController.popBackStack()
                             }
                         },
@@ -421,6 +441,22 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                             .height(50.dp)
                     ) {
                         Text("Update")
+                    }
+
+
+                    val currentTrip = remember(vm.userAction) {
+                        when (vm.userAction) {
+                            TripViewModel.UserAction.EDIT_ACTIVITY,
+                            TripViewModel.UserAction.EDIT_TRIP -> {
+                                // 优先使用 editTrip，如果无效则使用 selectedTrip
+                                if (vm.editTrip.isValid()) vm.editTrip else vm.selectedTrip.value
+                            }
+                            TripViewModel.UserAction.CREATE_TRIP -> {
+                                // 优先使用 newTrip，如果无效则使用 selectedTrip
+                                if (vm.newTrip.isValid()) vm.newTrip else vm.selectedTrip.value
+                            }
+                            else -> vm.selectedTrip.value
+                        }
                     }
                 }
             }
