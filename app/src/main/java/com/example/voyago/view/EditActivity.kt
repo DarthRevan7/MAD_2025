@@ -1,6 +1,5 @@
 package com.example.voyago.view
 
-import android.R
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
@@ -92,14 +91,14 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
     }
 
     // State for storing the selected date and time
-    var activityDate by rememberSaveable {
+    var activityDate by remember {
         mutableStateOf(toCalendar(activityToEdit.date).toStringDate())
     }
-    var selectedTime by rememberSaveable { mutableStateOf(activityToEdit.time) }
+    var selectedTime by remember { mutableStateOf(activityToEdit.time) }
 
     // State for managing date validation errors
-    var showDateError by rememberSaveable { mutableStateOf(false) }
-    var dateErrorMessage by rememberSaveable { mutableStateOf("") }
+    var showDateError by remember { mutableStateOf(false) }
+    var dateErrorMessage by remember { mutableStateOf("") }
 
     var showDatePicker = remember { mutableStateOf(false) }
 
@@ -147,14 +146,8 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
 
             // Date picker for selecting the activity date
             item {
-                //var isValid = false
-
-//                DatePickerChecked() { boolRet ->
-//                    isValid = boolRet
-//                    boolRet
-//                }
-
-                if(showDatePicker.value) {
+                
+                if (showDatePicker.value) {
                     DatePickerChecked(
                         upperContext = LocalContext.current,
                         activityToEdit,
@@ -165,10 +158,6 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                         dateErrorMessage = errorMessage
                     }.show()
                 }
-
-
-
-
 
 
 //                // Create and configure a DatePickerDialog
@@ -384,7 +373,9 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                             }
 
                             val isDateValid =
-                                !activityCalendar.before(tripStartCal) && !activityCalendar.after(tripEndCal)
+                                !activityCalendar.before(tripStartCal) && !activityCalendar.after(
+                                    tripEndCal
+                                )
 
                             if (!isDateValid) {
                                 showDateError = true
@@ -426,13 +417,14 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
 }
 
 
-
 @Composable
-fun DatePickerChecked(upperContext: Context,
-                      activityToEdit: Trip.Activity,
-                      currentTrip: Trip,
-                      callback: (String, Boolean, String) -> Unit)
-: DatePickerDialog {
+fun DatePickerChecked(
+    upperContext: Context,
+    activityToEdit: Trip.Activity,
+    currentTrip: Trip,
+    callback: (String, Boolean, String) -> Unit
+)
+        : DatePickerDialog {
 
     val context = upperContext
     val calendar = activityToEdit.date
@@ -480,7 +472,11 @@ fun DatePickerChecked(upperContext: Context,
 //                    showDateError = false
 //                    dateErrorMessage = ""
             } else {
-                callback("", true, "Activity date must be within the trip period \n(${tripStartCal.toStringDate()} - ${tripEndCal.toStringDate()})")
+                callback(
+                    "",
+                    true,
+                    "Activity date must be within the trip period \n(${tripStartCal.toStringDate()} - ${tripEndCal.toStringDate()})"
+                )
 //                     "Activity date mustshowDateError = true
 ////                    dateErrorMessage =
 ////                        be within the trip period \n(${tripStartCal.toStringDate()} - ${tripEndCal.toStringDate()})"

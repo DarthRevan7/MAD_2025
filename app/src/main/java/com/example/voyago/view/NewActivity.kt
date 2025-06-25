@@ -66,17 +66,17 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
     var activityDescription by rememberSaveable { mutableStateOf("") }
 
     // Tracks whether the user has interacted with the description field
-    var descriptionTouched = rememberSaveable { mutableStateOf(false) }
+    var descriptionTouched = remember { mutableStateOf(false) }
 
     // Validation state: True if description is empty or doesn't contain letters
-    val descriptionHasErrors by rememberSaveable {
+    val descriptionHasErrors by remember {
         derivedStateOf {
             descriptionTouched.value && (activityDescription.isBlank() || !activityDescription.any { it.isLetter() })
         }
     }
 
     // Dynamically calculate default date based on trip's start date
-    val defaultDate by rememberSaveable {
+    val defaultDate by remember {
         derivedStateOf {
             try {
                 when {
@@ -110,11 +110,11 @@ fun NewActivity(navController: NavController, vm: TripViewModel) {
     }
 
     // Time selected for the activity
-    var selectedTime by rememberSaveable { mutableStateOf("09:00 AM") }
+    var selectedTime by remember { mutableStateOf("09:00 AM") }
 
     // Error state for date validation
-    var showDateError by rememberSaveable { mutableStateOf(false) }
-    var dateErrorMessage by rememberSaveable { mutableStateOf("") }
+    var showDateError by remember { mutableStateOf(false) }
+    var dateErrorMessage by remember { mutableStateOf("") }
 
     // Validate that the trip is valid before proceeding
     if (selectedTrip.id == 0 || selectedTrip.startDate.seconds <= 0) {
