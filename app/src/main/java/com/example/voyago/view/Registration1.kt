@@ -28,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,23 +51,23 @@ import java.time.format.ResolverStyle
 fun CreateAccountScreen(navController: NavController) {
 
     // User input state holders
-    var name by remember { mutableStateOf("") }
-    var surname by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var dateOfBirth by remember { mutableStateOf("") }
-    var country by remember { mutableStateOf("") }
+    var name by rememberSaveable { mutableStateOf("") }
+    var surname by rememberSaveable { mutableStateOf("") }
+    var email by rememberSaveable { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
+    var dateOfBirth by rememberSaveable { mutableStateOf("") }
+    var country by rememberSaveable { mutableStateOf("") }
 
     // For displaying general form validation error
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
 
     // Touched flags help us only validate fields after the user interacts with them
-    var nameTouched by remember { mutableStateOf(false) }
-    var surnameTouched by remember { mutableStateOf(false) }
-    var emailTouched by remember { mutableStateOf(false) }
-    var passwordTouched by remember { mutableStateOf(false) }
-    var dateOfBirthTouched by remember { mutableStateOf(false) }
-    var countryTouched by remember { mutableStateOf(false) }
+    var nameTouched by rememberSaveable { mutableStateOf(false) }
+    var surnameTouched by rememberSaveable { mutableStateOf(false) }
+    var emailTouched by rememberSaveable { mutableStateOf(false) }
+    var passwordTouched by rememberSaveable { mutableStateOf(false) }
+    var dateOfBirthTouched by rememberSaveable { mutableStateOf(false) }
+    var countryTouched by rememberSaveable { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -488,7 +489,7 @@ val isCountryList = listOf(
     "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland",
     "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Timor-Leste", "Togo", "Tonga",
     "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu", "Uganda",
-    "Ukraine", "United Arab Emirates", "United Kingdom", "United States of America",
+    "Ukraine", "United Arab Emirates", "UK", "United Kingdom", "USA", "United States of America",
     "Uruguay", "Uzbekistan", "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Yemen",
     "Zambia", "Zimbabwe"
 )

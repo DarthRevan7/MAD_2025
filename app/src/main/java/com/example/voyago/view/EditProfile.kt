@@ -43,7 +43,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -120,7 +119,7 @@ fun EditProfileScreen(
     )
 
     // Stores validation states (true if a field has an error) for each input field
-    var errors = remember {
+    var errors = rememberSaveable {
         mutableStateListOf<Boolean>().apply {
             addAll(List(fieldValues.size) { false })
         }
@@ -385,18 +384,47 @@ fun EditProfileScreen(
 
                     if (index == 5) {
                         // User Description
-                        val validatorHasErrors by derivedStateOf {
-                            !isValidUserDescription(item)
+                        val keyboardController = LocalSoftwareKeyboardController.current
+
+                        Column(
+                            modifier = Modifier
+                                .wrapContentSize()      // Take only as much size as needed
+                                .pointerInput(Unit) {
+                                    // Detect tap gestures inside this Column
+                                    detectTapGestures(onTap = {
+                                        // Hide the keyboard when the Column is tapped anywhere
+                                        keyboardController?.hide()
+                                    })
+                                }
+                                .padding(10.dp)
+                        ) {
+                            OutlinedTextField(
+                                value = item,
+                                onValueChange = { fieldValues[index] = it },
+                                label = { Text(fieldNames[fieldValues.indexOf(item)]) },
+                                placeholder = {
+                                    Text(
+                                        text = "user description",
+                                        color = Color.Gray
+                                    )
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = false,
+                                isError = !isValidUserDescription(item),
+                                supportingText = {
+                                    // If the field is empty
+                                    if (item.isEmpty()) {
+                                        Text("This field cannot be empty")
+                                        // If the field is not valid
+                                    } else if (!isValidUserDescription(item)) {
+                                        Text("Invalid description")
+                                    }
+                                },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                            )
                         }
 
-                        errors[index] = validatorHasErrors
-
-                        ValidatingInputTextField(
-                            item,
-                            { fieldValues[index] = it },
-                            validatorHasErrors,
-                            fieldNames[fieldValues.indexOf(item)]
-                        )
+                        errors[index] = !isValidUserDescription(item)
                     }
                 }
 
@@ -751,7 +779,12 @@ fun isValidUserDescription(description: String): Boolean {
     // Length validation
     if (trimmed.length < 5 || trimmed.length > 300) return false
 
-    // Restrict special characters (only allow letters, digits, basic punctuation)
-    val regex = "^[a-zA-Z0-9\\s.,!?()'\"-]{10,300}$".toRegex()
-    return trimmed.matches(regex)
+    // Regex that allows extended punctuation and smart quotes
+    val regex = "^[\\p{L}\\p{N}\\s.,!?()'\"“”‘’—:\\-;]{5,300}$".toRegex()
+
+    return regex.matches(trimmed)
 }
+
+
+
+

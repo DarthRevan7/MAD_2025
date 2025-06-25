@@ -86,14 +86,14 @@ fun CreateNewTrip(
     var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
     // Flag to indicate if the photo input has been interacted with
-    var photoTouched = remember { mutableStateOf(false) }
+    var photoTouched = rememberSaveable { mutableStateOf(false) }
 
     // Flag to show image upload error if no image is selected
     var tripImageError by rememberSaveable { mutableStateOf(false) }
 
     // Flags for image upload status
-    var isUploadingImage by remember { mutableStateOf(false) }
-    var uploadError by remember { mutableStateOf<String?>(null) }
+    var isUploadingImage by rememberSaveable { mutableStateOf(false) }
+    var uploadError by rememberSaveable { mutableStateOf<String?>(null) }
 
     // Holds values for the text fields: title, destination, price, group size
     val fieldValues = rememberSaveable(
@@ -113,7 +113,7 @@ fun CreateNewTrip(
     val fieldNames = listOf("Title", "Destination", "Price Estimated", "Group Size")
 
     // Flags to track if each field has been touched
-    val fieldTouched = remember { mutableStateListOf(false, false, false, false) }
+    var fieldTouched = rememberSaveable { mutableStateListOf(false, false, false, false) }
 
     // Array to hold error status for each field
     var fieldErrors = arrayOf(false, false, false, false)
@@ -196,8 +196,8 @@ fun CreateNewTrip(
                     //TextFields with various info
                     fieldValues.forEachIndexed { index, item ->
                         val fieldIsBeenTouched = fieldTouched[index]
-                        // Title and Destination require letters and cannot be blank
-                        if (index == 0 || index == 1) {
+                        // Title must contain at least a letter and cannot be black
+                        if (index == 0) {
                             val textHasErrors = fieldIsBeenTouched && (item.toString().isBlank() ||
                                     !item.toString().any { it.isLetter() })
                             fieldErrors[index] = textHasErrors
@@ -213,8 +213,33 @@ fun CreateNewTrip(
                                 textHasErrors,
                                 fieldNames[index]
                             )
-                            // Price must be a valid positive decimal number
-                        } else if (index == 2) {
+
+                        }
+                        // Destination
+                        else if (index == 1) {
+                            val textHasErrors = fieldIsBeenTouched && (
+                                    item.toString().isBlank() ||
+                                            !item.toString()
+                                                .all { it.isLetter() || it.isWhitespace() } ||
+                                            !item.toString().any { it.isLetter() }
+                                    )
+
+                            fieldErrors[index] = textHasErrors
+
+                            ValidatingInputTextField(
+                                item,
+                                {
+                                    fieldValues[index] = it
+                                    if (!fieldIsBeenTouched) {
+                                        fieldTouched[index] = true
+                                    }
+                                },
+                                textHasErrors,
+                                fieldNames[index]
+                            )
+                        }
+                        // Price must be a valid positive decimal number
+                        else if (index == 2) {
                             val floatHasErrors = fieldIsBeenTouched && (item.toString().isBlank() ||
                                     item.toString().toDoubleOrNull()?.let { it <= 0.0 } != false ||
                                     !item.toString().matches(Regex("^\\d+(\\.\\d+)?$")))

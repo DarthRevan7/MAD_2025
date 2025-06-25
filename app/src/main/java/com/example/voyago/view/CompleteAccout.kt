@@ -1,6 +1,5 @@
 package com.example.voyago.view
 
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -43,7 +42,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -71,20 +70,20 @@ fun CompleteAccount(
 ) {
 
     // Form states
-    var dateOfBirth by remember { mutableStateOf("") }
-    var country by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var dateOfBirth by rememberSaveable { mutableStateOf("") }
+    var country by rememberSaveable { mutableStateOf("") }
+    var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
 
     // Field interaction flags for validation
-    var dateOfBirthTouched by remember { mutableStateOf(false) }
-    var countryTouched by remember { mutableStateOf(false) }
-    var usernameTouched by remember { mutableStateOf(false) }
+    var dateOfBirthTouched by rememberSaveable { mutableStateOf(false) }
+    var countryTouched by rememberSaveable { mutableStateOf(false) }
+    var usernameTouched by rememberSaveable { mutableStateOf(false) }
 
     // Additional user data
-    var username by remember { mutableStateOf("") }
-    var selectedTravelTypes by remember { mutableStateOf(setOf<String>()) }
-    var selectedDestinations by remember { mutableStateOf(setOf<String>()) }
-    var searchQuery by remember { mutableStateOf("") }
+    var username by rememberSaveable { mutableStateOf("") }
+    var selectedTravelTypes by rememberSaveable { mutableStateOf(setOf<String>()) }
+    var selectedDestinations by rememberSaveable { mutableStateOf(setOf<String>()) }
+    var searchQuery by rememberSaveable { mutableStateOf("") }
 
     // Static list of options
     val travelTypes = listOf("ADVENTURE", "PARTY", "CULTURE", "RELAX")
