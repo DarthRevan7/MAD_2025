@@ -145,7 +145,7 @@ fun TripDetails(
     val loggedUser by uvm.loggedUser.collectAsState()
 
     // Determine if the user is logged in (basic check using essential user fields)
-    val isUserLoggedIn = remember(loggedUser) {
+    val isUserLoggedIn = rememberSaveable(loggedUser) {
         loggedUser.id != 0 &&
                 loggedUser.username.isNotEmpty() &&
                 loggedUser.email.isNotEmpty()
@@ -220,24 +220,24 @@ fun TripDetails(
     val hasAsked = requestedSpots > 0
 
     // UI and state for join request dialog
-    var showDialog by remember { mutableStateOf(false) }
-    var selectedSpots by remember { mutableIntStateOf(1) }
+    var showDialog by rememberSaveable { mutableStateOf(false) }
+    var selectedSpots by rememberSaveable { mutableIntStateOf(1) }
 
     // Dialog phase: used to track which step in the join dialog is shown
-    var dialogPhase by remember { mutableIntStateOf(0) }
+    var dialogPhase by rememberSaveable { mutableIntStateOf(0) }
 
     // Information for group participants (non-logged-in)
-    var unregisteredParticipants by remember { mutableStateOf(listOf<Participant>()) }
+    var unregisteredParticipants by rememberSaveable { mutableStateOf(listOf<Participant>()) }
 
     // Usernames of registered participants being added (if any)
-    var registeredUsernames by remember { mutableStateOf(listOf<String>()) }
-    var isRegisteredList by remember { mutableStateOf(listOf<Boolean>()) }
+    var registeredUsernames by rememberSaveable { mutableStateOf(listOf<String>()) }
+    var isRegisteredList by rememberSaveable { mutableStateOf(listOf<Boolean>()) }
 
     // Field "touched" states used for validation feedback
-    var usernameTouchedList by remember { mutableStateOf(listOf<Boolean>()) }
-    var nameTouchedList by remember { mutableStateOf(listOf<Boolean>()) }
-    var surnameTouchedList by remember { mutableStateOf(listOf<Boolean>()) }
-    var emailTouchedList by remember { mutableStateOf(listOf<Boolean>()) }
+    var usernameTouchedList by rememberSaveable { mutableStateOf(listOf<Boolean>()) }
+    var nameTouchedList by rememberSaveable { mutableStateOf(listOf<Boolean>()) }
+    var surnameTouchedList by rememberSaveable { mutableStateOf(listOf<Boolean>()) }
+    var emailTouchedList by rememberSaveable { mutableStateOf(listOf<Boolean>()) }
 
     // Holds user objects of registered users being added to the group
     var registeredUserList: MutableList<User> = mutableListOf()

@@ -55,7 +55,6 @@ import androidx.navigation.NavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.example.voyago.model.Trip
-import com.example.voyago.toStringDate
 import com.example.voyago.viewmodel.TripViewModel
 import com.google.firebase.Timestamp
 import java.util.Calendar
@@ -88,7 +87,7 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
     // State holding the local image URI selected by user
     var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
     // State holding the remote image URL (e.g. from a server)
-    var remoteImageUrl by remember { mutableStateOf<String?>(null) }
+    var remoteImageUrl by rememberSaveable { mutableStateOf<String?>(null) }
 
     // Load the remote image URL when trip ID changes, only if no local image is selected
     LaunchedEffect(trip.id) {
@@ -112,9 +111,9 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
     // Names of fields for labels and validation messages
     val fieldNames = listOf("Title", "Destination", "Price Estimated", "Group Size")
     // Tracks which fields currently have validation errors
-    val fieldErrors = remember { mutableStateListOf(false, false, false, false) }
+    val fieldErrors = rememberSaveable { mutableStateListOf(false, false, false, false) }
     // Tracks if fields have been touched/modified (for showing errors only after interaction)
-    val fieldTouched = remember { mutableStateListOf(false, false, false, false) }
+    val fieldTouched = rememberSaveable { mutableStateListOf(false, false, false, false) }
 
     // List of possible trip types the user can select from
     val typeTravel = listOf("party", "adventure", "culture", "relax")
@@ -136,7 +135,8 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
     // Date Handling: Start Date and End Date fields and related Calendar objects
     var startDate by rememberSaveable {
         mutableStateOf(
-            String.format("%d/%d/%d",
+            String.format(
+                "%d/%d/%d",
                 trip.startDateAsCalendar().get(Calendar.DAY_OF_MONTH),
                 trip.startDateAsCalendar().get(Calendar.MONTH) + 1,
                 trip.startDateAsCalendar().get(Calendar.YEAR)
@@ -145,7 +145,8 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
     }
     var endDate by rememberSaveable {
         mutableStateOf(
-            String.format("%d/%d/%d",
+            String.format(
+                "%d/%d/%d",
                 trip.endDateAsCalendar().get(Calendar.DAY_OF_MONTH),
                 trip.endDateAsCalendar().get(Calendar.MONTH) + 1,
                 trip.endDateAsCalendar().get(Calendar.YEAR)
@@ -160,14 +161,14 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
     var dateError by rememberSaveable { mutableStateOf("") }
 
     // States for managing the confirmation dialog for activity reallocation when dates change
-    var showReallocationDialog by remember { mutableStateOf(false) }
-    var dialogMessage by remember { mutableStateOf("") }
-    var onConfirmReallocation by remember { mutableStateOf<(() -> Unit)?>(null) }
-    var onCancelReallocation by remember { mutableStateOf<(() -> Unit)?>(null) }
+    var showReallocationDialog by rememberSaveable { mutableStateOf(false) }
+    var dialogMessage by rememberSaveable { mutableStateOf("") }
+    var onConfirmReallocation by rememberSaveable { mutableStateOf<(() -> Unit)?>(null) }
+    var onCancelReallocation by rememberSaveable { mutableStateOf<(() -> Unit)?>(null) }
 
     // Keep the original start and end dates for comparison to detect changes
-    val originalStartDate = remember { vm.editTrip.startDate }
-    val originalEndDate = remember { vm.editTrip.endDate }
+    val originalStartDate = rememberSaveable { vm.editTrip.startDate }
+    val originalEndDate = rememberSaveable { vm.editTrip.endDate }
 
     // Function to validate input fields by index
     fun validateField(index: Int, value: String) {
@@ -613,7 +614,7 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                                     )
 
                                     // Update trip and navigate forward
-                                    if(!showReallocationDialog) {
+                                    if (!showReallocationDialog) {
 
                                         updateTripAndNavigate(
                                             vm, startCalendar!!, endCalendar!!, navController,
@@ -870,11 +871,17 @@ private fun reallocateWithShorterInterval(
             // 计算这个活动在原始行程中是第几天
             val dayNumber = calculateDaysBetween(oldStartCal, oldActivityDate)
 
-            Log.d("ReallocationDebug", "Activity on $oldDateKey was day $dayNumber in original trip")
+            Log.d(
+                "ReallocationDebug",
+                "Activity on $oldDateKey was day $dayNumber in original trip"
+            )
 
             // 检查这个活动是否会超出新行程的范围
             if (dayNumber > newTripDays) {
-                Log.d("ReallocationDebug", "Day $dayNumber exceeds new trip duration ($newTripDays), moving to overflow")
+                Log.d(
+                    "ReallocationDebug",
+                    "Day $dayNumber exceeds new trip duration ($newTripDays), moving to overflow"
+                )
                 overflowActivities.addAll(activities)
             } else {
                 // 计算对应的新日期
@@ -897,7 +904,10 @@ private fun reallocateWithShorterInterval(
                 }
 
                 if (newActivityDate.timeInMillis > normalizedNewEnd.timeInMillis) {
-                    Log.d("ReallocationDebug", "Calculated new date ${newActivityDate.time} exceeds trip end, moving to overflow")
+                    Log.d(
+                        "ReallocationDebug",
+                        "Calculated new date ${newActivityDate.time} exceeds trip end, moving to overflow"
+                    )
                     overflowActivities.addAll(activities)
                 } else {
                     // 活动保持在原来的相对位置
@@ -921,7 +931,10 @@ private fun reallocateWithShorterInterval(
 
     // 将溢出的活动分配到最后一天
     if (overflowActivities.isNotEmpty()) {
-        Log.d("ReallocationDebug", "Moving ${overflowActivities.size} overflow activities to last day")
+        Log.d(
+            "ReallocationDebug",
+            "Moving ${overflowActivities.size} overflow activities to last day"
+        )
 
         val lastDay = Calendar.getInstance().apply {
             timeInMillis = newEndCal.timeInMillis
@@ -939,10 +952,14 @@ private fun reallocateWithShorterInterval(
         }
 
         // 如果最后一天已经有活动，合并；否则创建新的
-        val finalActivitiesForLastDay = (updatedActivities[lastDayKey] ?: emptyList()) + overflowWithNewDate
+        val finalActivitiesForLastDay =
+            (updatedActivities[lastDayKey] ?: emptyList()) + overflowWithNewDate
         updatedActivities[lastDayKey] = finalActivitiesForLastDay
 
-        Log.d("ReallocationDebug", "Final activities count for last day: ${finalActivitiesForLastDay.size}")
+        Log.d(
+            "ReallocationDebug",
+            "Final activities count for last day: ${finalActivitiesForLastDay.size}"
+        )
     } else {
         Log.d("ReallocationDebug", "No overflow activities found")
     }
@@ -1038,8 +1055,6 @@ private fun reallocateWithShorterIntervalDeleteExcess(
 }
 
 
-
-
 // Date Validation Function: Ensures that the end date is not earlier than the start date.
 fun validateDateOrder(startCalendar: Calendar?, endCalendar: Calendar?): Boolean {
 
@@ -1091,7 +1106,7 @@ private fun updateTripAndNavigate(
     imageUri: Uri?
 ) {
     // 🔥 关键修复：只更新内存中的数据，不保存到数据库
-    if(imageUri != null) {
+    if (imageUri != null) {
         vm.editTrip = vm.editTrip.copy(
             typeTravel = selected.toList(),
             title = title,
@@ -1155,6 +1170,7 @@ fun parseActivityDateDDMMYYYY(dateKey: String): Calendar {
                     throw IllegalArgumentException("Invalid YYYY-MM-DD format: $dateKey")
                 }
             }
+
             else -> {
                 throw IllegalArgumentException("Expected DD/MM/YYYY or YYYY-MM-DD format: $dateKey")
             }
@@ -1171,8 +1187,6 @@ fun parseActivityDateDDMMYYYY(dateKey: String): Calendar {
 
     return calendar
 }
-
-
 
 
 // Manually parses a date string into a Calendar object, based on the provided format
@@ -1226,7 +1240,8 @@ fun smartReallocateActivitiesWithUserChoice(
 
         // Case 3: Shorter interval - show user choice dialog
         newIntervalDays < oldIntervalDays -> {
-            val dialogMessage = "The new trip duration is shorter, some activities will exceed the trip period. Please choose how to handle them:"
+            val dialogMessage =
+                "The new trip duration is shorter, some activities will exceed the trip period. Please choose how to handle them:"
 
             val onMoveToLastDay = {
                 reallocateWithShorterInterval(
@@ -1278,8 +1293,10 @@ private fun applyActivityUpdate(
     )
     vm.setSelectedTrip(vm.editTrip)
 }
+
 fun Calendar.toDDMMYYYYString(): String {
-    return String.format("%d/%d/%d",
+    return String.format(
+        "%d/%d/%d",
         get(Calendar.DAY_OF_MONTH),
         get(Calendar.MONTH) + 1,
         get(Calendar.YEAR)

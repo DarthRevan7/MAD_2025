@@ -33,7 +33,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,9 +52,9 @@ import com.google.firebase.auth.FirebaseAuth
 fun RetrievePassword(navController: NavController) {
 
     // State variables for user input and UI feedback
-    var email by remember { mutableStateOf("") }
-    var emailTouched by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf("") }
+    var email by rememberSaveable { mutableStateOf("") }
+    var emailTouched by rememberSaveable { mutableStateOf(false) }
+    var errorMessage by rememberSaveable { mutableStateOf("") }
 
     // Outer container with background color
     Column(

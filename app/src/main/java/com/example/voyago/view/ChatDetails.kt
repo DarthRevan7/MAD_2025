@@ -1,8 +1,6 @@
 package com.example.voyago.view
 
-import android.R
 import android.util.Log
-import android.view.View
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,7 +23,6 @@ import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -40,10 +37,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -51,7 +48,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import coil3.compose.AsyncImage
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.example.voyago.activities.ProfilePhoto
@@ -62,18 +58,19 @@ import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
 
 @Composable
-fun ChatDetails(navController: NavController,
-                 tripId: String, 
-                 tripViewModel: TripViewModel, 
-                 uvm: UserViewModel,
-                 chatViewModel: ChatViewModel,) {
+fun ChatDetails(
+    navController: NavController,
+    tripId: String,
+    tripViewModel: TripViewModel,
+    uvm: UserViewModel,
+    chatViewModel: ChatViewModel,
+) {
 
 
-    val tripState = remember { mutableStateOf<Trip?>(null) }
+    val tripState = rememberSaveable { mutableStateOf<Trip?>(null) }
 
-    tripViewModel.getTripById(tripId.toInt()) {
-        trip ->
-        if(trip != null) {
+    tripViewModel.getTripById(tripId.toInt()) { trip ->
+        if (trip != null) {
             tripState.value = trip
             trip
         }
@@ -81,7 +78,7 @@ fun ChatDetails(navController: NavController,
     }
 
     val trip = tripState.value
-    val showDialog = remember { mutableStateOf(false) }
+    val showDialog = rememberSaveable { mutableStateOf(false) }
     val loggedUser by uvm.loggedUser.collectAsState()
 
     if (trip == null) {
@@ -173,7 +170,8 @@ fun ChatDetails(navController: NavController,
                                 chatViewModel.removeParticipantFromRoom(trip.title, loggedUser.id)
                             } else if (trip.participants.size > 1) {
                                 // Transfer ownership to another participant
-                                val newOwner = trip.participants.entries.firstOrNull { it.key.toIntOrNull() != trip.creatorId }
+                                val newOwner =
+                                    trip.participants.entries.firstOrNull { it.key.toIntOrNull() != trip.creatorId }
                                 newOwner?.let {
                                     tripViewModel.updateTripCreator(
                                         trip.id,
@@ -224,7 +222,6 @@ fun ChatDetails(navController: NavController,
 }
 
 
-
 @Composable
 fun MemberItem(
     navController: NavController,
@@ -238,10 +235,9 @@ fun MemberItem(
             .fillMaxWidth()
             .height(70.dp)
             .clickable {
-                if(user.id != loggedUserId) {
+                if (user.id != loggedUserId) {
                     navController.navigate("user_profile/${user.id}")
-                }
-                else {
+                } else {
                     navController.navigate("profile_overview?tabIndex={tabIndex}")
                 }
             },
@@ -257,10 +253,11 @@ fun MemberItem(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (user.profilePictureUrl != null) {
-                    ProfilePhoto(modifier = Modifier,
+                    ProfilePhoto(
+                        modifier = Modifier,
                         user = user,
                         small = true
-                        )
+                    )
                 } else {
                     Box(
                         modifier = Modifier
@@ -308,7 +305,7 @@ fun MemberItem(
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun ChatHero(trip: Trip, onClickTripDetails: () -> Unit ) {
+fun ChatHero(trip: Trip, onClickTripDetails: () -> Unit) {
 
     // Holds the URL of the image for the trip
     var imageUrl by remember { mutableStateOf<String?>(null) }
@@ -377,13 +374,18 @@ fun ChatHero(trip: Trip, onClickTripDetails: () -> Unit ) {
 
         val colorButton = ButtonDefaults.buttonColors().containerColor
         val colorInsert =
-        ButtonDefaults.buttonColors(containerColor = colorButton.copy(alpha = 0.85f),
-            contentColor = Color.White)
+            ButtonDefaults.buttonColors(
+                containerColor = colorButton.copy(alpha = 0.85f),
+                contentColor = Color.White
+            )
 
-        Button(modifier = Modifier.align(Alignment.BottomEnd)
-            .padding(4.dp),
+        Button(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(4.dp),
             colors = colorInsert,
-            onClick = onClickTripDetails) {
+            onClick = onClickTripDetails
+        ) {
             Text("See trip details")
         }
 

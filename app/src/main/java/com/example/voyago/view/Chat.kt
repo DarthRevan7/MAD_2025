@@ -1,55 +1,48 @@
 package com.example.voyago.view
 
-import android.content.Context
-import android.net.Uri
-import android.util.Log
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Block
+import androidx.compose.material.icons.filled.Send
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import coil.compose.AsyncImage
 import com.example.voyago.formatMessageTimestamp
 import com.example.voyago.model.FirebaseChatMessage
-import com.example.voyago.model.User
-import com.example.voyago.toCalendar
 import com.example.voyago.viewmodel.ChatViewModel
 import com.example.voyago.viewmodel.TripViewModel
 import com.example.voyago.viewmodel.UserViewModel
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.firestore.Query
-import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
-import java.text.SimpleDateFormat
-import java.util.*
 
 @Composable
 fun SingleChatScreen(
@@ -79,7 +72,7 @@ fun SingleChatScreen(
     val chatRoomTypes by chatViewModel.chatRoomTypes.collectAsState()
     val chatRoomType = chatRoomTypes[roomId] ?: "private"
 
-    var newMessage by remember { mutableStateOf("") }
+    var newMessage by rememberSaveable { mutableStateOf("") }
 
     Column(modifier = Modifier.fillMaxSize()) {
 
@@ -114,17 +107,14 @@ fun SingleChatScreen(
                                     navController.navigate("chat_details/${trip.id}")
                                 }
                             }
-                        }
-                        else if(chatRoomType == "private")
-                        {
+                        } else if (chatRoomType == "private") {
                             var userId = 0
-                            chatRoom?.participants?.forEach{
-                                    if(it != user.id){
+                            chatRoom?.participants?.forEach {
+                                if (it != user.id) {
                                     userId = it
                                 }
                             }
-                            if(userId != 0)
-                            {
+                            if (userId != 0) {
                                 navController.navigate("user_profile/${userId}")
                             }
 
@@ -132,7 +122,7 @@ fun SingleChatScreen(
                     }
             )
 
-            if (chatRoomType == "private"){
+            if (chatRoomType == "private") {
                 Spacer(modifier = Modifier.weight(1f))
 
                 BlockUserButton(
@@ -208,9 +198,11 @@ fun SingleChatScreen(
 }
 
 @Composable
-fun ChatMessage(isOwnMessage: Boolean,
-                senderName: String,
-                message: FirebaseChatMessage) {
+fun ChatMessage(
+    isOwnMessage: Boolean,
+    senderName: String,
+    message: FirebaseChatMessage
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -250,7 +242,7 @@ fun BlockUserButton(
     roomId: String,
     chatViewModel: ChatViewModel,
     navController: NavController,
-    userId : Int
+    userId: Int
 ) {
     var showDialog by remember { mutableStateOf(false) }
 
@@ -292,11 +284,6 @@ fun BlockUserButton(
         )
     }
 }
-
-
-
-
-
 
 
 // Firebase chat message data class

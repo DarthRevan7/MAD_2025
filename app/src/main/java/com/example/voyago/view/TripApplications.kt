@@ -33,7 +33,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -258,7 +258,7 @@ fun ShowParticipants(
     navController: NavController
 ) {
     // Local state to control visibility of the participant info popup
-    var showPart by remember { mutableStateOf(false) }
+    var showPart by rememberSaveable { mutableStateOf(false) }
 
     // Main container showing a row with participant details
     Row(
@@ -411,13 +411,13 @@ fun ShowApplications(
 ) {
 
     // State for controlling the confirmation dialog
-    var showDialog by remember { mutableStateOf(false) }
+    var showDialog by rememberSaveable { mutableStateOf(false) }
 
     // State to track whether the dialog is for accepting or rejecting the application
-    var isAcceptAction by remember { mutableStateOf(true) }
+    var isAcceptAction by rememberSaveable { mutableStateOf(true) }
 
     // State to control visibility of participant info dialog (for group applications)
-    var showPart by remember { mutableStateOf(false) }
+    var showPart by rememberSaveable { mutableStateOf(false) }
 
     // UI layout: Card-style row showing applicant info and options
     Row(
