@@ -37,6 +37,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -344,8 +345,18 @@ fun CreateNewTrip(
                                 set(y, m, d, 0, 0, 0)
                                 set(Calendar.MILLISECOND, 0)
                             }
+
+                            // Reset end date if it is before new start date
+                            if (endCalendar != null && endCalendar!!.before(startCalendar)) {
+                                endDate = ""
+                                endCalendar = null
+                            }
                         }, year, month, day
-                    )
+                    ).apply {
+                        // Set min date to today (no past dates allowed for start date)
+                        datePicker.minDate =
+                            System.currentTimeMillis() - 1000 // minus 1s to avoid edge issues
+                    }
                 }
 
                 // Dialog for selecting end date
@@ -362,7 +373,16 @@ fun CreateNewTrip(
                     )
                 }
 
-                // Row containing date selection buttons
+                // Before showing the end date picker, update its minDate based on startCalendar
+                LaunchedEffect(startCalendar) {
+                    if (startCalendar != null) {
+                        endDatePickerDialog.datePicker.minDate = startCalendar!!.timeInMillis
+                    } else {
+                        // If no start date selected, disable past dates, or you can disable button instead
+                        endDatePickerDialog.datePicker.minDate = System.currentTimeMillis() - 1000
+                    }
+                }
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -390,7 +410,10 @@ fun CreateNewTrip(
                             .weight(1f)
                             .padding(vertical = 8.dp)
                     ) {
-                        OutlinedButton(onClick = { endDatePickerDialog.show() }) {
+                        OutlinedButton(
+                            onClick = { endDatePickerDialog.show() },
+                            enabled = startCalendar != null // disable button if startDate not picked
+                        ) {
                             Text("End Date")
                         }
 
@@ -410,6 +433,7 @@ fun CreateNewTrip(
                     )
                 }
             }
+
 
             item {
                 Spacer(modifier = Modifier.height(50.dp))
