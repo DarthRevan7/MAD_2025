@@ -102,55 +102,43 @@ fun NotificationView(
                                 if (notification.type == "TRIP") {
                                     val tripId = notification.idLink.toString()
                                     vm.fetchTripById(tripId) { trip ->
-                                        if (trip != null) {
-                                            if (trip.id == -1) {
-                                                // Show a toast
-                                                Toast.makeText(
-                                                    context,
-                                                    "This trip is no longer available.",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
+                                        if (trip != null && trip.id != -1) {
+                                            // Save trip in viewmodel and set context for viewing another user's trip
+                                            vm.setOtherTrip(trip)
+                                            vm.userAction =
+                                                TripViewModel.UserAction.VIEW_OTHER_TRIP
 
-                                                // Optionally delete the notification
-                                                nvm.deleteNotification(userId, notification.id)
-                                            } else {
-                                                // Save trip in viewmodel and set context for viewing another user's trip
-                                                vm.setOtherTrip(trip)
-                                                vm.userAction =
-                                                    TripViewModel.UserAction.VIEW_OTHER_TRIP
+                                            // Create a TripNotification object to pass as arguments
+                                            val notificationTrip = TripNotification(
+                                                trip.id,
+                                                trip.photo,
+                                                trip.title,
+                                                trip.destination,
+                                                trip.startDate,
+                                                trip.endDate,
+                                                trip.estimatedPrice,
+                                                trip.groupSize,
+                                                trip.participants,
+                                                trip.activities,
+                                                trip.status,
+                                                trip.typeTravel,
+                                                trip.creatorId,
+                                                trip.appliedUsers,
+                                                trip.rejectedUsers,
+                                                trip.published,
+                                                trip.isDraft
+                                            )
 
-                                                // Create a TripNotification object to pass as arguments
-                                                val notificationTrip = TripNotification(
-                                                    trip.id,
-                                                    trip.photo,
-                                                    trip.title,
-                                                    trip.destination,
-                                                    trip.startDate,
-                                                    trip.endDate,
-                                                    trip.estimatedPrice,
-                                                    trip.groupSize,
-                                                    trip.participants,
-                                                    trip.activities,
-                                                    trip.status,
-                                                    trip.typeTravel,
-                                                    trip.creatorId,
-                                                    trip.appliedUsers,
-                                                    trip.rejectedUsers,
-                                                    trip.published,
-                                                    trip.isDraft
-                                                )
+                                            // Pass the data using navController's SavedStateHandle
+                                            navController.currentBackStackEntry?.savedStateHandle?.set(
+                                                "notificationValues",
+                                                notificationTrip
+                                            )
 
-                                                // Pass the data using navController's SavedStateHandle
-                                                navController.currentBackStackEntry?.savedStateHandle?.set(
-                                                    "notificationValues",
-                                                    notificationTrip
-                                                )
-
-                                                // Navigate to the trip details screen
-                                                navController.navigate("trip_details?owner=false")
-                                            }
+                                            // Navigate to the trip details screen
+                                            navController.navigate("trip_details?owner=false")
                                         } else {
-                                            Log.e("Notification", "Trip not found for ID: $tripId")
+                                            Log.w("Notification", "Loading")
                                         }
                                     }
 
