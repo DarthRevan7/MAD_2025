@@ -84,10 +84,10 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
     var activityDescription by rememberSaveable { mutableStateOf(activityToEdit.description) }
 
     // Tracks whether the description input field has been interacted with
-    var descriptionTouched = remember { mutableStateOf(false) }
+    var descriptionTouched = rememberSaveable { mutableStateOf(false) }
 
     // Validation: Check if the description is not empty and contains at least one letter
-    val descriptionHasErrors by remember {
+    val descriptionHasErrors by rememberSaveable {
         derivedStateOf {
             descriptionTouched.value && (activityDescription.isBlank() || !activityDescription.any { it.isLetter() })
         }

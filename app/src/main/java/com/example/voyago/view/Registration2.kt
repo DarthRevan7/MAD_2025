@@ -43,6 +43,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -79,20 +80,20 @@ fun CreateAccount2Screen(navController: NavController, uvm: UserViewModel) {
         navController.previousBackStackEntry?.savedStateHandle?.get<RegistrationFormValues>("registrationFormValues")
 
     // State variables to manage user input
-    var username by remember { mutableStateOf("") }
-    var selectedTravelTypes by remember { mutableStateOf(setOf<String>()) }
-    var selectedDestinations by remember { mutableStateOf(setOf<String>()) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-    var message by remember { mutableStateOf("") }
+    var username by rememberSaveable { mutableStateOf("") }
+    var selectedTravelTypes by rememberSaveable { mutableStateOf(setOf<String>()) }
+    var selectedDestinations by rememberSaveable { mutableStateOf(setOf<String>()) }
+    var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
+    var message by rememberSaveable { mutableStateOf("") }
 
     // Variable that manages query
-    var searchQuery by remember { mutableStateOf("") }
+    var searchQuery by rememberSaveable { mutableStateOf("") }
 
     // Variable that track if the user interacted with the username field
-    var usernameTouched by remember { mutableStateOf(false) }
+    var usernameTouched by rememberSaveable { mutableStateOf(false) }
 
     // Boolean that tells if the username already exists
-    var alreadyExists by remember { mutableStateOf(false) }
+    var alreadyExists by rememberSaveable { mutableStateOf(false) }
 
     // Travel type options
     val travelTypes = listOf("ADVENTURE", "PARTY", "CULTURE", "RELAX")
