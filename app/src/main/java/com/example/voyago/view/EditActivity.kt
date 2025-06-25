@@ -85,10 +85,10 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
     var activityDescription by rememberSaveable { mutableStateOf(activityToEdit.description) }
 
     // Tracks whether the description input field has been interacted with
-    var descriptionTouched = remember { mutableStateOf(false) }
+    var descriptionTouched = rememberSaveable { mutableStateOf(false) }
 
     // Validation: Check if the description is not empty and contains at least one letter
-    val descriptionHasErrors by remember {
+    val descriptionHasErrors by rememberSaveable {
         derivedStateOf {
             descriptionTouched.value && (activityDescription.isBlank() || !activityDescription.any { it.isLetter() })
         }
@@ -189,7 +189,10 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                             }
 
                             // Validate that selected date is within trip range
-                            val isValid = !pickedCalendar.before(tripStartCal) && !pickedCalendar.after(tripEndCal)
+                            val isValid =
+                                !pickedCalendar.before(tripStartCal) && !pickedCalendar.after(
+                                    tripEndCal
+                                )
 
                             if (isValid) {
                                 activityDate = "$d/${m + 1}/$y"
@@ -197,7 +200,8 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                                 dateErrorMessage = ""
                             } else {
                                 showDateError = true
-                                dateErrorMessage = "Activity date must be within the trip period \n(${tripStartCal.toStringDate()} - ${tripEndCal.toStringDate()})"
+                                dateErrorMessage =
+                                    "Activity date must be within the trip period \n(${tripStartCal.toStringDate()} - ${tripEndCal.toStringDate()})"
                             }
 
                             // Close dialog after date selection
@@ -388,7 +392,10 @@ fun EditActivity(navController: NavController, vm: TripViewModel, activityId: In
                                 set(Calendar.MILLISECOND, 999)
                             }
 
-                            val isDateValid = !activityCalendar.before(tripStartCal) && !activityCalendar.after(tripEndCal)
+                            val isDateValid =
+                                !activityCalendar.before(tripStartCal) && !activityCalendar.after(
+                                    tripEndCal
+                                )
 
                             if (!isDateValid) {
                                 showDateError = true

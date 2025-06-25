@@ -119,7 +119,7 @@ fun EditProfileScreen(
     )
 
     // Stores validation states (true if a field has an error) for each input field
-    var errors = remember {
+    var errors = rememberSaveable {
         mutableStateListOf<Boolean>().apply {
             addAll(List(fieldValues.size) { false })
         }

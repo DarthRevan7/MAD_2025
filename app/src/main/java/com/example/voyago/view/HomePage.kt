@@ -30,6 +30,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -278,7 +279,7 @@ private fun TripCard(
     proposal: Trip      // Represents a single trip proposal containing destination, title, and photo info
 ) {
     // Mutable state to hold the URL of the image to be displayed
-    var imageUrl by remember { mutableStateOf<String?>(null) }
+    var imageUrl by rememberSaveable { mutableStateOf<String?>(null) }
 
     // Side effect to load the image URL when the composable enters the composition or the photo changes
     LaunchedEffect(proposal.photo) {
@@ -349,7 +350,7 @@ fun ArticleShow(
     onClick: (() -> Unit)? = null
 ) {
     // A state variable to store the image URL from Firebase or any remote source
-    var imageUrl by remember { mutableStateOf<String?>(null) }
+    var imageUrl by rememberSaveable { mutableStateOf<String?>(null) }
 
     // Launch side-effect to asynchronously fetch the image URL whenever the article's photo field changes
     LaunchedEffect(article.photo) {

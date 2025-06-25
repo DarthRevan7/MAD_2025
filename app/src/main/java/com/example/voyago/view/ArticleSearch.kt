@@ -38,6 +38,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -89,7 +90,7 @@ fun ArticleSearchScreen(
         .drop(3) // 🔥 跳过最热门的前3篇，显示其余文章
 
     // Track whether to show all recommended articles or just a subset
-    var showAllRecommended by remember { mutableStateOf(false) }
+    var showAllRecommended by rememberSaveable { mutableStateOf(false) }
 
     // Decide what articles to display based on search state and toggle
     val articlesToShow = when {

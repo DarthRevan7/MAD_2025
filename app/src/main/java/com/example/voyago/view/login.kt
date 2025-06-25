@@ -37,7 +37,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -70,32 +70,32 @@ fun LoginScreen(
 ) {
 
     // Email input field state
-    var email by remember { mutableStateOf("") }
+    var email by rememberSaveable { mutableStateOf("") }
 
     // Password input field state
-    var password by remember { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
 
     // Current context, used for Google Sign-In
     val context = LocalContext.current
 
     // Error message state
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
 
     // Track whether fields were touched (for validation)
-    var emailTouched by remember { mutableStateOf(false) }
-    var passwordTouched by remember { mutableStateOf(false) }
+    var emailTouched by rememberSaveable { mutableStateOf(false) }
+    var passwordTouched by rememberSaveable { mutableStateOf(false) }
 
     // Track Google Sign-In loading state
-    var isGoogleLoading by remember { mutableStateOf(false) }
+    var isGoogleLoading by rememberSaveable { mutableStateOf(false) }
 
     // Google Sign-In Configuration
-    val gso = remember {
+    val gso = rememberSaveable {
         GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(context.getString(R.string.default_web_client_id))  // For Firebase Auth
             .requestEmail()     // Ask for user’s email
             .build()
     }
-    val googleSignInClient = remember { GoogleSignIn.getClient(context, gso) }
+    val googleSignInClient = rememberSaveable { GoogleSignIn.getClient(context, gso) }
 
     // Google Sign-In Launcher
     val googleSignInLauncher = rememberLauncherForActivityResult(

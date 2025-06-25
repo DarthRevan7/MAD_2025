@@ -26,7 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,7 +46,7 @@ fun RegistrationVerificationScreen(navController: NavController, uvm: UserViewMo
     var user = uvm.pendingUser
 
     // Message state to display feedback to the user
-    var message by remember { mutableStateOf("") }
+    var message by rememberSaveable { mutableStateOf("") }
 
     // Outer container filling the whole screen with a light background color
     Column(
