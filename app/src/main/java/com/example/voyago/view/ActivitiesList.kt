@@ -58,9 +58,6 @@ fun ActivitiesList(navController: NavController, vm: TripViewModel) {
 
     // Observe the currently selected trip from the ViewModel
     val selectedTrip by vm.selectedTrip
-    LaunchedEffect(selectedTrip.id) {
-        debugTripData1(selectedTrip, vm)  // 直接传递 Trip 对象
-    }
 
     // State to control whether to show the incomplete activities warning dialog
     var showIncompleteDialog by rememberSaveable { mutableStateOf(false) }

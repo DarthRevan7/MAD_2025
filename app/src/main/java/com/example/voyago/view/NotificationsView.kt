@@ -153,7 +153,10 @@ fun NotificationView(
                                     // 2. Review notification
                                 } else if (notification.type == "REVIEW") {
                                     // Leads to the profile screen with "Reviews" tab selected
-                                    navController.navigate("profile_overview?tabIndex=2")
+                                    CoroutineScope(Dispatchers.Main).launch {
+                                        delay(100) // Give Compose time to store state
+                                        navController.navigate("profile_overview?tabIndex=2")
+                                    }
 
                                     // 3. Trip application approved
                                 } else if (notification.type == "APPROVED") {
