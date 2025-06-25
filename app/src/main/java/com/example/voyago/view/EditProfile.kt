@@ -9,6 +9,7 @@ import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
@@ -55,8 +57,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -220,6 +224,8 @@ fun EditProfileScreen(
         }
 
         item {
+            var alreadyExists by remember { mutableStateOf(false) }
+
             // Column containing all editable fields and preferences
             Column(
                 verticalArrangement = Arrangement.spacedBy(5.dp),
@@ -232,61 +238,151 @@ fun EditProfileScreen(
                 fieldValues.forEachIndexed { index, item ->
                     // Name and Surname fields
                     if (index == 0 || index == 1) {
-                        val validatorHasErrors by derivedStateOf {
-                            !isValidName(item)
+                        val keyboardController = LocalSoftwareKeyboardController.current
+
+                        Column(
+                            modifier = Modifier
+                                .wrapContentSize()      // Take only as much size as needed
+                                .pointerInput(Unit) {
+                                    // Detect tap gestures inside this Column
+                                    detectTapGestures(onTap = {
+                                        // Hide the keyboard when the Column is tapped anywhere
+                                        keyboardController?.hide()
+                                    })
+                                }
+                                .padding(10.dp)
+                        ) {
+                            OutlinedTextField(
+                                value = item,
+                                onValueChange = { fieldValues[index] = it },
+                                label = { Text(fieldNames[fieldValues.indexOf(item)]) },
+                                placeholder = {
+                                    Text(
+                                        text = "name",
+                                        color = Color.Gray
+                                    )
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true,
+                                isError = !isValidName(item),
+                                supportingText = {
+                                    // If the field is empty
+                                    if (item.isEmpty()) {
+                                        Text("This field cannot be empty")
+                                        // If the field is not valid
+                                    } else if (!isValidName(item)) {
+                                        Text("Invalid name format. Only letters, spaces, apostrophes, and hyphens are allowed.")
+                                    }
+                                },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                            )
                         }
 
-                        errors[index] = validatorHasErrors
+                        errors[index] = !isValidName(item)
 
-                        ValidatingInputTextField(
-                            item,
-                            { fieldValues[index] = it },
-                            validatorHasErrors,
-                            fieldNames[fieldValues.indexOf(item)]
-                        )
                     }
+
                     // Username field
                     if (index == 2) {
-                        val validatorHasErrors by derivedStateOf {
-                            !isValidUsername(item)
+                        val keyboardController = LocalSoftwareKeyboardController.current
+
+                        Column(
+                            modifier = Modifier
+                                .wrapContentSize()      // Take only as much size as needed
+                                .pointerInput(Unit) {
+                                    // Detect tap gestures inside this Column
+                                    detectTapGestures(onTap = {
+                                        // Hide the keyboard when the Column is tapped anywhere
+                                        keyboardController?.hide()
+                                    })
+                                }
+                                .padding(10.dp)
+                        ) {
+                            OutlinedTextField(
+                                value = item,
+                                onValueChange = {
+                                    fieldValues[index] = it
+                                    // Check if username already exists
+                                    uvm.checkUserExistsAsync(
+                                        fieldValues[index]
+                                    ) { exists, _ -> alreadyExists = exists; }
+                                },
+                                label = { Text(fieldNames[fieldValues.indexOf(item)]) },
+                                placeholder = {
+                                    Text(
+                                        text = "username",
+                                        color = Color.Gray
+                                    )
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true,
+                                isError = !isValidUsername(item) || alreadyExists,
+                                supportingText = {
+                                    // If the username is empty
+                                    if (item.isEmpty()) {
+                                        Text("This field cannot be empty.", color = Color.Red)
+                                        // If the username is not valid
+                                    } else if (!isValidUsername(item)) {
+                                        Text("Username must start with a letter and be 3-20 characters long.")
+                                        // If the username already exists
+                                    } else if (alreadyExists) {
+                                        Text("Username already exists!")
+                                    }
+                                },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                            )
                         }
 
-                        errors[index] = validatorHasErrors
-
-                        ValidatingInputTextField(
-                            item,
-                            { fieldValues[index] = it },
-                            validatorHasErrors,
-                            fieldNames[fieldValues.indexOf(item)]
-                        )
+                        errors[index] = !isValidUsername(item) || alreadyExists
 
                     }
-                    // Email field
-                    if (index == 3) {
-                        val emailHasErrors by derivedStateOf {
-                            !isValidEmail(item)
-                        }
 
-                        errors[index] = emailHasErrors
-
-                        ValidatingInputEmailField(item, { fieldValues[index] = it }, emailHasErrors)
-
-                    }
                     // Country field
                     if (index == 4) {
-                        val validatorHasErrors by derivedStateOf {
-                            !isValidCountry(item)
+                        val keyboardController = LocalSoftwareKeyboardController.current
+
+                        Column(
+                            modifier = Modifier
+                                .wrapContentSize()      // Take only as much size as needed
+                                .pointerInput(Unit) {
+                                    // Detect tap gestures inside this Column
+                                    detectTapGestures(onTap = {
+                                        // Hide the keyboard when the Column is tapped anywhere
+                                        keyboardController?.hide()
+                                    })
+                                }
+                                .padding(10.dp)
+                        ) {
+                            OutlinedTextField(
+                                value = item,
+                                onValueChange = { fieldValues[index] = it },
+                                label = { Text(fieldNames[fieldValues.indexOf(item)]) },
+                                placeholder = {
+                                    Text(
+                                        text = "country",
+                                        color = Color.Gray
+                                    )
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true,
+                                isError = !isValidCountry(item),
+                                supportingText = {
+                                    // If the field is empty
+                                    if (item.isEmpty()) {
+                                        Text("This field cannot be empty")
+                                        // If the field is not valid
+                                    } else if (!isValidCountry(item)) {
+                                        Text("Invalid country name")
+                                    }
+                                },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                            )
                         }
 
-                        errors[index] = validatorHasErrors
+                        errors[index] = !isValidCountry(item)
 
-                        ValidatingInputTextField(
-                            item,
-                            { fieldValues[index] = it },
-                            validatorHasErrors,
-                            fieldNames[fieldValues.indexOf(item)]
-                        )
                     }
+
                     if (index == 5) {
                         // User Description
                         val validatorHasErrors by derivedStateOf {
@@ -653,7 +749,7 @@ fun isValidUserDescription(description: String): Boolean {
     val trimmed = description.trim()
 
     // Length validation
-    if (trimmed.length < 10 || trimmed.length > 300) return false
+    if (trimmed.length < 5 || trimmed.length > 300) return false
 
     // Restrict special characters (only allow letters, digits, basic punctuation)
     val regex = "^[a-zA-Z0-9\\s.,!?()'\"-]{10,300}$".toRegex()
