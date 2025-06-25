@@ -75,6 +75,8 @@ fun MyTripsPage(
         floatingActionButton = {
             FloatingActionButton(onClick = {
                 vm.newTrip = Trip()                         // Reset the trip creation form
+                vm.userAction = TripViewModel.UserAction.CREATE_TRIP  // Set action for new trip
+
                 navController.navigate("create_new_trip")   // Navigate to trip creation screen
             }) {
                 Icon(Icons.Default.Add, "Add")      // Plus icon for FAB
@@ -110,14 +112,18 @@ fun MyTripsPage(
                 items(visiblePublishedTrips, key = { it.id }) { trip ->
                     vm.userAction = TripViewModel.UserAction.VIEW_TRIP
                     TripCard(
-                        trip,
-                        navController,
-                        vm,
-                        vm.userAction == TripViewModel.UserAction.EDIT_TRIP,
-                        false,
-                        true,
-                        uvm,
-                        rvm
+                        trip = trip,
+                        navController = navController,
+                        vm = vm,
+                        edit = true,        //  Published trips can be edited by creator
+                        isDraft = false,    //  Published trips are not drafts
+                        owner = true,       //  User is the owner
+                        uvm = uvm,
+                        rvm = rvm,
+                        onEditTrip = { tripToEdit ->  //  NEW: Add edit callback
+                            vm.startEditingTrip(tripToEdit)
+                            navController.navigate("edit_trip")
+                        }
                     )
                 }
             } else {
@@ -145,16 +151,19 @@ fun MyTripsPage(
 
             if (privateTrips.isNotEmpty()) {
                 items(privateTrips, key = { it.id }) { trip ->
-                    vm.userAction = TripViewModel.UserAction.EDIT_TRIP
                     TripCard(
-                        trip,
-                        navController,
-                        vm,
-                        vm.userAction == TripViewModel.UserAction.EDIT_TRIP,
-                        trip.isDraft,
-                        true,
-                        uvm,
-                        rvm
+                        trip = trip,
+                        navController = navController,
+                        vm = vm,
+                        edit = true,                //  Private trips can be edited
+                        isDraft = trip.isDraft,     // Show actual draft status
+                        owner = true,               //  User is the owner
+                        uvm = uvm,
+                        rvm = rvm,
+                        onEditTrip = { tripToEdit ->  //  NEW: Add edit callback
+                            vm.startEditingTrip(tripToEdit)
+                            navController.navigate("edit_trip")
+                        }
                     )
                 }
             } else {
@@ -187,7 +196,17 @@ fun MyTripsPage(
                 }
                 items(visibleJoinedTrips, key = { it.id }) { trip ->
                     vm.userAction = TripViewModel.UserAction.VIEW_TRIP
-                    TripCard(trip, navController, vm, false, false, true, uvm, rvm)
+                    TripCard(
+                        trip = trip,
+                        navController = navController,
+                        vm = vm,
+                        edit = false,       //  User cannot edit trips they joined
+                        isDraft = false,
+                        owner = true,       //  Still show notifications for joined trips
+                        uvm = uvm,
+                        rvm = rvm,
+                        onEditTrip = null   //  NEW: No edit callback for joined trips
+                    )
                 }
             } else {
                 // Show fallback message if no joined trips

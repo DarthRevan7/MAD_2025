@@ -546,9 +546,13 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
                     // Cancel Button
                     Button(
                         onClick = {
-                            // Revert trip to its original state and return to previous screen
-                            vm.editTrip = originalTripState
-                            vm.setSelectedTrip(originalTripState)
+                            //  关键修复：使用新的取消编辑方法
+                            val restored = vm.cancelEditing()
+                            if (restored) {
+                                Log.d("EditTrip", "Successfully restored to original state")
+                            } else {
+                                Log.w("EditTrip", "No original state to restore")
+                            }
                             navController.popBackStack()
                         },
                         modifier = Modifier
@@ -610,6 +614,7 @@ fun EditTrip(navController: NavController, vm: TripViewModel) {
 
                                     // Update trip and navigate forward
                                     if(!showReallocationDialog) {
+
                                         updateTripAndNavigate(
                                             vm, startCalendar!!, endCalendar!!, navController,
                                             selected, fieldValues[0], fieldValues[1],
@@ -1085,7 +1090,7 @@ private fun updateTripAndNavigate(
     groupSize: Int,
     imageUri: Uri?
 ) {
-    // Update the editable trip object with the latest user input
+    // 🔥 关键修复：只更新内存中的数据，不保存到数据库
     if(imageUri != null) {
         vm.editTrip = vm.editTrip.copy(
             typeTravel = selected.toList(),
@@ -1095,9 +1100,9 @@ private fun updateTripAndNavigate(
             photo = imageUri.toString(),
             startDate = Timestamp(startCalendar.time),
             endDate = Timestamp(endCalendar.time)
+            // 不修改 isDraft 状态
         )
-    }
-    else {
+    } else {
         vm.editTrip = vm.editTrip.copy(
             typeTravel = selected.toList(),
             title = title,
@@ -1106,19 +1111,14 @@ private fun updateTripAndNavigate(
             photo = vm.editTrip.photo,
             startDate = Timestamp(startCalendar.time),
             endDate = Timestamp(endCalendar.time)
+            // 不修改 isDraft 状态
         )
     }
 
-    // Update selectedTrip to reflect changes made in editTrip
-    vm.setSelectedTrip(vm.editTrip)
+    // 🔥 关键修复：暂存编辑状态而不是保存到数据库
+    vm.saveTemporaryEditState()
 
-    // Explicitly mark this as an EDIT_TRIP action
-    vm.userAction = TripViewModel.UserAction.EDIT_TRIP
-
-    // Update the DB with the new trip
-    vm.editTrip(vm.selectedTrip.value) { success -> Log.d("DB2", "$success") }
-
-    // Navigate to the activities list screen where the trip details will be shown
+    // 导航到活动列表屏幕
     navController.navigate("activities_list")
 }
 

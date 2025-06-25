@@ -1438,6 +1438,50 @@ class TripModel {
     // Firestore instance used throughout the class
     private val firestore = FirebaseFirestore.getInstance()
 
+    // Add this method to TripModel.kt class
+
+    // NEW: Finish editing trip and remove draft flag
+    fun finishTripEditing(
+        updatedTrip: Trip,
+        originalTrip: Trip,
+        viewModelScope: CoroutineScope,
+        onResult: (Boolean) -> Unit
+    ) {
+        val docId = updatedTrip.id.toString()
+
+        viewModelScope.launch {
+            val tripDocRef = Collections.trips.document(docId)
+
+            try {
+                // Create final trip with draft flag removed
+                var tripToUpdate = updatedTrip.copy(isDraft = false)
+
+                // If a new photo is provided, upload it and get the URL
+                if (updatedTrip.photo != null) {
+                    if (updatedTrip.photo!!.isUriString()) {
+                        Log.d("T2", "updatedTrip.photo=${updatedTrip.photo}")
+                        val photoUrl = uploadPhotoAndGetUrl(
+                            updatedTrip.photo!!.toUri(),
+                            updatedTrip.id.toString()
+                        )
+                        tripToUpdate = tripToUpdate.copy(photo = photoUrl)
+                        Log.d("T2", "Photo update success: URL = $photoUrl")
+                    }
+                }
+
+                // Overwrite the document with the updated trip data
+                tripDocRef.set(tripToUpdate).await()
+                Log.d("DB1", "Trip ${updatedTrip.id} finished editing successfully.")
+
+                onResult(true) // Notify success
+
+            } catch (e: Exception) {
+                Log.e("DB1", "Error finishing trip editing ${updatedTrip.id}: ${e.message}", e)
+                onResult(false) // Notify failure
+            }
+        }
+    }
+
     // Retrieves a trip document by its ID and returns the result via a callback
     fun getTripById(tripId: String, onResult: (Trip?) -> Unit) {
         // Access the "trips" collection and fetch the document with the given tripId
@@ -1496,3 +1540,4 @@ fun Trip.deepCopy(): Trip =
         appliedUsers = this.appliedUsers.toMap(),
         rejectedUsers = this.rejectedUsers.toMap()
     )
+
